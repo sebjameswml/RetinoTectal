@@ -28,13 +28,7 @@ using namespace std::chrono;
 using std::chrono::steady_clock;
 
 //! Include the relevant reaction diffusion class
-#if defined DIVNORM
-#include "rd_james_divnorm.h"
-#elif defined DNCOMP
-#include "rd_james_dncomp.h"
-#else
-#include "rd_james.h" // 2D Karbowski, no additional competition/features
-#endif
+#include "rd_rettec.h"
 
 #include "morph/ShapeAnalysis.h"
 using morph::ShapeAnalysis;
@@ -146,10 +140,8 @@ int main (int argc, char **argv)
     const FLT contour_threshold = conf.getDouble ("contour_threshold", 0.6);
     const double D = conf.getDouble ("D", 0.1);
     const FLT k = conf.getDouble ("k", 3.0);
-#if defined DNCOMP
     const FLT l = conf.getDouble ("l", 1.0);
     const FLT m = conf.getDouble ("m", 1e-8);
-#endif
 
     DBG ("steps to simulate: " << steps);
 
@@ -195,50 +187,29 @@ int main (int argc, char **argv)
     plt.setZDefault (10.0);
 #endif
 
-    /*
-     * Instantiate and set up the model object
-     */
-#if defined DIVNORM
-    RD_James_divnorm<FLT> RD;
-#elif defined DNCOMP
-    RD_James_dncomp<FLT> RD;
-#else
-    RD_James<FLT> RD;
-#endif
-
+    // Instantiate and set up the model object
+    RD_RetTec<FLT> RD;
     RD.svgpath = svgpath;
     RD.logpath = logpath;
-
     // NB: Set .N, .M BEFORE RD.allocate().
     RD.N = N_Axons; // Number of RT axons.
     RD.M = M_GUID; // Number of guidance molecules that are sculpted
-
     // Set up timestep
     RD.set_dt (dt);
-
     // Control the size of the hexes, and therefore the number of hexes in the grid
     RD.hextohex_d = hextohex_d;
     RD.hexspan = hexspan;
-
     // Boundary fall-off distance
     RD.boundaryFalloffDist = boundaryFalloffDist;
-
     RD.aNoiseGain = aNoiseGain;
     RD.aInitialOffset = aInitialOffset;
-
     // After setting N and M, we can set up all the vectors in RD:
     RD.allocate();
-
     // After allocate(), we can set up parameters:
     RD.set_D (D);
-
-#if defined DNCOMP
-    DBG2 ("Setting RD.l to " << l);
     RD.l = l;
     RD.m = m;
     RD.E = static_cast<FLT>(0.0);
-#endif
-
     RD.contour_threshold = contour_threshold;
     RD.k = k;
 
@@ -255,10 +226,8 @@ int main (int argc, char **argv)
         gp.x = v.get("xinit", 0.0).asDouble();
         gp.y = v.get("yinit", 0.0).asDouble();
         RD.initmasks.push_back (gp);
-#if defined DNCOMP
         RD.epsilon[i] = v.get("epsilon", 0.0).asDouble();
         DBG2 ("Set RD.epsilon["<<i<<"] to " << RD.epsilon[i]);
-#endif
     }
 
     // Index through guidance molecule parameters:
