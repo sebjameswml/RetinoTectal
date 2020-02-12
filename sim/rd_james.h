@@ -148,11 +148,11 @@ public:
     vector<GaussParams<Flt> > initmasks;
 
     /*!
-     * The string identifiers for each TC type. This is of size N. Can be populated
+     * The string identifiers for each RT axon. This is of size N. Can be populated
      * from the config file. This allows me to look up the name, as given in the
      * config file, from the floating point index, obtained from (integer index / N)
      */
-    alignas(alignof(map<Flt, string>)) map<Flt, string> tcnames;
+    alignas(alignof(map<Flt, string>)) map<Flt, string> rtnames;
 
 protected: // We have a setter for gamma.
     /*!
@@ -325,11 +325,6 @@ public:
         // Once-only parts of the calculation of the Gaussian.
         const Flt root_2_pi = 2.506628275;
 
-        Flt min_x = 1e7;
-        Flt max_x = -1e7;
-        Flt scale_m = 1.0;
-        Flt scale_c = 0.0;
-
         for (unsigned int i = 0; i<this->N && i < gp.size(); ++i) {
 
             if (!(gp[i].sigma > 0.0)) {
@@ -407,7 +402,7 @@ public:
     virtual void init (void) {
 
         this->stepCount = 0;
-        this->dirichletComputed = false;
+        //this->spatialAnalysisComputed = false;
 
         // Zero c and n and other temporary variables
         this->zero_vector_vector (this->c, this->N);
@@ -628,7 +623,7 @@ public:
         data.add_contained_vals ("/n", this->n);
 
         // "identified regions" here (as same size as n, c etc)
-        data.add_contained_vals ("/dr", this->regions);
+        //data.add_contained_vals ("/dr", this->regions);
     }
 
     void saveHG (void) {
@@ -893,7 +888,7 @@ public:
         this->integrate_a();
         this->integrate_c();
 
-        //this->dirichletComputed = false;
+        //this->spatialAnalysisComputed = false;
     }
 
     /*!

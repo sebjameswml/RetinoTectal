@@ -36,10 +36,8 @@ using std::chrono::steady_clock;
 #include "rd_james.h" // 2D Karbowski, no additional competition/features
 #endif
 
-#if 0
 #include "morph/ShapeAnalysis.h"
 using morph::ShapeAnalysis;
-#endif
 
 #ifdef COMPILE_PLOTTING
 # include <GLFW/glfw3.h>
@@ -529,15 +527,12 @@ int main (int argc, char **argv)
             if (plot_n) {
                 plt.updateHexGridVisual (ngrid, RD.n, scaling);
             }
-            if (plot_dr && do_dirichlet_analysis) {
-                // updateHexGridVisual
+#if 0
+            if (plot_dr) {
                 plt.updateHexGridVisual (dr_grid, RD.regions, ctr_scaling);
             }
-            // Then add:
-            //plt.plot_dirichlet_boundaries (displays[n_id], RD.hg, vv);
-
-            // With the new all-in-one-window OpenGL format, there's only one savePngs
-            // call at a time.
+#endif
+            // Save to PNG
             if (vidframes) {
                 savePngs (logpath, "sim", framecount, plt);
                 ++framecount;
@@ -563,12 +558,7 @@ int main (int argc, char **argv)
             // Fixme. Save the hex contours in their own file. Each Hex has a save() method.
             vector<list<Hex> > sv_ctrs = ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
 
-            if (do_dirichlet_analysis == true) {
-                // We HAVE to RD.dirichlet again, in case the frequency at which we're plotting is
-                // different from the frequency at which we're loggin.
-                RD.dirichlet();
-                RD.saveDirichletDomains();
-            }
+            // If spatial analysis, then add line here to do it
         }
 
         if (RD.stepCount > steps) {

@@ -8,8 +8,8 @@
 # Divisive normalization of a_i along with competition (linear)
 add_executable(rettec rettec.cpp)
 target_compile_definitions(rettec PUBLIC FLT=float COMPILE_PLOTTING DNCOMP)
-target_link_libraries(rettec ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} glfw)
+target_link_libraries(rettec ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} ${OpenCV_LIBRARIES} glfw)
 
 add_executable(rettec_c rettec.cpp)
 target_compile_definitions(rettec_c PUBLIC FLT=float DNCOMP)
-target_link_libraries(rettec_c ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK})
+target_link_libraries(rettec_c ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} ${OpenCV_LIBRARIES})

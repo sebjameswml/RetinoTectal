@@ -130,7 +130,7 @@ endif()
 add_subdirectory(sim)
 
 # For debugging of variables:
-set(DEBUG_VARIABLES OFF)
+set(DEBUG_VARIABLES ON)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach (_variableName ${_variableNames})
