@@ -1,0 +1,69 @@
+/*
+ * RT projection with how many projections?
+ */
+{
+    // Global simulation parameters
+    "steps" : 25000,                // Number of steps to simulate for
+    "logevery": 500,
+    "overwrite_logs": true,
+    "logbase" : "./log/",
+    "hextohex_d" : 0.03,           // Hex to hex distance, determines num hexes
+    "svgpath" : "./boundaries/ellipse.svg",
+    "boundaryFalloffDist" : 0.03,
+    // Diffusion const
+    "D" : 0.2,
+    // gamma gain
+    "G" : 1.0,
+    // Exponent on a
+    "k" : 3,
+    // Timestep. Defaults to 0.00001 if omitted here
+    "dt" : 0.0001,
+
+    "contour_threshold" : 0.35,
+
+    // Visualization parameters (ignored by computation-only binaries)
+    "win_width_contours": 800,
+    "plotevery": 500,
+    "vidframes": false,    // If true, number video frame saves consecutively, rather than by simulation step number
+    "rhoInit": 4, // Larger to zoom out
+    //
+    "plot_guide" : true,
+    "plot_contours" : true,
+    "plot_a_contours" : false,
+    "plot_a" : false,
+    "plot_c" : false,
+    "plot_n" : false,
+
+    "aNoiseGain" : 0.2,
+    "aInitialOffset" : 0.2,
+
+    // It would be good to have these not per-projection.
+    "alpha" : 3,
+    "beta" : 20,
+    "epsilon" : 150,
+
+    // Don't want to do this from config for RT; really want to set this up programatically in the C++.
+    //
+    // Array of parameters for N retino-tectal projections. xinit/yinit indicates the initial centre of the projection branching. sigmainit/gaininit are params for 2D gaussion thereof.
+    "rt": [
+        { "xinit" : 0.0, "yinit" : 0.0, "sigmainit" : 0.0, "gaininit" : 1.0, "gamma" : [-2.0, 0.08297875929160803], "name" : "" } // a
+    ], // end tc
+
+    // Array of parameters for the guidance molecules
+    "guidance": [
+        {
+            "shape"  : "Linear1D", // 'x'
+            "gain"   : 1.0,
+            "phi"    : 0,
+            "width"  : 0.1,
+            "offset" : 0.0
+        },
+        {
+            "shape"  : "Linear1D", // 'y'
+            "gain"   : 1.0,
+            "phi"    : -90,
+            "width"  : 0.1,
+            "offset" : 0.0
+        }
+    ] // end guidance
+}
