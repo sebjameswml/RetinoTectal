@@ -329,7 +329,9 @@ int main (int argc, char **argv)
     // HERE, add HexGridVisuals...
     unsigned int c_ctr_grid = 0; // one only
     unsigned int a_ctr_grid = 0;
+#if 0
     unsigned int dr_grid = 0;
+#endif
     vector<unsigned int> guide_grids;
     vector<unsigned int> guidegrad_grids;
 
@@ -390,7 +392,9 @@ int main (int argc, char **argv)
 
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
+#if 0
         dr_grid = plt.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
+#endif
         xzero += RD.hg->width();
     }
 
