@@ -147,7 +147,7 @@ int main (int argc, char **argv)
 
     // Retino-tectal projections. Same as number of hexes?
     const Json::Value rts = conf.getArray ("rt");
-    unsigned int N_Axons = static_cast<unsigned int>(rts.size());
+    unsigned int N_Axons =  conf.getUInt ("N", 0);
     if (N_Axons == 0) {
         cerr << "Zero retinotectal axons makes no sense for this simulation. Exiting."
              << endl;

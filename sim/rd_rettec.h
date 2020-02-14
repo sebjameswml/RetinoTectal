@@ -99,11 +99,57 @@ private:
 
         // First determine area to obtain an approximate distance between
         Flt d = 0.0; // d is our min separation
-        for (d = 0.501; d<=0.502; d+=0.001) {
+        int num = 0;
+        for (d = 0.001; d<1.0; d+=0.001) {
             // This works out number of dots on rings keeping d really rigid. What I want to do is
             // to allow d to vary slightly on some of the rings to allow any integer number of dots
             // to be arranged.
-            this->numDotsOnRings (0.0, 1.0, d);
+            num = this->numDotsOnRings (0.0, 1.0, d);
+            if (num < this->N) {
+                break;
+            }
+        }
+        cout << "d = " << d << " which makes "  << num << " dots" << endl;
+        cout << "Need to insert " << (this->N-num) << " extras" << endl;
+
+        Flt r = d;
+        vector<Flt> ringlens;
+        Flt tlen = 0.0;
+        while (r <= 1.0) {
+            cout << "Ring r=" << r << " has circumference " << (morph::TWO_PI_D * r) << endl;
+            ringlens.push_back (morph::TWO_PI_D * r);
+            tlen += ringlens.back();
+            r += d;
+        }
+        cout << "tlen = " << tlen << endl;
+
+        Flt len_per_extra = tlen / (this->N-num);
+        cout << "Insert extra every = " << len_per_extra << endl;
+
+        unsigned int extras = this->N - (unsigned int)num;
+        typename vector<Flt>::iterator rli = ringlens.begin();
+        vector<unsigned int> ringextras (ringlens.size(), 0);
+        typename vector<unsigned int>::iterator rei = ringextras.begin();
+        Flt l = len_per_extra;
+        while (extras) {
+            l -= *rli;
+            if (l > 0.0) {
+                // Then we don't insert on this ring and let len_per_extra remain a bit smaller
+                rli++;
+                rei++;
+            } else {
+                // Insert an extra here.
+                (*rei)++;
+                --extras; // record that we added it
+                // Update the remaining ring len in which to distribute extras
+                *rli = -l;
+                // Reset l back to len_per_extra
+                l = len_per_extra;
+            }
+        }
+        int ii = 0;
+        for (auto re : ringextras) {
+            cout << "Ring " << ii++ << " has "  << re << " extras" << endl;
         }
     }
 

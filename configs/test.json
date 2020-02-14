@@ -42,6 +42,8 @@
     "beta" : 20,
     "epsilon" : 150,
 
+    "N" : 100,
+
     // Don't want to do this from config for RT; really want to set this up programatically in the C++.
     //
     // Array of parameters for N retino-tectal projections. xinit/yinit indicates the initial centre of the projection branching. sigmainit/gaininit are params for 2D gaussion thereof.
