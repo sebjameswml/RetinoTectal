@@ -8,29 +8,39 @@
 using std::floor;
 using std::ceil;
 using std::abs;
+using std::sin;
+using std::cos;
+
+#define scf(a) static_cast<Flt>(a)
 
 template <class Flt>
 class RD_RetTec : public RD_James_dncomp<Flt>
 {
 public:
     /*!
-     * Initially, I will assume a uniformly distributed retina, with no fovea. In other words, the
-     * mean density of retinal neurons is independent of position on the retina.
+     * Initially, I will assume a uniformly distributed retina, with no fovea. In
+     * other words, the mean density of retinal neurons is independent of position on
+     * the retina.
      *
-     * I don't think we need to care about the size of the retina, it has radius 1. But, we do need
-     * to decide how to arrange the N origins for the RT axons. They might be arranged in some sort
-     * of pie slice, with the angle of the slice being variable from 0 to 2PI. The slight might go
-     * all the way from r=0 to r=1, but it might also be a small slice from 0 to ret_outer or from
-     * ret_inner to ret_outer. This should allow me to carry out the various different experimental
-     * manipulations carried out by Sperry and others.
+     * I don't think we need to care about the size of the retina, it has radius
+     * 1. But, we do need to decide how to arrange the N origins for the RT
+     * axons. They might be arranged in some sort of pie slice, with the angle of the
+     * slice being variable from 0 to 2PI. The slight might go all the way from r=0 to
+     * r=1, but it might also be a small slice from 0 to ret_outer or from ret_inner
+     * to ret_outer. This should allow me to carry out the various different
+     * experimental manipulations carried out by Sperry and others.
      *
-     * So, with these parameters, work out the area of the region which will be populated with
-     * retinal neuron somas, then figure out how to arrange this->N somas in rings.
+     * So, with these parameters, work out the area of the region which will be
+     * populated with retinal neuron somas, then figure out how to arrange this->N
+     * somas in rings.
      */
     //@{
-    Flt ret_inner = static_cast<Flt>(0.0);
-    Flt ret_outer = static_cast<Flt>(1.0);
-    Flt ret_angle = static_cast<Flt>(morph::TWO_PI_D);
+    Flt ret_inner = scf(0.0);
+    Flt ret_outer = scf(1.0);
+    Flt ret_startangle = scf(0.0);
+    Flt ret_endangle = scf(morph::TWO_PI_D);
+    //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
+    vector<array<Flt, 2>> ret_coords;
     //@}
 
     RD_RetTec (void)
@@ -47,10 +57,10 @@ public:
     }
 
 private:
-    //! How many items (dots, for example) could you arrange on a circle of radius=@radius with @d
-    //! between each item's centre?
+    //! How many items (dots, for example) could you arrange on a circle of
+    //! radius=@radius with @d between each item's centre?
     int numOnCircle (Flt radius, Flt d) const {
-        if (radius == static_cast<Flt>(0.0)) {
+        if (radius == scf(0.0)) {
             return 1;
         }
         Flt circum = (Flt)morph::TWO_PI_D * radius;
@@ -59,7 +69,7 @@ private:
 
     //! How many items on a circular arc of angle @a?
     int numOnCircleArc (Flt radius, Flt d, Flt a) const {
-        if (radius == static_cast<Flt>(0.0)) {
+        if (radius == scf(0.0)) {
             return 1;
         }
         Flt circum = (Flt)morph::TWO_PI_D * radius;
@@ -70,7 +80,7 @@ private:
 
     //! How many dots spaced by d can be placed on circlular rings with d between them?
     int numDotsOnRings (Flt minRadius, Flt maxRadius, Flt d,
-                        Flt startAngle = (Flt)0.0, Flt endAngle = (Flt)morph::TWO_PI_D) const {
+                        Flt a = scf(morph::TWO_PI_D)) const {
 
         int nrings = (int) floor ((maxRadius-minRadius)/d);
         if (minRadius == 0.0) {
@@ -79,57 +89,68 @@ private:
 
         int n_dots = 0;
         for (int r=0; r<nrings; ++r) {
-            n_dots += this->numOnCircleArc (r*d, d, abs(endAngle-startAngle));
+            n_dots += this->numOnCircleArc (r*d, d, a);
         }
-        //cout << "n_dots for d=" << d << " is " << n_dots << endl;
-        cout << d << "," << n_dots << endl;
+        // cout << "n_dots for d=" << d << " is " << n_dots << endl;
+        // cout << d << "," << n_dots << endl;
         return n_dots;
     }
 
-    int costFunction (int num, Flt d) {
-        int diff = num - numDotsOnRings (this->ret_inner, this->ret_outer, d);
-        int diff_abs = abs(diff);
-        if (diff < 0) {
-            // Then we got MORE dots than num on the rings. Bad.
-        }
-        return diff;
+    /*!
+     * Arrange retinal neurons in some simple model. This computes coordinates for the
+     * neurons from which interaction paramters can then be computed with or without
+     * stochasticity.
+     */
+    void arrangeRetina (void) {
+        this->arrangeRetinaInRings();
     }
 
-    void arrangeRetina (void) {
+    /*!
+     * Retinal arrangement in concentric rings or arcs of concentric rings.
+     */
+    void arrangeRetinaInRings (void) {
 
         // First determine area to obtain an approximate distance between
-        Flt d = 0.0; // d is our min separation
+        Flt d = scf(0); // d is our min separation
         int num = 0;
-        for (d = 0.001; d<1.0; d+=0.001) {
-            // This works out number of dots on rings keeping d really rigid. What I want to do is
-            // to allow d to vary slightly on some of the rings to allow any integer number of dots
-            // to be arranged.
-            num = this->numDotsOnRings (0.0, 1.0, d);
-            if (num < this->N) {
+        for (d = scf(0.001); d<scf(1.0); d+=scf(0.001)) {
+            // This works out number of dots on rings with a fixed d.
+            num = this->numDotsOnRings (scf(0.0), scf(1.0), d, abs(this->ret_endangle - this->ret_startangle));
+            if (num <= this->N) {
                 break;
             }
         }
-        cout << "d = " << d << " which makes "  << num << " dots" << endl;
-        cout << "Need to insert " << (this->N-num) << " extras" << endl;
+        //cout << "d = " << d << " which makes "  << num << " dots" << endl;
+        //cout << "Need to insert " << (this->N - num) << " extras" << endl;
 
         Flt r = d;
         vector<Flt> ringlens;
+        // First ring is radius 0, so length 0.
+        ringlens.push_back (scf(0));
+        vector<unsigned int> ringnums;
+        // First ring num is 1, as it's a single dot
+        ringnums.push_back (1);
         Flt tlen = 0.0;
+        unsigned int ntot = 1; // to count the first, centre dot
         while (r <= 1.0) {
-            cout << "Ring r=" << r << " has circumference " << (morph::TWO_PI_D * r) << endl;
-            ringlens.push_back (morph::TWO_PI_D * r);
+            //cout << "Ring/arc r=" << r << " has circumference " << (morph::TWO_PI_D * r) << endl;
+            ringlens.push_back (scf(morph::TWO_PI_D) * r);
             tlen += ringlens.back();
+            ringnums.push_back (this->numOnCircleArc (r, d, abs(this->ret_endangle - this->ret_startangle)));
+            ntot += ringnums.back();
             r += d;
         }
-        cout << "tlen = " << tlen << endl;
+        //cout << "tlen = " << tlen << ", and ntot = " << ntot <<  endl;
 
         Flt len_per_extra = tlen / (this->N-num);
-        cout << "Insert extra every = " << len_per_extra << endl;
+        //cout << "Insert extra every = " << len_per_extra << endl;
 
         unsigned int extras = this->N - (unsigned int)num;
         typename vector<Flt>::iterator rli = ringlens.begin();
+        rli++; // Skip the zeroth
         vector<unsigned int> ringextras (ringlens.size(), 0);
         typename vector<unsigned int>::iterator rei = ringextras.begin();
+        rei++; // Skip the zeroth
         Flt l = len_per_extra;
         while (extras) {
             l -= *rli;
@@ -147,10 +168,50 @@ private:
                 l = len_per_extra;
             }
         }
-        int ii = 0;
-        for (auto re : ringextras) {
-            cout << "Ring " << ii++ << " has "  << re << " extras" << endl;
+
+        // loop through ringextras and ringlens and generate the coordinates.
+        this->ret_coords.resize (this->N);
+        // "ring index"
+        int ri = 0;
+        // Insert the first dot at the centre. ci is "coordinate index"
+        int ci = 0;
+        this->ret_coords[ci] = { scf(0.0), scf(0.0) };
+
+        // The starting position for the first dot on a ring.
+        Flt d_angle_start = scf(1.0);
+
+        // For each ring:
+        for (ri = 1; ri < ringlens.size(); ++ri) {
+
+            // This ring has radius ri * d. Note re-use of Flt r.
+            r = scf(ri) * d;
+
+            // Number of dots in this ring
+            unsigned int dots_in_ring = ringextras[ri]+ringnums[ri];
+
+            // The angle between each dot
+            Flt d_angle = (this->ret_endangle - this->ret_startangle)/scf(dots_in_ring);
+
+            // Set up the starting angle
+            d_angle_start = (d_angle_start == scf(0.0)) ? (d_angle/scf(2.0)) : scf(0.0);
+            //cout << "start angle is " << d_angle_start << endl;
+
+            // For each dot in the ring:
+            Flt phi = d_angle_start;
+            for (unsigned int dir = 0; dir < dots_in_ring; ++dir) {
+                this->ret_coords[ci] = { r*cos(phi), r*sin(phi) };
+                ci++;
+                phi += d_angle;
+            }
+
         }
+#define DEBUG__ 1
+#ifdef DEBUG__
+        cout << "Coordinates:" << endl;
+        for (auto dot : this->ret_coords) {
+            cout << dot[0] << "," << dot[1] << endl;
+        }
+#endif
     }
 
 }; // RD_RetTec
