@@ -35,10 +35,10 @@ public:
      * somas in rings.
      */
     //@{
-    Flt ret_inner = scf(0.3);
+    Flt ret_inner = scf(0.0);
     Flt ret_outer = scf(1.0);
     Flt ret_startangle = scf(0.0);
-    Flt ret_endangle = scf(morph::TWO_PI_D/4.0);
+    Flt ret_endangle = scf(morph::TWO_PI_D);
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
     vector<array<Flt, 2>> ret_coords;
     //@}
@@ -69,30 +69,51 @@ private:
 
     //! How many items on a circular arc of angle @a?
     int numOnCircleArc (Flt radius, Flt d, Flt a) const {
+        //cout << "Called for radius == " << radius << ", d=" << d <<  endl;
         if (radius == scf(0.0)) {
             return 1;
         }
         Flt circum = scf(morph::TWO_PI_D) * radius;
-        Flt numf = floor (circum / d);
-        Flt proportion = a / scf(morph::TWO_PI_D);
-        return (int)(numf * proportion);
+        //cout << "circum = " << circum << endl;
+        Flt rtn = 0;
+        if (a == scf(morph::TWO_PI_D)) {
+            rtn = floor (circum / d);
+        } else {
+            Flt proportion = a / scf(morph::TWO_PI_D);
+            //cout << "prop = " << proportion << endl;
+            Flt arclen = circum * proportion;
+            //cout << "arclen = " << arclen << endl;
+            rtn = floor (arclen / d);
+        }
+        //cout << "rtn " << rtn << endl;
+        return rtn;
     }
 
     //! How many dots spaced by d can be placed on circular arc rings with d between them?
     int numDotsOnRings (Flt minRadius, Flt maxRadius, Flt d,
                         Flt a = scf(morph::TWO_PI_D)) const {
 
-        int nrings = (int) floor ((maxRadius-minRadius)/d);
-        if (minRadius == 0.0) {
-            nrings++; // cos of centre dot.
-        }
-
+        // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
+        // from minRadius to maxRadius. Herein lies the problem!
         int n_dots = 0;
-        for (int r=0; r<nrings; ++r) {
-            n_dots += this->numOnCircleArc (r*d, d, a);
+        if (minRadius == scf(0.0)) {
+            int nrings = (int) floor ((maxRadius-minRadius)/d);
+            if (minRadius == 0.0) {
+                nrings++; // cos of centre dot.
+            }
+
+            for (int r=0; r<nrings; ++r) {
+                n_dots += this->numOnCircleArc (minRadius+r*d, d, a);
+            }
+        } else {
+            // Annulus
+            int nrings = 1 + (int) floor ((maxRadius-minRadius)/d);
+            cout << nrings << " rings" << endl;
+            for (int r=0; r<nrings; ++r) {
+                n_dots += this->numOnCircleArc (minRadius+r*d, d, a);
+            }
         }
-        //cout << "n_dots for d=" << d << " is " << n_dots << endl;
-        //cout << d << "," << n_dots << endl;
+        cout << "n_dots for d=" << d << " is " << n_dots << endl;
         return n_dots;
     }
 
@@ -118,43 +139,41 @@ private:
             num = this->numDotsOnRings (this->ret_inner, this->ret_outer, d,
                                         abs(this->ret_endangle - this->ret_startangle));
             if (num <= static_cast<int>(this->N)) {
+                cout << "break on num=" << num << endl;
                 break;
             }
         }
-        //cout << "d = " << d << " which makes "  << num << " dots" << endl;
-        //cout << "Need to insert " << (this->N - num) << " extras" << endl;
+        cout << "d = " << d << " which makes "  << num << " dots" << endl;
+        cout << "Need to insert " << (this->N - num) << " extras" << endl;
 
-        Flt r = d;
+        Flt r = this->ret_inner;
+        cout << "ret_inner is " << this->ret_inner << endl;
         vector<Flt> ringlens;
         vector<unsigned int> ringnums;
         unsigned int ntot = 0;
-        if (this->ret_inner = scf(0.0)) {
-            // First ring is radius 0, so length 0.
-            ringlens.push_back (scf(0));
-            // First ring num is 1, as it's a single dot
-            ringnums.push_back (1);
-            ntot = 1; // to count the first, centre dot
-        }
         Flt tlen = 0.0;
-        while (r <= 1.0) {
-            //cout << "Ring/arc r=" << r << " has circumference " << (morph::TWO_PI_D * r) << endl;
-            ringlens.push_back (scf(morph::TWO_PI_D) * r);
+        // This loop puts all the lengths of the rings in ringlens adn all the numbers of dots on
+        // each ring in ringnums. ntot should agree with number returned by numDotsOnRings
+        while (r <= this->ret_outer) {
+            Flt prop = abs(this->ret_endangle - this->ret_startangle) / scf(morph::TWO_PI_D);
+            Flt alen = (prop * scf(morph::TWO_PI_D) * r);
+            cout << "Ring/arc r=" << r << " has length " << alen << endl;
+            ringlens.push_back (alen);
             tlen += ringlens.back();
             ringnums.push_back (this->numOnCircleArc (r, d, abs(this->ret_endangle - this->ret_startangle)));
+            cout << "This ring has " << ringnums.back() << " dots on it" << endl;
             ntot += ringnums.back();
             r += d;
         }
-        //cout << "tlen = " << tlen << ", and ntot = " << ntot <<  endl;
+        cout << "tlen = " << tlen << ", and ntot = " << ntot <<  endl;
 
         Flt len_per_extra = tlen / (this->N-num);
-        //cout << "Insert extra every = " << len_per_extra << endl;
+        cout << "Insert extra every = " << len_per_extra << endl;
 
         unsigned int extras = this->N - (unsigned int)num;
         typename vector<Flt>::iterator rli = ringlens.begin();
-        //rli++; // Skip the zeroth
         vector<unsigned int> ringextras (ringlens.size(), 0);
         typename vector<unsigned int>::iterator rei = ringextras.begin();
-        //rei++; // Skip the zeroth
         Flt l = len_per_extra;
         while (extras) {
             l -= *rli;
@@ -178,22 +197,20 @@ private:
         // "ring index"
         int ri = 0;
         int ci = 0;
-        // Insert the first dot at the centre. ci is "coordinate index"
-        //this->ret_coords[ci] = { scf(0.0), scf(0.0) };
-
         // The starting position for the first dot on a ring.
         Flt d_angle_start = scf(1.0);
 
+        cout << "--------------------------" << endl;
         // For each ring:
         for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
 
             // This ring has radius ri * d. Note re-use of Flt r.
-            r = scf(ri) * d;
+            r = this->ret_inner + scf(ri) * d;
 
             // Number of dots in this ring
             unsigned int dots_in_ring = ringextras[ri]+ringnums[ri];
 
-            cout << "Ring r=" << r << ", dots=" << dots_in_ring << endl;
+            cout << "Ring r=" << r << ", dots=" << dots_in_ring << "(extras was " << ringextras[ri] << endl;
 
             // The angle between each dot
             Flt a = this->ret_endangle - this->ret_startangle;
@@ -226,6 +243,7 @@ private:
             cout << dot[0] << "," << dot[1] << endl;
         }
 #endif
+        cout << "Done." << endl;
     }
 
 }; // RD_RetTec

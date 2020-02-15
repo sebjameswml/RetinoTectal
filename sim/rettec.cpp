@@ -286,6 +286,7 @@ int main (int argc, char **argv)
 
     // Now have the guidance molecule densities and their gradients computed, call init()
     RD.init();
+    exit (0);
 
     /*
      * Now create a log directory if necessary, and exit on any
