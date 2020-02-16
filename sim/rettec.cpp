@@ -139,20 +139,28 @@ int main (int argc, char **argv)
     const FLT dt = static_cast<FLT>(conf.getDouble ("dt", 0.00001));
     const FLT contour_threshold = conf.getDouble ("contour_threshold", 0.6);
     const double D = conf.getDouble ("D", 0.1);
+    const double G = conf.getDouble ("G", 1.0);
     const FLT k = conf.getDouble ("k", 3.0);
     const FLT l = conf.getDouble ("l", 1.0);
     const FLT m = conf.getDouble ("m", 1e-8);
+    const FLT alpha = conf.getDouble ("alpha", 3.0);
+    const FLT beta = conf.getDouble ("beta", 20.0);
+    const FLT epsilon = conf.getDouble ("epsilon", 150.0);
 
     DBG ("steps to simulate: " << steps);
 
-    // Retino-tectal projections. Same as number of hexes?
-    const Json::Value rts = conf.getArray ("rt");
+    // Number of axons is the N variable
     unsigned int N_Axons =  conf.getUInt ("N", 0);
+
+    // Retino-tectal projections. Same as number of hexes?
+#if 0
+    const Json::Value rts = conf.getArray ("rt");
     if (N_Axons == 0) {
         cerr << "Zero retinotectal axons makes no sense for this simulation. Exiting."
              << endl;
         return 1;
     }
+#endif
 
     // Guidance molecule array of parameters:
     const Json::Value guid = conf.getArray("guidance");
@@ -210,12 +218,16 @@ int main (int argc, char **argv)
     RD.l = l;
     RD.m = m;
     RD.E = static_cast<FLT>(0.0);
+    RD.G = G;
     RD.contour_threshold = contour_threshold;
     RD.k = k;
 
+    RD.alpha_ = alpha;
+    RD.beta_ = beta;
+    RD.epsilon_ = epsilon;
+#if 0
     // Index through thalamocortical fields, setting params:
     for (unsigned int i = 0; i < rts.size(); ++i) {
-        Json::Value v = rts[i];
         RD.alpha[i] = v.get("alpha", 0.0).asDouble();
         RD.beta[i] = v.get("beta", 0.0).asDouble();
 
@@ -226,10 +238,11 @@ int main (int argc, char **argv)
         gp.x = v.get("xinit", 0.0).asDouble();
         gp.y = v.get("yinit", 0.0).asDouble();
         RD.initmasks.push_back (gp);
+
         RD.epsilon[i] = v.get("epsilon", 0.0).asDouble();
         DBG2 ("Set RD.epsilon["<<i<<"] to " << RD.epsilon[i]);
     }
-
+#endif
     // Index through guidance molecule parameters:
     for (unsigned int j = 0; j < guid.size(); ++j) {
         Json::Value v = guid[j];
@@ -258,6 +271,7 @@ int main (int argc, char **argv)
         RD.guidance_time_onset.push_back (v.get("time_onset", 0).asUInt());
     }
 
+#if 0
     // Which of the gammas is the "group" defining gamma?
     const unsigned int groupgamma = conf.getUInt ("groupgamma", 0UL);
 
@@ -283,10 +297,10 @@ int main (int argc, char **argv)
         cerr << "Something went wrong setting gamma values" << endl;
         return paramRtn;
     }
+#endif
 
     // Now have the guidance molecule densities and their gradients computed, call init()
     RD.init();
-    exit (0);
 
     /*
      * Now create a log directory if necessary, and exit on any

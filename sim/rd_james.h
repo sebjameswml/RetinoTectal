@@ -134,12 +134,16 @@ public:
      */
     alignas(alignof(vector<Flt>))
     vector<Flt> alpha;
+    //! To set a single alpha for all N
+    alignas(Flt) Flt alpha_;
 
     /*!
      * beta_i parameters
      */
     alignas(alignof(vector<Flt>))
     vector<Flt> beta;
+    //! To set a single beta for all N
+    alignas(Flt) Flt beta_;
 
     /*!
      * Parameters for initial 2D Gaussian masks over the initial branching levels.
@@ -171,6 +175,12 @@ protected: // We have a setter for gamma.
     //@}
 
 public:
+
+    /*!
+     * Gain for setting gammas, if required.
+     */
+    Flt G = static_cast<Flt>(0.0);
+
     /*!
      * A vector of parameters for the direction of the guidance molecules. This is an
      * angle in Radians.
@@ -423,6 +433,7 @@ public:
         this->zero_vector_array_vector (this->J, this->N);
 
         // Initialise a with noise
+        cout << "initmasks.size(): " << this->initmasks.size() << endl;
         this->noiseify_vector_vector (this->a, this->initmasks);
 
         // Mask the noise off (set sigmas to 0 to ignore the masking)

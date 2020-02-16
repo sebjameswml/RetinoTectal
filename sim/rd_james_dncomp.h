@@ -18,6 +18,8 @@ public:
     //! epsilon_i parameters. axon competition parameter
     alignas(alignof(vector<Flt>))
     vector<Flt> epsilon;
+    //! To set single epsilon for all N
+    alignas(Flt) Flt epsilon_;
     //@}
 
     //! comp3 params

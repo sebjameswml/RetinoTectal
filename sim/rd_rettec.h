@@ -52,11 +52,47 @@ public:
     }
 
     virtual void init (void) {
+        // Set up alpha, beta, epsilon (before RD_James_dncomp::init)
+        this->setupPerNParams();
         RD_James_dncomp<Flt>::init();
+        // This populates ret_coords:
         this->arrangeRetina();
+        // Now, from ret_coords, populate gammas, assuming two, orthogonal morphogen
+        // fields which are noisy.
+        this->setupGammas();
     }
 
 private:
+
+    void setupPerNParams (void) {
+        // Index through thalamocortical fields, setting params:
+        for (unsigned int i = 0; i < this->N; ++i) {
+            this->alpha[i] = this->alpha_;
+            this->beta[i] = this->beta_;
+            this->epsilon[i] = this->epsilon_;
+            // Sets up mask for initial branching density. This is hardcoded here.
+            GaussParams<Flt> gp;
+            gp.gain = 1.0;
+            gp.sigma = 0.0;
+            gp.x = 0.0;
+            gp.y = 0.0;
+            this->initmasks.push_back (gp);
+        }
+    }
+
+    void setupGammas (void) {
+
+        // Something like:
+        for (unsigned int i = 0; i < this->N; ++i) {
+            for (unsigned int j = 0; j < 2; ++j) {
+                this->setGamma (j, i, this->G * this->ret_coords[i][j]);
+            }
+        }
+        // Make a map of name to float id value
+        //this->rtnames[(FLT)i/(FLT)rts.size()] = rtname.asString();
+    }
+
+    // FIXME: Send to MathAlgo
     //! How many items (dots, for example) could you arrange on a circle of
     //! radius=@radius with @d between each item's centre?
     int numOnCircle (Flt radius, Flt d) const {
@@ -67,6 +103,7 @@ private:
         return static_cast<int>(floor (circum / d));
     }
 
+    // FIXME: Send to MathAlgo
     //! How many items on a circular arc of angle @a?
     int numOnCircleArc (Flt radius, Flt d, Flt a) const {
         //cout << "Called for radius == " << radius << ", d=" << d <<  endl;
@@ -76,7 +113,9 @@ private:
         Flt circum = scf(morph::TWO_PI_D) * radius;
         //cout << "circum = " << circum << endl;
         Flt rtn = 0;
-        if (a == scf(morph::TWO_PI_D)) {
+#if 1
+        // longhand, with a test for a circular arc
+        if (a >= scf(morph::TWO_PI_D)) {
             rtn = floor (circum / d);
         } else {
             Flt proportion = a / scf(morph::TWO_PI_D);
@@ -85,10 +124,15 @@ private:
             //cout << "arclen = " << arclen << endl;
             rtn = floor (arclen / d);
         }
+#else
+        Flt proportion = a / scf(morph::TWO_PI_D);
+        rtn = floor (circum * proportion / d);
+#endif
         //cout << "rtn " << rtn << endl;
         return rtn;
     }
 
+    // FIXME: Send to MathAlgo
     //! How many dots spaced by d can be placed on circular arc rings with d between them?
     int numDotsOnRings (Flt minRadius, Flt maxRadius, Flt d,
                         Flt a = scf(morph::TWO_PI_D)) const {
@@ -171,7 +215,9 @@ private:
         cout << "Insert extra every = " << len_per_extra << endl;
 
         unsigned int extras = this->N - (unsigned int)num;
+        cout << "extas = " << extras << endl;
         typename vector<Flt>::iterator rli = ringlens.begin();
+        cout << "Setting up ringextras with size " << ringlens.size() << endl;
         vector<unsigned int> ringextras (ringlens.size(), 0);
         typename vector<unsigned int>::iterator rei = ringextras.begin();
         Flt l = len_per_extra;
@@ -181,16 +227,23 @@ private:
                 // Then we don't insert on this ring and let len_per_extra remain a bit smaller
                 rli++;
                 rei++;
+                // Don't drop off the last ring:
+                if (rei == ringextras.end()) {
+                    --rei;
+                    --rli;
+                }
             } else {
                 // Insert an extra here.
                 (*rei)++;
                 --extras; // record that we added it
+                cout << "added extra *rei=" << (*rei) << endl;
                 // Update the remaining ring len in which to distribute extras
                 *rli = -l;
                 // Reset l back to len_per_extra
                 l = len_per_extra;
             }
         }
+        cout << "At end, l = " << l << endl;
 
         // loop through ringextras and ringlens and generate the coordinates.
         this->ret_coords.resize (this->N);
@@ -230,11 +283,11 @@ private:
             // For each dot in the ring:
             Flt phi = d_angle_start;
             for (unsigned int dir = 0; dir < dots_in_ring; ++dir) {
+                cout << "Setting ret_coords["<<ci<<"]\n";
                 this->ret_coords[ci] = { r*cos(phi), r*sin(phi) };
                 ci++;
                 phi += d_angle;
             }
-
         }
 #define DEBUG__ 1
 #ifdef DEBUG__
