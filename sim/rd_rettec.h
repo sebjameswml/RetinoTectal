@@ -56,12 +56,13 @@ public:
     virtual void init (void) {
         // Set up alpha, beta, epsilon (before RD_James_dncomp::init)
         this->setupPerNParams();
-        RD_James_dncomp<Flt>::init();
         // This populates ret_coords:
         this->arrangeRetina();
         // Now, from ret_coords, populate gammas, assuming two, orthogonal morphogen
         // fields which are noisy.
         this->setupGammas();
+        // the rest of the init chain has to be called AFTER gammas are set up
+        RD_James_dncomp<Flt>::init();
     }
 
 private:
@@ -160,7 +161,7 @@ private:
                 n_dots += this->numOnCircleArc (minRadius+r*d, d, a);
             }
         }
-        cout << "n_dots for d=" << d << " is " << n_dots << endl;
+        //cout << "n_dots for d=" << d << " is " << n_dots << endl;
         return n_dots;
     }
 
