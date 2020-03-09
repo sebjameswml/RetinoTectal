@@ -11,19 +11,19 @@
     "svgpath" : "./boundaries/ellipse.svg",
     "boundaryFalloffDist" : 0.03,
     // Diffusion const
-    "D" : 0.1,
+    "D" : 0.03,
     // gamma gain
     "G" : 6.0,
     // Exponent on a
     "k" : 3,
-    "N" : 24,
+    "N" : 48,
     "alpha" : 20,
     "beta" : 3,
-    "epsilon" : 450,
+    "epsilon" : 650,
     // Timestep. Defaults to 0.00001 if omitted here
     "dt" : 0.0005,
 
-    "contour_threshold" : 0.25,
+    "contour_threshold" : 0.5,
 
     // Visualization parameters (ignored by computation-only binaries)
     "win_width_contours": 800,
@@ -34,8 +34,8 @@
     "plot_guide" : true,
     "plot_contours" : true,
     "plot_a_contours" : true,
-    "plot_a" : true,
-    "plot_c" : true,
+    "plot_a" : false,
+    "plot_c" : false,
     "plot_n" : true,
 
     "aNoiseGain" : 0.2,

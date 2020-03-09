@@ -193,6 +193,8 @@ int main (int argc, char **argv)
     v1.zFar = 50;
     v1.fov = 45;
     v1.setZDefault (10.0);
+    // Make this larger to "scroll in and out of the image" faster
+    v1.scenetrans_stepsize = 0.5;
 
     // Two visuals doesn't "just work"
     //Visual v2 (win_width, win_height, "Window 2");
@@ -311,7 +313,15 @@ int main (int argc, char **argv)
 
     // Spatial offset
     array<float, 3> spatOff;
+
+    // Start at a negative value which is determined by plot_a, plot_c and N.
     float xzero = 0.0f;
+    if (plot_a) {
+        xzero -= RD.hg->width() * sqrt(RD.N);
+    }
+    if (plot_c) {
+        xzero -= RD.hg->width() * sqrt(RD.N);
+    }
 
     // The a variable
     vector<unsigned int> agrids;
@@ -362,16 +372,16 @@ int main (int argc, char **argv)
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
         a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Inferno);
-        xzero += (1.5 * RD.hg->width());
+        xzero += (1.2 * RD.hg->width());
     }
 
+#if 0
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
-#if 0
         dr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
-#endif
-        xzero +=  (1.5 * RD.hg->width());
+        xzero +=  (1.2 * RD.hg->width());
     }
+#endif
 
     // guidance expression
     if (plot_guide) {
@@ -381,27 +391,27 @@ int main (int argc, char **argv)
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
             v1.addHexGridVisual (RD.hg, spatOff, RD.rho[j], guide_scaling);
-            spatOff[1] += RD.hg->depth();
+            spatOff[1] += 1.2f * RD.hg->depth();
         }
-        //xzero += RD.hg->width();
-        xzero +=  (1.5 * RD.hg->width());
-    }
 
-    // Plot coordinates of the Retinal neurons.
-    spatOff[1] = 0;
-    spatOff[0] = xzero;
-    vector<array<float, 3>> ret_coordinates;
-    for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
-        array<float, 2> rc = RD.ret_coords[c];
-        array<float, 3> rc3;
-        rc3[0] = rc[0];
-        rc3[1] = rc[1];
-        rc3[2] = 0.0f;
-        ret_coordinates.push_back (rc3);
-    }
-    array<float, 2> twoScaling = {1.0f, 0.0f};
-    vector<float> emptyData;
-    unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, emptyData/* RD.ret_coords_radii */, twoScaling, ColourMapType::Magma);
+        // Plot coordinates of the Retinal neurons.
+        xzero +=  (1.2 * RD.hg->width());
+        spatOff = { xzero, 0.0, 0.0 };
+        vector<array<float, 3>> ret_coordinates;
+        for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
+            array<float, 2> rc = RD.ret_coords[c];
+            array<float, 3> rc3;
+            rc3[0] = rc[0];
+            rc3[1] = rc[1];
+            rc3[2] = 0.0f;
+            ret_coordinates.push_back (rc3);
+        }
+        array<float, 2> twoScaling = {1.0f, 0.0f};
+        vector<float> emptyData;
+        unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, emptyData/* RD.ret_coords_radii */, twoScaling, ColourMapType::Magma);
+
+        xzero +=  (1.2 * RD.hg->width());
+   }
 
 
     // Now plot fields and redraw display

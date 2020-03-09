@@ -3,7 +3,7 @@
  */
 {
     // Global simulation parameters
-    "steps" : 500000,                // Number of steps to simulate for
+    "steps" : 20000,                // Number of steps to simulate for
     "logevery": 0,
     "overwrite_logs": true,
     "logbase" : "./log/",
@@ -31,7 +31,7 @@
     "vidframes": false,    // If true, number video frame saves consecutively, rather than by simulation step number
     "rhoInit": 4, // Larger to zoom out
     //
-    "plot_guide" : false,
+    "plot_guide" : true,
     "plot_contours" : true,
     "plot_a_contours" : true,
     "plot_a" : true,
