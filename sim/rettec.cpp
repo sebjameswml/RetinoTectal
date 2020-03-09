@@ -96,11 +96,8 @@ int main (int argc, char **argv)
         cerr << "Not much point simulating 0 steps! Exiting." << endl;
         return 1;
     }
+    // If logevery is 0, then log nothing to HDF5
     const unsigned int logevery = conf.getUInt ("logevery", 100UL);
-    if (logevery == 0) {
-        cerr << "Can't log every 0 steps. Exiting." << endl;
-        return 1;
-    }
     const float hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
     const float hexspan = conf.getFloat ("hexspan", 4.0f);
     const float boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
@@ -188,11 +185,18 @@ int main (int argc, char **argv)
     unsigned int win_height = static_cast<unsigned int>(0.8824f * (float)win_width);
 
     // Set up the morph::Visual object
-    Visual plt (win_width, win_height, "Retino-tectal simulation");
-    plt.zNear = 0.001;
-    plt.zFar = 50;
-    plt.fov = 45;
-    plt.setZDefault (10.0);
+    Visual v1 (win_width, win_height, "Retino-tectal simulation");
+    v1.zNear = 0.001;
+    v1.zFar = 50;
+    v1.fov = 45;
+    v1.setZDefault (10.0);
+
+    // Two visuals doesn't "just work"
+    //Visual v2 (win_width, win_height, "Window 2");
+    //v2.zNear = 0.001;
+    //v2.zFar = 50;
+    //v2.fov = 45;
+    //v2.setZDefault (10.0);
 #endif
 
     // Instantiate and set up the model object
@@ -213,7 +217,7 @@ int main (int argc, char **argv)
     RD.aInitialOffset = aInitialOffset;
     // After setting N and M, we can set up all the vectors in RD:
     RD.allocate();
-    // After allocate(), we can set up parameters:
+    // After allocate(), we can set up the simulation parameters:
     RD.set_D (D);
     RD.l = l;
     RD.m = m;
@@ -221,28 +225,10 @@ int main (int argc, char **argv)
     RD.G = G;
     RD.contour_threshold = contour_threshold;
     RD.k = k;
-
     RD.alpha_ = alpha;
     RD.beta_ = beta;
     RD.epsilon_ = epsilon;
-#if 0
-    // Index through thalamocortical fields, setting params:
-    for (unsigned int i = 0; i < rts.size(); ++i) {
-        RD.alpha[i] = v.get("alpha", 0.0).asDouble();
-        RD.beta[i] = v.get("beta", 0.0).asDouble();
 
-        // Sets up mask for initial branching density
-        GaussParams<FLT> gp;
-        gp.gain = v.get("gaininit", 1.0).asDouble();
-        gp.sigma = v.get("sigmainit", 0.0).asDouble();
-        gp.x = v.get("xinit", 0.0).asDouble();
-        gp.y = v.get("yinit", 0.0).asDouble();
-        RD.initmasks.push_back (gp);
-
-        RD.epsilon[i] = v.get("epsilon", 0.0).asDouble();
-        DBG2 ("Set RD.epsilon["<<i<<"] to " << RD.epsilon[i]);
-    }
-#endif
     // Index through guidance molecule parameters:
     for (unsigned int j = 0; j < guid.size(); ++j) {
         Json::Value v = guid[j];
@@ -271,41 +257,10 @@ int main (int argc, char **argv)
         RD.guidance_time_onset.push_back (v.get("time_onset", 0).asUInt());
     }
 
-#if 0
-    // Which of the gammas is the "group" defining gamma?
-    const unsigned int groupgamma = conf.getUInt ("groupgamma", 0UL);
-
-    // Set up the interaction parameters between the different TC
-    // populations and the guidance molecules (aka gamma).
-    int paramRtn = 0;
-    for (unsigned int i = 0; i < rts.size(); ++i) {
-        Json::Value rtv = rts[i];
-        Json::Value gamma = rtv["gamma"];
-        Json::Value rtname = rtv["name"];
-        for (unsigned int j = 0; j < guid.size(); ++j) {
-            // Set up gamma values using a setter which checks we
-            // don't set a value that's off the end of the gamma
-            // container.
-            DBG2 ("Set gamma for guidance " << j << " over axon " << i << " = " << gamma[j]);
-            paramRtn += RD.setGamma (j, i, gamma[j].asDouble(), groupgamma);
-        }
-        // Make a map of name to float id value
-        RD.rtnames[(FLT)i/(FLT)rts.size()] = rtname.asString();
-    }
-
-    if (paramRtn && M_GUID>0) {
-        cerr << "Something went wrong setting gamma values" << endl;
-        return paramRtn;
-    }
-#endif
-
-    // Now have the guidance molecule densities and their gradients computed, call init()
+    // Now have the guidance molecule densities/gradients computed, call init()
     RD.init();
 
-    /*
-     * Now create a log directory if necessary, and exit on any
-     * failures.
-     */
+    // Create a log/png directory if necessary, and exit on any failures.
     if (morph::Tools::dirExists (logpath) == false) {
         morph::Tools::createDir (logpath);
         if (morph::Tools::dirExists (logpath) == false) {
@@ -327,12 +282,13 @@ int main (int argc, char **argv)
         }
     }
 
-    // As RD.allocate() as been called (and log directory has been
-    // created/verified ready), positions can be saved to file.
-    RD.savePositions();
-    RD.saveHG();
-    // Save the guidance molecules now.
-    RD.saveGuidance();
+    if (logevery > 0) {
+        // As RD.allocate() as been called (and log directory has been
+        // created/verified ready), positions, grid and guidance can be saved to file.
+        RD.savePositions();
+        RD.saveHG();
+        RD.saveGuidance();
+    }
 
 #ifdef COMPILE_PLOTTING
 
@@ -362,7 +318,7 @@ int main (int argc, char **argv)
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            unsigned int idx = plt.addHexGridVisual (RD.hg, spatOff, RD.a[i], scaling);
+            unsigned int idx = v1.addHexGridVisualMono (RD.hg, spatOff, RD.a[i], scaling, (float)i/(float)RD.N);
             agrids.push_back (idx);
         }
         xzero = spatOff[0] + RD.hg->width();
@@ -375,7 +331,7 @@ int main (int argc, char **argv)
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            unsigned int idx = plt.addHexGridVisual (RD.hg, spatOff, RD.c[i], scaling);
+            unsigned int idx = v1.addHexGridVisualMono (RD.hg, spatOff, RD.c[i], scaling, (float)i/(float)RD.N);
             cgrids.push_back (idx);
         }
         xzero = spatOff[0] + RD.hg->width();
@@ -385,7 +341,7 @@ int main (int argc, char **argv)
     unsigned int ngrid = 0;
     if (plot_n) {
         spatOff = { xzero, 0.0, 0.0 };
-        ngrid = plt.addHexGridVisual (RD.hg, spatOff, RD.n, scaling);
+        ngrid = v1.addHexGridVisual (RD.hg, spatOff, RD.n, scaling);
         xzero += RD.hg->width();
     }
 
@@ -394,23 +350,24 @@ int main (int argc, char **argv)
     vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
     if (plot_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        // special scaling for contours. flat in Z, but still colourful
-        c_ctr_grid = plt.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
+        // special scaling for contours. flat in Z, but still colourful.
+        // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
+        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Rainbow);
         xzero += RD.hg->width();
     }
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        a_ctr_grid = plt.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
-        xzero += RD.hg->width();
+        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
+        xzero += (1.5 * RD.hg->width());
     }
 
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
 #if 0
-        dr_grid = plt.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
+        dr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
 #endif
-        xzero += RD.hg->width();
+        xzero +=  (1.5 * RD.hg->width());
     }
 
     // guidance expression
@@ -420,10 +377,11 @@ int main (int argc, char **argv)
         const array<float, 4> guide_scaling = { 0.0f, 0.0f, _m, _c };
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
-            plt.addHexGridVisual (RD.hg, spatOff, RD.rho[j], guide_scaling);
+            v1.addHexGridVisual (RD.hg, spatOff, RD.rho[j], guide_scaling);
             spatOff[1] += RD.hg->depth();
         }
-        xzero += RD.hg->width();
+        //xzero += RD.hg->width();
+        xzero +=  (1.5 * RD.hg->width());
     }
 
 
@@ -461,18 +419,19 @@ int main (int argc, char **argv)
             const array<float, 4> guidegrad_scaling = { 0.0f, 0.0f, gg_m, gg_c };
 
             // Create the grids
-            plt.addHexGridVisual (RD.hg, spatOff, gx[j], guidegrad_scaling);
+            v1.addHexGridVisual (RD.hg, spatOff, gx[j], guidegrad_scaling);
             spatOff[0] += RD.hg->width();
-            plt.addHexGridVisual (RD.hg, spatOff, gy[j], guidegrad_scaling);
+            v1.addHexGridVisual (RD.hg, spatOff, gy[j], guidegrad_scaling);
             spatOff[0] -= RD.hg->width();
             spatOff[1] += RD.hg->depth();
         }
-        xzero += RD.hg->width() + 2.0f;
+        //xzero += RD.hg->width() + 2.0f;
+        xzero +=  (1.5 * RD.hg->width());
     }
 
     // Saving of t=0 images in log folder
     if ((RD.M > 0 && plot_guide) || plot_a) {
-        savePngs (logpath, "sim", 0, plt);
+        savePngs (logpath, "sim", 0, v1);
     }
 
     // if using plotting, then set up the render clock
@@ -494,38 +453,38 @@ int main (int argc, char **argv)
             vector<FLT> ctrmap = ShapeAnalysis<FLT>::get_contour_map (RD.hg, RD.c, RD.contour_threshold);
 
             if (plot_contours) {
-                plt.updateHexGridVisual (c_ctr_grid, ctrmap, ctr_scaling);
+                v1.updateHexGridVisual (c_ctr_grid, ctrmap, ctr_scaling);
             }
 
             if (plot_a_contours) {
                 vector<FLT> actrmap = ShapeAnalysis<FLT>::get_contour_map (RD.hg, RD.a, RD.contour_threshold);
-                plt.updateHexGridVisual (a_ctr_grid, actrmap, ctr_scaling);
+                v1.updateHexGridVisual (a_ctr_grid, actrmap, ctr_scaling);
             }
 
             if (plot_a) {
                 for (unsigned int i = 0; i<RD.N; ++i) {
-                    plt.updateHexGridVisual (agrids[i], RD.a[i], scaling);
+                    v1.updateHexGridVisual (agrids[i], RD.a[i], scaling);
                 }
             }
             if (plot_c) {
                 for (unsigned int i = 0; i<RD.N; ++i) {
-                    plt.updateHexGridVisual (cgrids[i], RD.c[i], scaling);
+                    v1.updateHexGridVisual (cgrids[i], RD.c[i], scaling);
                 }
             }
             if (plot_n) {
-                plt.updateHexGridVisual (ngrid, RD.n, scaling);
+                v1.updateHexGridVisual (ngrid, RD.n, scaling);
             }
 #if 0
             if (plot_dr) {
-                plt.updateHexGridVisual (dr_grid, RD.regions, ctr_scaling);
+                v1.updateHexGridVisual (dr_grid, RD.regions, ctr_scaling);
             }
 #endif
             // Save to PNG
             if (vidframes) {
-                savePngs (logpath, "sim", framecount, plt);
+                savePngs (logpath, "sim", framecount, v1);
                 ++framecount;
             } else {
-                savePngs (logpath, "sim", RD.stepCount, plt);
+                savePngs (logpath, "sim", RD.stepCount, v1);
             }
         }
 
@@ -533,13 +492,13 @@ int main (int argc, char **argv)
         steady_clock::duration sincerender = steady_clock::now() - lastrender;
         if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
             glfwPollEvents();
-            plt.render();
+            v1.render();
             lastrender = steady_clock::now();
         }
 #endif // COMPILE_PLOTTING
 
         // Save data every 'logevery' steps
-        if (RD.stepCount == 1 || (RD.stepCount % logevery) == 0) {
+        if (logevery != 0 && (RD.stepCount == 1 || (RD.stepCount % logevery) == 0)) {
             DBG ("Logging data at step " << RD.stepCount);
             RD.save();
 
@@ -555,7 +514,9 @@ int main (int argc, char **argv)
     }
 
     // Save out the sums.
-    RD.savesums();
+    if (logevery > 0) {
+        RD.savesums();
+    }
 
     // Before saving the json, we'll place any additional useful info
     // in there, such as the FLT. If float_width is 4, then
@@ -629,7 +590,7 @@ int main (int argc, char **argv)
 
 #ifdef COMPILE_PLOTTING
     cout << "Ctrl-c or press x in graphics window to exit.\n";
-    plt.keepOpen();
+    v1.keepOpen();
 #endif
 
     return 0;

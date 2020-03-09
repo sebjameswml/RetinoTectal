@@ -84,8 +84,8 @@ private:
 
         // Something like:
         for (unsigned int i = 0; i < this->N; ++i) {
-            for (unsigned int j = 0; j < 2; ++j) {
-                this->setGamma (j, i, this->G * this->ret_coords[i][j]);
+            for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
+                this->setGamma (m_idx, i, this->G * this->ret_coords[i][m_idx]);
             }
         }
         // Make a map of name to float id value
