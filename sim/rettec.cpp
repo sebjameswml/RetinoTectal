@@ -365,13 +365,13 @@ int main (int argc, char **argv)
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
-        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Plasma);
+        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::RainbowZeroBlack);
         xzero += RD.hg->width();
     }
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Inferno);
+        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::RainbowZeroWhite);
         xzero += (1.2 * RD.hg->width());
     }
 
@@ -395,7 +395,7 @@ int main (int argc, char **argv)
         }
 
         // Plot coordinates of the Retinal neurons.
-        xzero +=  (1.2 * RD.hg->width());
+        xzero +=  (1.7 * RD.hg->width());
         spatOff = { xzero, 0.0, 0.0 };
         vector<array<float, 3>> ret_coordinates;
         for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
@@ -407,12 +407,15 @@ int main (int argc, char **argv)
             ret_coordinates.push_back (rc3);
         }
         array<float, 2> twoScaling = {1.0f, 0.0f};
-        vector<float> emptyData;
-        unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, emptyData/* RD.ret_coords_radii */, twoScaling, ColourMapType::Magma);
+        vector<float> neuronColourData;
+        for (unsigned int i = 0; i < RD.N; ++i) {
+            neuronColourData.push_back ((float)i/(float)RD.N);
+        }
+        cout << "Add scatter visual..." << endl;
+        unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData/* RD.ret_coords_radii */, twoScaling, ColourMapType::RainbowZeroBlack);
 
         xzero +=  (1.2 * RD.hg->width());
-   }
-
+    }
 
     // Now plot fields and redraw display
     if (plot_guidegrad) {

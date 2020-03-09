@@ -83,10 +83,11 @@ private:
     }
 
     void setupGammas (void) {
-
         // Something like:
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
+                cout << "Setting gamma_" << i << "," << m_idx << " to "
+                     << this->G << " x " << this->ret_coords[i][m_idx] << endl;
                 this->setGamma (m_idx, i, this->G * this->ret_coords[i][m_idx]);
             }
         }
@@ -190,7 +191,12 @@ private:
             }
         }
         cout << "d = " << d << " which makes "  << num << " dots" << endl;
-        cout << "Need to insert " << (this->N - num) << " extras" << endl;
+        cout << "Need to insert N - num extras or " << this->N << " - " << num << endl;
+        int required_extras = ((int)this->N - num);
+        cout << "Need to insert " << required_extras << " extras" << endl;
+        // Right. Extras could be negative. FIXME! Or is it a BUG that it's apparently negative?
+        // Don't think it's actually a bug. Just the fact that you can't keep distances equivalent
+        // with one dot in the middle and a row around it with < 6 dots.
 
         Flt r = this->ret_inner;
         cout << "ret_inner is " << this->ret_inner << endl;
@@ -213,17 +219,17 @@ private:
         }
         cout << "tlen = " << tlen << ", and ntot = " << ntot <<  endl;
 
-        Flt len_per_extra = tlen / (this->N-num);
+        Flt len_per_extra = tlen / ((int)this->N-(int)num);
         cout << "Insert extra every = " << len_per_extra << endl;
 
-        unsigned int extras = this->N - (unsigned int)num;
-        cout << "extas = " << extras << endl;
+        int extras = (int)this->N - (int)num;
+        cout << "extras = " << extras << endl;
         typename vector<Flt>::iterator rli = ringlens.begin();
         cout << "Setting up ringextras with size " << ringlens.size() << endl;
         vector<unsigned int> ringextras (ringlens.size(), 0);
         typename vector<unsigned int>::iterator rei = ringextras.begin();
         Flt l = len_per_extra;
-        while (extras) {
+        while (extras > 0) {
             l -= *rli;
             if (l > 0.0) {
                 // Then we don't insert on this ring and let len_per_extra remain a bit smaller
@@ -245,7 +251,7 @@ private:
                 l = len_per_extra;
             }
         }
-        cout << "At end, l = " << l << endl;
+        cout << "At end, l = " << l << " extras = " << extras << endl;
 
         // loop through ringextras and ringlens and generate the coordinates.
         this->ret_coords.resize (this->N);
@@ -266,7 +272,7 @@ private:
             // Number of dots in this ring
             unsigned int dots_in_ring = ringextras[ri]+ringnums[ri];
 
-            cout << "Ring r=" << r << ", dots=" << dots_in_ring << "(extras was " << ringextras[ri] << endl;
+            cout << "Ring r=" << r << ", dots=" << dots_in_ring << " (extras was " << ringextras[ri] << ")" << endl;
 
             // The angle between each dot
             Flt a = this->ret_endangle - this->ret_startangle;
