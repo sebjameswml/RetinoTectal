@@ -25,7 +25,7 @@ public:
      * I don't think we need to care about the size of the retina, it has radius
      * 1. But, we do need to decide how to arrange the N origins for the RT
      * axons. They might be arranged in some sort of pie slice, with the angle of the
-     * slice being variable from 0 to 2PI. The slight might go all the way from r=0 to
+     * slice being variable from 0 to 2PI. The slice might go all the way from r=0 to
      * r=1, but it might also be a small slice from 0 to ret_outer or from ret_inner
      * to ret_outer. This should allow me to carry out the various different
      * experimental manipulations carried out by Sperry and others.
@@ -41,6 +41,8 @@ public:
     Flt ret_endangle = scf(morph::TWO_PI_D);
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
     vector<array<Flt, 2>> ret_coords;
+    //! Store the radii which can be passed to a visualization to give a colourmap indication of the radius.
+    vector<Flt> ret_coords_radii;
     //@}
 
     RD_RetTec (void)
@@ -247,6 +249,7 @@ private:
 
         // loop through ringextras and ringlens and generate the coordinates.
         this->ret_coords.resize (this->N);
+        this->ret_coords_radii.resize (this->N);
         // "ring index"
         int ri = 0;
         int ci = 0;
@@ -285,6 +288,7 @@ private:
             for (unsigned int dir = 0; dir < dots_in_ring; ++dir) {
                 cout << "Setting ret_coords["<<ci<<"]\n";
                 this->ret_coords[ci] = { r*cos(phi), r*sin(phi) };
+                this->ret_coords_radii[ci] = r;
                 ci++;
                 phi += d_angle;
             }

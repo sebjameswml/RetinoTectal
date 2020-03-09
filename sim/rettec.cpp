@@ -30,6 +30,9 @@ using std::chrono::steady_clock;
 //! Include the relevant reaction diffusion class
 #include "rd_rettec.h"
 
+#include "morph/ColourMap.h"
+using morph::ColourMapType;
+
 #include "morph/ShapeAnalysis.h"
 using morph::ShapeAnalysis;
 
@@ -352,13 +355,13 @@ int main (int argc, char **argv)
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
-        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Rainbow);
+        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Plasma);
         xzero += RD.hg->width();
     }
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
+        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::Inferno);
         xzero += (1.5 * RD.hg->width());
     }
 
@@ -383,6 +386,22 @@ int main (int argc, char **argv)
         //xzero += RD.hg->width();
         xzero +=  (1.5 * RD.hg->width());
     }
+
+    // Plot coordinates of the Retinal neurons.
+    spatOff[1] = 0;
+    spatOff[0] = xzero;
+    vector<array<float, 3>> ret_coordinates;
+    for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
+        array<float, 2> rc = RD.ret_coords[c];
+        array<float, 3> rc3;
+        rc3[0] = rc[0];
+        rc3[1] = rc[1];
+        rc3[2] = 0.0f;
+        ret_coordinates.push_back (rc3);
+    }
+    array<float, 2> twoScaling = {1.0f, 0.0f};
+    vector<float> emptyData;
+    unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, emptyData/* RD.ret_coords_radii */, twoScaling, ColourMapType::Magma);
 
 
     // Now plot fields and redraw display
