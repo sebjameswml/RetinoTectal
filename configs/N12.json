@@ -13,7 +13,7 @@
     // Diffusion const
     "D" : 0.2,
     // gamma gain
-    "G" : 6.0,
+    "G" : 1.0,
     // Exponent on a
     "k" : 3,
     "N" : 12,
