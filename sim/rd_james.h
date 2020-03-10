@@ -584,7 +584,7 @@ public:
             if (gamma[m_idx].size() > n_idx) {
                 // Ok, we can set the value
                 //cout << "Setting gamma[m="<<m_idx<<"][n="<<n_idx<<"] to " << value << endl;
-                cout << m_idx << "," << n_idx << "," << value << endl;
+                //cout << m_idx << "," << n_idx << "," << value << endl;
                 this->gamma[m_idx][n_idx] = value;
                 if (group_m == m_idx) {
                     this->group[n_idx] = value;

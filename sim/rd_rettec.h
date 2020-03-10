@@ -3,6 +3,8 @@
  */
 
 #include "rd_james_dncomp.h"
+#include <morph/MathAlgo.h>
+using morph::MathAlgo;
 #include <morph/MathConst.h>
 #include <cmath>
 using std::floor;
@@ -43,6 +45,8 @@ public:
     vector<array<Flt, 2>> ret_coords;
     //! Store the radii which can be passed to a visualization to give a colourmap indication of the radius.
     vector<Flt> ret_coords_radii;
+    //! The ring-to-ring distance; also the approximate distance between points on each ring.
+    Flt ring_d = 0;
     //@}
 
     RD_RetTec (void)
@@ -84,85 +88,13 @@ private:
     }
 
     void setupGammas (void) {
-        // Something like:
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
-                cout << "Setting gamma_" << i << "," << m_idx << " to "
-                     << this->G << " x " << this->ret_coords[i][m_idx] << endl;
                 this->setGamma (m_idx, i, this->G * this->ret_coords[i][m_idx]);
             }
         }
         // Make a map of name to float id value
         //this->rtnames[(FLT)i/(FLT)rts.size()] = rtname.asString();
-    }
-
-    // FIXME: Send to MathAlgo
-    //! How many items (dots, for example) could you arrange on a circle of
-    //! radius=@radius with @d between each item's centre?
-    int numOnCircle (Flt radius, Flt d) const {
-        if (radius == scf(0.0)) {
-            return 1;
-        }
-        Flt circum = (Flt)morph::TWO_PI_D * radius;
-        return static_cast<int>(floor (circum / d));
-    }
-
-    // FIXME: Send to MathAlgo
-    //! How many items on a circular arc of angle @a?
-    int numOnCircleArc (Flt radius, Flt d, Flt a) const {
-        //cout << "Called for radius == " << radius << ", d=" << d <<  endl;
-        if (radius == scf(0.0)) {
-            return 1;
-        }
-        Flt circum = scf(morph::TWO_PI_D) * radius;
-        //cout << "circum = " << circum << endl;
-        Flt rtn = 0;
-#if 1
-        // longhand, with a test for a circular arc
-        if (a >= scf(morph::TWO_PI_D)) {
-            rtn = floor (circum / d);
-        } else {
-            Flt proportion = a / scf(morph::TWO_PI_D);
-            //cout << "prop = " << proportion << endl;
-            Flt arclen = circum * proportion;
-            //cout << "arclen = " << arclen << endl;
-            rtn = floor (arclen / d);
-        }
-#else
-        Flt proportion = a / scf(morph::TWO_PI_D);
-        rtn = floor (circum * proportion / d);
-#endif
-        //cout << "rtn " << rtn << endl;
-        return rtn;
-    }
-
-    // FIXME: Send to MathAlgo
-    //! How many dots spaced by d can be placed on circular arc rings with d between them?
-    int numDotsOnRings (Flt minRadius, Flt maxRadius, Flt d,
-                        Flt a = scf(morph::TWO_PI_D)) const {
-
-        // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
-        // from minRadius to maxRadius. Herein lies the problem!
-        int n_dots = 0;
-        if (minRadius == scf(0.0)) {
-            int nrings = (int) floor ((maxRadius-minRadius)/d);
-            if (minRadius == 0.0) {
-                nrings++; // cos of centre dot.
-            }
-
-            for (int r=0; r<nrings; ++r) {
-                n_dots += this->numOnCircleArc (minRadius+r*d, d, a);
-            }
-        } else {
-            // Annulus
-            int nrings = 1 + (int) floor ((maxRadius-minRadius)/d);
-            cout << nrings << " rings" << endl;
-            for (int r=0; r<nrings; ++r) {
-                n_dots += this->numOnCircleArc (minRadius+r*d, d, a);
-            }
-        }
-        //cout << "n_dots for d=" << d << " is " << n_dots << endl;
-        return n_dots;
     }
 
     /*!
@@ -184,8 +116,8 @@ private:
         int num = 0;
         for (d = scf(0.001); d<scf(1.0); d+=scf(0.001)) {
             // This works out number of dots on rings with a fixed d.
-            num = this->numDotsOnRings (this->ret_inner, this->ret_outer, d,
-                                        abs(this->ret_endangle - this->ret_startangle));
+            num = MathAlgo<Flt>::numDotsOnRings (this->ret_inner, this->ret_outer, d,
+                                                 abs(this->ret_endangle - this->ret_startangle));
             if (num <= static_cast<int>(this->N)) {
                 cout << "break on num=" << num << endl;
                 break;
@@ -213,14 +145,14 @@ private:
             cout << "Ring/arc r=" << r << " has length " << alen << endl;
             ringlens.push_back (alen);
             tlen += ringlens.back();
-            ringnums.push_back (this->numOnCircleArc (r, d, abs(this->ret_endangle - this->ret_startangle)));
+            ringnums.push_back (MathAlgo<Flt>::numOnCircleArc (r, d, abs(this->ret_endangle - this->ret_startangle)));
             cout << "This ring has " << ringnums.back() << " dots on it" << endl;
             ntot += ringnums.back();
             r += d;
         }
         cout << "tlen = " << tlen << ", and ntot = " << ntot <<  endl;
 
-        Flt len_per_extra = tlen / ((int)this->N-(int)num);
+        Flt len_per_extra = tlen / ((int)this->N - (int)num);
         cout << "Insert extra every = " << len_per_extra << endl;
 
         int extras = (int)this->N - (int)num;
@@ -263,6 +195,8 @@ private:
         // The starting position for the first dot on a ring.
         Flt d_angle_start = scf(1.0);
 
+        this->ring_d = d;
+
         cout << "--------------------------" << endl;
         // For each ring:
         for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
@@ -293,21 +227,21 @@ private:
             // For each dot in the ring:
             Flt phi = d_angle_start;
             for (unsigned int dir = 0; dir < dots_in_ring; ++dir) {
-                cout << "Setting ret_coords["<<ci<<"]\n";
+                //cout << "Setting ret_coords["<<ci<<"]\n";
                 this->ret_coords[ci] = { r*cos(phi), r*sin(phi) };
                 this->ret_coords_radii[ci] = r;
                 ci++;
                 phi += d_angle;
             }
         }
-#define DEBUG__ 1
+//#define DEBUG__ 1
 #ifdef DEBUG__
         cout << "Coordinates:" << endl;
         for (auto dot : this->ret_coords) {
             cout << dot[0] << "," << dot[1] << endl;
         }
+        cout << __FUNCTION__ << ": Done." << endl;
 #endif
-        cout << "Done." << endl;
     }
 
 }; // RD_RetTec

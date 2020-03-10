@@ -408,11 +408,12 @@ int main (int argc, char **argv)
         }
         array<float, 2> twoScaling = {1.0f, 0.0f};
         vector<float> neuronColourData;
-        for (unsigned int i = 0; i < RD.N; ++i) {
-            neuronColourData.push_back ((float)i/(float)RD.N);
+        for (unsigned int i = 1; i <= RD.N; ++i) {
+            neuronColourData.push_back ((float)i/(float)(RD.N+1));
         }
         cout << "Add scatter visual..." << endl;
-        unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData/* RD.ret_coords_radii */, twoScaling, ColourMapType::RainbowZeroBlack);
+        float scatRad = RD.ring_d/10.0f;
+        unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData, scatRad, twoScaling, ColourMapType::RainbowZeroBlack);
 
         xzero +=  (1.2 * RD.hg->width());
     }
@@ -476,20 +477,23 @@ int main (int argc, char **argv)
     while (finished == false) {
         // Step the model
         RD.step();
+        if ((RD.stepCount % 1000) == 0) {
+            cout << RD.stepCount << " steps..." << endl;
+        }
 
 #ifdef COMPILE_PLOTTING
 
         if ((RD.stepCount % plotevery) == 0) {
             DBG2("Plot at step " << RD.stepCount);
             // Do a plot of the ctrs as found.
-            vector<FLT> ctrmap = ShapeAnalysis<FLT>::get_contour_map (RD.hg, RD.c, RD.contour_threshold);
+            vector<FLT> ctrmap = ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.c, RD.contour_threshold);
 
             if (plot_contours) {
                 v1.updateHexGridVisual (c_ctr_grid, ctrmap, ctr_scaling);
             }
 
             if (plot_a_contours) {
-                vector<FLT> actrmap = ShapeAnalysis<FLT>::get_contour_map (RD.hg, RD.a, RD.contour_threshold);
+                vector<FLT> actrmap = ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.a, RD.contour_threshold);
                 v1.updateHexGridVisual (a_ctr_grid, actrmap, ctr_scaling);
             }
 
