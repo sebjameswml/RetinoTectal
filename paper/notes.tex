@@ -229,11 +229,21 @@ out~\cite{sperry_chemoaffinity_1963,goodhill_retinotectal_1999,goodhill_developm
 \section{Model}
 
 The initial model is very similar to that in the Barrels paper. However,
-instead of providing interacton parameters ($\gamma_{i,j}$) in a configuration
+instead of providing interaction parameters ($\gamma_{i,j}$) in a configuration
 file, I allow the config to specify $N$ neurons originating in the retina; I
 automatically arrange these in a radially symmetric pattern, and then
 automatically obtain the $gamma$ parameters from the neuron locations within
 the pattern.
+
+\subsection{Configurations}
+
+In the config directory, there are numerous basic configs, such as N12.json,
+N24.json and so on. I find I have to modify some of the parameters as N
+increases. Larger N requires smaller hexes to allow a suitable pattern to
+develop. Larger N also generally requires a smaller diffusion constant
+$D$. I'm experimenting with $\epsilon$, the competition parameter, which, if
+too high causes the retinotopy to degrade during the simulation.
+
 
 %
 % BIBLIOGRAPHY
