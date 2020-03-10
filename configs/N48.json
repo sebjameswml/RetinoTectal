@@ -3,7 +3,7 @@
  */
 {
     // Global simulation parameters
-    "steps" : 20000,                // Number of steps to simulate for
+    "steps" : 8000,                // Number of steps to simulate for
     "logevery": 0,
     "overwrite_logs": true,
     "logbase" : "./log/",
@@ -13,13 +13,13 @@
     // Diffusion const
     "D" : 0.03,
     // gamma gain
-    "G" : 6.0,
+    "G" : 1.0,
     // Exponent on a
     "k" : 3,
     "N" : 48,
     "alpha" : 20,
     "beta" : 3,
-    "epsilon" : 650,
+    "epsilon" : 350,
     // Timestep. Defaults to 0.00001 if omitted here
     "dt" : 0.0005,
 
@@ -53,7 +53,7 @@
         {
             "shape"  : "Linear1D", // 'y'
             "gain"   : 1.0,
-            "phi"    : -90,
+            "phi"    : 90,
             "width"  : 0.1,
             "offset" : 0.0
         }

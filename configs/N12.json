@@ -53,7 +53,7 @@
         {
             "shape"  : "Linear1D", // 'y'
             "gain"   : 1.0,
-            "phi"    : -90,
+            "phi"    : 90,
             "width"  : 0.1,
             "offset" : 0.0
         }
