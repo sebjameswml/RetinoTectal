@@ -2,10 +2,13 @@
  * Retino-tectal system. This specialization inits all the RT projections.
  */
 
-#include "rd_james_dncomp.h"
+//#include "rd_james_dncomp.h"
+#include "rd_barrel.h"
 #include <morph/MathAlgo.h>
 using morph::MathAlgo;
 #include <morph/MathConst.h>
+#include <morph/Random.h>
+using morph::RandNormal;
 #include <cmath>
 using std::floor;
 using std::ceil;
@@ -15,8 +18,11 @@ using std::cos;
 
 #define scf(a) static_cast<Flt>(a)
 
+//#define PARENTCLASS RD_James_dncomp
+#define PARENTCLASS RD_Barrel
+
 template <class Flt>
-class RD_RetTec : public RD_James_dncomp<Flt>
+class RD_RetTec : public PARENTCLASS<Flt>
 {
 public:
     /*!
@@ -49,24 +55,40 @@ public:
     Flt ring_d = 0;
     //@}
 
+    /*!
+     * The noise to apply to the gammas. This is the sigma of a normal distribution of mean 0.
+     */
+    Flt G_noise = static_cast<Flt>(0.0);
+    RandNormal<Flt>* gamma_noise = (RandNormal<Flt>*)0;
+
     RD_RetTec (void)
-        : RD_James_dncomp<Flt>() {
+        : PARENTCLASS<Flt>() {
+    }
+
+    ~RD_RetTec (void) {
+        if (this->G_noise != scf(0.0)) {
+            delete this->gamma_noise;
+        }
     }
 
     virtual void allocate (void) {
-        RD_James_dncomp<Flt>::allocate();
+        PARENTCLASS<Flt>::allocate();
     }
 
     virtual void init (void) {
-        // Set up alpha, beta, epsilon (before RD_James_dncomp::init)
+        // Set up alpha, beta, epsilon (before PARENTCLASS::init)
         this->setupPerNParams();
         // This populates ret_coords:
         this->arrangeRetina();
+        // Set the random number generator parameters
+        if (this->G_noise != scf(0.0)) {
+            this->gamma_noise = new RandNormal<Flt> (scf(0.0), this->G_noise);
+        }
         // Now, from ret_coords, populate gammas, assuming two, orthogonal morphogen
         // fields which are noisy.
         this->setupGammas();
         // the rest of the init chain has to be called AFTER gammas are set up
-        RD_James_dncomp<Flt>::init();
+        PARENTCLASS<Flt>::init();
     }
 
 private:
@@ -90,7 +112,12 @@ private:
     void setupGammas (void) {
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
-                this->setGamma (m_idx, i, this->G * this->ret_coords[i][m_idx]);
+                // With noise on gammas?
+                if (this->G_noise == scf(0.0)) {
+                    this->setGamma (m_idx, i, this->G * (this->ret_coords[i][m_idx]));
+                } else {
+                    this->setGamma (m_idx, i, this->G * (this->ret_coords[i][m_idx] + this->gamma_noise->get()));
+                }
             }
         }
         // Make a map of name to float id value

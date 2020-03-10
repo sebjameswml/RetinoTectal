@@ -140,9 +140,10 @@ int main (int argc, char **argv)
     const FLT contour_threshold = conf.getDouble ("contour_threshold", 0.6);
     const double D = conf.getDouble ("D", 0.1);
     const double G = conf.getDouble ("G", 1.0);
+    const double G_noise = conf.getDouble ("G_noise", 0.0);
     const FLT k = conf.getDouble ("k", 3.0);
-    const FLT l = conf.getDouble ("l", 1.0);
-    const FLT m = conf.getDouble ("m", 1e-8);
+    //const FLT l = conf.getDouble ("l", 1.0);
+    //const FLT m = conf.getDouble ("m", 1e-8);
     const FLT alpha = conf.getDouble ("alpha", 3.0);
     const FLT beta = conf.getDouble ("beta", 20.0);
     const FLT epsilon = conf.getDouble ("epsilon", 150.0);
@@ -151,16 +152,6 @@ int main (int argc, char **argv)
 
     // Number of axons is the N variable
     unsigned int N_Axons =  conf.getUInt ("N", 0);
-
-    // Retino-tectal projections. Same as number of hexes?
-#if 0
-    const Json::Value rts = conf.getArray ("rt");
-    if (N_Axons == 0) {
-        cerr << "Zero retinotectal axons makes no sense for this simulation. Exiting."
-             << endl;
-        return 1;
-    }
-#endif
 
     // Guidance molecule array of parameters:
     const Json::Value guid = conf.getArray("guidance");
@@ -224,10 +215,11 @@ int main (int argc, char **argv)
     RD.allocate();
     // After allocate(), we can set up the simulation parameters:
     RD.set_D (D);
-    RD.l = l;
-    RD.m = m;
-    RD.E = static_cast<FLT>(0.0);
+    //RD.l = l;
+    //RD.m = m;
+    //RD.E = static_cast<FLT>(0.0);
     RD.G = G;
+    RD.G_noise = G_noise;
     RD.contour_threshold = contour_threshold;
     RD.k = k;
     RD.alpha_ = alpha;
