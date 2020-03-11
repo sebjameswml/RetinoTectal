@@ -2,7 +2,6 @@
  * Retino-tectal system. This specialization inits all the RT projections.
  */
 
-//#include "rd_james_dncomp.h"
 #include "rd_barrel.h"
 #include <morph/MathAlgo.h>
 using morph::MathAlgo;
@@ -18,11 +17,8 @@ using std::cos;
 
 #define scf(a) static_cast<Flt>(a)
 
-//#define PARENTCLASS RD_James_dncomp
-#define PARENTCLASS RD_Barrel
-
 template <class Flt>
-class RD_RetTec : public PARENTCLASS<Flt>
+class RD_RetTec : public RD_Barrel<Flt>
 {
 public:
     /*!
@@ -62,7 +58,7 @@ public:
     RandNormal<Flt>* gamma_noise = (RandNormal<Flt>*)0;
 
     RD_RetTec (void)
-        : PARENTCLASS<Flt>() {
+        : RD_Barrel<Flt>() {
     }
 
     ~RD_RetTec (void) {
@@ -72,11 +68,11 @@ public:
     }
 
     virtual void allocate (void) {
-        PARENTCLASS<Flt>::allocate();
+        RD_Barrel<Flt>::allocate();
     }
 
     virtual void init (void) {
-        // Set up alpha, beta, epsilon (before PARENTCLASS::init)
+        // Set up alpha, beta, epsilon (before RD_Barrel::init)
         this->setupPerNParams();
         // This populates ret_coords:
         this->arrangeRetina();
@@ -88,7 +84,7 @@ public:
         // fields which are noisy.
         this->setupGammas();
         // the rest of the init chain has to be called AFTER gammas are set up
-        PARENTCLASS<Flt>::init();
+        RD_Barrel<Flt>::init();
     }
 
 private:

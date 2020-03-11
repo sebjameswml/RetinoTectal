@@ -544,17 +544,7 @@ public:
         // Having computed gradients, build this->g; has to be done once only. Note
         // that a sigmoid is applied so that g(x) drops to zero around the boundary of
         // the domain.
-        for (unsigned int i=0; i<this->N; ++i) {
-            for (auto h : this->hg->hexen) {
-                // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
-                Flt bSig = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
-                for (unsigned int m = 0; m<this->M; ++m) {
-                    this->g[m][i][0][h.vi] += (this->gamma[m][i] * this->grad_rho[m][0][h.vi]) * bSig;
-                    this->g[m][i][1][h.vi] += (this->gamma[m][i] * this->grad_rho[m][1][h.vi]) * bSig;
-                }
-            }
-        }
-
+        this->build_g();
         this->compute_divg_over3d();
 
         // Now compute sum of a and record this as sum_a_init.
@@ -1011,6 +1001,22 @@ public:
             dci_dt[h] = (this->betaterm[i][h] - this->alpha[i] * f[h]);
         }
         return dci_dt;
+    }
+
+    /*!
+     * Build g from the gradient of rho and the gammas.
+     */
+    void build_g (void) {
+        for (unsigned int i=0; i<this->N; ++i) {
+            for (auto h : this->hg->hexen) {
+                // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
+                Flt bSig = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
+                for (unsigned int m = 0; m<this->M; ++m) {
+                    this->g[m][i][0][h.vi] += (this->gamma[m][i] * this->grad_rho[m][0][h.vi]) * bSig;
+                    this->g[m][i][1][h.vi] += (this->gamma[m][i] * this->grad_rho[m][1][h.vi]) * bSig;
+                }
+            }
+        }
     }
 
     /*!
