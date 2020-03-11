@@ -228,12 +228,15 @@ out~\cite{sperry_chemoaffinity_1963,goodhill_retinotectal_1999,goodhill_developm
 
 \section{Model}
 
-The initial model is very similar to that in the Barrels paper. However,
-instead of providing interaction parameters ($\gamma_{i,j}$) in a configuration
-file, I allow the config to specify $N$ neurons originating in the retina; I
-automatically arrange these in a radially symmetric pattern, and then
-automatically obtain the $gamma$ parameters from the neuron locations within
-the pattern.
+The initial model is derived from the one in the Barrels
+paper~\cite{james_modelling_2020} which is found
+in \code{sim/rd\_barrel.h}. The specialization of \code{RD\_Barrel} can be
+found in \code{sim/rd\_rettec.h}, with main code file \code{rettec.cpp}. Here,
+instead of providing interaction parameters ($\gamma_{i,j}$) in a
+configuration file, I use only the parameter $N$, which in this context is the
+number of neurons originating in the retina. I automatically arrange these $N$
+retinal neurons in a radially symmetric pattern. I then obtain the $gamma$
+parameters from the neuron locations within the pattern.
 
 \subsection{Configurations}
 
@@ -244,7 +247,92 @@ develop. Larger N also generally requires a smaller diffusion constant
 $D$. I'm experimenting with $\epsilon$, the competition parameter, which, if
 too high causes the retinotopy to degrade during the simulation.
 
+\subsection{Noise}
 
+I wish to examine the effect of noise on the arrangement of axons on the
+tectum that results from axon guidance. I assume that there is no noise in the
+locations of the retinal neurons which serve as the origin of the interaction
+parameters; this remains a symmetric, ordered pattern.
+
+The hypothesis which the model is based on is that the interaction parameters
+are derived from the positions of the neurons on the source tissue (the
+retina) and that there are signalling molecule gradients which provide the
+required coordinate axes. Thus, the first source of noise would be in the
+sampling of these gradients and hence on the interaction parameters which are
+carried with the efferent axons to the tectum. This noise would be expected to
+be fixed after the axons had grown away from the retina.
+
+On arriving at the tectum, axon growth cones must determine their direction of
+movement. The model encapsulates the quantitative hypotheses that growth cone
+movement is a combination of diffusion and guidance. The guidance is subject
+to sampling error and thus a second source of noise can be introduced to the
+model. This noise varies with time during the simulation and can be considered
+to have two contributions; one from variations in the true expression level of
+the signalling gradient and one from sampling error measuring it. We will
+combine these into a single error.
+
+The system equations are modified as follows. Starting from the branching equation
+
+\begin{equation} \label{eq:da}
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right) - \frac{\partial c_i}{\partial t} + \chi_i,
+\end{equation}
+
+the term for the divergence of $\mb{J}$ can be written:
+%
+\begin{equation}
+  \label{eq:divJ}
+  \nabla\vcdot\mb{J}_i(\mb{x},t) = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right).
+\end{equation}
+%
+In the barrels model, each $\rho_j(\mb{x})$ was assumed static, allowing the
+definition of a time-independent $\mb{g}_i(\mb{x})$:
+%
+\begin{equation}
+\mb{g}_i(\mb{x}) \equiv \sum_{j=1}^{M} \gamma_{i,j} \nabla\rho_j(\mb{x}).
+\end{equation}
+%
+Here, we represent the time-dependence of the signalling molecule expression
+by noting that $\rho$ is now a function of time.  The error which the growth
+cones make in sampling $\rho$ and estimating $\nabla\rho_j(\mb{x})$ is
+$\xi_\rho(t)$:
+%
+\begin{equation}
+\mb{g}_i(\mb{x},t) \equiv \sum_{j=1}^{M} \gamma_{i,j} \big( \nabla\rho_j(\mb{x},t)
++ \xi_\rho(t) \big).
+\end{equation}
+%
+One problem with this representation is that the equations represent a
+population model. Within one spatial element of the descretized solution of
+the differential equations, the error, $\xi_\rho(t)$ can have only one value at
+time $t$; this value is applied to all the individual axon growth cones that
+are represented by that element. Nonetheless, it's a useful, and fairly simple
+way to represent the guidance error in the system. In practice, we ignore the
+variation in $\rho_j$ and write
+%
+\begin{equation}
+\mb{g}_i(\mb{x},t) \equiv \sum_{j=1}^{M} \gamma_{i,j} \big( \nabla\rho_j(\mb{x})
++ \xi_\rho(t) \big).
+\end{equation}
+
+$\xi_\rho(t)$ will be included in the model as a function returning numbers sampled
+from a normal distribution with mean 0 and standard deviation $\sigma_\rho$.
+
+The systematic error in $\gamma_{i,j}$ will be applied at setup time. The
+symmetric gamma values will first be derived from the symmetric layout of the
+retinal neurons, then a normally distributed perturbation will be applied to
+each $\gamma_{i,j}$.
+
+For retinal neurons with two-dimensional coordinates $\mb{r}_i$, $\gamma$ is
+given (in the absence of noise) by
+$\gamma_{i,0} = G\,|\mb{r}_i| \mb{r}_i \cdot \hat{\mb{x}}$ and
+$\gamma_{i,1} = G\,|\mb{r}_i| \mb{r}_i \cdot \hat{\mb{y}}$, where
+$\hat{\mb{x}}$ and $\hat{\mb{y}}$ are unit vectors, and $G$ is simply a gain
+on $\gamma$. With noise, these become
+$\gamma_{i,0} = G\,\big(\xi_\gamma |\mb{r}_i| \mb{r}_i \cdot \hat{\mb{x}} \big)$ and
+$\gamma_{i,1} = G\,\big(\xi_\gamma |\mb{r}_i| \mb{r}_i \cdot \hat{\mb{y}} \big)$
+
+$\xi_\gamma$ is drawn from a normal distribution with mean 0 and standard
+deviation $\sigma_\rho$.
 %
 % BIBLIOGRAPHY
 %
