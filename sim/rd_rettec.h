@@ -15,6 +15,8 @@ using std::abs;
 using std::sin;
 using std::cos;
 
+#define noise_on_g 1
+
 #define scf(a) static_cast<Flt>(a)
 
 template <class Flt>
@@ -45,25 +47,37 @@ public:
     Flt ret_endangle = scf(morph::TWO_PI_D);
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
     vector<array<Flt, 2>> ret_coords;
-    //! Store the radii which can be passed to a visualization to give a colourmap indication of the radius.
+    //! Store the radii which can be passed to a visualization to give a colourmap
+    //! indication of the radius.
     vector<Flt> ret_coords_radii;
-    //! The ring-to-ring distance; also the approximate distance between points on each ring.
+    //! The ring-to-ring distance; also the approximate distance between points on
+    //! each ring.
     Flt ring_d = 0;
     //@}
 
-    /*!
-     * The noise to apply to the gammas. This is the sigma of a normal distribution of mean 0.
-     */
-    Flt G_noise = static_cast<Flt>(0.0);
+    //! A random distribution of noise for setting up the gamma values from retinal
+    //! neuron positions.
     RandNormal<Flt>* gamma_noise = (RandNormal<Flt>*)0;
+    //! The standard deviation of the gamma_noise; noise to apply to the gammas. This
+    //! is the sigma of a normal distribution of mean 0.
+    Flt sigma_gamma = static_cast<Flt>(0.0);
+
+    //! A random distribution of noise to add to the determination of the gradient of
+    //! rho.
+    RandNormal<Flt>* rho_noise = (RandNormal<Flt>*)0;
+    //! Standard deviation for rho_noise
+    Flt sigma_rho = static_cast<Flt>(0.0);
 
     RD_RetTec (void)
         : RD_Barrel<Flt>() {
     }
 
     ~RD_RetTec (void) {
-        if (this->G_noise != scf(0.0)) {
+        if (this->sigma_gamma != scf(0.0)) {
             delete this->gamma_noise;
+        }
+        if (this->sigma_rho != scf(0.0)) {
+            delete this->rho_noise;
         }
     }
 
@@ -77,8 +91,11 @@ public:
         // This populates ret_coords:
         this->arrangeRetina();
         // Set the random number generator parameters
-        if (this->G_noise != scf(0.0)) {
-            this->gamma_noise = new RandNormal<Flt> (scf(0.0), this->G_noise);
+        if (this->sigma_gamma != scf(0.0)) {
+            this->gamma_noise = new RandNormal<Flt> (scf(0.0), this->sigma_gamma);
+        }
+        if (this->sigma_rho != scf(0.0)) {
+            this->rho_noise = new RandNormal<Flt> (scf(0.0), this->sigma_rho);
         }
         // Now, from ret_coords, populate gammas, assuming two, orthogonal morphogen
         // fields which are noisy.
@@ -87,7 +104,7 @@ public:
         RD_Barrel<Flt>::init();
     }
 
-private:
+protected:
 
     void setupPerNParams (void) {
         // Index through thalamocortical fields, setting params:
@@ -109,7 +126,7 @@ private:
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
                 // With noise on gammas?
-                if (this->G_noise == scf(0.0)) {
+                if (this->sigma_gamma == scf(0.0)) {
                     this->setGamma (m_idx, i, this->G * (this->ret_coords[i][m_idx]));
                 } else {
                     this->setGamma (m_idx, i, this->G * (this->ret_coords[i][m_idx] + this->gamma_noise->get()));
@@ -266,5 +283,122 @@ private:
         cout << __FUNCTION__ << ": Done." << endl;
 #endif
     }
+
+#ifdef noise_on_g
+public:
+    //! Override step() to recompute g on each sim step
+    virtual void step (void) {
+        this->stepCount++;
+        // 0. Rebuild g, with a new set of random samples, if necessary
+        if (this->sigma_rho != scf(0.0)) {
+            this->build_g();
+            this->compute_divg_over3d();
+        }
+        // 1. Compute Karb2004 Eq 3. (coupling between connections made by each TC type)
+        this->compute_n();
+        // 2. Call Runge Kutta numerical integration code
+        this->integrate_a();
+        this->summation_a();
+        this->integrate_c();
+        //this->spatialAnalysisComputed = false;
+    }
+
+protected:
+    /*!
+     * Build g from the gradient of rho and the gammas, with an option for a noisy calculation.
+     */
+    void build_g (void) {
+
+        // First zero g.
+        this->zero_vector_vector_array_vector (this->g, this->N, this->M);
+
+        if (this->sigma_rho == scf(0.0)) {
+            // No noise
+            for (unsigned int i=0; i<this->N; ++i) {
+                for (auto h : this->hg->hexen) {
+                    for (unsigned int m = 0; m<this->M; ++m) {
+                        this->g[m][i][0][h.vi] += (this->gamma[m][i]
+                                                   * this->grad_rho[m][0][h.vi]
+                                                   * this->bSig[h.vi]);
+                        this->g[m][i][1][h.vi] += (this->gamma[m][i]
+                                                   * this->grad_rho[m][1][h.vi]
+                                                   * this->bSig[h.vi]);
+                    }
+                }
+            }
+        } else {
+            // Adds noise
+            for (unsigned int i=0; i<this->N; ++i) {
+                for (auto h : this->hg->hexen) {
+                    for (unsigned int m = 0; m<this->M; ++m) {
+                        this->g[m][i][0][h.vi] += (this->gamma[m][i]
+                                                   * (this->rho_noise->get()
+                                                      + this->grad_rho[m][0][h.vi])
+                                                   * this->bSig[h.vi]);
+                        this->g[m][i][1][h.vi] += (this->gamma[m][i]
+                                                   * (this->rho_noise->get()
+                                                      + this->grad_rho[m][1][h.vi])
+                                                   * this->bSig[h.vi]);
+                    }
+                }
+            }
+        }
+    }
+
+    /*!
+     * Computes the "flux of axonal branches" term, J_i(x) (Eq 4)
+     *
+     * Inputs: this->g, fa (which is this->a[i] or a q in the RK algorithm), this->D,
+     * @a i, the RT type.  Helper functions: spacegrad2D().  Output: this->divJ
+     *
+     * This is an overload of the instance in rd_barrel.h. It adds noise to the
+     * direction of the contribution provided by the static vector field g (which is
+     * due to the molecular signalling gradients on the tectum).
+     */
+    virtual void compute_divJ (vector<Flt>& fa, unsigned int i) {
+
+        // Compute gradient of a_i(x), for use computing the third term, below.
+        this->spacegrad2D (fa, this->grad_a[i]);
+
+        // Three terms to compute; see Eq. 17 in methods_notes.pdf
+#pragma omp parallel for //schedule(static) // This was about 10% faster than schedule(dynamic,50).
+        for (unsigned int hi=0; hi<this->nhex; ++hi) {
+
+            // 1. The D Del^2 a_i term. Eq. 18.
+            // Compute the sum around the neighbours
+            Flt thesum = -6 * fa[hi];
+
+            thesum += fa[(HAS_NE(hi)  ? NE(hi)  : hi)];
+            thesum += fa[(HAS_NNE(hi) ? NNE(hi) : hi)];
+            thesum += fa[(HAS_NNW(hi) ? NNW(hi) : hi)];
+            thesum += fa[(HAS_NW(hi)  ? NW(hi)  : hi)];
+            thesum += fa[(HAS_NSW(hi) ? NSW(hi) : hi)];
+            thesum += fa[(HAS_NSE(hi) ? NSE(hi) : hi)];
+
+            // Multiply sum by 2D/3d^2 to give term1
+            Flt term1 = this->twoDover3dd * thesum;
+
+            // 2. The (a div(g)) term.
+            Flt term2 = 0.0;
+
+            // 3. Third term is this->g . grad a_i. Should not contribute to J, as
+            // g(x) decays towards boundary.
+            Flt term3 = 0.0;
+
+            // In previous code, divg_over3d was computed once only, at the start of
+            // the sim. Here, we need to compute it on every step.
+            for (unsigned int m =0 ; m < this->M; ++m) {
+                if (this->stepCount >= this->guidance_time_onset[m]) {
+                    // g contributes to term2
+                    term2 += fa[hi] * this->divg_over3d[m][i][hi];
+                    // and to term3
+                    term3 += this->g[m][i][0][hi] * this->grad_a[i][0][hi] + (this->g[m][i][1][hi] * this->grad_a[i][1][hi]);
+                }
+            }
+
+            this->divJ[i][hi] = term1 - term2 - term3;
+        }
+    }
+#endif
 
 }; // RD_RetTec

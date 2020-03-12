@@ -284,6 +284,11 @@ public:
     alignas(vector<Flt>) vector<Flt> v_asum;
     //@}
 
+    /*!
+     * The fall-off multiplier used towards the boundary of the field
+     */
+    alignas(vector<Flt>) vector<Flt> bSig;
+
     //! Inter-axon-type competition
     //@{
     //! The power to which a_j is raised for the inter-TC axon competition term.
@@ -422,6 +427,8 @@ public:
         this->resize_vector_param (this->sum_a, this->N);
         this->resize_vector_param (this->sum_a_init, this->N);
 
+        this->resize_vector_variable (this->bSig);
+
         // rhomethod is a vector of size M
         this->rhoMethod.resize (this->M);
         for (unsigned int j=0; j<this->M; ++j) {
@@ -472,6 +479,8 @@ public:
         this->zero_vector_array_vector (this->grad_a, this->N);
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
         this->zero_vector_array_vector (this->J, this->N);
+
+        this->zero_vector_variable (this->bSig);
 
         // Initialise a with noise
         cout << "initmasks.size(): " << this->initmasks.size() << endl;
@@ -544,6 +553,7 @@ public:
         // Having computed gradients, build this->g; has to be done once only. Note
         // that a sigmoid is applied so that g(x) drops to zero around the boundary of
         // the domain.
+        this->build_bSig();
         this->build_g();
         this->compute_divg_over3d();
 
@@ -962,7 +972,7 @@ public:
         }
     }
 
-    //! Override step() as have to compute div_n and grad_n
+    //! One step of the simulation
     virtual void step (void) {
         this->stepCount++;
         // 1. Compute Karb2004 Eq 3. (coupling between connections made by each TC type)
@@ -1003,17 +1013,27 @@ public:
         return dci_dt;
     }
 
+    // Compute bSig vector, which need be carried out once only.
+    void build_bSig (void) {
+        for (auto h : this->hg->hexen) {
+            // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
+            this->bSig[h.vi] = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
+        }
+    }
+
     /*!
      * Build g from the gradient of rho and the gammas.
      */
-    void build_g (void) {
+    virtual void build_g (void) {
+
+        // First zero g out
+        this->zero_vector_vector_array_vector (this->g, this->N, this->M);
+
         for (unsigned int i=0; i<this->N; ++i) {
             for (auto h : this->hg->hexen) {
-                // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
-                Flt bSig = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
                 for (unsigned int m = 0; m<this->M; ++m) {
-                    this->g[m][i][0][h.vi] += (this->gamma[m][i] * this->grad_rho[m][0][h.vi]) * bSig;
-                    this->g[m][i][1][h.vi] += (this->gamma[m][i] * this->grad_rho[m][1][h.vi]) * bSig;
+                    this->g[m][i][0][h.vi] += (this->gamma[m][i] * this->grad_rho[m][0][h.vi]) * this->bSig[h.vi];
+                    this->g[m][i][1][h.vi] += (this->gamma[m][i] * this->grad_rho[m][1][h.vi]) * this->bSig[h.vi];
                 }
             }
         }

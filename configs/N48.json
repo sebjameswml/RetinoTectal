@@ -14,22 +14,43 @@
     "D" : 0.03,
     // gamma gain
     "G" : 1.0,
+
+    // gamma noise. The std deviation of a 0-mean normal dist which is used to perturb
+    // each gamma.
+    //
+    // With sigma_rho==0; 0.1 makes a clear, visual disruption to the pattern
+    "sigma_gamma" : 0.01,
+
+    // rho noise - the growth cones' sampling noise on direction of travel. Note that
+    // this has a performance hit, more or less doubling the time required for
+    // simulation.
+    //
+    // With sigma_gamma==0, 10 begins to disrupt pattern formation to begin with,
+    // possibly slowing pattern formation. 20 heavily disrupts the pattern, which
+    // still fails to form after 2x as many steps as the usual simulation. At 100,
+    // simulation fails numerically.
+    "sigma_rho" : 0,
+
     // Exponent on a
     "k" : 3,
-    "N" : 48,
+    "N" : 56,
     "alpha" : 20,
     "beta" : 3,
     "epsilon" : 350,
+
+
     // Timestep. Defaults to 0.00001 if omitted here
     "dt" : 0.0005,
 
     "contour_threshold" : 0.5,
 
     // Visualization parameters (ignored by computation-only binaries)
-    "win_width_contours": 800,
+    "win_width": 1600,
+    "win_height": 600,
     "plotevery": 500,
-    "vidframes": false,    // If true, number video frame saves consecutively, rather than by simulation step number
-    "rhoInit": 4, // Larger to zoom out
+    "vidframes": false,    // If true, number video frame saves consecutively, rather
+                           // than by simulation step number
+    "rhoInit": 1, // Larger to zoom out
     //
     "plot_guide" : true,
     "plot_contours" : true,

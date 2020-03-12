@@ -140,7 +140,12 @@ int main (int argc, char **argv)
     const FLT contour_threshold = conf.getDouble ("contour_threshold", 0.6);
     const double D = conf.getDouble ("D", 0.1);
     const double G = conf.getDouble ("G", 1.0);
-    const double G_noise = conf.getDouble ("G_noise", 0.0);
+    // sigma_gamma is the noise in determining gamma params from retinal neuron
+    // positions. Applied once only at simulation setup.
+    const double sigma_gamma = conf.getDouble ("sigma_gamma", 0.0);
+    // sigma_rho is the noise introduced into the determination of the signalling
+    // gradient. Applied on every simulation step.
+    const double sigma_rho = conf.getDouble ("sigma_rho", 0.0);
     const FLT k = conf.getDouble ("k", 3.0);
     //const FLT l = conf.getDouble ("l", 1.0);
     //const FLT m = conf.getDouble ("m", 1e-8);
@@ -176,7 +181,8 @@ int main (int argc, char **argv)
     const bool plot_guidegrad = conf.getBool ("plot_guidegrad", false);
 
     const unsigned int win_width = conf.getUInt ("win_width", 1025UL);
-    unsigned int win_height = static_cast<unsigned int>(0.8824f * (float)win_width);
+    unsigned int win_height_default = static_cast<unsigned int>(0.8824f * (float)win_width);
+    const unsigned int win_height = conf.getUInt ("win_height", win_height_default);
 
     // Set up the morph::Visual object
     Visual v1 (win_width, win_height, "Retino-tectal simulation");
@@ -219,7 +225,8 @@ int main (int argc, char **argv)
     //RD.m = m;
     //RD.E = static_cast<FLT>(0.0);
     RD.G = G;
-    RD.G_noise = G_noise;
+    RD.sigma_gamma = sigma_gamma;
+    RD.sigma_rho = sigma_rho;
     RD.contour_threshold = contour_threshold;
     RD.k = k;
     RD.alpha_ = alpha;
