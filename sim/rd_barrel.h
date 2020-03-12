@@ -3,7 +3,9 @@
  * BarrelEmerge model. This merges together code in RD_James, RD_James_divnorm and
  * RD_James_dncomp (see https://github.com/ABRG-Models/BarrelEmerge)
  */
-#include "morph/RD_Base.h"
+#include <morph/RD_Base.h>
+
+#include <morph/ShapeAnalysis.h>
 
 /*!
  * Enumerates the way that the guidance molecules are set up
@@ -301,11 +303,22 @@ public:
     alignas(Flt) Flt epsilon_;
 
     //! Used as a temporary variable.
-    vector<Flt> eps_all; // sum of all a^l
-    vector<Flt> eps_i; // sum of a^l for TC index i
-    vector<Flt> eps; // eps_all - eps_i
+    alignas(alignof(vector<Flt>)) vector<Flt> eps_all; // sum of all a^l
+    alignas(alignof(vector<Flt>)) vector<Flt> eps_i; // sum of a^l for TC index i
+    alignas(alignof(vector<Flt>)) vector<Flt> eps; // eps_all - eps_i
     //@}
 
+    //! A per-hex variable. Holds the ID (as a Flt) of the index into c which has the
+    //! maximal value of c in each hex.
+    alignas(alignof(vector<Flt>)) vector<Flt> regions;
+
+    //! The centroids of the regions. key is the "ID" of the region - a Flt between 0
+    //! and 1, with values separated by 1/N.
+    map<Flt, pair<Flt, Flt> > reg_centroids;
+    //! The area of each region, by Flt ID (area in number of hexes).
+    map<Flt, int> region_areas;
+    //! Set true when the spatial analysis has been computed
+    bool spatialAnalysisComputed = false;
     /*!
      * ALIGNAS REGION ENDS.
      *
@@ -316,16 +329,6 @@ public:
      * Sets the function of the guidance molecule method
      */
     vector<FieldShape> rhoMethod;
-
-#if 0
-    //! axonally identified regions
-    vector<Flt> regions;
-    //! The centroids of the regions. key is the "ID" of the region - a Flt between 0
-    //! and 1, with values separated by 1/N.
-    map<Flt, pair<Flt, Flt> > reg_centroids;
-    //! The area of each region, by Flt ID (area in number of hexes).
-    map<Flt, int> region_areas;
-#endif
 
     /*!
      * Simple constructor; no arguments. Just calls RD_Base constructor
@@ -460,7 +463,7 @@ public:
     virtual void init (void) {
 
         this->stepCount = 0;
-        //this->spatialAnalysisComputed = false;
+        this->spatialAnalysisComputed = false;
 
         // Zero c and n and other temporary variables
         this->zero_vector_vector (this->c, this->N);
@@ -683,7 +686,7 @@ public:
         data.add_contained_vals ("/n", this->n);
 
         // "identified regions" here (as same size as n, c etc)
-        //data.add_contained_vals ("/dr", this->regions);
+        data.add_contained_vals ("/dr", this->regions);
     }
 
     void saveHG (void) {
@@ -692,7 +695,7 @@ public:
         this->hg->save(hgname.str().c_str());
     }
 
-#if 0
+#if 1
     // Save out spatial analysis results
     void saveRegions (void) {
         stringstream fname;
@@ -981,7 +984,7 @@ public:
         this->integrate_a();
         this->summation_a();
         this->integrate_c();
-        //this->spatialAnalysisComputed = false;
+        this->spatialAnalysisComputed = false;
     }
 
     /*!
@@ -1257,11 +1260,11 @@ public:
         }
     }
 
-#if 0
+#if 1
     /*!
      * Carry out any sensible spatial analysis required
      */
-    void spatialanalysis (void) {
+    void spatialAnalysis (void) {
 
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
@@ -1271,11 +1274,14 @@ public:
 
         // Clear out previous results from an earlier timestep
         this->regions.clear();
-        this->vertices.clear();
-        // Find regions. Based on an 'ID field'.
-        //this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
+        //this->vertices.clear(); // Not interested in a Dirichlet analysis for this
+        // work, but it could be done Find regions. Based on an 'ID field'. Note that
+        // although this is called dirichlet_regions, there's nothing specifically
+        // Dirichlet-analysis about the function. It just finds the
+        // i-that-give-the-max-of arg number 2 (this->c).
+        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
         // Compute centroids of regions; used to determine aligned-ness of the barrels
-        //this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
+        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
 
         this->spatialAnalysisComputed = true;
     }

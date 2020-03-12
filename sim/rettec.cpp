@@ -6,10 +6,6 @@
  * Date: Feb 2020.
  */
 
-/*!
- * This will be passed as the template argument for RD_Plot and RD and
- * should be defined when compiling.
- */
 #ifndef FLT
 // Check CMakeLists.txt to change to double or float
 # error "Please define FLT when compiling (hint: See CMakeLists.txt)"
@@ -24,17 +20,27 @@
 #include <limits>
 #include <cmath>
 #include <chrono>
+using namespace std;
 using namespace std::chrono;
 using std::chrono::steady_clock;
 
-//! Include the relevant reaction diffusion class
+//! Our Retinotectal reaction diffusion class
 #include "rd_rettec.h"
 
 #include "morph/ColourMap.h"
 using morph::ColourMapType;
 
+// Shape analysis utilities
 #include "morph/ShapeAnalysis.h"
 using morph::ShapeAnalysis;
+
+//! Included for directory manipulation code
+#include <morph/tools.h>
+using morph::Tools;
+
+//! A jsoncpp-wrapping class for configuration.
+#include <morph/Config.h>
+using morph::Config;
 
 #ifdef COMPILE_PLOTTING
 # include <GLFW/glfw3.h>
@@ -44,11 +50,11 @@ using morph::Visual;
 using morph::MathAlgo;
 
 //! Helper function to save PNG images
-void savePngs (const std::string& logpath, const std::string& name,
+void savePngs (const string& logpath, const string& name,
                unsigned int frameN, Visual& v) {
-    std::stringstream ff1;
+    stringstream ff1;
     ff1 << logpath << "/" << name<< "_";
-    ff1 << std::setw(5) << std::setfill('0') << frameN;
+    ff1 << setw(5) << setfill('0') << frameN;
     ff1 << ".png";
     v.saveImage (ff1.str());
 }
@@ -63,20 +69,12 @@ vector<vector<FLT> > separateVectorField (vector<array<vector<FLT>, 2> >& f,
     }
     return vf;
 }
-#endif
-
-//! Included for directory manipulation code
-#include "morph/tools.h"
-
-//! A jsoncpp-wrapping class for configuration.
-#include "morph/Config.h"
-
-using namespace std;
+#endif // COMPILE_PLOTTING
 
 int main (int argc, char **argv)
 {
     // Randomly set the RNG seed
-    srand (morph::Tools::randomSeed());
+    srand (Tools::randomSeed());
 
     if (argc < 2) {
         cerr << "Usage: " << argv[0] << " /path/to/params.json [/path/to/logdir]" << endl;
@@ -85,7 +83,7 @@ int main (int argc, char **argv)
     string paramsfile (argv[1]);
 
     // Set up a morph::Config object for reading configuration
-    morph::Config conf(paramsfile);
+    Config conf(paramsfile);
     if (!conf.ready) {
         cerr << "Error setting up JSON config: " << conf.emsg << endl;
         return 1;
@@ -112,9 +110,9 @@ int main (int argc, char **argv)
         // Using json filename as logpath
         string justfile = paramsfile;
         // Remove trailing .json and leading directories
-        vector<string> pth = morph::Tools::stringToVector (justfile, "/");
+        vector<string> pth = Tools::stringToVector (justfile, "/");
         justfile = pth.back();
-        morph::Tools::searchReplace (".json", "", justfile);
+        Tools::searchReplace (".json", "", justfile);
         // Use logbase as the subdirectory into which this should go
         logbase = conf.getString ("logbase", "logs/");
         if (logbase.back() != '/') {
@@ -163,7 +161,6 @@ int main (int argc, char **argv)
     unsigned int M_GUID = static_cast<unsigned int>(guid.size());
 
 #ifdef COMPILE_PLOTTING
-
     // Parameters from the config that apply only to plotting:
     const unsigned int plotevery = conf.getUInt ("plotevery", 10UL);
     // If true, then write out the logs in consecutive order numbers,
@@ -192,14 +189,7 @@ int main (int argc, char **argv)
     v1.setZDefault (10.0);
     // Make this larger to "scroll in and out of the image" faster
     v1.scenetrans_stepsize = 0.5;
-
-    // Two visuals doesn't "just work"
-    //Visual v2 (win_width, win_height, "Window 2");
-    //v2.zNear = 0.001;
-    //v2.zFar = 50;
-    //v2.fov = 45;
-    //v2.setZDefault (10.0);
-#endif
+#endif // COMPILE_PLOTTING
 
     // Instantiate and set up the model object
     RD_RetTec<FLT> RD;
@@ -221,10 +211,7 @@ int main (int argc, char **argv)
     RD.allocate();
     // After allocate(), we can set up the simulation parameters:
     RD.set_D (D);
-    //RD.l = l;
-    //RD.m = m;
-    //RD.E = static_cast<FLT>(0.0);
-    RD.G = G;
+    RD.G = G; // "gamma gain"
     RD.sigma_gamma = sigma_gamma;
     RD.sigma_rho = sigma_rho;
     RD.contour_threshold = contour_threshold;
@@ -265,9 +252,9 @@ int main (int argc, char **argv)
     RD.init();
 
     // Create a log/png directory if necessary, and exit on any failures.
-    if (morph::Tools::dirExists (logpath) == false) {
-        morph::Tools::createDir (logpath);
-        if (morph::Tools::dirExists (logpath) == false) {
+    if (Tools::dirExists (logpath) == false) {
+        Tools::createDir (logpath);
+        if (Tools::dirExists (logpath) == false) {
             cerr << "Failed to create the logpath directory "
                  << logpath << " which does not exist."<< endl;
             return 1;
@@ -276,9 +263,9 @@ int main (int argc, char **argv)
         // Directory DOES exist. See if it contains a previous run and
         // exit without overwriting to avoid confusion.
         if (overwrite_logs == false
-            && (morph::Tools::fileExists (logpath + "/params.json") == true
-                || morph::Tools::fileExists (logpath + "/guidance.h5") == true
-                || morph::Tools::fileExists (logpath + "/positions.h5") == true)) {
+            && (Tools::fileExists (logpath + "/params.json") == true
+                || Tools::fileExists (logpath + "/guidance.h5") == true
+                || Tools::fileExists (logpath + "/positions.h5") == true)) {
             cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
                  << "Please clean it out manually, choose another directory or set\n"
                  << "overwrite_logs to true in your parameters config JSON file." << endl;
@@ -295,18 +282,16 @@ int main (int argc, char **argv)
     }
 
 #ifdef COMPILE_PLOTTING
-
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
     const array<float, 4> scaling = { _m/10, _c/10, _m, _c };
 
-    // HERE, add HexGridVisuals...
-    unsigned int c_ctr_grid = 0; // one only
+    // Identifiers for the various VisualModels that will be added to the Visual scene
+    unsigned int c_ctr_grid = 0;
     unsigned int a_ctr_grid = 0;
-#if 0
     unsigned int dr_grid = 0;
-#endif
+
     vector<unsigned int> guide_grids;
     vector<unsigned int> guidegrad_grids;
 
@@ -364,23 +349,21 @@ int main (int argc, char **argv)
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
-        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::RainbowZeroBlack);
+        c_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, ColourMapType::RainbowZeroBlack);
         xzero += RD.hg->width();
     }
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, morph::ColourMapType::RainbowZeroWhite);
+        a_ctr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, ColourMapType::RainbowZeroWhite);
         xzero += (1.2 * RD.hg->width());
     }
 
-#if 0
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
-        dr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling);
+        dr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, ColourMapType::Rainbow);
         xzero +=  (1.2 * RD.hg->width());
     }
-#endif
 
     // guidance expression
     if (plot_guide) {
@@ -410,9 +393,8 @@ int main (int argc, char **argv)
         for (unsigned int i = 1; i <= RD.N; ++i) {
             neuronColourData.push_back ((float)i/(float)(RD.N+1));
         }
-        cout << "Add scatter visual..." << endl;
         float scatRad = RD.ring_d/10.0f;
-        unsigned int idx = v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData, scatRad, twoScaling, ColourMapType::RainbowZeroBlack);
+        v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData, scatRad, twoScaling, ColourMapType::RainbowZeroBlack);
 
         xzero +=  (1.2 * RD.hg->width());
     }
@@ -457,7 +439,6 @@ int main (int argc, char **argv)
             spatOff[0] -= RD.hg->width();
             spatOff[1] += RD.hg->depth();
         }
-        //xzero += RD.hg->width() + 2.0f;
         xzero +=  (1.5 * RD.hg->width());
     }
 
@@ -468,7 +449,6 @@ int main (int argc, char **argv)
 
     // if using plotting, then set up the render clock
     steady_clock::time_point lastrender = steady_clock::now();
-
 #endif // COMPILE_PLOTTING
 
     // Start the loop
@@ -481,7 +461,6 @@ int main (int argc, char **argv)
         }
 
 #ifdef COMPILE_PLOTTING
-
         if ((RD.stepCount % plotevery) == 0) {
             DBG2("Plot at step " << RD.stepCount);
             // Do a plot of the ctrs as found.
@@ -509,11 +488,10 @@ int main (int argc, char **argv)
             if (plot_n) {
                 v1.updateHexGridVisual (ngrid, RD.n, scaling);
             }
-#if 0
             if (plot_dr) {
+                RD.spatialAnalysis();
                 v1.updateHexGridVisual (dr_grid, RD.regions, ctr_scaling);
             }
-#endif
             // Save to PNG
             if (vidframes) {
                 savePngs (logpath, "sim", framecount, v1);
@@ -541,6 +519,7 @@ int main (int argc, char **argv)
             vector<list<Hex> > sv_ctrs = ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
 
             // If spatial analysis, then add line here to do it
+            RD.spatialAnalysis();
         }
 
         if (RD.stepCount > steps) {
@@ -558,14 +537,13 @@ int main (int argc, char **argv)
     // results were computed with single precision, if 8, then double
     // precision was used. Also save various parameters from the RD system.
     conf.set ("float_width", (unsigned int)sizeof(FLT));
-    string tnow = morph::Tools::timeNow();
+    string tnow = Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("hextohex_d", RD.hextohex_d);
     conf.set ("D", RD.get_D());
     conf.set ("k", RD.k);
     conf.set ("dt", RD.get_dt());
     // Call our function to place git information into root.
-    //morph::Tools::insertGitInfo (conf.root, "sim/");
     conf.insertGitInfo ("sim/");
     // Store the binary name and command argument into root, too.
     if (argc > 0) { conf.set("argv0", argv[0]); }

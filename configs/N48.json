@@ -58,6 +58,7 @@
     "plot_a" : false,
     "plot_c" : false,
     "plot_n" : true,
+    "plot_dr" : true,
 
     "aNoiseGain" : 0.2,
     "aInitialOffset" : 0.2,
