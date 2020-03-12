@@ -181,12 +181,18 @@ int main (int argc, char **argv)
     unsigned int win_height_default = static_cast<unsigned int>(0.8824f * (float)win_width);
     const unsigned int win_height = conf.getUInt ("win_height", win_height_default);
 
+    // Whole-scene offsetting
+    const float x_default = conf.getFloat ("x_default", 0.0f);
+    const float y_default = conf.getFloat ("y_default", 0.0f);
+    const float z_default = conf.getFloat ("z_default", 10.0f);
+
     // Set up the morph::Visual object
     Visual v1 (win_width, win_height, "Retino-tectal simulation");
     v1.zNear = 0.001;
     v1.zFar = 50;
     v1.fov = 45;
-    v1.setZDefault (10.0);
+    v1.setZDefault (z_default);
+    v1.setSceneTransXY (x_default, y_default);
     // Make this larger to "scroll in and out of the image" faster
     v1.scenetrans_stepsize = 0.5;
 #endif // COMPILE_PLOTTING
