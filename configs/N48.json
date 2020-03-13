@@ -51,7 +51,8 @@
                            // than by simulation step number
     "x_default": -3.8,
     "y_default": 0,
-    "z_default": 4,        // Larger to zoom out
+    "z_default": -4,        // Larger/more negative to zoom out
+    "sceneLocked": true,
     //
     "plot_guide" : true,
     "plot_contours" : true,

@@ -185,12 +185,15 @@ int main (int argc, char **argv)
     const float x_default = conf.getFloat ("x_default", 0.0f);
     const float y_default = conf.getFloat ("y_default", 0.0f);
     const float z_default = conf.getFloat ("z_default", 10.0f);
+    // If this is true, then mouse movements won't move the scene around
+    const bool sceneLocked = conf.getBool ("sceneLocked", false);
 
     // Set up the morph::Visual object
     Visual v1 (win_width, win_height, "Retino-tectal simulation");
     v1.zNear = 0.001;
     v1.zFar = 50;
     v1.fov = 45;
+    v1.sceneLocked = sceneLocked;
     v1.setZDefault (z_default);
     v1.setSceneTransXY (x_default, y_default);
     // Make this larger to "scroll in and out of the image" faster
