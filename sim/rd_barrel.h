@@ -1264,7 +1264,7 @@ public:
     /*!
      * Carry out any sensible spatial analysis required
      */
-    void spatialAnalysis (void) {
+    virtual void spatialAnalysis (void) {
 
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {

@@ -15,8 +15,6 @@ using std::abs;
 using std::sin;
 using std::cos;
 
-#define noise_on_g 1
-
 #define scf(a) static_cast<Flt>(a)
 
 template <class Flt>
@@ -47,6 +45,12 @@ public:
     Flt ret_endangle = scf(morph::TWO_PI_D);
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
     vector<array<Flt, 2>> ret_coords;
+    //! The Cartesian coordinates of the equivalent locations of the retinal neurons
+    //! on the tectum. To compute these (from ret_coords) we use ellipse_a and
+    //! ellipse_b.
+    vector<array<Flt, 2>> tec_coords;
+    //! tec_coords - reg_centroids
+    vector<array<Flt, 2>> tec_offsets;
     //! Store the radii which can be passed to a visualization to give a colourmap
     //! indication of the radius.
     vector<Flt> ret_coords_radii;
@@ -228,6 +232,8 @@ protected:
 
         // loop through ringextras and ringlens and generate the coordinates.
         this->ret_coords.resize (this->N);
+        this->tec_coords.resize (this->N);
+        this->tec_offsets.resize (this->N, {0,0});
         this->ret_coords_radii.resize (this->N);
         // "ring index"
         int ri = 0;
@@ -261,7 +267,7 @@ protected:
                 // to start and end on both edges of the pie slice.
                 d_angle = a/scf(dots_in_ring-1);
                 // Start all rings at 0.
-                d_angle_start = scf(0.0);
+                d_angle_start = this->ret_startangle;
             }
 
             // For each dot in the ring:
@@ -269,6 +275,8 @@ protected:
             for (unsigned int dir = 0; dir < dots_in_ring; ++dir) {
                 //cout << "Setting ret_coords["<<ci<<"]\n";
                 this->ret_coords[ci] = { r*cos(phi), r*sin(phi) };
+                // Also set the equivalent elliptical tectal coordinate
+                this->tec_coords[ci] = { r*this->ellipse_a*cos(phi), r*this->ellipse_b*sin(phi) };
                 this->ret_coords_radii[ci] = r;
                 ci++;
                 phi += d_angle;
@@ -276,15 +284,14 @@ protected:
         }
 //#define DEBUG__ 1
 #ifdef DEBUG__
-        cout << "Coordinates:" << endl;
-        for (auto dot : this->ret_coords) {
+        cout << "Tectal coordinates:" << endl;
+        for (auto dot : this->tec_coords) {
             cout << dot[0] << "," << dot[1] << endl;
         }
         cout << __FUNCTION__ << ": Done." << endl;
 #endif
     }
 
-#ifdef noise_on_g
 public:
     //! Override step() to recompute g on each sim step
     virtual void step (void) {
@@ -399,6 +406,39 @@ protected:
             this->divJ[i][hi] = term1 - term2 - term3;
         }
     }
-#endif
 
+#if 1
+public:
+    /*!
+     * Overrides RD_Barrel spatial analysis, adding the tec_coords-reg_centroids
+     * computation
+     */
+    virtual void spatialAnalysis (void) {
+
+        // Don't recompute unnecessarily
+        if (this->spatialAnalysisComputed == true) {
+            DBG ("analysis already computed, no need to recompute.");
+            return;
+        }
+
+        // Clear out previous results from an earlier timestep
+        this->regions.clear();
+        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
+        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
+
+        // Can now do diffs between reg_centroids and tec_coords.
+        for (unsigned int i = 0; i < this->N; ++i) {
+            array<Flt, 2> tc = this->tec_coords[i];
+            pair<Flt, Flt> rc = this->reg_centroids[(Flt)i/(Flt)this->N];
+            cout << "Comparing Tectal coordinate (" << tc[0] << "," << tc[1]
+                 << ") with centroid coord (" << rc.first << "," << rc.second << endl;
+            array<Flt, 2> vec = tc;
+            vec[0] -= rc.first;
+            vec[1] -= rc.second;
+            this->tec_offsets[i] = vec;
+        }
+
+        this->spatialAnalysisComputed = true;
+    }
+#endif
 }; // RD_RetTec

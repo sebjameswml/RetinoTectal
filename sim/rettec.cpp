@@ -106,6 +106,9 @@ int main (int argc, char **argv)
     // If svgpath is empty, then compute an elliptical boundary:
     const float ellipse_a = conf.getFloat ("ellipse_a", 1.0f);
     const float ellipse_b = conf.getFloat ("ellipse_b", 0.7f);
+    // Full origin retina, or just a pie slice?
+    const double ret_startangle = conf.getDouble ("ret_startangle", 0.0);
+    const double ret_endangle = conf.getDouble ("ret_endangle", morph::TWO_PI_D);
     bool overwrite_logs = conf.getBool ("overwrite_logs", false);
     string logpath = conf.getString ("logpath", "fromfilename");
     string logbase = "";
@@ -208,6 +211,10 @@ int main (int argc, char **argv)
     RD.svgpath = svgpath;
     RD.ellipse_a = ellipse_a;
     RD.ellipse_b = ellipse_b;
+
+    RD.ret_startangle = static_cast<FLT>(ret_startangle);
+    RD.ret_endangle = static_cast<FLT>(ret_endangle);
+
     RD.logpath = logpath;
     // NB: Set .N, .M BEFORE RD.allocate().
     RD.N = N_Axons; // Number of RT axons.
