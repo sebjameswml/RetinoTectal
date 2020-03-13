@@ -102,7 +102,10 @@ int main (int argc, char **argv)
     const float hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
     const float hexspan = conf.getFloat ("hexspan", 4.0f);
     const float boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
-    const string svgpath = conf.getString ("svgpath", "./ellipse.svg");
+    const string svgpath = conf.getString ("svgpath", "");
+    // If svgpath is empty, then compute an elliptical boundary:
+    const float ellipse_a = conf.getFloat ("ellipse_a", 1.0f);
+    const float ellipse_b = conf.getFloat ("ellipse_b", 0.7f);
     bool overwrite_logs = conf.getBool ("overwrite_logs", false);
     string logpath = conf.getString ("logpath", "fromfilename");
     string logbase = "";
@@ -203,6 +206,8 @@ int main (int argc, char **argv)
     // Instantiate and set up the model object
     RD_RetTec<FLT> RD;
     RD.svgpath = svgpath;
+    RD.ellipse_a = ellipse_a;
+    RD.ellipse_b = ellipse_b;
     RD.logpath = logpath;
     // NB: Set .N, .M BEFORE RD.allocate().
     RD.N = N_Axons; // Number of RT axons.
