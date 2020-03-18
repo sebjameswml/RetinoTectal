@@ -49,7 +49,7 @@ public:
     //! on the tectum. To compute these (from ret_coords) we use ellipse_a and
     //! ellipse_b.
     vector<array<Flt, 2>> tec_coords;
-    //! tec_coords - reg_centroids
+    //! tec_offsets = tec_coords - reg_centroids
     vector<array<Flt, 2>> tec_offsets;
     //! Store the radii which can be passed to a visualization to give a colourmap
     //! indication of the radius.
@@ -407,7 +407,6 @@ protected:
         }
     }
 
-#if 1
 public:
     /*!
      * Overrides RD_Barrel spatial analysis, adding the tec_coords-reg_centroids
@@ -426,19 +425,40 @@ public:
         this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
         this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
 
-        // Can now do diffs between reg_centroids and tec_coords.
+        // Can now do diffs between reg_centroids and tec_coords, placing the
+        // resulting vectors in tec_offsets. To get a scalar value for the pattern's
+        // match to the origin pattern, can simply sum the squares of the tec_offset
+        // vector lengths.
         for (unsigned int i = 0; i < this->N; ++i) {
             array<Flt, 2> tc = this->tec_coords[i];
             pair<Flt, Flt> rc = this->reg_centroids[(Flt)i/(Flt)this->N];
-            cout << "Comparing Tectal coordinate (" << tc[0] << "," << tc[1]
-                 << ") with centroid coord (" << rc.first << "," << rc.second << endl;
+            //cout << "Comparing Tectal coordinate (" << tc[0] << "," << tc[1]
+            //     << ") with centroid coord (" << rc.first << "," << rc.second << endl;
             array<Flt, 2> vec = tc;
             vec[0] -= rc.first;
             vec[1] -= rc.second;
+            // tec_offsets contains vectors pointing FROM reg_centroids TO tc_coords
             this->tec_offsets[i] = vec;
         }
 
         this->spatialAnalysisComputed = true;
     }
-#endif
+
+    void saveSpatial (void) {
+        stringstream fname;
+        fname << this->logpath << "/spatial_";
+        fname.width(5);
+        fname.fill('0');
+        fname << this->stepCount << ".h5";
+        HdfData data(fname.str());
+
+        data.add_contained_vals ("/tec_coords", this->tec_coords);
+        // Need to implement map<Flt, pair<Flt,Flt>> for this one:
+        //data.add_contained_vals ("/reg_centroids", this->reg_centroids);
+        data.add_contained_vals ("/tec_offsets", this->tec_offsets);
+
+        // "identified regions" here (as same size as n, c etc)
+        data.add_contained_vals ("/dr", this->regions);
+    }
+
 }; // RD_RetTec

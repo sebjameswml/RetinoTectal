@@ -684,9 +684,6 @@ public:
             data.add_contained_vals (path.str().c_str(), this->divJ[i]);
         }
         data.add_contained_vals ("/n", this->n);
-
-        // "identified regions" here (as same size as n, c etc)
-        data.add_contained_vals ("/dr", this->regions);
     }
 
     void saveHG (void) {

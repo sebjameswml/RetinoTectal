@@ -190,7 +190,7 @@ int main (int argc, char **argv)
     // Whole-scene offsetting
     const float x_default = conf.getFloat ("x_default", 0.0f);
     const float y_default = conf.getFloat ("y_default", 0.0f);
-    const float z_default = conf.getFloat ("z_default", 10.0f);
+    const float z_default = conf.getFloat ("z_default", -5.0f);
     // If this is true, then mouse movements won't move the scene around
     const bool sceneLocked = conf.getBool ("sceneLocked", false);
 
@@ -312,6 +312,8 @@ int main (int argc, char **argv)
     unsigned int c_ctr_grid = 0;
     unsigned int a_ctr_grid = 0;
     unsigned int dr_grid = 0;
+    unsigned int quiv_grid = 0;
+    unsigned int scat_grid = 0;
 
     vector<unsigned int> guide_grids;
     vector<unsigned int> guidegrad_grids;
@@ -366,6 +368,11 @@ int main (int argc, char **argv)
     // Contours
     const array<float, 4> ctr_scaling = { 0.0f, 0.0f, 1.0f, 0.0f };
     vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
+    vector<FLT> zeroNmap (RD.N, static_cast<FLT>(0.0));
+
+    vector<array<FLT,3>> zerovecs;
+    zerovecs.resize (RD.N);
+
     if (plot_contours) {
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
@@ -383,6 +390,12 @@ int main (int argc, char **argv)
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
         dr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, ColourMapType::Rainbow);
+        array<float,3> hsv = {1.0, 0.0, 0.0};
+        quiv_grid = v1.addQuiverVisual (&zerovecs, spatOff, &zerovecs, ColourMapType::Fixed, hsv);
+
+        hsv = {0.3, 1.0, 0.8};
+        array<float, 2> twoScaling_ = {1.0f, 0.0f};
+        scat_grid = v1.addScatterVisual (&zerovecs, spatOff, zeroNmap, 0.01f, twoScaling_, ColourMapType::Fixed, hsv);
         xzero +=  (1.2 * RD.hg->width());
     }
 
@@ -512,6 +525,15 @@ int main (int argc, char **argv)
             if (plot_dr) {
                 RD.spatialAnalysis();
                 v1.updateHexGridVisual (dr_grid, RD.regions, ctr_scaling);
+                // Plot the difference vectors here.
+                //vector<array<float, 3>> regcs;
+                vector<array<float, 2>> regcs;
+                for (auto rc : RD.reg_centroids) {
+                    //regcs.push_back ({rc.second.first, rc.second.second, 0.03f});
+                    regcs.push_back ({rc.second.first, rc.second.second});
+                }
+                v1.updateQuiverVisual (quiv_grid, &regcs, &RD.tec_offsets);
+                v1.updateScatterVisual (scat_grid, &RD.tec_coords);
             }
             // Save to PNG
             if (vidframes) {
@@ -535,12 +557,10 @@ int main (int argc, char **argv)
         if (logevery != 0 && (RD.stepCount == 1 || (RD.stepCount % logevery) == 0)) {
             DBG ("Logging data at step " << RD.stepCount);
             RD.save();
-
-            // Fixme. Save the hex contours in their own file. Each Hex has a save() method.
-            vector<list<Hex> > sv_ctrs = ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
-
             // If spatial analysis, then add line here to do it
             RD.spatialAnalysis();
+            // And save it
+            RD.saveSpatial();
         }
 
         if (RD.stepCount > steps) {
@@ -565,7 +585,7 @@ int main (int argc, char **argv)
     conf.set ("k", RD.k);
     conf.set ("dt", RD.get_dt());
     // Call our function to place git information into root.
-    conf.insertGitInfo ("sim/");
+    //conf.insertGitInfo ("sim/");
     // Store the binary name and command argument into root, too.
     if (argc > 0) { conf.set("argv0", argv[0]); }
     if (argc > 1) { conf.set("argv1", argv[1]); }
@@ -577,6 +597,7 @@ int main (int argc, char **argv)
         cerr << "Warning: Something went wrong writing a copy of the params.json: " << conf.emsg << endl;
     }
 
+#if 0
     // Extract contours
     vector<list<Hex> > ctrs = ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
     {
@@ -621,6 +642,7 @@ int main (int argc, char **argv)
         ctrdata.add_contained_vals ("/xb", vx);
         ctrdata.add_contained_vals ("/yb", vy);
     }
+#endif
 
 #ifdef COMPILE_PLOTTING
     cout << "Ctrl-c or press x in graphics window to exit.\n";
