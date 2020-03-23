@@ -313,7 +313,6 @@ int main (int argc, char **argv)
     unsigned int a_ctr_grid = 0;
     unsigned int dr_grid = 0;
     unsigned int quiv_grid = 0;
-    unsigned int scat_grid = 0;
 
     vector<unsigned int> guide_grids;
     vector<unsigned int> guidegrad_grids;
@@ -368,7 +367,6 @@ int main (int argc, char **argv)
     // Contours
     const array<float, 4> ctr_scaling = { 0.0f, 0.0f, 1.0f, 0.0f };
     vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
-    vector<FLT> zeroNmap (RD.N, static_cast<FLT>(0.0));
 
     vector<array<FLT,3>> zerovecs;
     zerovecs.resize (RD.N);
@@ -392,10 +390,6 @@ int main (int argc, char **argv)
         dr_grid = v1.addHexGridVisual (RD.hg, spatOff, zeromap, ctr_scaling, ColourMapType::Rainbow);
         array<float,3> hsv = {1.0, 0.0, 0.0};
         quiv_grid = v1.addQuiverVisual (&zerovecs, spatOff, &zerovecs, ColourMapType::Fixed, hsv);
-
-        hsv = {0.3, 1.0, 0.8};
-        array<float, 2> twoScaling_ = {1.0f, 0.0f};
-        scat_grid = v1.addScatterVisual (&zerovecs, spatOff, zeroNmap, 0.01f, twoScaling_, ColourMapType::Fixed, hsv);
         xzero +=  (1.2 * RD.hg->width());
     }
 
@@ -533,7 +527,6 @@ int main (int argc, char **argv)
                     regcs.push_back ({rc.second.first, rc.second.second});
                 }
                 v1.updateQuiverVisual (quiv_grid, &regcs, &RD.tec_offsets);
-                v1.updateScatterVisual (scat_grid, &RD.tec_coords);
             }
             // Save to PNG
             if (vidframes) {

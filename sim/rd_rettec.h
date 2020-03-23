@@ -244,6 +244,7 @@ protected:
         this->ring_d = d;
 
         cout << "--------------------------" << endl;
+        vector<unsigned int> dots_in_ring(ringlens.size(), 0);
         // For each ring:
         for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
 
@@ -251,37 +252,56 @@ protected:
             r = this->ret_inner + scf(ri) * d;
 
             // Number of dots in this ring
-            unsigned int dots_in_ring = ringextras[ri]+ringnums[ri];
+            dots_in_ring[ri] = ringextras[ri]+ringnums[ri];
 
-            cout << "Ring r=" << r << ", dots=" << dots_in_ring << " (extras was " << ringextras[ri] << ")" << endl;
+            cout << "Ring r=" << r << ", dots=" << dots_in_ring[ri] << " (extras was " << ringextras[ri] << ")" << endl;
 
             // The angle between each dot
             Flt a = this->ret_endangle - this->ret_startangle;
             Flt d_angle = scf(0.0);
             if (a == scf(morph::TWO_PI_D)) {
-                d_angle = a/scf(dots_in_ring);
+                d_angle = a/scf(dots_in_ring[ri]);
                 // Set up the starting angle
                 d_angle_start = (d_angle_start == scf(0.0)) ? (d_angle/scf(2.0)) : scf(0.0);
             } else {
                 // For NOT a full pie, i.e. for a pie slice, we can allow the neurons
                 // to start and end on both edges of the pie slice.
-                d_angle = a/scf(dots_in_ring-1);
+                d_angle = a/scf(dots_in_ring[ri]-1);
                 // Start all rings at 0.
                 d_angle_start = this->ret_startangle;
             }
 
             // For each dot in the ring:
             Flt phi = d_angle_start;
-            for (unsigned int dir = 0; dir < dots_in_ring; ++dir) {
-                //cout << "Setting ret_coords["<<ci<<"]\n";
+            for (unsigned int dir = 0; dir < dots_in_ring[ri]; ++dir) {
+                // cout << "Setting ret_coords["<<ci<<"]\n";
                 this->ret_coords[ci] = { r*cos(phi), r*sin(phi) };
-                // Also set the equivalent elliptical tectal coordinate
-                this->tec_coords[ci] = { r*this->ellipse_a*cos(phi), r*this->ellipse_b*sin(phi) };
+                // Note that I don't set set the equivalent elliptical tectal
+                // coordinate here, as it needs to be scaled by the radius of the
+                // outer ring of neurons.
                 this->ret_coords_radii[ci] = r;
                 ci++;
                 phi += d_angle;
             }
         }
+
+        // Now I loop through the rings again, setting up the variable tec_coords from
+        // the values in ret_coords. A separate loop is necessary because I scale the
+        // posistions on the tectum based on the radius of the outer ring of neurons,
+        // rather than the radius of the circle that I originally specified.
+        //
+        // cout << "Before setting coordinates, r=" << r << "1/r=" << (1.0/r) << endl;
+        ci = 0;
+        Flt r_mult = 1.0f/r; // A factor to frig the tectal positions a bit
+        for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
+            for (unsigned int dir = 0; dir < dots_in_ring[ri]; ++dir) {
+                this->tec_coords[ci] = { r_mult*this->ellipse_a*this->ret_coords[ci][0],
+                                         r_mult*this->ellipse_b*this->ret_coords[ci][1] };
+                ci++;
+            }
+        }
+
+
 //#define DEBUG__ 1
 #ifdef DEBUG__
         cout << "Tectal coordinates:" << endl;
