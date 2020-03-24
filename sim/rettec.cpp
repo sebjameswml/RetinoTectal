@@ -25,7 +25,11 @@ using namespace std::chrono;
 using std::chrono::steady_clock;
 
 //! Our Retinotectal reaction diffusion class
-#include "rd_rettec.h"
+#ifdef DNCOMP
+# include "rd_rettec.h"
+#else
+# include "rd_rettec_nocomp.h"
+#endif
 
 #include "morph/ColourMap.h"
 using morph::ColourMapType;
@@ -153,9 +157,6 @@ int main (int argc, char **argv)
     const FLT k = conf.getDouble ("k", 3.0);
     //const FLT l = conf.getDouble ("l", 1.0);
     //const FLT m = conf.getDouble ("m", 1e-8);
-    const FLT alpha = conf.getDouble ("alpha", 3.0);
-    const FLT beta = conf.getDouble ("beta", 20.0);
-    const FLT epsilon = conf.getDouble ("epsilon", 150.0);
 
     DBG ("steps to simulate: " << steps);
 
@@ -207,7 +208,11 @@ int main (int argc, char **argv)
 #endif // COMPILE_PLOTTING
 
     // Instantiate and set up the model object
+#ifdef DNCOMP
     RD_RetTec<FLT> RD;
+#else
+    RD_RetTec_NoComp<FLT> RD;
+#endif
     RD.svgpath = svgpath;
     RD.ellipse_a = ellipse_a;
     RD.ellipse_b = ellipse_b;
@@ -237,9 +242,11 @@ int main (int argc, char **argv)
     RD.sigma_rho = sigma_rho;
     RD.contour_threshold = contour_threshold;
     RD.k = k;
-    RD.alpha_ = alpha;
-    RD.beta_ = beta;
-    RD.epsilon_ = epsilon;
+    RD.alpha_ = conf.getDouble ("alpha", 3.0);
+    RD.beta_ = conf.getDouble ("beta", 20.0);
+#ifdef DNCOMP
+    RD.epsilon_ = conf.getDouble ("epsilon", 150.0);
+#endif
 
     // Index through guidance molecule parameters:
     for (unsigned int j = 0; j < guid.size(); ++j) {

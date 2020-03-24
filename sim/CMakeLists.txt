@@ -13,3 +13,12 @@ target_link_libraries(rettec ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} ${Op
 add_executable(rettec_c rettec.cpp)
 target_compile_definitions(rettec_c PUBLIC FLT=float DNCOMP)
 target_link_libraries(rettec_c ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} ${OpenCV_LIBRARIES})
+
+# Difference with these two is that DNCOMP is NOT defined
+add_executable(rettec_nc rettec.cpp)
+target_compile_definitions(rettec_nc PUBLIC FLT=float COMPILE_PLOTTING)
+target_link_libraries(rettec_nc ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} ${OpenCV_LIBRARIES} glfw)
+
+add_executable(rettec_nc_c rettec.cpp)
+target_compile_definitions(rettec_nc_c PUBLIC FLT=float)
+target_link_libraries(rettec_nc_c ${MORPH_LDFLAGS} ${HDF5LIBLINK} ${JSONLIBLINK} ${OpenCV_LIBRARIES})
