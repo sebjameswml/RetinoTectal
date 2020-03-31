@@ -233,12 +233,13 @@ out~\cite{sperry_chemoaffinity_1963,goodhill_retinotectal_1999,goodhill_developm
 
 The initial model is derived from the one in the Barrels
 paper~\cite{james_modelling_2020} which is found
-in \code{sim/rd\_barrel.h}. The specialization of \code{RD\_Barrel} can be
-found in \code{sim/rd\_rettec.h}, with main code file \code{rettec.cpp}. Here,
-instead of providing interaction parameters ($\gamma_{i,j}$) in a
-configuration file, I use only the parameter $N$, which in this context is the
-number of neurons originating in the retina. I automatically arrange these $N$
-retinal neurons in a radially symmetric pattern. I then obtain the $gamma$
+in \code{sim/rd\_barrel.h}. The specialization of \code{RD\_Barrel} (and a
+sister class, \code{RetArrange}) can be found in \code{sim/rd\_rettec.h}, with
+main code file \code{rettec.cpp}. Here, instead of providing interaction
+parameters ($\gamma_{i,j}$) in a configuration file, I use only the parameter
+$N$, which in this context is the number of neurons originating in the
+retina. I automatically arrange these $N$ retinal neurons in a radially
+symmetric pattern (See \code{RetArrange}). I then obtain the $\gamma$
 parameters from the neuron locations within the pattern.
 
 \subsection{Configurations}
@@ -337,11 +338,40 @@ $\gamma_{i,1} = G\,\big(\xi_\gamma |\mb{r}_i| \mb{r}_i \cdot \hat{\mb{y}} \big)$
 $\xi_\gamma$ is drawn from a normal distribution with mean 0 and standard
 deviation $\sigma_\rho$.
 
+\subsection{Non-competition based stopping mechanism}
+
+Starting from the branching equation again (but dropping the competition term,
+$\chi_i$):
+
+\begin{equation} \label{eq:da_again}
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right) - \frac{\partial c_i}{\partial t},
+\end{equation}
+
+The spatial part of the system can be halted if $D\rightarrow
+0, \gamma_{i,j}\rightarrow 0$ as
+$f(\gamma_{i,1},\gamma_{i,2},...,\gamma{i,M})\rightarrow 1$. That is, if, for
+a particular axon, $i$, a sampling of $\rho_j$ is close to $f(\gamma_{i,j})$
+for each $j$, then $D$ is reduced to zero, and likewise, the second term also
+reduces to zero. $f()$ is probably $1-$ a (possibly noisy) normalized Gaussian
+function, or a capped Gaussian (with height capped by a sigmoid?), with mean
+$(\gamma_{i,1},\gamma_{i,2})$ and a width based on the differences between
+$\gamma_{i\pm 1,j}$. Something like:
+
+\begin{equation} \label{eq:da_stopping}
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f(\gamma_{i,1},\gamma_{i,2},\mb{x}) - \frac{\partial c_i}{\partial t},
+\end{equation}
+
+$f$ could be thought of as a functional:
+$f_i[\gamma_{i,1},\gamma_{i,2}](\mb{x})$ (if that's the right way to write
+it...).
+
+Let's try to write f out. See gaussians.m initially.
+
 \section{Results}
 
 \subsection{Wild type}
 
-The operation of the model without modifiction and with zero or low noise.
+The operation of the model without modification and with zero or low noise.
 
 \subsection{Manipulations}
 
