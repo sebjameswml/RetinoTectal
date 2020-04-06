@@ -306,7 +306,7 @@ $\xi_\rho(t)$:
 \end{equation}
 %
 One problem with this representation is that the equations represent a
-population model. Within one spatial element of the descretized solution of
+population model. Within one spatial element of the discretized solution of
 the differential equations, the error, $\xi_\rho(t)$ can have only one value at
 time $t$; this value is applied to all the individual axon growth cones that
 are represented by that element. Nonetheless, it's a useful, and fairly simple
@@ -340,32 +340,54 @@ deviation $\sigma_\rho$.
 
 \subsection{Non-competition based stopping mechanism}
 
-Starting from the branching equation again (but dropping the competition term,
-$\chi_i$):
+Here, we seek to model the `pure' chemospecificity theory in which axons are
+guided by orthogonal morphogen gradients until they reach their destination,
+which they must be able to sense. The axons, guided by the \emph{gradient} of
+the morphogen concentration are assumed also to be able to sample
+the \emph{absolute} concentration of the signalling molecules.  A reduction in
+branching, and possibly an enhancement of synaptogenesis are triggered when
+the concentrations of the two orthogonal morphogens are simultaneously
+measured to be within the axon's `stopping' ranges.
+
+To find a way to implement this in a population model similar to the
+competitive model, we start from the branching equation (dropping the
+competition term, $\chi_i$):
 
 \begin{equation} \label{eq:da_again}
 \frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
-The spatial part of the system can be halted if $D\rightarrow
-0, \gamma_{i,j}\rightarrow 0$ as
-$f(\gamma_{i,1},\gamma_{i,2},...,\gamma{i,M})\rightarrow 1$. That is, if, for
-a particular axon, $i$, a sampling of $\rho_j$ is close to $f(\gamma_{i,j})$
-for each $j$, then $D$ is reduced to zero, and likewise, the second term also
-reduces to zero. $f()$ is probably $1-$ a (possibly noisy) normalized Gaussian
-function, or a capped Gaussian (with height capped by a sigmoid?), with mean
-$(\gamma_{i,1},\gamma_{i,2})$ and a width based on the differences between
-$\gamma_{i\pm 1,j}$. Something like:
+Spatial transfer of information in the system can be halted if
+$D\rightarrow 0$ and $\gamma_{i,j}\rightarrow 0$.
+%$f(\gamma_{i,1},\gamma_{i,2},...,\gamma{i,M})\rightarrow 1$.
+
+This can be achieved with a function of the gammas and $\mb{x}$:
 
 \begin{equation} \label{eq:da_stopping}
 \frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f(\gamma_{i,1},\gamma_{i,2},\mb{x}) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
-$f$ could be thought of as a functional:
-$f_i[\gamma_{i,1},\gamma_{i,2}](\mb{x})$ (if that's the right way to write
-it...).
+Where $f$ is a function which permits branching far away from a given axon's
+target region and tends to zero inside the target region. It represents an
+axon's internal `stopping process'. Start with a Gaussian function:
 
-Let's try to write f out. See gaussians.m initially.
+\begin{equation}\label{eq:g}
+g(\mb{x}) = \mathrm{e}^{-\big(\frac{\mb{x}-\mb{\gamma}}{2\sigma}\big)^2 }
+\end{equation}
+
+where $\mb{\gamma}$ gives the location of the peak and $\sigma$ is the width
+of the peak. This is squashed through an inverting sigmoid, with sharpness $s$:
+
+\begin{equation}\label{eq:f}
+f(\mb{x}) = \frac{2}{1 + \mathrm{e}^{-s g(\mb{x})}} - 1
+\end{equation}
+
+In one equation:
+
+\begin{equation}\label{eq:gf}
+f(\mb{x}) = \frac{2}{1 + \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\mb{x}-\mb{\gamma}}{2\sigma}\big)^2 } }} - 1
+\end{equation}
+
 
 \section{Results}
 
@@ -377,7 +399,7 @@ The operation of the model without modification and with zero or low noise.
 
 Reference \cite{goodhill_development_2005} (from which the headings and quotes
 below are taken) gives a list of features which a model of retinotectal
-development or regeneration should address.
+dfevelopment or regeneration should address.
 
 \subsubsection{Ectopic targeting}
 
