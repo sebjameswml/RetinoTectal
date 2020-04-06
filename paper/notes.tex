@@ -364,7 +364,7 @@ $D\rightarrow 0$ and $\gamma_{i,j}\rightarrow 0$.
 This can be achieved with a function of the gammas and $\mb{x}$:
 
 \begin{equation} \label{eq:da_stopping}
-\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f(\gamma_{i,1},\gamma_{i,2},\mb{x}) - \frac{\partial c_i}{\partial t},
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f(\gamma_{i,1},\gamma_{i,2},\rho(\mb{x})) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
 Where $f$ is a function which permits branching far away from a given axon's
@@ -372,20 +372,20 @@ target region and tends to zero inside the target region. It represents an
 axon's internal `stopping process'. Start with a Gaussian function:
 
 \begin{equation}\label{eq:g}
-g(\mb{x}) = \mathrm{e}^{-\big(\frac{\mb{x}-\mb{\gamma}}{2\sigma}\big)^2 }
+g(\rho(\mb{x})) = \mathrm{e}^{-\big(\frac{\rho(\mb{x})-\mb{\gamma}}{2\sigma}\big)^2 }
 \end{equation}
 
 where $\mb{\gamma}$ gives the location of the peak and $\sigma$ is the width
 of the peak. This is squashed through an inverting sigmoid, with sharpness $s$:
 
 \begin{equation}\label{eq:f}
-f(\mb{x}) = \frac{2}{1 + \mathrm{e}^{-s g(\mb{x})}} - 1
+f(\rho(\mb{x})) = \frac{2}{1 + \mathrm{e}^{-s g(\mb{x})}} - 1
 \end{equation}
 
 In one equation:
 
 \begin{equation}\label{eq:gf}
-f(\mb{x}) = \frac{2}{1 + \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\mb{x}-\mb{\gamma}}{2\sigma}\big)^2 } }} - 1
+f(\rho(\mb{x})) = \frac{2}{1 + \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\rho(\mb{x})-\mb{\gamma}}{2\sigma}\big)^2 } }} - 1
 \end{equation}
 
 
