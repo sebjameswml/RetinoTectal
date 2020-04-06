@@ -311,7 +311,7 @@ $\xi_{\rho'}(t)$:
 %
 One problem with this representation is that the equations represent a
 population model. Within one spatial element of the discretized solution of
-the differential equations, the error, $\xi_\rho(t)$ can have only one value at
+the differential equations, the error, $\xi_{\rho'}(t)$ can have only one value at
 time $t$; this value is applied to all the individual axon growth cones that
 are represented by that element. Nonetheless, it's a useful, and fairly simple
 way to represent the guidance error in the system. In practice, we ignore the
@@ -322,8 +322,8 @@ variation in $\rho_j$ and write
 + \xi_{\rho'}(t) \big).
 \end{equation}
 
-$\xi_\rho(t)$ will be included in the model as a function returning numbers sampled
-from a normal distribution with mean 0 and standard deviation $\sigma_\rho$.
+$\xi_{\rho'}(t)$ will be included in the model as a function returning numbers sampled
+from a normal distribution with mean 0 and standard deviation $\sigma_{\rho'}$.
 
 The systematic error in $\gamma_{i,j}$ will be applied at setup time. The
 symmetric gamma values will first be derived from the symmetric layout of the
@@ -340,7 +340,7 @@ $\gamma_{i,0} = G\,\big(\xi_\gamma |\mb{r}_i| \mb{r}_i \cdot \hat{\mb{x}} \big)$
 $\gamma_{i,1} = G\,\big(\xi_\gamma |\mb{r}_i| \mb{r}_i \cdot \hat{\mb{y}} \big)$
 
 $\xi_\gamma$ is drawn from a normal distribution with mean 0 and standard
-deviation $\sigma_\rho$.
+deviation $\sigma_{\gamma}$.
 
 \subsection{Non-competition based stopping mechanism}
 \label{sec:nocomp}
@@ -369,10 +369,10 @@ $D\rightarrow 0$ and $\gamma_{i,j}\rightarrow 0$.
 This can be achieved with a function of the gammas and rhos:
 
 \begin{equation} \label{eq:da_stopping}
-\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f\big(\gamma_{i,1},\gamma_{i,2},\tilde{\rho}_{1}(\mb{x}),\tilde{\rho}_{2}(\mb{x})\big) - \frac{\partial c_i}{\partial t},
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f_i\big(\gamma_{i,1},\gamma_{i,2},\tilde{\rho}_{1}(\mb{x}),\tilde{\rho}_{2}(\mb{x})\big) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
-Where $f$ is a function which permits branching far away from a given axon's
+Where $f_i$ is a function which permits branching far away from a given axon's
 target region and tends to zero inside the target region. It represents an
 axon's internal `stopping process'. Note that $\tilde{\rho}_j(\mb{x})$ is the
 axon's measurement of $\rho_j(\mb{x})$ and may include measurement noise,
@@ -381,24 +381,25 @@ gradients are orthogonal, $(\tilde{\rho}_1,\tilde{\rho}_2)$ defines a vector
 field $\vec{\rho}(\mb{x})$. Similarly, we can combine
 $(\gamma_{i,1},\gamma_{i,2})$ into the vector $\vec{\gamma}$.
 
-This makes it easy to start to build $f$ with a two dimensional Gaussian
+This makes it easy to start to build $f_i$ with a two dimensional Gaussian
 function:
 
 \begin{equation}\label{eq:g}
-g\big(\vec{\rho}(\mb{x})\big) = \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 }
+g_i\big(\vec{\rho}(\mb{x})\big) = \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 }
 \end{equation}
 
-where $\vec{\gamma}$ gives the location of the peak and $w$ is the width
-of the peak. This is squashed through an inverting sigmoid, with sharpness $s$:
+where $\vec{\gamma}$ gives the location of the peak and the parameter $w$ is
+the width of the peak. This is squashed through an inverting sigmoid, with
+sharpness parameter $s$:
 
 \begin{equation}\label{eq:f}
-f\big(\vec{\rho}(\mb{x})\big) = \frac{2}{1 + \mathrm{e}^{-s g(\vec{\rho}\,)}} - 1
+f_i\big(\vec{\rho}(\mb{x})\big) = \frac{2}{1 + \mathrm{e}^{-s g_i(\vec{\rho}\,)}} - 1
 \end{equation}
 
 In one equation:
 
 \begin{equation}\label{eq:gf}
-f(\vec{\rho}(\mb{x})) = \frac{2}{1
+f_i\big(\vec{\rho}(\mb{x})\big) = \frac{2}{1
 + \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 } }} - 1
 \end{equation}
 
