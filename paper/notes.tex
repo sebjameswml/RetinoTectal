@@ -273,7 +273,11 @@ to sampling error and thus a second source of noise can be introduced to the
 model. This noise varies with time during the simulation and can be considered
 to have two contributions; one from variations in the true expression level of
 the signalling gradient and one from sampling error measuring it. We will
-combine these into a single error.
+combine these into a single error. \textbf{Or maybe not:} Because the
+no-competition model (see Section \ref{sec:nocomp}) has a function
+$f(\gamma, \rho)$, which represents the axons' ability to sample the absolute
+value of $\rho$, it is important to represent the variability of the true
+value of $\rho(\mb{x})$.
 
 The system equations are modified as follows. Starting from the branching equation
 
@@ -298,11 +302,11 @@ definition of a time-independent $\mb{g}_i(\mb{x})$:
 Here, we represent the time-dependence of the signalling molecule expression
 by noting that $\rho$ is now a function of time.  The error which the growth
 cones make in sampling $\rho$ and estimating $\nabla\rho_j(\mb{x})$ is
-$\xi_\rho(t)$:
+$\xi_{\rho'}(t)$:
 %
 \begin{equation}
 \mb{g}_i(\mb{x},t) \equiv \sum_{j=1}^{M} \gamma_{i,j} \big( \nabla\rho_j(\mb{x},t)
-+ \xi_\rho(t) \big).
++ \xi_{\rho'}(t) \big).
 \end{equation}
 %
 One problem with this representation is that the equations represent a
@@ -315,7 +319,7 @@ variation in $\rho_j$ and write
 %
 \begin{equation}
 \mb{g}_i(\mb{x},t) \equiv \sum_{j=1}^{M} \gamma_{i,j} \big( \nabla\rho_j(\mb{x})
-+ \xi_\rho(t) \big).
++ \xi_{\rho'}(t) \big).
 \end{equation}
 
 $\xi_\rho(t)$ will be included in the model as a function returning numbers sampled
@@ -339,6 +343,7 @@ $\xi_\gamma$ is drawn from a normal distribution with mean 0 and standard
 deviation $\sigma_\rho$.
 
 \subsection{Non-competition based stopping mechanism}
+\label{sec:nocomp}
 
 Here, we seek to model the `pure' chemospecificity theory in which axons are
 guided by orthogonal morphogen gradients until they reach their destination,
@@ -361,33 +366,41 @@ Spatial transfer of information in the system can be halted if
 $D\rightarrow 0$ and $\gamma_{i,j}\rightarrow 0$.
 %$f(\gamma_{i,1},\gamma_{i,2},...,\gamma{i,M})\rightarrow 1$.
 
-This can be achieved with a function of the gammas and $\mb{x}$:
+This can be achieved with a function of the gammas and rhos:
 
 \begin{equation} \label{eq:da_stopping}
-\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f(\gamma_{i,1},\gamma_{i,2},\rho(\mb{x})) - \frac{\partial c_i}{\partial t},
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f\big(\gamma_{i,1},\gamma_{i,2},\tilde{\rho}_{1}(\mb{x}),\tilde{\rho}_{2}(\mb{x})\big) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
 Where $f$ is a function which permits branching far away from a given axon's
 target region and tends to zero inside the target region. It represents an
-axon's internal `stopping process'. Start with a Gaussian function:
+axon's internal `stopping process'. Note that $\tilde{\rho}_j(\mb{x})$ is the
+axon's measurement of $\rho_j(\mb{x})$ and may include measurement noise,
+$\xi_\rho$: $\tilde{\rho}_j = \rho_j + \xi_\rho$. Given that the morphogen
+gradients are orthogonal, $(\tilde{\rho}_1,\tilde{\rho}_2)$ defines a vector
+field $\vec{\rho}(\mb{x})$. Similarly, we can combine
+$(\gamma_{i,1},\gamma_{i,2})$ into the vector $\vec{\gamma}$.
+
+This makes it easy to start to build $f$ with a two dimensional Gaussian
+function:
 
 \begin{equation}\label{eq:g}
-g(\rho(\mb{x})) = \mathrm{e}^{-\big(\frac{\rho(\mb{x})-\mb{\gamma}}{2\sigma}\big)^2 }
+g\big(\vec{\rho}(\mb{x})\big) = \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 }
 \end{equation}
 
-where $\mb{\gamma}$ gives the location of the peak and $\sigma$ is the width
+where $\vec{\gamma}$ gives the location of the peak and $w$ is the width
 of the peak. This is squashed through an inverting sigmoid, with sharpness $s$:
 
 \begin{equation}\label{eq:f}
-f(\rho(\mb{x})) = \frac{2}{1 + \mathrm{e}^{-s g(\mb{x})}} - 1
+f\big(\vec{\rho}(\mb{x})\big) = \frac{2}{1 + \mathrm{e}^{-s g(\vec{\rho}\,)}} - 1
 \end{equation}
 
 In one equation:
 
 \begin{equation}\label{eq:gf}
-f(\rho(\mb{x})) = \frac{2}{1 + \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\rho(\mb{x})-\mb{\gamma}}{2\sigma}\big)^2 } }} - 1
+f(\vec{\rho}(\mb{x})) = \frac{2}{1
++ \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 } }} - 1
 \end{equation}
-
 
 \section{Results}
 
