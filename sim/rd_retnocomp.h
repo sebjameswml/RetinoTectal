@@ -1022,7 +1022,7 @@ public:
      * notes/paper.
      */
     virtual void compute_f (void) {
-        DBG ("Called.");
+
         // f is computed from \vec{\gamma} and \vec{\rho} (with params w and s).
         // Components of \vec{\gamma} are this->gamma[m][i] with m=0,1.
         // Components of \vec{\rho} are (\rho_0 [+ \xi_\rho]) and (\rho_1 [+ \xi_\rho])
@@ -1037,7 +1037,7 @@ public:
                 Flt vr_minus_vg_y = this->rho[1][h] - this->gamma[1][i];
                 Flt vr_len_sq = vr_minus_vg_x*vr_minus_vg_x + vr_minus_vg_y*vr_minus_vg_y; // This is |vecrho-vecgamma|^2
                 Flt gausshump = exp (-vr_len_sq/this->two_w_sq);
-                this->f[i][h] = ( 2.0 / (1 + exp (-s*gausshump)) ) - 1.0;
+                this->f[i][h] = static_cast<Flt>(2.0) - (static_cast<Flt>(2.0)/(static_cast<Flt>(1.0) + exp (-s*gausshump)));
             }
         }
     }

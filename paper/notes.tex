@@ -389,18 +389,19 @@ g_i\big(\vec{\rho}(\mb{x})\big) = \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\ve
 \end{equation}
 
 where $\vec{\gamma}$ gives the location of the peak and the parameter $w$ is
-the width of the peak. This is squashed through an inverting sigmoid, with
-sharpness parameter $s$:
+the width of the peak. This is squashed through a sigmoid, with
+sharpness parameter $s$ and inverted:
 
 \begin{equation}\label{eq:f}
-f_i\big(\vec{\rho}(\mb{x})\big) = \frac{2}{1 + \mathrm{e}^{-s g_i(\vec{\rho}\,)}} - 1
+f_i\big(\vec{\rho}(\mb{x})\big) = 1 - \bigg( \frac{2}{1 + \mathrm{e}^{-s
+g_i(\vec{\rho}\,)}} - 1 \bigg)
 \end{equation}
 
 In one equation:
 
 \begin{equation}\label{eq:gf}
-f_i\big(\vec{\rho}(\mb{x})\big) = \frac{2}{1
-+ \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 } }} - 1
+f_i\big(\vec{\rho}(\mb{x})\big) = 2 - \frac{2}{1
++ \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 } }}
 \end{equation}
 
 \section{Results}
