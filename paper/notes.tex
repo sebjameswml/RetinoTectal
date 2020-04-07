@@ -362,11 +362,9 @@ competition term, $\chi_i$):
 \frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
-Spatial transfer of information in the system can be halted if
-$D\rightarrow 0$ and $\gamma_{i,j}\rightarrow 0$.
-%$f(\gamma_{i,1},\gamma_{i,2},...,\gamma{i,M})\rightarrow 1$.
-
-This can be achieved with a function of the gammas and rhos:
+Spatial transfer of information in the system can be halted if the flux of
+axonal branching (the term in brackets) tends to 0.  This can be achieved with
+a function of the gammas and rhos:
 
 \begin{equation} \label{eq:da_stopping}
 \frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M=2} \gamma_{i,j}\nabla \rho_j(\mb{x})\right)\;f_i\big(\gamma_{i,1},\gamma_{i,2},\tilde{\rho}_{1}(\mb{x}),\tilde{\rho}_{2}(\mb{x})\big) - \frac{\partial c_i}{\partial t},
@@ -374,12 +372,15 @@ This can be achieved with a function of the gammas and rhos:
 
 Where $f_i$ is a function which permits branching far away from a given axon's
 target region and tends to zero inside the target region. It represents an
-axon's internal `stopping process'. Note that $\tilde{\rho}_j(\mb{x})$ is the
-axon's measurement of $\rho_j(\mb{x})$ and may include measurement noise,
-$\xi_\rho$: $\tilde{\rho}_j = \rho_j + \xi_\rho$. Given that the morphogen
-gradients are orthogonal, $(\tilde{\rho}_1,\tilde{\rho}_2)$ defines a vector
-field $\vec{\rho}(\mb{x})$. Similarly, we can combine
-$(\gamma_{i,1},\gamma_{i,2})$ into the vector $\vec{\gamma}$.
+axon's internal `stopping process'. Note carefully that this internal axonal
+function does \emph{not} depend directly on space; it is a function of the
+interaction parameters $\gamma$ and of the signalling molecule density,
+$\rho$. Note that $\tilde{\rho}_j(\mb{x})$ is the axon's \emph{measurement} of
+$\rho_j(\mb{x})$ and may include measurement noise, $\xi_\rho$:
+$\tilde{\rho}_j = \rho_j + \xi_\rho$. Given that the morphogen gradients are
+orthogonal, $(\tilde{\rho}_1,\tilde{\rho}_2)$ defines a vector field
+$\vec{\rho}\,(\mb{x})$. Similarly, we can combine $(\gamma_{i,1},\gamma_{i,2})$
+into the vector $\vec{\gamma}$.
 
 This makes it easy to start to build $f_i$ with a two dimensional Gaussian
 function:
@@ -414,7 +415,7 @@ The operation of the model without modification and with zero or low noise.
 
 Reference \cite{goodhill_development_2005} (from which the headings and quotes
 below are taken) gives a list of features which a model of retinotectal
-dfevelopment or regeneration should address.
+development or regeneration should address.
 
 \subsubsection{Ectopic targeting}
 
@@ -448,7 +449,7 @@ domain is filled and the ordering maintained.
 \subsubsection{Rotation experiments}
 
 \begin{displayquote}
-\emph{If a Xenopus presumptive tectum is rotated early enough during devel- opment,
+\emph{If a Xenopus presumptive tectum is rotated early enough during development,
 a map is formed that is normal relative to the whole animal, whereas later
 rotations lead to a rotated map (Chung \& Cooke 1978).}
 \end{displayquote}

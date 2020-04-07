@@ -380,8 +380,8 @@ int main (int argc, char **argv)
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            //unsigned int idx = v1.addHexGridVisualMono (RD.hg, spatOff, RD.f[i], scaling2, (float)i/(float)RD.N);
-            unsigned int idx = v1.addHexGridVisual (RD.hg, spatOff, RD.f[i], scaling2);
+            unsigned int idx = v1.addHexGridVisualMono (RD.hg, spatOff, RD.f[i], scaling2, (float)i/(float)RD.N);
+            //unsigned int idx = v1.addHexGridVisual (RD.hg, spatOff, RD.f[i], scaling2);
             fgrids.push_back (idx);
         }
         xzero = spatOff[0] + RD.hg->width();

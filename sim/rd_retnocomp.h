@@ -1029,12 +1029,13 @@ public:
 
         // (vecrho - vecgamma)^2 = (vecrho - vecgamma) . (vecrho - vecgamma) = |vecrho-vecgamma|^2
         // for each hex:
+        Flt reduce_factor = 0.4;
         for (unsigned int i=0; i<this->N; ++i) {
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
                 // NB: If noise is to be included, replace this->rho with (this->rho + noise)
-                Flt vr_minus_vg_x = this->rho[0][h] - this->gamma[0][i];
-                Flt vr_minus_vg_y = this->rho[1][h] - this->gamma[1][i];
+                Flt vr_minus_vg_x = this->rho[0][h] - (reduce_factor*this->gamma[0][i]);
+                Flt vr_minus_vg_y = this->rho[1][h] - (reduce_factor*this->gamma[1][i]);
                 Flt vr_len_sq = vr_minus_vg_x*vr_minus_vg_x + vr_minus_vg_y*vr_minus_vg_y; // This is |vecrho-vecgamma|^2
                 Flt gausshump = exp (-vr_len_sq/this->two_w_sq);
                 this->f[i][h] = static_cast<Flt>(2.0) - (static_cast<Flt>(2.0)/(static_cast<Flt>(1.0) + exp (-s*gausshump)));

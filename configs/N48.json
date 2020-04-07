@@ -3,7 +3,7 @@
  */
 {
     // Global simulation parameters
-    "steps" : 5000,                // Number of steps to simulate for
+    "steps" : 10000,                // Number of steps to simulate for
     "logevery": 200,
     "overwrite_logs": true,
     "logbase" : "./log/",
@@ -43,12 +43,12 @@
 
     // Stopping parameters
     "s" : 9.0,
-    "w" : 0.05,
+    "w" : 0.01,
 
     // Timestep. Defaults to 0.00001 if omitted here
     "dt" : 0.0005,
 
-    "contour_threshold" : 0.5,
+    "contour_threshold" : 0.1,
 
     // Visualization parameters (ignored by computation-only binaries)
     "win_width": 1600,

@@ -38,6 +38,7 @@ public:
         cout << "RD_RetTec_NoComp init()" << endl;
         // Set up alpha, beta, epsilon (before RD_RetNoComp::init)
         this->setupPerNParams();
+        // Because we derive from RetArrange, we have tec_coords and ret_coords as members.
         RetArrange<Flt>::initRet (this->N, this->ellipse_a, this->ellipse_b);
         // Now, from ret_coords, populate gammas, assuming two, orthogonal morphogen
         // fields which are noisy.
