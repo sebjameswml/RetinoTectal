@@ -4,7 +4,7 @@
 {
     // Global simulation parameters
     "steps" : 5000,                // Number of steps to simulate for
-    "logevery": 50,
+    "logevery": 200,
     "overwrite_logs": true,
     "logbase" : "./log/",
     "hextohex_d" : 0.03,           // Hex to hex distance, determines num hexes
@@ -41,6 +41,10 @@
     "beta" : 3,
     "epsilon" : 350,
 
+    // Stopping parameters
+    "s" : 9.0,
+    "w" : 0.05,
+
     // Timestep. Defaults to 0.00001 if omitted here
     "dt" : 0.0005,
 
@@ -52,16 +56,17 @@
     "plotevery": 50,
     "vidframes": false,    // If true, number video frame saves consecutively, rather
                            // than by simulation step number
-    "x_default": -5.2,
-    "y_default": 0,
-    "z_default": -1.5,        // Larger/more negative to zoom out
-    "sceneLocked": true,
+    "x_default": 1.1, // -5.2 // Get these from Scenetrans: press 'z' in your window to see
+    "y_default": -5, // 0
+    "z_default": -15,  // -1.5      // Larger/more negative to zoom out
+    "sceneLocked": false,
     //
     "plot_guide" : true,
     "plot_contours" : true,
     "plot_a_contours" : true,
     "plot_a" : false,
     "plot_c" : false,
+    "plot_f" : true,
     "plot_n" : true,
     "plot_dr" : true,
 

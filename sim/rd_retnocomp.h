@@ -80,6 +80,34 @@ public:
     vector<vector<Flt> > a;
 
     /*!
+     * f is the function, unique for each of N axons (or axon groups) which is 1
+     * everywhere except for the axon's destination, where it tends to 0. It
+     * represents the axon's ability to sense the absolute morphogen levels of all
+     * morphogens and to stop branching when morphogen levels match a set of
+     * 'stopping' values for that particular axon.
+     *
+     * f is a scalar function of gamma_i,0, gamma_i,1 and rho(x). See notes or paper
+     * for its form, which is a sigmoid-squashed 2D Gaussian. It is the same size as
+     * the variable c; that is it is a vector of size N, each element of which is a
+     * vector of nhex Flts.
+     */
+    alignas(alignof(vector<vector<Flt> >))
+    vector<vector<Flt> > f;
+
+    /*!
+     * The `sharpness' of f.
+     */
+    alignas(Flt) Flt s = 15.0;
+
+protected:
+    /*!
+     * The width of the hill defined by the function f
+     */
+    alignas(Flt) Flt w = 0.2; // determine by subtracting adjacent gammas?
+    alignas(Flt) Flt two_w_sq = 4.0 * 0.2 * 0.2; // determine by subtracting adjacent gammas?
+
+public:
+    /*!
      * For each TC axon type, this holds the two components of the gradient field of
      * the scalar value a(x,t) (where this x is a vector in two-space)
      */
@@ -390,6 +418,7 @@ public:
         this->resize_vector_vector (this->c, this->N);
         this->resize_vector_vector (this->dc, this->N);
         this->resize_vector_vector (this->a, this->N);
+        this->resize_vector_vector (this->f, this->N);
         this->resize_vector_vector (this->betaterm, this->N);
         this->resize_vector_vector (this->alpha_c, this->N);
         this->resize_vector_vector (this->divJ, this->N);
@@ -442,6 +471,7 @@ public:
         // Zero c and n and other temporary variables
         this->zero_vector_vector (this->c, this->N);
         //this->zero_vector_vector (this->a); // gets noisified below
+        this->zero_vector_vector (this->f, this->N);
         this->zero_vector_vector (this->betaterm, this->N);
         this->zero_vector_vector (this->alpha_c, this->N);
         this->zero_vector_vector (this->divJ, this->N);
@@ -527,12 +557,16 @@ public:
             this->spacegrad2D (this->rho[m], this->grad_rho[m]);
         }
 
-        // Having computed gradients, build this->g; has to be done once only. Note
-        // that a sigmoid is applied so that g(x) drops to zero around the boundary of
-        // the domain.
+        // Having computed gradients, build this->g; has to be done once only (though
+        // in derived classes, g may incorporate noise and thus need to be built on
+        // each timestep). Note that a sigmoid is applied so that g(x) drops to zero
+        // around the boundary of the domain.
         this->build_bSig();
         this->build_g();
         this->compute_divg_over3d();
+
+        // Also compute f once only (given no noise)
+        this->compute_f();
 
         // Now compute sum of a and record this as sum_a_init.
         for (unsigned int i = 0; i < this->N; ++i) {
@@ -623,6 +657,18 @@ public:
             return 2;
         }
         return 0;
+    }
+
+    /*!
+     * Set the w parameter
+     */
+    void set_w (Flt _w) {
+        this->w = _w;
+        // 2w * 2w:
+        this->two_w_sq = 4.0 * _w * _w;
+    }
+    Flt get_w (void) const {
+        return this->w;
     }
     //@}
 
@@ -972,6 +1018,31 @@ public:
     }
 
     /*!
+     * Compute the function f(gamma, rho) for each axon i. See \ref{eq:gf} in the
+     * notes/paper.
+     */
+    virtual void compute_f (void) {
+        DBG ("Called.");
+        // f is computed from \vec{\gamma} and \vec{\rho} (with params w and s).
+        // Components of \vec{\gamma} are this->gamma[m][i] with m=0,1.
+        // Components of \vec{\rho} are (\rho_0 [+ \xi_\rho]) and (\rho_1 [+ \xi_\rho])
+
+        // (vecrho - vecgamma)^2 = (vecrho - vecgamma) . (vecrho - vecgamma) = |vecrho-vecgamma|^2
+        // for each hex:
+        for (unsigned int i=0; i<this->N; ++i) {
+#pragma omp parallel for
+            for (unsigned int h=0; h<this->nhex; ++h) {
+                // NB: If noise is to be included, replace this->rho with (this->rho + noise)
+                Flt vr_minus_vg_x = this->rho[0][h] - this->gamma[0][i];
+                Flt vr_minus_vg_y = this->rho[1][h] - this->gamma[1][i];
+                Flt vr_len_sq = vr_minus_vg_x*vr_minus_vg_x + vr_minus_vg_y*vr_minus_vg_y; // This is |vecrho-vecgamma|^2
+                Flt gausshump = exp (-vr_len_sq/this->two_w_sq);
+                this->f[i][h] = ( 2.0 / (1 + exp (-s*gausshump)) ) - 1.0;
+            }
+        }
+    }
+
+    /*!
      * Build g from the gradient of rho and the gammas.
      */
     virtual void build_g (void) {
@@ -1093,7 +1164,7 @@ public:
             // g(x) decays towards boundary.
             Flt term3 = 0.0;
 
-            for (unsigned int m =0 ; m < this->M; ++m) {
+            for (unsigned int m=0 ; m<this->M; ++m) {
                 if (this->stepCount >= this->guidance_time_onset[m]) {
                     // g contributes to term2
                     term2 += fa[hi] * this->divg_over3d[m][i][hi];
@@ -1102,7 +1173,7 @@ public:
                 }
             }
 
-            this->divJ[i][hi] = term1 - term2 - term3;
+            this->divJ[i][hi] = (term1 - term2 - term3) * this->f[i][hi];
         }
     }
 

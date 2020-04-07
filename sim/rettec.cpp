@@ -180,6 +180,9 @@ int main (int argc, char **argv)
     const bool plot_a_contours = conf.getBool ("plot_a_contours", true);
     const bool plot_a = conf.getBool ("plot_a", true);
     const bool plot_c = conf.getBool ("plot_c", true);
+# ifndef DNCOMP
+    const bool plot_f = conf.getBool ("plot_f", false);
+# endif
     const bool plot_n = conf.getBool ("plot_n", true);
     const bool plot_dr = conf.getBool ("plot_dr", true);
     const bool plot_guidegrad = conf.getBool ("plot_guidegrad", false);
@@ -246,6 +249,10 @@ int main (int argc, char **argv)
     RD.beta_ = conf.getDouble ("beta", 20.0);
 #ifdef DNCOMP
     RD.epsilon_ = conf.getDouble ("epsilon", 150.0);
+#else
+    RD.s = conf.getDouble ("s", 1.0);
+    RD.set_w (conf.getDouble ("w", 1.0));
+    DBG ("Set RD.s to " << RD.s << " and RD.w to " << RD.get_w());
 #endif
 
     // Index through guidance molecule parameters:
@@ -314,6 +321,9 @@ int main (int argc, char **argv)
     float _m = 0.2;
     float _c = 0.0;
     const array<float, 4> scaling = { _m/10, _c/10, _m, _c };
+# ifndef DNCOMP
+    const array<float, 4> scaling2 = { 1.0f/5.0f, 0.0f, 1.0f, 0.0f };
+# endif
 
     // Identifiers for the various VisualModels that will be added to the Visual scene
     unsigned int c_ctr_grid = 0;
@@ -329,12 +339,11 @@ int main (int argc, char **argv)
 
     // Start at a negative value which is determined by plot_a, plot_c and N.
     float xzero = 0.0f;
-    if (plot_a) {
-        xzero -= RD.hg->width() * sqrt(RD.N);
-    }
-    if (plot_c) {
-        xzero -= RD.hg->width() * sqrt(RD.N);
-    }
+    xzero -= (plot_a == true ?  RD.hg->width() * sqrt(RD.N) : 0.0f);
+    xzero -= (plot_c == true ?  RD.hg->width() * sqrt(RD.N) : 0.0f);
+# ifndef DNCOMP
+    xzero -= (plot_f == true ?  RD.hg->width() * sqrt(RD.N) : 0.0f);
+# endif
 
     // The a variable
     vector<unsigned int> agrids;
@@ -363,6 +372,21 @@ int main (int argc, char **argv)
         xzero = spatOff[0] + RD.hg->width();
     }
 
+# ifndef DNCOMP
+    // The f variable
+    vector<unsigned int> fgrids;
+    if (plot_f) {
+        spatOff = {xzero, 0.0, 0.0 };
+        for (unsigned int i = 0; i<RD.N; ++i) {
+            spatOff[0] = xzero + RD.hg->width() * (i/side);
+            spatOff[1] = RD.hg->width() * (i%side);
+            //unsigned int idx = v1.addHexGridVisualMono (RD.hg, spatOff, RD.f[i], scaling2, (float)i/(float)RD.N);
+            unsigned int idx = v1.addHexGridVisual (RD.hg, spatOff, RD.f[i], scaling2);
+            fgrids.push_back (idx);
+        }
+        xzero = spatOff[0] + RD.hg->width();
+    }
+# endif
     // n
     unsigned int ngrid = 0;
     if (plot_n) {
@@ -520,6 +544,13 @@ int main (int argc, char **argv)
                     v1.updateHexGridVisual (cgrids[i], RD.c[i], scaling);
                 }
             }
+#ifndef DNCOMP
+            if (plot_f) {
+                for (unsigned int i = 0; i<RD.N; ++i) {
+                    v1.updateHexGridVisual (fgrids[i], RD.f[i], scaling2);
+                }
+            }
+#endif
             if (plot_n) {
                 v1.updateHexGridVisual (ngrid, RD.n, scaling);
             }

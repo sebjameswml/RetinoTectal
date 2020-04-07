@@ -16,7 +16,7 @@ target_link_libraries(rettec_c ${MORPH_LDFLAGS})
 
 # Difference with these two is that DNCOMP is NOT defined
 add_executable(rettec_nc rettec.cpp)
-target_compile_definitions(rettec_nc PUBLIC FLT=float COMPILE_PLOTTING)
+target_compile_definitions(rettec_nc PUBLIC FLT=float COMPILE_PLOTTING DEBUG)
 target_link_libraries(rettec_nc ${MORPH_LDFLAGS})
 
 add_executable(rettec_nc_c rettec.cpp)
