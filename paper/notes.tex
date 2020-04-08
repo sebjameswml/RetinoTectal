@@ -405,6 +405,26 @@ f_i\big(\vec{\rho}(\mb{x})\big) = 2 - \frac{2}{1
 + \mathrm{e}^{-s \mathrm{e}^{-\big(\frac{\vec{\rho}(\mb{x})-\vec{\gamma}}{2 w}\big)^2 } }}
 \end{equation}
 
+\subsection{Allowing the stopping mechanism to enhance connection making}
+
+As well as affecting branching, there is no reason why I couldn't have the
+axonal function also affect connection making. Consider the equation governing
+the rate of change of connections.
+
+\begin{equation} \label{eq:dc}
+\frac{\partial c_i}{\partial t} =-\alpha c_i +\beta  \left(1 - \sum_{j=1}^{N} c_{j}\right)[a_i]^k.
+\end{equation}
+
+If $\beta$ were to be modulated by $1 - f_i$, then connection making would
+occur much more strongly in the correct location. Would it be too good I
+wonder? Answer: Yes, it's highly effective. To reproduce, set fModulatesBeta
+to true, prop\_modulated to 1 and prop\_unmodulated to 0.
+
+\subsection{Allowing the stopping mechanism to reduce connection decay}
+
+An alternative to the above, is to slow down connection decay within the
+stopping zone.
+
 \section{Results}
 
 \subsection{Wild type}
