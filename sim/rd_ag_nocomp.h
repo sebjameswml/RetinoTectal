@@ -342,11 +342,16 @@ public:
      * Set true to have the function f modulate the strength of connection-making -
      * i.e. beta.
      */
-    bool fModulatesBeta = false;
+    bool fModulatesBeta = true;
     //! The proportion of the connection making which f modulates
-    Flt prop_modulated = static_cast<Flt>(0.8);
+    Flt prop_modulated = static_cast<Flt>(1);
     //! The proportion of the connection making which f does not modulate
-    Flt prop_unmodulated = static_cast<Flt>(0.2);
+    Flt prop_unmodulated = static_cast<Flt>(0);
+
+    /*!
+     * Set true to have f modulate the rate of decay of connections
+     */
+    bool fModulatesAlpha = true; // Reuse prop_modulated/unmodulated as above for now.
 
     /*!
      * Sets the function of the guidance molecule method
@@ -899,10 +904,20 @@ public:
 
         // Pre-compute:
         // 1) The intermediate val alpha_c.
-        for (unsigned int i=0; i<this->N; ++i) {
+        if (this->fModulatesAlpha == true) {
+            for (unsigned int i=0; i<this->N; ++i) {
 #pragma omp parallel for
-            for (unsigned int h=0; h<this->nhex; ++h) {
-                this->alpha_c[i][h] = this->alpha[i] * this->c[i][h];
+                for (unsigned int h=0; h<this->nhex; ++h) {
+                    // f is 1 mostly, and we want the max decay rate there. f reduces in the stopping zone
+                    this->alpha_c[i][h] = this->f[i][h] * this->alpha[i] * this->c[i][h];
+                }
+            }
+        } else {
+            for (unsigned int i=0; i<this->N; ++i) {
+#pragma omp parallel for
+                for (unsigned int h=0; h<this->nhex; ++h) {
+                    this->alpha_c[i][h] = this->alpha[i] * this->c[i][h];
+                }
             }
         }
 
