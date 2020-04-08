@@ -1,10 +1,10 @@
 /*
  * Retino-tectal non-competition system. This specialization inits all the RT
- * projections using RetArrange. RD_RetNoComp is the base class, which implements the
+ * projections using RetArrange. RD_AG_NoComp is the base class, which implements the
  * no-competition base model.
  */
 
-#include "rd_retnocomp.h"
+#include "rd_ag_nocomp.h"
 #include "retarrange.h"
 #include <morph/MathAlgo.h>
 using morph::MathAlgo;
@@ -24,19 +24,19 @@ using std::endl;
 #define scf(a) static_cast<Flt>(a)
 
 template <class Flt>
-class RD_RetTec_NoComp : public RD_RetNoComp<Flt>, public RetArrange<Flt>
+class RD_RetTec_NoComp : public RD_AG_NoComp<Flt>, public RetArrange<Flt>
 {
 public:
     RD_RetTec_NoComp (void) {}
     ~RD_RetTec_NoComp (void) {}
 
     virtual void allocate (void) {
-        RD_RetNoComp<Flt>::allocate();
+        RD_AG_NoComp<Flt>::allocate();
     }
 
     virtual void init (void) {
         cout << "RD_RetTec_NoComp init()" << endl;
-        // Set up alpha, beta, epsilon (before RD_RetNoComp::init)
+        // Set up alpha, beta, epsilon (before RD_AG_NoComp::init)
         this->setupPerNParams();
         // Because we derive from RetArrange, we have tec_coords and ret_coords as members.
         RetArrange<Flt>::initRet (this->N, this->ellipse_a, this->ellipse_b);
@@ -44,7 +44,7 @@ public:
         // fields which are noisy.
         this->setupGammas();
         // the rest of the init chain has to be called AFTER gammas are set up
-        RD_RetNoComp<Flt>::init();
+        RD_AG_NoComp<Flt>::init();
     }
 
 protected:

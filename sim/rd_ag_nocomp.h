@@ -44,7 +44,7 @@ struct GaussParams {
  * precision (float) or double precision (double).
  */
 template <class Flt>
-class RD_RetNoComp : public morph::RD_Base<Flt>
+class RD_AG_NoComp : public morph::RD_Base<Flt>
 {
 public:
 
@@ -356,7 +356,7 @@ public:
     /*!
      * Simple constructor; no arguments. Just calls RD_Base constructor
      */
-    RD_RetNoComp (void)
+    RD_AG_NoComp (void)
         : morph::RD_Base<Flt>() {
     }
 
@@ -1329,4 +1329,4 @@ public:
         this->spatialAnalysisComputed = true;
     }
 #endif
-}; // RD_RetNoComp
+}; // RD_AG_NoComp
