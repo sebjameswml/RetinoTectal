@@ -1,8 +1,9 @@
 /*
- * A population model system which derives from RD_Base and implements a retino-tectal
- * system which lacks competition, but which instead incorporates a stopping
- * mechanism, wherein the diffusion and interaction with morphogens decays to zero in
- * the region where the morphogen gradient reaches a correct level.
+ * A population model system which derives from RD_Base and implements an axon
+ * guidance system which lacks competition, but which instead incorporates a stopping
+ * mechanism, wherein the diffusion of branching and interaction with morphogens
+ * decays to zero in the region where the morphogen gradient reaches a correct level,
+ * as measured by the afferent axons.
  */
 #include <morph/RD_Base.h>
 
@@ -48,7 +49,7 @@ class RD_RetNoComp : public morph::RD_Base<Flt>
 public:
 
     /*!
-     * how many retino-tectal axons are there?
+     * how many afferent axons are there?
      */
     alignas(Flt) unsigned int N = 5;
 
@@ -323,6 +324,12 @@ public:
     //! maximal value of c in each hex.
     alignas(alignof(vector<Flt>)) vector<Flt> regions;
 
+    /*!
+     * ALIGNAS REGION ENDS.
+     *
+     * Below here, there's no need to worry about alignas keywords.
+     */
+
     //! The centroids of the regions. key is the "ID" of the region - a Flt between 0
     //! and 1, with values separated by 1/N.
     map<Flt, pair<Flt, Flt> > reg_centroids;
@@ -330,11 +337,16 @@ public:
     map<Flt, int> region_areas;
     //! Set true when the spatial analysis has been computed
     bool spatialAnalysisComputed = false;
+
     /*!
-     * ALIGNAS REGION ENDS.
-     *
-     * Below here, there's no need to worry about alignas keywords.
+     * Set true to have the function f modulate the strength of connection-making -
+     * i.e. beta.
      */
+    bool fModulatesBeta = false;
+    //! The proportion of the connection making which f modulates
+    Flt prop_modulated = static_cast<Flt>(0.8);
+    //! The proportion of the connection making which f does not modulate
+    Flt prop_unmodulated = static_cast<Flt>(0.2);
 
     /*!
      * Sets the function of the guidance molecule method
@@ -793,10 +805,22 @@ public:
         // 3. Do integration of c
         for (unsigned int i=0; i<this->N; ++i) {
 
+            if (this->fModulatesBeta == true) {
 #pragma omp parallel for
-            for (unsigned int h=0; h<this->nhex; h++) {
-                // Note: betaterm used in compute_dci_dt()
-                this->betaterm[i][h] = this->beta[i] * this->n[h] * static_cast<Flt>(pow (this->a[i][h], this->k));
+                for (unsigned int h=0; h<this->nhex; h++) {
+                    // Note: betaterm used in compute_dci_dt().
+                    Flt fi_term = (static_cast<Flt>(1.0) - this->f[i][h]); // Modulator on connection making
+                    // Modulate a proportion of the connection making
+                    Flt common = this->beta[i] * this->n[h] * static_cast<Flt>(pow (this->a[i][h], this->k));
+                    Flt b1 = this->prop_unmodulated * common;
+                    Flt b2 = this->prop_modulated * fi_term * common;
+                    this->betaterm[i][h] = b1 + b2;
+                }
+            } else {
+#pragma omp parallel for
+                for (unsigned int h=0; h<this->nhex; h++) {
+                    this->betaterm[i][h] = this->beta[i] * this->n[h] * static_cast<Flt>(pow (this->a[i][h], this->k));
+                }
             }
 
             // Runge-Kutta integration for C (or ci)
@@ -1029,7 +1053,7 @@ public:
 
         // (vecrho - vecgamma)^2 = (vecrho - vecgamma) . (vecrho - vecgamma) = |vecrho-vecgamma|^2
         // for each hex:
-        Flt reduce_factor = 0.4;
+        Flt reduce_factor = 0.6;
         for (unsigned int i=0; i<this->N; ++i) {
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
