@@ -1,7 +1,11 @@
 /*
  * A reaction diffusion system which derives from RD_Base and implements the
  * BarrelEmerge model. This merges together code in RD_James, RD_James_divnorm and
- * RD_James_dncomp (see https://github.com/ABRG-Models/BarrelEmerge)
+ * RD_James_dncomp (see https://github.com/ABRG-Models/BarrelEmerge) into this single
+ * file.
+ *
+ * This is used as an axon guidance model which makes use of axon-axon competition for
+ * branching.
  */
 #include <morph/RD_Base.h>
 
