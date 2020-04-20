@@ -1,5 +1,5 @@
-# AUTOMOC requires 2.8.6. Per-target include directories would require 2.8.8
-cmake_minimum_required(VERSION 2.8.8)
+# Min version 3.1 for the modern way to select c++-11/14/17/etc
+cmake_minimum_required(VERSION 3.1)
 project(RetinoTectal)
 
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
@@ -20,28 +20,16 @@ else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
+set(CMAKE_CXX_STANDARD 17)
+
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-  # OpenMP: According to
-  # https://stackoverflow.com/questions/39979836/using-openmp-with-c11-on-mac-os#39983933
-  # it should now be a case of:
-  #
-  # You should be able to get away without the libomp that's mentioned
-  # in that post, as I don't use any of the runtime library OpenMP
-  # features. However, the code did not compile without it, so we've moved the links to omp to the later apple if case.
-  #
-  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Xpreprocessor -fopenmp")
-
+  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Xpreprocessor -fopenmp")
 else()
-  # To use Intel compiler, call cmake as: cmake -DCMAKE_CXX_COMPILER=icpc ..
-  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -qopenmp -D__ICC__")
-    # No OMP; it goes slower:
-    #set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -D__ICC__")
-    # No optimisation at all:
-    #set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O0  -D__ICC__")
+  if (CMAKE_CXX_COMPILER_ID MATCHES Intel) # Intel compiler
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -xHOST -O3 -qopenmp -D__ICC__")
   else() # GCC
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
   endif()
 endif()
 
@@ -59,20 +47,7 @@ find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
-
-if(APPLE)
-  find_package (HDF5 REQUIRED)
-  set (HDF5LIBLINK ${HDF5_C_LIBRARY_hdf5})
-  set (JSONLIBLINK /usr/local/lib/libjsoncpp.dylib)
-  include_directories(/opt/local/include/libomp)
-  link_libraries(-L/opt/local/lib/libomp omp)
-else()
-  set (LIB_TYPE SHARED) # STATIC or SHARED
-  string(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
-  find_package (HDF5 NAMES hdf5 COMPONENTS C ${SEARCH_TYPE} REQUIRED)
-  set (HDF5LIBLINK ${HDF5_C_${LIB_TYPE}_LIBRARY})
-  set (JSONLIBLINK jsoncpp)
-endif(APPLE)
+find_package(HDF5 REQUIRED)
 
 # glfw3 library finding. However, it's possible to compile from
 # source, and there are instructions on the glfw3 website on how to do
@@ -109,7 +84,7 @@ if(PKG_CONFIG_FOUND)
   message(STATUS "Have pkg_config, searching for libmorphologica...")
 
   if(APPLE)
-    # Manually set PKG_CONFIG_PATH on Mac, as mac ports with by default search only in /opt/local
+    # Manually set PKG_CONFIG_PATH on Mac, as by default, mac ports will search only in /opt/local
     set(ENV{PKG_CONFIG_PATH}  "ENV{PKG_CONFIG_PATH}:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
   endif(APPLE)
 
@@ -130,7 +105,7 @@ endif()
 add_subdirectory(sim)
 
 # For debugging of variables:
-set(DEBUG_VARIABLES ON)
+option(DEBUG_VARIABLES OFF)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach (_variableName ${_variableNames})

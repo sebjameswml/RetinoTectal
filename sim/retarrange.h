@@ -47,9 +47,9 @@ public:
     //! The Cartesian coordinates of the equivalent locations of the retinal neurons
     //! on the tectum. To compute these (from ret_coords) we use ellipse_a and
     //! ellipse_b.
-    vector<array<Flt, 2>> tec_coords;
+    vector<array<Flt, 3>> tec_coords;
     //! tec_offsets = tec_coords - reg_centroids
-    vector<array<Flt, 2>> tec_offsets;
+    vector<array<Flt, 3>> tec_offsets;
     //! Store the radii which can be passed to a visualization to give a colourmap
     //! indication of the radius.
     vector<Flt> ret_coords_radii;
@@ -136,7 +136,7 @@ protected:
         int num = 0;
         for (d = scf(0.001); d<scf(1.0); d+=scf(0.001)) {
             // This works out number of dots on rings with a fixed d.
-            num = MathAlgo<Flt>::numDotsOnRings (this->ret_inner, this->ret_outer, d,
+            num = MathAlgo::numDotsOnRings<Flt> (this->ret_inner, this->ret_outer, d,
                                                  abs(this->ret_endangle - this->ret_startangle));
             if (num <= static_cast<int>(this->NN)) {
                 cout << "break on num=" << num << endl;
@@ -165,7 +165,7 @@ protected:
             cout << "Ring/arc r=" << r << " has length " << alen << endl;
             ringlens.push_back (alen);
             tlen += ringlens.back();
-            ringnums.push_back (MathAlgo<Flt>::numOnCircleArc (r, d, abs(this->ret_endangle - this->ret_startangle)));
+            ringnums.push_back (MathAlgo::numOnCircleArc<Flt> (r, d, abs(this->ret_endangle - this->ret_startangle)));
             cout << "This ring has " << ringnums.back() << " dots on it" << endl;
             ntot += ringnums.back();
             r += d;
@@ -272,7 +272,7 @@ protected:
         for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
             for (unsigned int dir = 0; dir < dots_in_ring[ri]; ++dir) {
                 this->tec_coords[ci] = { r_mult*this->ellipse_radii.first*this->ret_coords[ci][0],
-                                         r_mult*this->ellipse_radii.second*this->ret_coords[ci][1] };
+                                         r_mult*this->ellipse_radii.second*this->ret_coords[ci][1], scf(0.0) };
                 ci++;
             }
         }
