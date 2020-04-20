@@ -506,7 +506,7 @@ int main (int argc, char **argv)
     if (plot_guide) {
         spatOff = { xzero, 0.0, 0.0 };
         float _m = 0.8; float _c = 0.0;
-        Scale<FLT> gd_cscale; ctr_cscale.setParams (_m, _c);
+        Scale<FLT> gd_cscale; gd_cscale.setParams (_m, _c);
 
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
