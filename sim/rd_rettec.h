@@ -4,20 +4,9 @@
 
 #include "rd_barrel.h"
 #include "retarrange.h"
-#include <morph/MathAlgo.h>
-using morph::MathAlgo;
 #include <morph/MathConst.h>
-#include <morph/Random.h>
-using morph::RandNormal;
 #include <cmath>
-using std::floor;
-using std::ceil;
-using std::abs;
-using std::sin;
-using std::cos;
 #include <iostream>
-using std::cout;
-using std::endl;
 
 #define scf(a) static_cast<Flt>(a)
 
@@ -26,7 +15,7 @@ class RD_RetTec : public RD_Barrel<Flt>, public RetArrange<Flt>
 {
 public:
     RD_RetTec (void) {
-        cout << "RD_RetTec constructor" << endl;
+        std::cout << "RD_RetTec constructor" << std::endl;
     }
     ~RD_RetTec (void) {}
 
@@ -35,7 +24,7 @@ public:
     }
 
     virtual void init (void) {
-        cout << "RD_RetTec init()" << endl;
+        std::cout << "RD_RetTec init()" << std::endl;
         // Set up alpha, beta, epsilon (before RD_Barrel::init)
         this->setupPerNParams();
         // Initialise the RetArrange class, which contains code to set up the retinal neurons
@@ -150,9 +139,9 @@ public:
         // match to the origin pattern, can simply sum the squares of the tec_offset
         // vector lengths.
         for (unsigned int i = 0; i < this->N; ++i) {
-            array<Flt, 2> tc = { this->tec_coords[i][0], this->tec_coords[i][1] };
-            pair<Flt, Flt> rc = this->reg_centroids[(Flt)i/(Flt)this->N];
-            array<Flt, 2> vec = tc;
+            std::array<Flt, 2> tc = { this->tec_coords[i][0], this->tec_coords[i][1] };
+            std::pair<Flt, Flt> rc = this->reg_centroids[(Flt)i/(Flt)this->N];
+            std::array<Flt, 2> vec = tc;
             vec[0] -= rc.first;
             vec[1] -= rc.second;
             // tec_offsets contains vectors pointing FROM reg_centroids TO tc_coords
@@ -164,12 +153,12 @@ public:
     }
 
     void saveSpatial (void) {
-        stringstream fname;
+        std::stringstream fname;
         fname << this->logpath << "/spatial_";
         fname.width(5);
         fname.fill('0');
         fname << this->stepCount << ".h5";
-        HdfData data(fname.str());
+        morph::HdfData data(fname.str());
         data.add_contained_vals ("/tec_coords", this->tec_coords);
         // Need to implement map<Flt, pair<Flt,Flt>> for this one:
         //data.add_contained_vals ("/reg_centroids", this->reg_centroids);

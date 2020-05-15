@@ -34,6 +34,8 @@ using std::chrono::steady_clock;
 #include "morph/ColourMap.h"
 using morph::ColourMapType;
 
+#include "morph/Vector.h"
+
 // Shape analysis utilities
 #include "morph/ShapeAnalysis.h"
 using morph::ShapeAnalysis;
@@ -362,7 +364,7 @@ int main (int argc, char **argv)
     vector<unsigned int> guidegrad_grids;
 
     // Spatial offset
-    array<float, 3> spatOff;
+    morph::Vector<FLT, 3> spatOff;
 
     // Start at a negative value which is determined by plot_a, plot_c and N.
     float xzero = 0.0f;
@@ -454,7 +456,7 @@ int main (int argc, char **argv)
 
     vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
 
-    vector<array<FLT,3>> zerovecs;
+    vector<morph::Vector<FLT,3>> zerovecs;
     zerovecs.resize (RD.N);
 
     if (plot_contours) {
@@ -560,7 +562,7 @@ int main (int argc, char **argv)
                 // Determine scale of gx and gy so that a common scale can be
                 // applied to both gradient_x and gradient_y.
                 for (unsigned int hi=0; hi<RD.nhex; ++hi) {
-                    Hex* h = RD.hg->vhexen[hi];
+                    morph::Hex* h = RD.hg->vhexen[hi];
                     if (h->onBoundary() == false) {
                         for (unsigned int i = 0; i<RD.N; ++i) {
                             if (gx[i][h->vi]>maxg) { maxg = gx[i][h->vi]; }
@@ -668,13 +670,10 @@ int main (int argc, char **argv)
                 mdlptr = (VdmPtr)v1.getVisualModel (dr_grid);
                 mdlptr->updateData (&RD.regions);
                 // Plot the difference vectors here.
-                //vector<array<float, 3>> regcs;
-                vector<array<float, 3>> regcs;
+                vector<morph::Vector<float, 3>> regcs;
                 for (auto rc : RD.reg_centroids) {
-                    //regcs.push_back ({rc.second.first, rc.second.second, 0.03f});
                     regcs.push_back ({rc.second.first, rc.second.second, 0.0f});
                 }
-                //v1.updateQuiverVisual (quiv_grid, &regcs, &RD.tec_offsets);
                 mdlptr = (VdmPtr)v1.getVisualModel (quiv_grid);
                 mdlptr->updateData (&regcs, &RD.tec_offsets);
 

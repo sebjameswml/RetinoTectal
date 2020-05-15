@@ -6,7 +6,6 @@
  * as measured by the afferent axons.
  */
 #include <morph/RD_Base.h>
-
 #include <morph/ShapeAnalysis.h>
 
 /*!
@@ -59,26 +58,26 @@ public:
     alignas(Flt) unsigned int M = 3;
 
     /*!
-     * These are the c_i(x,t) variables from the Karb2004 paper. x is a vector in
+     * These are the c_i(x,t) variables from the Karb2004 paper. x is a std::vector in
      * two-space.
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > c;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > c;
 
     /*!
      * To record dci/dt, as this is used in the computation of a.
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > dc;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > dc;
 
     /*!
-     * These are the a_i(x,t) variables from the Karb2004 paper. x is a vector in
-     * two-space. The first vector is over the different TC axon types, enumerated by
-     * i, the second vector are the a_i values, indexed by the vi in the Hexes in
+     * These are the a_i(x,t) variables from the Karb2004 paper. x is a std::vector in
+     * two-space. The first std::vector is over the different TC axon types, enumerated by
+     * i, the second std::vector are the a_i values, indexed by the vi in the Hexes in
      * HexGrid.
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > a;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > a;
 
     /*!
      * f is the function, unique for each of N axons (or axon groups) which is 1
@@ -92,8 +91,8 @@ public:
      * the variable c; that is it is a vector of size N, each element of which is a
      * vector of nhex Flts.
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > f;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > f;
 
     /*!
      * The `sharpness' of f.
@@ -112,40 +111,40 @@ public:
      * For each TC axon type, this holds the two components of the gradient field of
      * the scalar value a(x,t) (where this x is a vector in two-space)
      */
-    alignas(alignof(vector<array<vector<Flt>, 2> >))
-    vector<array<vector<Flt>, 2> > grad_a;
+    alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
+    std::vector<std::array<std::vector<Flt>, 2> > grad_a;
 
     /*!
      * Contains the chemo-attractant modifiers which are applied to a_i(x,t) in Eq 4.
      */
-    alignas(alignof(vector<vector<array<vector<Flt>, 2> > >))
-    vector<vector<array<vector<Flt>, 2> > > g;
+    alignas(alignof(std::vector<std::vector<std::array<std::vector<Flt>, 2> > >))
+    std::vector<std::vector<std::array<std::vector<Flt>, 2> > > g;
 
     /*!
-     * To hold div(g) / 3d, a static scalar field. There are M vectors of N of these
-     * vectors of Flts
+     * To hold div(g) / 3d, a static scalar field. There are M std::vectors of N of these
+     * std::vectors of Flts
      */
-    alignas(alignof(vector<vector<vector<Flt> > >))
-    vector<vector<vector<Flt> > > divg_over3d;
+    alignas(alignof(std::vector<std::vector<std::vector<Flt> > >))
+    std::vector<std::vector<std::vector<Flt> > > divg_over3d;
 
     /*!
      * n(x,t) variable from the Karb2004 paper.
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> n;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> n;
 
     /*!
      * J_i(x,t) variables - the "flux current of axonal branches of type i". This is a
-     * vector field.
+     * std::vector field.
      */
-    alignas(alignof(vector<array<vector<Flt>, 2> >))
-    vector<array<vector<Flt>, 2> > J;
+    alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
+    std::vector<std::array<std::vector<Flt>, 2> > J;
 
     /*!
      * Holds the divergence of the J_i(x)s
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > divJ;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > divJ;
 
     /*!
      * The power to which a_i(x,t) is raised in Eqs 1 and 2 in the paper.
@@ -165,46 +164,46 @@ public:
     /*!
      * alpha_i parameters
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> alpha;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> alpha;
     //! To set a single alpha for all N
     alignas(Flt) Flt alpha_;
 
     /*!
      * beta_i parameters
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> beta;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> beta;
     //! To set a single beta for all N
     alignas(Flt) Flt beta_;
 
     /*!
      * Parameters for initial 2D Gaussian masks over the initial branching levels.
      */
-    alignas(alignof(vector<GaussParams<Flt> >))
-    vector<GaussParams<Flt> > initmasks;
+    alignas(alignof(std::vector<GaussParams<Flt> >))
+    std::vector<GaussParams<Flt> > initmasks;
 
     /*!
      * The string identifiers for each RT axon. This is of size N. Can be populated
      * from the config file. This allows me to look up the name, as given in the
      * config file, from the floating point index, obtained from (integer index / N)
      */
-    alignas(alignof(map<Flt, string>)) map<Flt, string> rtnames;
+    alignas(alignof(std::map<Flt, std::string>)) std::map<Flt, std::string> rtnames;
 
 protected: // We have a setter for gamma.
     /*!
-     * gamma_A/B/C_i (etc) parameters from Eq 4. There are M vectors of Flts in here.
+     * gamma_A/B/C_i (etc) parameters from Eq 4. There are M std::vectors of Flts in here.
      */
     //@{
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > gamma;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > gamma;
 
     /*!
      * Used for group-based competition. One of the sets of gammas is used as a group
      * identifier.
      */
-    alignas(alignof(vector<Flt>)) vector<Flt> group;
-    alignas(alignof(set<Flt>)) set<Flt> groupset;
+    alignas(alignof(std::vector<Flt>)) std::vector<Flt> group;
+    alignas(alignof(std::set<Flt>)) std::set<Flt> groupset;
     //@}
 
 public:
@@ -215,53 +214,53 @@ public:
     Flt G = static_cast<Flt>(0.0);
 
     /*!
-     * A vector of parameters for the direction of the guidance molecules. This is an
+     * A std::vector of parameters for the direction of the guidance molecules. This is an
      * angle in Radians.
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> guidance_phi;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> guidance_phi;
 
     /*!
      * Guidance molecule parameters for the width of the function
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> guidance_width;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> guidance_width;
 
     /*!
      * Width in orthogonal direction, for 2D fields.
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> guidance_width_ortho;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> guidance_width_ortho;
 
     /*!
      * Guidance molecule parameters for the offset of the function
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> guidance_offset;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> guidance_offset;
 
     /*!
      * Guidance molecule parameters to be the gains of the functions
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> guidance_gain;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> guidance_gain;
 
     /*!
      * Guidance molecule parameters to be the time (i.e. step) at which each guidance
      * gradient is switched on.
      */
-    alignas(alignof(vector<unsigned int>))
-    vector<unsigned int> guidance_time_onset;
+    alignas(alignof(std::vector<unsigned int>))
+    std::vector<unsigned int> guidance_time_onset;
 
     /*!
      * Rho variables in Eq 4 - the concentrations of axon guidance molecules A, B, C,
      * etc. In Karbowski 2004, these are time independent and we will treat them as
      * such, populating them at initialisation.
      *
-     * There are M vector<Flts> in rho.
+     * There are M std::vector<Flts> in rho.
      */
     //@{
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > rho;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > rho;
     //@}
 
     /*!
@@ -271,21 +270,21 @@ public:
      * There are M gradient fields stored in this variable.
      */
     //@{
-    alignas(alignof(vector<array<vector<Flt>, 2> >))
-    vector<array<vector<Flt>, 2> > grad_rho;
+    alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
+    std::vector<std::array<std::vector<Flt>, 2> > grad_rho;
     //@}
 
     /*!
      * Memory to hold an intermediate result
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > betaterm;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > betaterm;
 
     /*!
      * Holds an intermediate value for the computation of Eqs 1 and 2.
      */
-    alignas(alignof(vector<vector<Flt> >))
-    vector<vector<Flt> > alpha_c;
+    alignas(alignof(std::vector<std::vector<Flt> >))
+    std::vector<std::vector<Flt> > alpha_c;
 
     /*!
      * The contour threshold. For contour plotting [see plot_contour()], the field is
@@ -299,30 +298,30 @@ public:
     /*!
      * An N element vector holding the sum of a_i for each TC type.
      */
-    alignas(vector<Flt>) vector<Flt> sum_a;
+    alignas(std::vector<Flt>) std::vector<Flt> sum_a;
 
     /*!
      * An N element vector holding the initial sum of a_i for each TC type.
      */
-    alignas(vector<Flt>) vector<Flt> sum_a_init;
+    alignas(std::vector<Flt>) std::vector<Flt> sum_a_init;
 
     /*!
      * Data containers for summed n, c and a.
      */
     //@{
-    alignas(vector<Flt>) vector<Flt> v_nsum;
-    alignas(vector<Flt>) vector<Flt> v_csum;
-    alignas(vector<Flt>) vector<Flt> v_asum;
+    alignas(std::vector<Flt>) std::vector<Flt> v_nsum;
+    alignas(std::vector<Flt>) std::vector<Flt> v_csum;
+    alignas(std::vector<Flt>) std::vector<Flt> v_asum;
     //@}
 
     /*!
      * The fall-off multiplier used towards the boundary of the field
      */
-    alignas(vector<Flt>) vector<Flt> bSig;
+    alignas(std::vector<Flt>) std::vector<Flt> bSig;
 
     //! A per-hex variable. Holds the ID (as a Flt) of the index into c which has the
     //! maximal value of c in each hex.
-    alignas(alignof(vector<Flt>)) vector<Flt> regions;
+    alignas(alignof(std::vector<Flt>)) std::vector<Flt> regions;
 
     /*!
      * ALIGNAS REGION ENDS.
@@ -332,9 +331,9 @@ public:
 
     //! The centroids of the regions. key is the "ID" of the region - a Flt between 0
     //! and 1, with values separated by 1/N.
-    map<Flt, pair<Flt, Flt> > reg_centroids;
+    std::map<Flt, std::pair<Flt, Flt> > reg_centroids;
     //! The area of each region, by Flt ID (area in number of hexes).
-    map<Flt, int> region_areas;
+    std::map<Flt, int> region_areas;
     //! Set true when the spatial analysis has been computed
     bool spatialAnalysisComputed = false;
 
@@ -356,7 +355,7 @@ public:
     /*!
      * Sets the function of the guidance molecule method
      */
-    vector<FieldShape> rhoMethod;
+    std::vector<FieldShape> rhoMethod;
 
     /*!
      * Simple constructor; no arguments. Just calls RD_Base constructor
@@ -372,7 +371,7 @@ public:
      * I apply a sigmoid to the boundary hexes, so that the noise drops away towards
      * the edge of the domain.
      */
-    virtual void noiseify_vector_vector (vector<vector<Flt> >& vv, vector<GaussParams<Flt> >& gp) {
+    virtual void noiseify_vector_vector (std::vector<std::vector<Flt> >& vv, std::vector<GaussParams<Flt> >& gp) {
         for (unsigned int i = 0; i<this->N; ++i) {
             for (auto h : this->hg->hexen) {
                 // boundarySigmoid. Jumps sharply (100, larger is sharper) over length
@@ -395,7 +394,7 @@ public:
      *
      * This allows me to initialise the system in a more biologically realistic manner.
      */
-    void mask_a (vector<vector<Flt> >& vv, vector<GaussParams<Flt> >& gp) {
+    void mask_a (std::vector<std::vector<Flt> >& vv, std::vector<GaussParams<Flt> >& gp) {
 
         // Once-only parts of the calculation of the Gaussian.
         const Flt root_2_pi = 2.506628275;
@@ -597,9 +596,9 @@ protected:
      * Given a RT id string @idstr, look it up in rtnames and find the Flt ID that it
      * corresponds to. Client code should have set up rtnames.
      */
-    Flt rt_name_to_id (const string& idstr) {
+    Flt rt_name_to_id (const std::string& idstr) {
         Flt theid = -1.0;
-        typename std::map<Flt, string>::iterator rtn = this->rtnames.begin();
+        typename std::map<Flt, std::string>::iterator rtn = this->rtnames.begin();
         while (rtn != this->rtnames.end()) {
             DBG2 ("Compare " << rtn->second << " and " << idstr << "...");
             if (rtn->second == idstr) {
@@ -698,14 +697,14 @@ public:
      * Save the c, a and n variables.
      */
     virtual void save (void) {
-        stringstream fname;
+        std::stringstream fname;
         fname << this->logpath << "/c_";
         fname.width(5);
         fname.fill('0');
         fname << this->stepCount << ".h5";
-        HdfData data(fname.str());
+        morph::HdfData data(fname.str());
         for (unsigned int i = 0; i<this->N; ++i) {
-            stringstream path;
+            std::stringstream path;
             // The c variables
             path << "/c" << i;
             data.add_contained_vals (path.str().c_str(), this->c[i]);
@@ -724,7 +723,7 @@ public:
     }
 
     void saveHG (void) {
-        stringstream hgname;
+        std::stringstream hgname;
         hgname << this->logpath << "/hexgrid.h5";
         this->hg->save(hgname.str().c_str());
     }
@@ -732,16 +731,16 @@ public:
 #if 1
     // Save out spatial analysis results
     void saveRegions (void) {
-        stringstream fname;
+        std::stringstream fname;
         fname << this->logpath << "/regions_";
         fname.width(5);
         fname.fill('0');
         fname << this->stepCount << ".h5";
-        HdfData data(fname.str());
+        morph::HdfData data(fname.str());
         // Save the region centroids
-        vector<Flt> keys;
-        vector<Flt> x_;
-        vector<Flt> y_;
+        std::vector<Flt> keys;
+        std::vector<Flt> x_;
+        std::vector<Flt> y_;
         // Hopefully, this ensures that we always save N centroids, even if some
         // default to 0,0.
         for (unsigned int i = 0; i<this->N; ++i) {
@@ -762,9 +761,9 @@ public:
      * Save asum, nsum and csum. Call once at end of simulation.
      */
     void savesums (void) {
-        stringstream fname;
+        std::stringstream fname;
         fname << this->logpath << "/sums.h5";
-        HdfData data(fname.str());
+        morph::HdfData data(fname.str());
         data.add_contained_vals ("/csum", this->v_csum);
         data.add_contained_vals ("/asum", this->v_asum);
         data.add_contained_vals ("/nsum", this->v_nsum);
@@ -777,22 +776,22 @@ public:
      * saving once only.
      */
     void saveGuidance (void) {
-        stringstream fname;
+        std::stringstream fname;
         fname << this->logpath << "/guidance.h5";
-        HdfData data(fname.str());
+        morph::HdfData data(fname.str());
         for (unsigned int m = 0; m<this->M; ++m) {
-            stringstream path;
+            std::stringstream path;
             path << "/rh" << m;
-            string pth(path.str());
+            std::string pth(path.str());
             data.add_contained_vals (pth.c_str(), this->rho[m]);
             pth[1] = 'g'; pth[2] = 'x';
             data.add_contained_vals (pth.c_str(), this->grad_rho[m][0]);
             pth[2] = 'y';
             data.add_contained_vals (pth.c_str(), this->grad_rho[m][1]);
             for (unsigned int i = 0; i<this->N; ++i) {
-                stringstream path;
+                std::stringstream path;
                 path << "/divg_" << m << "_" << i;
-                string pth(path.str());
+                std::string pth(path.str());
                 data.add_contained_vals (pth.c_str(), this->divg_over3d[m][i]);
             }
         }
@@ -829,26 +828,26 @@ public:
             }
 
             // Runge-Kutta integration for C (or ci)
-            vector<Flt> qq(this->nhex,0.);
-            vector<Flt> k1 = this->compute_dci_dt (this->c[i], i);
+            std::vector<Flt> qq(this->nhex,0.);
+            std::vector<Flt> k1 = this->compute_dci_dt (this->c[i], i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; h++) {
                 qq[h] = this->c[i][h] + k1[h] * this->halfdt;
             }
 
-            vector<Flt> k2 = this->compute_dci_dt (qq, i);
+            std::vector<Flt> k2 = this->compute_dci_dt (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; h++) {
                 qq[h] = this->c[i][h] + k2[h] * this->halfdt;
             }
 
-            vector<Flt> k3 = this->compute_dci_dt (qq, i);
+            std::vector<Flt> k3 = this->compute_dci_dt (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; h++) {
                 qq[h] = this->c[i][h] + k3[h] * this->dt;
             }
 
-            vector<Flt> k4 = this->compute_dci_dt (qq, i);
+            std::vector<Flt> k4 = this->compute_dci_dt (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; h++) {
                 this->dc[i][h] = (k1[h]+2. * (k2[h] + k3[h]) + k4[h]) * this->sixthdt;
@@ -927,17 +926,17 @@ public:
         for (unsigned int i=0; i<this->N; ++i) {
 
             // Runge-Kutta integration for A
-            vector<Flt> qq(this->nhex, 0.0);
+            std::vector<Flt> qq(this->nhex, 0.0);
             this->compute_divJ (this->a[i], i); // populates divJ[i]
 
-            vector<Flt> k1(this->nhex, 0.0);
+            std::vector<Flt> k1(this->nhex, 0.0);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
                 k1[h] = this->divJ[i][h] - this->dc[i][h];
                 qq[h] = this->a[i][h] + k1[h] * this->halfdt;
             }
 
-            vector<Flt> k2(this->nhex, 0.0);
+            std::vector<Flt> k2(this->nhex, 0.0);
             this->compute_divJ (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
@@ -945,7 +944,7 @@ public:
                 qq[h] = this->a[i][h] + k2[h] * this->halfdt;
             }
 
-            vector<Flt> k3(this->nhex, 0.0);
+            std::vector<Flt> k3(this->nhex, 0.0);
             this->compute_divJ (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
@@ -953,7 +952,7 @@ public:
                 qq[h] = this->a[i][h] + k3[h] * this->dt;
             }
 
-            vector<Flt> k4(this->nhex, 0.0);
+            std::vector<Flt> k4(this->nhex, 0.0);
             this->compute_divJ (qq, i);
 
 #pragma omp parallel for
@@ -1023,7 +1022,7 @@ public:
      * Examine the value in each Hex of the hexgrid of the scalar field f. If
      * abs(f[h]) exceeds the size of dangerThresh, then output debugging information.
      */
-    void debug_values (vector<Flt>& f, Flt dangerThresh) {
+    void debug_values (std::vector<Flt>& f, Flt dangerThresh) {
         for (auto h : this->hg->hexen) {
             if (abs(f[h.vi]) > dangerThresh) {
                 DBG ("Blow-up threshold exceeded at Hex.vi=" << h.vi << " ("<< h.ri <<","<< h.gi <<")" <<  ": " << f[h.vi]);
@@ -1039,8 +1038,8 @@ public:
      * Does: f = (alpha * f) + betaterm. c.f. Karb2004, Eq 1. f is c[i] or q from the
      * RK algorithm.
      */
-    vector<Flt> compute_dci_dt (vector<Flt>& f, unsigned int i) {
-        vector<Flt> dci_dt (this->nhex, 0.0);
+    std::vector<Flt> compute_dci_dt (std::vector<Flt>& f, unsigned int i) {
+        std::vector<Flt> dci_dt (this->nhex, 0.0);
 #pragma omp parallel for
         for (unsigned int h=0; h<this->nhex; h++) {
             dci_dt[h] = (this->betaterm[i][h] - this->alpha[i] * f[h]);
@@ -1115,7 +1114,7 @@ public:
 #pragma omp parallel for schedule(static)
             for (unsigned int hi=0; hi<this->nhex; ++hi) {
 
-                vector<Flt> divg(this->M, 0.0);
+                std::vector<Flt> divg(this->M, 0.0);
                 // Sum up over each gradient.
                 for (unsigned int m = 0; m<this->M; ++m) {
                     // First sum
@@ -1174,7 +1173,7 @@ public:
      *
      * Stable with dt = 0.0001;
      */
-    virtual void compute_divJ (vector<Flt>& fa, unsigned int i) {
+    virtual void compute_divJ (std::vector<Flt>& fa, unsigned int i) {
 
         // Compute gradient of a_i(x), for use computing the third term, below.
         this->spacegrad2D (fa, this->grad_a[i]);

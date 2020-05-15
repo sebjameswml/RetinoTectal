@@ -27,9 +27,9 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Xpreprocessor -fopenmp")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel) # Intel compiler
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -xHOST -O3 -qopenmp -D__ICC__")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -xHOST -O3 -qopenmp -D__ICC__")
   else() # GCC
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
   endif()
 endif()
 
@@ -57,7 +57,7 @@ find_package(HDF5 REQUIRED)
 # lib paths etc. Then you just link with "glfw3" if you happened to
 # compile the static libglfw3.a or with "glfw" if you compiled the
 # dynamic libglfw.so
-find_package(glfw3 QUIET)
+find_package(glfw3 REQUIRED)
 # You can find GLFW library with pkgconfig, but it's switched off for now
 if(0)
   find_package(PkgConfig)

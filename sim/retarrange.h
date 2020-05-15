@@ -47,9 +47,9 @@ public:
     //! The Cartesian coordinates of the equivalent locations of the retinal neurons
     //! on the tectum. To compute these (from ret_coords) we use ellipse_a and
     //! ellipse_b.
-    vector<array<Flt, 3>> tec_coords;
+    vector<morph::Vector<Flt, 3>> tec_coords;
     //! tec_offsets = tec_coords - reg_centroids
-    vector<array<Flt, 3>> tec_offsets;
+    vector<morph::Vector<Flt, 3>> tec_offsets;
     //! Store the radii which can be passed to a visualization to give a colourmap
     //! indication of the radius.
     vector<Flt> ret_coords_radii;
