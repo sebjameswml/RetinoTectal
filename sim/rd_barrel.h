@@ -1,8 +1,7 @@
 /*
- * A reaction diffusion system which derives from RD_Base and implements the
- * BarrelEmerge model. This merges together code in RD_James, RD_James_divnorm and
- * RD_James_dncomp (see https://github.com/ABRG-Models/BarrelEmerge) into this single
- * file.
+ * A reaction diffusion system which derives from RD_Base and implements the *comp2*
+ * BarrelEmerge model. This merges together code from RD_James and RD_James_comp2 (see
+ * https://github.com/ABRG-Models/BarrelEmerge) into this single file.
  *
  * This is used as an axon guidance model which makes use of axon-axon competition for
  * branching.
@@ -82,6 +81,16 @@ public:
     //! Contains the chemo-attractant modifiers which are applied to a_i(x,t) in Eq 4.
     alignas(alignof(std::vector<std::vector<std::array<std::vector<Flt>, 2> > >))
     std::vector<std::vector<std::array<std::vector<Flt>, 2> > > g;
+
+    //! \hat{a}_i. the sum of the branching densities of all axon types except i.
+    alignas(alignof(std::vector<Flt>)) std::vector<Flt> ahat;
+
+    //! Gradient of ahat
+    alignas(alignof(std::array<std::vector<Flt>, 2>))
+    std::array<std::vector<Flt>, 2> grad_ahat;
+
+    //! divergence of \hat{a}_i(x,t).
+    alignas(alignof(std::vector<Flt>)) std::vector<Flt> div_ahat;
 
     /*!
      * To hold div(g) / 3d, a static scalar field. There are M vectors of N of these
@@ -225,6 +234,14 @@ public:
     alignas(Flt) Flt aNoiseGain = 0.1;
     alignas(Flt) Flt aInitialOffset = 0.8;
 
+    /*!
+     * Noise for Guidance molecules. Note this is a common parameter, and not a
+     * per-guidance molecule parameter.
+     */
+    alignas(Flt) Flt mNoiseGain = Flt{0};
+    alignas(Flt) Flt mNoiseSigma = 0.09; // hex to hex d is usually 0.03
+
+
     //! An N element vector holding the sum of a_i for each TC type.
     alignas(std::vector<Flt>) std::vector<Flt> sum_a;
 
@@ -239,22 +256,9 @@ public:
     //! The fall-off multiplier used towards the boundary of the field
     alignas(std::vector<Flt>) std::vector<Flt> bSig;
 
-    //! Inter-axon-type competition
-    //@{
-    //! The power to which a_j is raised for the inter-TC axon competition term.
-    //alignas(Flt) Flt l = 3.0;
-    //! The steepness of the logistic function
-    //alignas(Flt) Flt m = 1e-8;
-    //! epsilon_i parameters. axon competition parameter
-    alignas(alignof(std::vector<Flt>)) std::vector<Flt> epsilon;
-    //! To set single epsilon for all N
-    alignas(Flt) Flt epsilon_;
-
-    //! Used as a temporary variable.
-    alignas(alignof(std::vector<Flt>)) std::vector<Flt> eps_all; // sum of all a^l
-    alignas(alignof(std::vector<Flt>)) std::vector<Flt> eps_i; // sum of a^l for TC index i
-    alignas(alignof(std::vector<Flt>)) std::vector<Flt> eps; // eps_all - eps_i
-    //@}
+    //! epsilon: axon competition parameter
+    alignas(Flt) Flt epsilon = 0.2;
+    alignas(Flt) Flt epsilonOverNm1 = 0.0;
 
     //! A per-hex variable. Holds the ID (as a Flt) of the index into c which has the
     //! maximal value of c in each hex.
@@ -300,6 +304,54 @@ public:
                                                                    // in the Gaussian mask).
                 }
             }
+        }
+    }
+
+    /*!
+     * Similar to the above, but just adds noise to v (with a gain only) to \a vv. Has no boundary sigmoid.
+     */
+    virtual void addnoise_vector (std::vector<Flt>& v)
+    {
+        std::cout << "Add noise to vector?...";
+        if (this->mNoiseGain == Flt{0}) {
+            // No noise
+            std::cout << "NO.\n";
+            return;
+        }
+        std::cout << "Yes.\n";
+
+        // First, fill a duplicate vector with noise
+        morph::RandUniform<Flt> rng(-this->mNoiseGain/Flt{2}, this->mNoiseGain/Flt{2});
+        std::vector<Flt> noise (v.size(), Flt{0});
+        for (unsigned int h = 0; h<v.size(); ++h) {
+            noise[h] = rng.get();
+        }
+
+        // Set up the Gaussian convolution kernel on a circular HexGrid.
+        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0, morph::HexDomainShape::Boundary);
+        kernel.setCircularBoundary (Flt{6}*this->mNoiseSigma);
+        std::vector<Flt> kerneldata (kernel.num(), 0.0f);
+        // Once-only parts of the calculation of the Gaussian.
+        Flt one_over_sigma_root_2_pi = 1 / this->mNoiseSigma * 2.506628275;
+        Flt two_sigma_sq = 2.0f * this->mNoiseSigma * this->mNoiseSigma;
+        Flt gsum = 0;
+        for (auto& k : kernel.hexen) {
+            Flt gauss = (one_over_sigma_root_2_pi * std::exp ( -(k.r*k.r) / two_sigma_sq ));
+            kerneldata[k.vi] = gauss;
+            gsum += gauss;
+        }
+        // Renormalise
+        for (size_t k = 0; k < kernel.num(); ++k) { kerneldata[k] /= gsum; }
+
+        // A vector for the result
+        std::vector<Flt> convolved (v.size(), 0.0f);
+
+        // Call the convolution method from HexGrid:
+        this->hg->convolve (kernel, kerneldata, noise, convolved);
+
+        // Now add the noise to the vector:
+        for (size_t h = 0; h < v.size(); ++h) {
+            v[h] += convolved[h];
         }
     }
 
@@ -373,6 +425,10 @@ public:
 
         this->resize_vector_variable (this->bSig);
 
+        this->resize_vector_variable (this->ahat);
+        this->resize_gradient_field (this->grad_ahat);
+        this->resize_vector_variable (this->div_ahat);
+
         // rhomethod is a vector of size M
         this->rhoMethod.resize (this->M);
         for (unsigned int j=0; j<this->M; ++j) {
@@ -385,14 +441,6 @@ public:
             this->alpha[i] = 3;
             this->beta[i] = 3;
         }
-
-        // epsilon based competition
-        this->resize_vector_param (this->epsilon, this->N);
-
-        // eps
-        this->resize_vector_variable (this->eps_all);
-        this->resize_vector_variable (this->eps_i);
-        this->resize_vector_variable (this->eps);
     }
 
     /*!
@@ -424,6 +472,10 @@ public:
         this->zero_vector_array_vector (this->J, this->N);
 
         this->zero_vector_variable (this->bSig);
+
+        this->zero_vector_variable (this->ahat);
+        this->zero_gradient_field (this->grad_ahat);
+        this->zero_vector_variable (this->div_ahat);
 
         // Initialise a with noise
         cout << "initmasks.size(): " << this->initmasks.size() << endl;
@@ -766,7 +818,8 @@ public:
     //! Compute the values of a, the branching density
     virtual void integrate_a (void)
     {
-        // 2. Do integration of a (RK in the 1D model). Involves computing axon branching flux.
+        // 2. Do integration of a (RK in the 1D model). Involves computing axon
+        // branching flux.
 
         // Pre-compute:
         // 1) The intermediate val alpha_c.
@@ -777,34 +830,24 @@ public:
             }
         }
 
-        // Compute eps_all once only
-        this->zero_vector_variable (this->eps_all);
-        for (unsigned int j=0; j<this->N; ++j) {
-# pragma omp parallel for
-            for (unsigned int h=0; h<this->nhex; ++h) {
-                eps_all[h] += this->a[j][h];
-            }
-        }
-        // Runge-Kutta:
-        // No OMP here - there are only N(<10) loops, which isn't
-        // enough to load the threads up.
+        // Runge-Kutta: No OMP here - there are only N(<10) loops, which isn't enough
+        // to load the threads up.
         for (unsigned int i=0; i<this->N; ++i) {
 
-            // Compute epsilon * a_hat^l. a_hat is "the sum of all a_j
-            // for which j!=i". Call the variable just 'eps'.
-
-            // Compute eps_i, for subtraction from eps_all
-# pragma omp parallel for
-            for (unsigned int h=0; h<this->nhex; ++h) {
-                eps_i[h] = this->a[i][h];
-            }
-
-            // Multiply it by epsilon[i]/(N-1). Now it's ready to subtract from the solutions
-            Flt eps_over_N = this->epsilon[i]/(this->N-1);
+            // --- START specific to comp2 method ---
+            // Compute "the sum of all a_j for which j!=i"
+            this->zero_vector_variable (this->ahat);
+            for (unsigned int j=0; j<this->N; ++j) {
+                if (j==i) { continue; }
 #pragma omp parallel for
-            for (unsigned int h=0; h<this->nhex; ++h) {
-                eps[h] = (eps_all[h]-eps_i[h]) * eps_over_N;
+                for (unsigned int h=0; h<this->nhex; ++h) {
+                    this->ahat[h] += this->a[j][h];
+                }
             }
+            // 1.1 Compute divergence and gradient of ahat
+            this->compute_divahat();
+            this->spacegrad2D (this->ahat, this->grad_ahat);
+            // --- END specific to comp2 method ---
 
             // Runge-Kutta integration for A
             std::vector<Flt> qq(this->nhex, 0.0);
@@ -813,7 +856,7 @@ public:
             std::vector<Flt> k1(this->nhex, 0.0);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                k1[h] = this->divJ[i][h] - this->dc[i][h] - this->a[i][h] * eps[h];
+                k1[h] = this->divJ[i][h] - this->dc[i][h];
                 qq[h] = this->a[i][h] + k1[h] * this->halfdt;
             }
 
@@ -821,7 +864,7 @@ public:
             this->compute_divJ (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                k2[h] = this->divJ[i][h] - this->dc[i][h] - qq[h] * eps[h];
+                k2[h] = this->divJ[i][h] - this->dc[i][h];
                 qq[h] = this->a[i][h] + k2[h] * this->halfdt;
             }
 
@@ -829,16 +872,15 @@ public:
             this->compute_divJ (qq, i);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                k3[h] = this->divJ[i][h] - this->dc[i][h] - qq[h] * eps[h];
+                k3[h] = this->divJ[i][h] - this->dc[i][h];
                 qq[h] = this->a[i][h] + k3[h] * this->dt;
             }
 
             std::vector<Flt> k4(this->nhex, 0.0);
             this->compute_divJ (qq, i);
-
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                k4[h] = this->divJ[i][h] - this->dc[i][h] - qq[h] * eps[h];
+                k4[h] = this->divJ[i][h] - this->dc[i][h];
                 this->a[i][h] += (k1[h] + 2.0 * (k2[h] + k3[h]) + k4[h]) * this->sixthdt;
             }
         }
@@ -1023,21 +1065,33 @@ public:
     /*!
      * Computes the "flux of axonal branches" term, J_i(x) (Eq 4)
      *
-     * Inputs: this->g, fa (which is this->a[i] or a q in the RK algorithm), this->D,
-     * @a i, the RT type.  Helper functions: spacegrad2D().  Output: this->divJ
+     * Inputs: this->g, fa (which is this->a[i] or a q in the RK algorithm), this->D, @a
+     * i, the TC type.  Helper functions: spacegrad2D().  Output: this->divJ
      *
-     * Stable with dt = 0.0001;
+     * In the competition term, it's possible to set \bar{a} equal to either sigmoid
+     * transfer function of {a} with SIGMOID_ROLLOFF_FOR_A (which maxes out at 2.0) or a
+     * linear transfer function of {a} with a maximum of 2.0 with LINEAR_MAX. Do so when
+     * compiling with, e.g. -DLINEAR_MAX. Initially, I thought a transfer function was
+     * necessary, but it is not (though use of a transfer function does extend the range
+     * of parameters for which this model is stable).
      */
     virtual void compute_divJ (std::vector<Flt>& fa, unsigned int i)
     {
         // Compute gradient of a_i(x), for use computing the third term, below.
         this->spacegrad2D (fa, this->grad_a[i]);
 
-        // Three terms to compute; see Eq. 17 in methods_notes.pdf
+        if (this->N > 0) {
+            this->epsilonOverNm1 = this->epsilon/(this->N-1);
+        } else {
+            this->epsilonOverNm1 = 0.0;
+        }
+
+        // _Five_ terms to compute; see Eq. 17 in methods_notes.pdf. Copy comp3.
 #pragma omp parallel for //schedule(static) // This was about 10% faster than schedule(dynamic,50).
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
 
             // 1. The D Del^2 a_i term. Eq. 18.
+            // 1a. Or D Del^2 Sum(a_i) (new)
             // Compute the sum around the neighbours
             Flt thesum = -6 * fa[hi];
 
@@ -1050,6 +1104,38 @@ public:
 
             // Multiply sum by 2D/3d^2 to give term1
             Flt term1 = this->twoDover3dd * thesum;
+            if (isnan(term1)) {
+                std::cerr << "term1 isnan" << std::endl;
+                std::cerr << "thesum is " << thesum << " fa[hi=" << hi << "] = " << fa[hi] << std::endl;
+                exit (21);
+            }
+
+            Flt term1_1 = Flt{0};
+
+            // Term 1.1 is F/N-1 a div(ahat)
+            term1_1 = this->epsilonOverNm1 * fa[hi] * this->div_ahat[hi];
+
+            if (isnan(term1_1)) {
+                std::cerr << "term1_1 isnan" << std::endl;
+                std::cerr << "fa[hi="<<hi<<"] = " << fa[hi] << ", this->div_ahat[hi] = " << this->div_ahat[hi] << std::endl;
+                exit (21);
+            }
+
+            Flt term1_2 = Flt{0};
+            // Term 1.2 is eps/N-1 grad(ahat) . grad(a)
+            term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_a[i][0][hi]
+                                              + this->grad_ahat[1][hi] * this->grad_a[i][1][hi]);
+
+            if (isnan(term1_2)) {
+                std::cerr << "term1_2 isnan at hi=" << hi << std::endl;
+                if (isnan(this->grad_ahat[0][hi])) {
+                    std::cerr << "grad_ahat[0][hi] isnan\n";
+                }
+                if (isnan(this->grad_ahat[1][hi])) {
+                    std::cerr << "grad_ahat[1][hi] isnan\n";
+                }
+                exit (21);
+            }
 
             // 2. The (a div(g)) term.
             Flt term2 = 0.0;
@@ -1067,7 +1153,29 @@ public:
                 }
             }
 
-            this->divJ[i][hi] = term1 - term2 - term3;
+            // - term1_1/2 or + term1_1/2? It's + in the supp.tex
+            this->divJ[i][hi] = term1 + term1_1 + term1_2 - term2 - term3;
+        }
+    }
+
+    /*!
+     * Compute divergence of \hat{a}_i
+     */
+    void compute_divahat (void) {
+#pragma omp parallel for
+        for (unsigned int hi=0; hi<this->nhex; ++hi) {
+            Flt thesum = -6 * this->ahat[hi];
+            thesum += this->ahat[(HAS_NE(hi)  ? NE(hi)  : hi)];
+            thesum += this->ahat[(HAS_NNE(hi) ? NNE(hi) : hi)];
+            thesum += this->ahat[(HAS_NNW(hi) ? NNW(hi) : hi)];
+            thesum += this->ahat[(HAS_NW(hi)  ? NW(hi)  : hi)];
+            thesum += this->ahat[(HAS_NSW(hi) ? NSW(hi) : hi)];
+            thesum += this->ahat[(HAS_NSE(hi) ? NSE(hi) : hi)];
+            this->div_ahat[hi] = this->twoover3dd * thesum;
+            if (isnan(this->div_ahat[hi])) {
+                std::cerr << "div ahat isnan" << std::endl;
+                exit (3);
+            }
         }
     }
 

@@ -25,7 +25,8 @@ public:
         RD_Barrel<Flt>::allocate();
     }
 
-    virtual void init (void) {
+    virtual void init (void)
+    {
         std::cout << "RD_RetTec init()" << std::endl;
         // Set up alpha, beta, epsilon (before RD_Barrel::init)
         this->setupPerNParams();
@@ -59,7 +60,6 @@ protected:
         for (unsigned int i = 0; i < this->N; ++i) {
             this->alpha[i] = this->alpha_;
             this->beta[i] = this->beta_;
-            this->epsilon[i] = this->epsilon_;
             // Sets up mask for initial branching density. This is hardcoded here.
             GaussParams<Flt> gp;
             gp.gain = 1.0;

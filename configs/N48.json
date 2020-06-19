@@ -12,9 +12,9 @@
     "ellipse_b" : 0.5,
     "ret_startangle" : 0,
     "ret_endangle" : 6.283185307, // 6.283185307, 3.141592654 or 1.570796327
-    "boundaryFalloffDist" : 0.03,
+    "boundaryFalloffDist" : 0.1,
     // Diffusion const
-    "D" : 0.03,
+    "D" : 0.05,
     // gamma gain
     "G" : 1.0,
 
@@ -37,9 +37,9 @@
     // Exponent on a
     "k" : 3,
     "N" : 56,
-    "alpha" : 20,
-    "beta" : 3,
-    "epsilon" : 350,
+    "alpha" : 3.6,
+    "beta" : 17,
+    "epsilon" : 1.2,
 
     // Stopping parameters
     "s" : 9.0,

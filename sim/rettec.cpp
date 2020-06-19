@@ -25,7 +25,7 @@ using namespace std::chrono;
 using std::chrono::steady_clock;
 
 //! Our Retinotectal reaction diffusion class
-#ifdef DNCOMP
+#ifdef AXONCOMP
 # include "rd_rettec.h"
 #else
 # include "rd_rettec_nocomp.h"
@@ -204,7 +204,7 @@ int main (int argc, char **argv)
     const bool plot_a_contours = conf.getBool ("plot_a_contours", true);
     const bool plot_a = conf.getBool ("plot_a", true);
     const bool plot_c = conf.getBool ("plot_c", true);
-# ifndef DNCOMP
+# ifndef AXONCOMP
     const bool plot_f = conf.getBool ("plot_f", false);
 # endif
     const bool plot_n = conf.getBool ("plot_n", true);
@@ -235,7 +235,7 @@ int main (int argc, char **argv)
 #endif // COMPILE_PLOTTING
 
     // Instantiate and set up the model object
-#ifdef DNCOMP
+#ifdef AXONCOMP
     RD_RetTec<FLT> RD;
 #else
     RD_RetTec_NoComp<FLT> RD;
@@ -271,8 +271,8 @@ int main (int argc, char **argv)
     RD.k = k;
     RD.alpha_ = conf.getDouble ("alpha", 3.0);
     RD.beta_ = conf.getDouble ("beta", 20.0);
-#ifdef DNCOMP
-    RD.epsilon_ = conf.getDouble ("epsilon", 150.0);
+#ifdef AXONCOMP
+    RD.epsilon = conf.getDouble ("epsilon", 0.2);
 #else
     RD.s = conf.getDouble ("s", 1.0);
     RD.set_w (conf.getDouble ("w", 1.0));
@@ -348,7 +348,7 @@ int main (int argc, char **argv)
     Scale<FLT> zscale; zscale.setParams (_m/10.0f, _c/10.0f);
     // The second is the colour scaling.
     Scale<FLT> cscale; cscale.setParams (_m, _c);
-# ifndef DNCOMP
+# ifndef AXONCOMP
     // scaling2
     Scale<FLT> zscale2; zscale2.setParams (1.0f/5.0f, 0.0f);
     Scale<FLT> cscale2; cscale2.setParams (1.0f, 0.0f);
@@ -370,7 +370,7 @@ int main (int argc, char **argv)
     float xzero = 0.0f;
     xzero -= (plot_a == true ?  RD.hg->width() * sqrt(RD.N) : 0.0f);
     xzero -= (plot_c == true ?  RD.hg->width() * sqrt(RD.N) : 0.0f);
-# ifndef DNCOMP
+# ifndef AXONCOMP
     xzero -= (plot_f == true ?  RD.hg->width() * sqrt(RD.N) : 0.0f);
 # endif
 
@@ -415,7 +415,7 @@ int main (int argc, char **argv)
         xzero = spatOff[0] + RD.hg->width();
     }
 
-# ifndef DNCOMP
+# ifndef AXONCOMP
     // The f variable
     vector<unsigned int> fgrids;
     if (plot_f) {
@@ -653,7 +653,7 @@ int main (int argc, char **argv)
                     mdlptr->updateData (&RD.c[i]);
                 }
             }
-#ifndef DNCOMP
+#ifndef AXONCOMP
             if (plot_f) {
                 for (unsigned int i = 0; i<RD.N; ++i) {
                     mdlptr = (VdmPtr)v1.getVisualModel (fgrids[i]);

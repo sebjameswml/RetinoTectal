@@ -7,14 +7,14 @@
 
 # Divisive normalization of a_i along with competition (linear)
 add_executable(rettec rettec.cpp)
-target_compile_definitions(rettec PUBLIC FLT=float COMPILE_PLOTTING DNCOMP)
+target_compile_definitions(rettec PUBLIC FLT=float COMPILE_PLOTTING AXONCOMP)
 target_link_libraries(rettec ${MORPH_LDFLAGS} OpenGL::GL)
 
 add_executable(rettec_c rettec.cpp)
-target_compile_definitions(rettec_c PUBLIC FLT=float DNCOMP)
+target_compile_definitions(rettec_c PUBLIC FLT=float AXONCOMP)
 target_link_libraries(rettec_c ${MORPH_LDFLAGS})
 
-# Difference with these two is that DNCOMP is NOT defined
+# Difference with these two is that AXONCOMP is NOT defined
 add_executable(rettec_nc rettec.cpp)
 target_compile_definitions(rettec_nc PUBLIC FLT=float COMPILE_PLOTTING DEBUG)
 target_link_libraries(rettec_nc ${MORPH_LDFLAGS} OpenGL::GL)
