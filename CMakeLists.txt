@@ -5,6 +5,8 @@ project(RetinoTectal)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
+set (CMAKE_CXX_STANDARD 17)
+
 # From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
 # __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
