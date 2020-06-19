@@ -14,12 +14,14 @@ template <class Flt>
 class RD_RetTec : public RD_Barrel<Flt>, public RetArrange<Flt>
 {
 public:
-    RD_RetTec (void) {
+    RD_RetTec (void)
+    {
         std::cout << "RD_RetTec constructor" << std::endl;
     }
     ~RD_RetTec (void) {}
 
-    virtual void allocate (void) {
+    virtual void allocate (void)
+    {
         RD_Barrel<Flt>::allocate();
     }
 
@@ -37,7 +39,8 @@ public:
 
 protected:
     //! Set up the gammas, with noise if necessary
-    void setupGammas (void) {
+    void setupGammas (void)
+    {
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
                 // With noise on gammas?
@@ -50,7 +53,8 @@ protected:
         }
     }
 
-    void setupPerNParams (void) {
+    void setupPerNParams (void)
+    {
         // Index through thalamocortical fields, setting params:
         for (unsigned int i = 0; i < this->N; ++i) {
             this->alpha[i] = this->alpha_;
@@ -68,7 +72,8 @@ protected:
 
 public:
     //! Override step() to recompute g on each sim step
-    virtual void step (void) {
+    virtual void step (void)
+    {
         this->stepCount++;
         // 0. Rebuild g, with a new set of random samples, if necessary
         if (this->sigma_rho != scf(0.0)) {
@@ -84,7 +89,8 @@ public:
 
 protected:
     //! Build g from the gradient of rho and the gammas, with an option for a noisy calculation.
-    void build_g (void) {
+    void build_g (void)
+    {
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
         if (this->sigma_rho == scf(0.0)) {
             // No noise
@@ -121,8 +127,8 @@ protected:
 
 public:
     //! Overrides RD_Barrel spatial analysis, adding the tec_coords-reg_centroids computation
-    virtual void spatialAnalysis (void) {
-
+    virtual void spatialAnalysis (void)
+    {
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
             DBG ("analysis already computed, no need to recompute.");
@@ -152,7 +158,8 @@ public:
         this->spatialAnalysisComputed = true;
     }
 
-    void saveSpatial (void) {
+    void saveSpatial (void)
+    {
         std::stringstream fname;
         fname << this->logpath << "/spatial_";
         fname.width(5);

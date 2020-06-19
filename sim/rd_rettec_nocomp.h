@@ -19,11 +19,13 @@ public:
     RD_RetTec_NoComp (void) {}
     ~RD_RetTec_NoComp (void) {}
 
-    virtual void allocate (void) {
+    virtual void allocate (void)
+    {
         RD_AG_NoComp<Flt>::allocate();
     }
 
-    virtual void init (void) {
+    virtual void init (void)
+    {
         std::cout << "RD_RetTec_NoComp init()" << std::endl;
         // Set up alpha, beta, epsilon (before RD_AG_NoComp::init)
         this->setupPerNParams();
@@ -37,7 +39,8 @@ public:
     }
 
 protected:
-    void setupGammas (void) {
+    void setupGammas (void)
+    {
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
                 // With noise on gammas?
@@ -50,7 +53,8 @@ protected:
         }
     }
 
-    void setupPerNParams (void) {
+    void setupPerNParams (void)
+    {
         // Index through thalamocortical fields, setting params:
         for (unsigned int i = 0; i < this->N; ++i) {
             this->alpha[i] = this->alpha_;
@@ -68,7 +72,8 @@ protected:
 
 public:
     //! Override step() to recompute g on each sim step (for noise)
-    virtual void step (void) {
+    virtual void step (void)
+    {
         this->stepCount++;
         // 0. Rebuild g, with a new set of random samples, if necessary
         if (this->sigma_rho != scf(0.0)) {
@@ -86,8 +91,8 @@ protected:
     /*!
      * Build g from the gradient of rho and the gammas, with an option for a noisy calculation.
      */
-    void build_g (void) {
-
+    void build_g (void)
+    {
         // First zero g.
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
 
@@ -126,8 +131,8 @@ protected:
 
 public:
     //! spatial analysis, adding the tec_coords-reg_centroids computation
-    virtual void spatialAnalysis (void) {
-
+    virtual void spatialAnalysis (void)
+    {
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
             DBG ("analysis already computed, no need to recompute.");
@@ -159,7 +164,8 @@ public:
         this->spatialAnalysisComputed = true;
     }
 
-    void saveSpatial (void) {
+    void saveSpatial (void)
+    {
         std::stringstream fname;
         fname << this->logpath << "/spatial_";
         fname.width(5);
