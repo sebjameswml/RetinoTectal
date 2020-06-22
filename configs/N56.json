@@ -1,66 +1,81 @@
-/*
- * RT projection with how many projections?
- */
 {
-    // Global simulation parameters
-    "steps" : 10000,                // Number of steps to simulate for
+    "description" : "A medium sized retino-tectal simulation",
+
+    "section_global" : "Global parameters",
+    "steps" : 10000,
     "logevery": 200,
     "overwrite_logs": true,
     "logbase" : "./log/",
-    "hextohex_d" : 0.03,           // Hex to hex distance, determines num hexes
+    "hextohex_d" : 0.03,
     "ellipse_a" : 0.7,
     "ellipse_b" : 0.5,
     "ret_startangle" : 0,
-    "ret_endangle" : 6.283185307, // 6.283185307, 3.141592654 or 1.570796327
+    "ret_endangle_options" : "6.283185307, 3.141592654 or 1.570796327",
+    "ret_endangle" : 6.283185307,
     "boundaryFalloffDist" : 0.1,
-    // Diffusion const
     "D" : 0.05,
-    // gamma gain
     "G" : 1.0,
 
-    // gamma noise. The std deviation of a 0-mean normal dist which is used to perturb
-    // each gamma.
-    //
-    // With sigma_rho==0; 0.1 makes a clear, visual disruption to the pattern
+    "desc_sigma_gamma" : "gamma noise. The std deviation of a 0-mean normal dist which is used to perturb each gamma. With sigma_rho==0; 0.1 makes a clear, visual disruption to the pattern",
+
     "sigma_gamma" : 0.0,
 
-    // rho noise - the growth cones' sampling noise on direction of travel. Note that
-    // this has a performance hit, more or less doubling the time required for
-    // simulation.
-    //
-    // With sigma_gamma==0, 10 begins to disrupt pattern formation to begin with,
-    // possibly slowing pattern formation. 20 heavily disrupts the pattern, which
-    // still fails to form after 2x as many steps as the usual simulation. At 100,
-    // simulation fails numerically.
+    "desc_sigma_rho" : "rho noise - the growth cones' sampling noise on direction of travel. Note that this has a performance hit, more or less doubling the time required for simulation. With sigma_gamma==0, 10 begins to disrupt pattern formation to begin with, possibly slowing pattern formation. 20 heavily disrupts the pattern, which still fails to form after 2x as many steps as the usual simulation. At 100, simulation fails numerically.",
+
     "sigma_rho" : 0,
 
-    // Exponent on a
     "k" : 3,
     "N" : 56,
     "alpha" : 3.6,
     "beta" : 17,
     "epsilon" : 1.2,
 
-    // Stopping parameters
+    "desc_dt" : "Timestep. Defaults to 0.00001 if omitted here",
+    "dt" : 0.0005,
+
+    "aNoiseGain" : 0.2,
+    "aInitialOffset" : 0.2,
+
+    "desc_guidance" : "Array of parameters for the guidance molecules",
+    "guidance": [
+        {
+            "direction" : "x",
+            "shape"  : "Linear1D",
+            "gain"   : 1.0,
+            "phi"    : 0,
+            "width"  : 0.1,
+            "offset" : 0.0
+        },
+        {
+            "direction" : "y",
+            "shape"  : "Linear1D",
+            "gain"   : 1.0,
+            "phi"    : 90,
+            "width"  : 0.1,
+            "offset" : 0.0
+        }
+    ],
+
+    "section_stopping" : "Stopping parameters",
     "s" : 9.0,
     "w" : 0.01,
 
-    // Timestep. Defaults to 0.00001 if omitted here
-    "dt" : 0.0005,
-
     "contour_threshold" : 0.1,
 
-    // Visualization parameters (ignored by computation-only binaries)
+    "section_vis" : "Visualization parameters (ignored by computation-only binaries)",
     "win_width": 1600,
     "win_height": 600,
     "plotevery": 50,
-    "vidframes": false,    // If true, number video frame saves consecutively, rather
-                           // than by simulation step number
-    "x_default": 1.1, // -5.2 // Get these from Scenetrans: press 'z' in your window to see
-    "y_default": -5, // 0
-    "z_default": -15,  // -1.5      // Larger/more negative to zoom out
+    "desc_vidframes" : "If true, number video frame saves consecutively, rather than by simulation step number",
+    "vidframes": false,
+
+    "section_scene_parameters" : "Get these from Scenetrans: press 'z' in your window to see",
+    "x_default": 1.1,
+    "y_default": -5,
+    "desc_z_default" : "Larger/more negative to zoom out",
+    "z_default": -15,
     "sceneLocked": false,
-    //
+
     "plot_guide" : true,
     "plot_contours" : true,
     "plot_a_contours" : true,
@@ -68,26 +83,5 @@
     "plot_c" : false,
     "plot_f" : true,
     "plot_n" : true,
-    "plot_dr" : true,
-
-    "aNoiseGain" : 0.2,
-    "aInitialOffset" : 0.2,
-
-    // Array of parameters for the guidance molecules
-    "guidance": [
-        {
-            "shape"  : "Linear1D", // 'x'
-            "gain"   : 1.0,
-            "phi"    : 0,
-            "width"  : 0.1,
-            "offset" : 0.0
-        },
-        {
-            "shape"  : "Linear1D", // 'y'
-            "gain"   : 1.0,
-            "phi"    : 90,
-            "width"  : 0.1,
-            "offset" : 0.0
-        }
-    ] // end guidance
+    "plot_dr" : true
 }
