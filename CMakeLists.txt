@@ -25,6 +25,13 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 
 # Add the host definition to CXXFLAGS along with other switches
+#
+#OpenMP. With cmake 3.9+, this is the right way to do it:
+#find_package(OpenMP)
+#if(OpenMP_CXX_FOUND)
+#    target_link_libraries(MyTarget PUBLIC OpenMP::OpenMP_CXX)
+#endif()
+#
 if (APPLE)
   set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Xpreprocessor -fopenmp")
 else()
