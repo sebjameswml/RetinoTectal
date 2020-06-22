@@ -3,7 +3,8 @@
 
     "section_global" : "Global parameters",
     "steps" : 10000,
-    "logevery": 200,
+    "logevery": 1,
+    "logfrom" : 5550,
     "overwrite_logs": true,
     "logbase" : "./log/",
     "hextohex_d" : 0.03,

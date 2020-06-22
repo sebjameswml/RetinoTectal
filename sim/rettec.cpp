@@ -12,6 +12,22 @@
 #endif
 
 #include <iostream>
+
+//! A global variable used as a finished-the-loop flag. Global so that signalHandler can
+//! set it true to break out of the loop early, but with the program completing correctly.
+namespace sighandling {
+    bool finished = false;
+    bool user_interrupt = false;
+
+    //! Signal handler to catch Ctrl-C
+    void handler (int signum) {
+        std::cerr << "User has interrupted the simulation. Finish up, save logs then exit...\n";
+        //! Set true to finish early
+        finished = true;
+        user_interrupt = true;
+    }
+}
+
 #include <fstream>
 #include <vector>
 #include <list>
@@ -19,10 +35,8 @@
 #include <sstream>
 #include <limits>
 #include <cmath>
+#include <csignal>
 #include <chrono>
-using namespace std;
-using namespace std::chrono;
-using std::chrono::steady_clock;
 
 //! Our Retinotectal reaction diffusion class
 #ifdef AXONCOMP
@@ -32,13 +46,10 @@ using std::chrono::steady_clock;
 #endif
 
 #include "morph/Vector.h"
-
 // Shape analysis utilities
 #include "morph/ShapeAnalysis.h"
-
 //! Included for directory manipulation code
 #include <morph/tools.h>
-
 //! A jsoncpp-wrapping class for configuration.
 #include <morph/Config.h>
 
@@ -64,21 +75,21 @@ typedef morph::VisualDataModel<FLT>* VdmPtr;
 # include <morph/MathAlgo.h>
 
 //! Helper function to save PNG images
-void savePngs (const string& logpath, const string& name,
+void savePngs (const std::string& logpath, const std::string& name,
                unsigned int frameN, morph::Visual& v) {
-    stringstream ff1;
-    ff1 << logpath << "/" << name<< "_";
-    ff1 << setw(5) << setfill('0') << frameN;
+    std::stringstream ff1;
+    ff1 << logpath << "/" << name << "_";
+    ff1 << std::setw(5) << std::setfill('0') << frameN;
     ff1 << ".png";
     v.saveImage (ff1.str());
 }
 
 //! Take the first element of the array and create a vector<vector<FLT>> to plot
-vector<vector<FLT> > separateVectorField (vector<array<vector<FLT>, 2> >& f,
+std::vector<std::vector<FLT> > separateVectorField (std::vector<std::array<std::vector<FLT>, 2> >& f,
                                           unsigned int arrayIdx) {
-    vector<vector<FLT> > vf;
-    for (array<vector<FLT>, 2> fia : f) {
-        vector<FLT> tmpv = fia[arrayIdx];
+    std::vector<std::vector<FLT> > vf;
+    for (std::array<std::vector<FLT>, 2> fia : f) {
+        std::vector<FLT> tmpv = fia[arrayIdx];
         vf.push_back (tmpv);
     }
     return vf;
@@ -87,19 +98,23 @@ vector<vector<FLT> > separateVectorField (vector<array<vector<FLT>, 2> >& f,
 
 int main (int argc, char **argv)
 {
+    // register signal handler
+    signal (SIGINT, sighandling::handler);
+    signal (SIGTERM, sighandling::handler);
+
     // Randomly set the RNG seed
     srand (morph::Tools::randomSeed());
 
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " /path/to/params.json [/path/to/logdir]" << endl;
+        std::cerr << "Usage: " << argv[0] << " /path/to/params.json [/path/to/logdir]" << std::endl;
         return 1;
     }
-    string paramsfile (argv[1]);
+    std::string paramsfile (argv[1]);
 
     // Set up a morph::Config object for reading configuration
     morph::Config conf(paramsfile);
     if (!conf.ready) {
-        cerr << "Error setting up JSON config: " << conf.emsg << endl;
+        std::cerr << "Error setting up JSON config: " << conf.emsg << std::endl;
         return 1;
     }
 
@@ -108,15 +123,17 @@ int main (int argc, char **argv)
      */
     const unsigned int steps = conf.getUInt ("steps", 1000UL);
     if (steps == 0) {
-        cerr << "Not much point simulating 0 steps! Exiting." << endl;
+        std::cerr << "Not much point simulating 0 steps! Exiting." << std::endl;
         return 1;
     }
     // If logevery is 0, then log nothing to HDF5
     const unsigned int logevery = conf.getUInt ("logevery", 100UL);
+    // Only start logging after simulation has got to this step:
+    const unsigned int logfrom = conf.getUInt ("logfrom", 0UL);
     const float hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
     const float hexspan = conf.getFloat ("hexspan", 4.0f);
     const float boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
-    const string svgpath = conf.getString ("svgpath", "");
+    const std::string svgpath = conf.getString ("svgpath", "");
     // If svgpath is empty, then compute an elliptical boundary:
     const float ellipse_a = conf.getFloat ("ellipse_a", 1.0f);
     const float ellipse_b = conf.getFloat ("ellipse_b", 0.7f);
@@ -124,13 +141,13 @@ int main (int argc, char **argv)
     const double ret_startangle = conf.getDouble ("ret_startangle", 0.0);
     const double ret_endangle = conf.getDouble ("ret_endangle", morph::TWO_PI_D);
     bool overwrite_logs = conf.getBool ("overwrite_logs", false);
-    string logpath = conf.getString ("logpath", "fromfilename");
-    string logbase = "";
+    std::string logpath = conf.getString ("logpath", "fromfilename");
+    std::string logbase = "";
     if (logpath == "fromfilename") {
         // Using json filename as logpath
-        string justfile = paramsfile;
+        std::string justfile = paramsfile;
         // Remove trailing .json and leading directories
-        vector<string> pth = morph::Tools::stringToVector (justfile, "/");
+        std::vector<std::string> pth = morph::Tools::stringToVector (justfile, "/");
         justfile = pth.back();
         morph::Tools::searchReplace (".json", "", justfile);
         // Use logbase as the subdirectory into which this should go
@@ -141,13 +158,13 @@ int main (int argc, char **argv)
         logpath = logbase + justfile;
     }
     if (argc == 3) {
-        string argpath(argv[2]);
-        cerr << "Overriding the config-given logpath " << logpath << " with " << argpath << endl;
+        std::string argpath(argv[2]);
+        std::cerr << "Overriding the config-given logpath " << logpath << " with " << argpath << std::endl;
         logpath = argpath;
         if (overwrite_logs == true) {
-            cerr << "WARNING: You set a command line log path.\n"
-                 << "       : Note that the parameters config permits the program to OVERWRITE LOG\n"
-                 << "       : FILES on each run (\"overwrite_logs\" is set to true)." << endl;
+            std::cerr << "WARNING: You set a command line log path.\n"
+                      << "       : Note that the parameters config permits the program to OVERWRITE LOG\n"
+                      << "       : FILES on each run (\"overwrite_logs\" is set to true)." << std::endl;
         }
     }
 
@@ -269,7 +286,7 @@ int main (int argc, char **argv)
     for (unsigned int j = 0; j < guid.size(); ++j) {
         Json::Value v = guid[j];
         // What guidance molecule method will we use?
-        string rmeth = v.get ("shape", "Sigmoid1D").asString();
+        std::string rmeth = v.get ("shape", "Sigmoid1D").asString();
         DBG2 ("guidance molecule shape: " << rmeth);
         if (rmeth == "Sigmoid1D") {
             RD.rhoMethod[j] = FieldShape::Sigmoid1D;
@@ -300,8 +317,8 @@ int main (int argc, char **argv)
     if (morph::Tools::dirExists (logpath) == false) {
         morph::Tools::createDir (logpath);
         if (morph::Tools::dirExists (logpath) == false) {
-            cerr << "Failed to create the logpath directory "
-                 << logpath << " which does not exist."<< endl;
+            std::cerr << "Failed to create the logpath directory "
+                      << logpath << " which does not exist."<< std::endl;
             return 1;
         }
     } else {
@@ -311,9 +328,9 @@ int main (int argc, char **argv)
             && (morph::Tools::fileExists (logpath + "/params.json") == true
                 || morph::Tools::fileExists (logpath + "/guidance.h5") == true
                 || morph::Tools::fileExists (logpath + "/positions.h5") == true)) {
-            cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
-                 << "Please clean it out manually, choose another directory or set\n"
-                 << "overwrite_logs to true in your parameters config JSON file." << endl;
+            std::cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
+                      << "Please clean it out manually, choose another directory or set\n"
+                      << "overwrite_logs to true in your parameters config JSON file." << std::endl;
             return 1;
         }
     }
@@ -346,8 +363,8 @@ int main (int argc, char **argv)
     unsigned int dr_grid = 0;
     unsigned int quiv_grid = 0;
 
-    vector<unsigned int> guide_grids;
-    vector<unsigned int> guidegrad_grids;
+    std::vector<unsigned int> guide_grids;
+    std::vector<unsigned int> guidegrad_grids;
 
     // Spatial offset
     morph::Vector<FLT, 3> spatOff;
@@ -361,7 +378,7 @@ int main (int argc, char **argv)
 # endif
 
     // The a variable
-    vector<unsigned int> agrids;
+    std::vector<unsigned int> agrids;
     unsigned int side = static_cast<unsigned int>(floor (sqrt (RD.N)));
     if (plot_a) {
         spatOff = {xzero, 0.0, 0.0 };
@@ -382,7 +399,7 @@ int main (int argc, char **argv)
     }
 
     // The c variable
-    vector<unsigned int> cgrids;
+    std::vector<unsigned int> cgrids;
     if (plot_c) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
@@ -403,7 +420,7 @@ int main (int argc, char **argv)
 
 # ifndef AXONCOMP
     // The f variable
-    vector<unsigned int> fgrids;
+    std::vector<unsigned int> fgrids;
     if (plot_f) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
@@ -440,9 +457,9 @@ int main (int argc, char **argv)
     morph::Scale<FLT> null_zscale; null_zscale.setParams (0.0f, 0.0f);
     morph::Scale<FLT> ctr_cscale; ctr_cscale.setParams (1.0f, 0.0f);
 
-    vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
+    std::vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
 
-    vector<morph::Vector<FLT,3>> zerovecs;
+    std::vector<morph::Vector<FLT,3>> zerovecs;
     zerovecs.resize (RD.N);
 
     if (plot_contours) {
@@ -511,16 +528,16 @@ int main (int argc, char **argv)
         // Plot coordinates of the Retinal neurons.
         xzero +=  (1.7 * RD.hg->width());
         spatOff = { xzero, 0.0, 0.0 };
-        vector<array<float, 3>> ret_coordinates;
+        std::vector<std::array<float, 3>> ret_coordinates;
         for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
-            array<float, 2> rc = RD.ret_coords[c];
-            array<float, 3> rc3;
+            std::array<float, 2> rc = RD.ret_coords[c];
+            std::array<float, 3> rc3;
             rc3[0] = rc[0];
             rc3[1] = rc[1];
             rc3[2] = 0.0f;
             ret_coordinates.push_back (rc3);
         }
-        vector<float> neuronColourData;
+        std::vector<float> neuronColourData;
         for (unsigned int i = 1; i <= RD.N; ++i) {
             neuronColourData.push_back ((float)i/(float)(RD.N+1));
         }
@@ -540,8 +557,8 @@ int main (int argc, char **argv)
         for (unsigned int j = 0; j<RD.M; ++j) {
 
             // gradient of guidance expression
-            vector<vector<FLT> > gx = separateVectorField (RD.g[j], 0);
-            vector<vector<FLT> > gy = separateVectorField (RD.g[j], 1);
+            std::vector<std::vector<FLT> > gx = separateVectorField (RD.g[j], 0);
+            std::vector<std::vector<FLT> > gy = separateVectorField (RD.g[j], 1);
             FLT ming = 1e7;
             FLT maxg = -1e7;
             if (plot_guidegrad) {
@@ -595,106 +612,118 @@ int main (int argc, char **argv)
     }
 
     // if using plotting, then set up the render clock
-    steady_clock::time_point lastrender = steady_clock::now();
+    std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
 
     // A pointer to access the data layer of HexGridVisual objects.
     morph::VisualDataModel<FLT>* mdlptr = (VdmPtr)0;
 #endif // COMPILE_PLOTTING
 
-    // Start the loop
-    bool finished = false;
-    while (finished == false) {
-        // Step the model
-        RD.step();
-        if ((RD.stepCount % 1000) == 0) {
-            cout << RD.stepCount << " steps..." << endl;
-        }
+    // Innocent until proven guilty
+    sighandling::user_interrupt = false;
+    conf.set ("crashed", false);
+
+    try {
+        // Start the loop
+        sighandling::finished = false;
+        while (sighandling::finished == false) {
+            // Step the model
+            RD.step();
+            if ((RD.stepCount % 1000) == 0) {
+                std::cout << RD.stepCount << " steps...\n";
+            }
 
 #ifdef COMPILE_PLOTTING
-        if ((RD.stepCount % plotevery) == 0) {
-            DBG2("Plot at step " << RD.stepCount);
-            // Do a plot of the ctrs as found.
-            vector<FLT> ctrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.c, RD.contour_threshold);
+            if ((RD.stepCount % plotevery) == 0) {
+                DBG2("Plot at step " << RD.stepCount);
+                // Do a plot of the ctrs as found.
+                std::vector<FLT> ctrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.c, RD.contour_threshold);
 
-            if (plot_contours) {
-                mdlptr = (VdmPtr)v1.getVisualModel (c_ctr_grid);
-                mdlptr->updateData (&ctrmap);
-            }
-
-            if (plot_a_contours) {
-                vector<FLT> actrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.a, RD.contour_threshold);
-                mdlptr = (VdmPtr)v1.getVisualModel (a_ctr_grid);
-                mdlptr->updateData (&actrmap);
-            }
-
-            if (plot_a) {
-                for (unsigned int i = 0; i<RD.N; ++i) {
-                    mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
-                    mdlptr->updateData (&RD.a[i]);
+                if (plot_contours) {
+                    mdlptr = (VdmPtr)v1.getVisualModel (c_ctr_grid);
+                    mdlptr->updateData (&ctrmap);
                 }
-            }
-            if (plot_c) {
-                for (unsigned int i = 0; i<RD.N; ++i) {
-                    mdlptr = (VdmPtr)v1.getVisualModel (cgrids[i]);
-                    mdlptr->updateData (&RD.c[i]);
+
+                if (plot_a_contours) {
+                    std::vector<FLT> actrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.a, RD.contour_threshold);
+                    mdlptr = (VdmPtr)v1.getVisualModel (a_ctr_grid);
+                    mdlptr->updateData (&actrmap);
                 }
-            }
+
+                if (plot_a) {
+                    for (unsigned int i = 0; i<RD.N; ++i) {
+                        mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
+                        mdlptr->updateData (&RD.a[i]);
+                    }
+                }
+                if (plot_c) {
+                    for (unsigned int i = 0; i<RD.N; ++i) {
+                        mdlptr = (VdmPtr)v1.getVisualModel (cgrids[i]);
+                        mdlptr->updateData (&RD.c[i]);
+                    }
+                }
 #ifndef AXONCOMP
-            if (plot_f) {
-                for (unsigned int i = 0; i<RD.N; ++i) {
-                    mdlptr = (VdmPtr)v1.getVisualModel (fgrids[i]);
-                    mdlptr->updateData (&RD.f[i]);
+                if (plot_f) {
+                    for (unsigned int i = 0; i<RD.N; ++i) {
+                        mdlptr = (VdmPtr)v1.getVisualModel (fgrids[i]);
+                        mdlptr->updateData (&RD.f[i]);
+                    }
                 }
-            }
 #endif
-            if (plot_n) {
-                mdlptr = (VdmPtr)v1.getVisualModel (ngrid);
-                mdlptr->updateData (&RD.n);
-            }
-            if (plot_dr) {
-                RD.spatialAnalysis();
-                mdlptr = (VdmPtr)v1.getVisualModel (dr_grid);
-                mdlptr->updateData (&RD.regions);
-                // Plot the difference vectors here.
-                vector<morph::Vector<float, 3>> regcs;
-                for (auto rc : RD.reg_centroids) {
-                    regcs.push_back ({rc.second.first, rc.second.second, 0.0f});
+                if (plot_n) {
+                    mdlptr = (VdmPtr)v1.getVisualModel (ngrid);
+                    mdlptr->updateData (&RD.n);
                 }
-                mdlptr = (VdmPtr)v1.getVisualModel (quiv_grid);
-                mdlptr->updateData (&regcs, &RD.tec_offsets);
+                if (plot_dr) {
+                    RD.spatialAnalysis();
+                    mdlptr = (VdmPtr)v1.getVisualModel (dr_grid);
+                    mdlptr->updateData (&RD.regions);
+                    // Plot the difference vectors here.
+                    std::vector<morph::Vector<float, 3>> regcs;
+                    for (auto rc : RD.reg_centroids) {
+                        regcs.push_back ({rc.second.first, rc.second.second, 0.0f});
+                    }
+                    mdlptr = (VdmPtr)v1.getVisualModel (quiv_grid);
+                    mdlptr->updateData (&regcs, &RD.tec_offsets);
 
+                }
+                // Save to PNG
+                if (vidframes) {
+                    savePngs (logpath, "sim", framecount, v1);
+                    ++framecount;
+                } else {
+                    savePngs (logpath, "sim", RD.stepCount, v1);
+                }
             }
-            // Save to PNG
-            if (vidframes) {
-                savePngs (logpath, "sim", framecount, v1);
-                ++framecount;
-            } else {
-                savePngs (logpath, "sim", RD.stepCount, v1);
-            }
-        }
 
-        // rendering the graphics.
-        steady_clock::duration sincerender = steady_clock::now() - lastrender;
-        if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
-            glfwPollEvents();
-            v1.render();
-            lastrender = steady_clock::now();
-        }
+            // rendering the graphics.
+            std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
+                glfwPollEvents();
+                v1.render();
+                lastrender = std::chrono::steady_clock::now();
+            }
 #endif // COMPILE_PLOTTING
 
-        // Save data every 'logevery' steps
-        if (logevery != 0 && (RD.stepCount == 1 || (RD.stepCount % logevery) == 0)) {
-            DBG ("Logging data at step " << RD.stepCount);
-            RD.save();
-            // If spatial analysis, then add line here to do it
-            RD.spatialAnalysis();
-            // And save it
-            RD.saveSpatial();
-        }
+            // Save data every 'logevery' steps
+            if (logevery != 0 && RD.stepCount >= logfrom && (RD.stepCount == 1 || (RD.stepCount % logevery) == 0)) {
+                DBG ("Logging data at step " << RD.stepCount);
+                RD.save();
+                // If spatial analysis, then add line here to do it
+                RD.spatialAnalysis();
+                // And save it
+                RD.saveSpatial();
+            }
 
-        if (RD.stepCount > steps) {
-            finished = true;
+            if (RD.stepCount > steps) {
+                sighandling::finished = true;
+            }
         }
+    } catch (const std::exception& e) {
+        // Set some stuff in the config as to what happened, so it'll get saved into params.conf
+        conf.set ("crashed", true);
+        std::stringstream ee;
+        ee << e.what();
+        conf.set ("exception_message", ee.str());
     }
 
     // Save out the sums.
@@ -707,8 +736,10 @@ int main (int argc, char **argv)
     // results were computed with single precision, if 8, then double
     // precision was used. Also save various parameters from the RD system.
     conf.set ("float_width", (unsigned int)sizeof(FLT));
-    string tnow = morph::Tools::timeNow();
+    std::string tnow = morph::Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
+    conf.set ("final_step", RD.stepCount);
+    conf.set ("user_interrupt", sighandling::user_interrupt);
     conf.set ("hextohex_d", RD.hextohex_d);
     conf.set ("D", RD.get_D());
     conf.set ("k", RD.k);
@@ -720,33 +751,33 @@ int main (int argc, char **argv)
     if (argc > 1) { conf.set("argv1", argv[1]); }
 
     // We'll save a copy of the parameters for the simulation in the log directory as params.json
-    const string paramsCopy = logpath + "/params.json";
+    const std::string paramsCopy = logpath + "/params.json";
     conf.write (paramsCopy);
     if (conf.ready == false) {
-        cerr << "Warning: Something went wrong writing a copy of the params.json: " << conf.emsg << endl;
+        std::cerr << "Warning: Something went wrong writing a copy of the params.json: " << conf.emsg << std::endl;
     }
 
 #if 0
     // Extract contours
-    vector<list<Hex> > ctrs = morph::ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
+    std::vector<std::list<morph::Hex> > ctrs = morph::ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
     {
         // Write each contour to a contours.h5 file
-        stringstream ctrname;
+        std::stringstream ctrname;
         ctrname << logpath << "/contours.h5";
         morph::HdfData ctrdata(ctrname.str());
         unsigned int nctrs = ctrs.size();
         ctrdata.add_val ("/num_contours", nctrs);
         for (unsigned int ci = 0; ci < nctrs; ++ci) {
-            vector<FLT> vx, vy;
+            std::vector<FLT> vx, vy;
             auto hi = ctrs[ci].begin();
             while (hi != ctrs[ci].end()) {
                 vx.push_back (hi->x);
                 vy.push_back (hi->y);
                 ++hi;
             }
-            stringstream ciss;
+            std::stringstream ciss;
             ciss << ci;
-            string pth = "/x" + ciss.str();
+            std::string pth = "/x" + ciss.str();
             ctrdata.add_contained_vals (pth.c_str(), vx);
             pth[1] = 'y';
             ctrdata.add_contained_vals (pth.c_str(), vy);
@@ -760,8 +791,8 @@ int main (int argc, char **argv)
         }
 
         // Also extract the boundary of the main, enclosing hexgrid and write that.
-        list<morph::Hex> outerBoundary = RD.hg->getBoundary();
-        vector<FLT> vx, vy;
+        std::list<morph::Hex> outerBoundary = RD.hg->getBoundary();
+        std::vector<FLT> vx, vy;
         auto bi = outerBoundary.begin();
         while (bi != outerBoundary.end()) {
             vx.push_back (bi->x);
@@ -774,8 +805,10 @@ int main (int argc, char **argv)
 #endif
 
 #ifdef COMPILE_PLOTTING
-    cout << "Ctrl-c or press x in graphics window to exit.\n";
-    v1.keepOpen();
+    if (sighandling::user_interrupt == false) {
+        std::cout << "Press x in graphics window to exit.\n";
+        v1.keepOpen();
+    }
 #endif
 
     return 0;

@@ -506,7 +506,7 @@ public:
         this->zero_vector_variable (this->bSig);
 
         // Initialise a with noise
-        cout << "initmasks.size(): " << this->initmasks.size() << endl;
+        std::cout << "initmasks.size(): " << this->initmasks.size() << std::endl;
         this->noiseify_vector_vector (this->a, this->initmasks);
 
         // Mask the noise off (set sigmas to 0 to ignore the masking)
@@ -665,11 +665,11 @@ public:
                     this->groupset.insert (value);
                 }
             } else {
-                cerr << "WARNING: DID NOT SET GAMMA (too few RT axon types for n_idx=" << n_idx << ")" << endl;
+                std::cerr << "WARNING: DID NOT SET GAMMA (too few RT axon types for n_idx=" << n_idx << ")" << std::endl;
                 return 1;
             }
         } else {
-            cerr << "WARNING: DID NOT SET GAMMA (too few guidance molecules for m_idx=" << m_idx << ")" << endl;
+            std::cerr << "WARNING: DID NOT SET GAMMA (too few guidance molecules for m_idx=" << m_idx << ")" << std::endl;
             return 2;
         }
         return 0;

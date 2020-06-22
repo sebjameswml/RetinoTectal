@@ -8,6 +8,7 @@
  */
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
+#include <stdexcept>
 
 /*!
  * Enumerates the way that the guidance molecules are set up
@@ -478,7 +479,7 @@ public:
         this->zero_vector_variable (this->div_ahat);
 
         // Initialise a with noise
-        cout << "initmasks.size(): " << this->initmasks.size() << endl;
+        std::cout << "initmasks.size(): " << this->initmasks.size() << std::endl;
         this->noiseify_vector_vector (this->a, this->initmasks);
 
         // Mask the noise off (set sigmas to 0 to ignore the masking)
@@ -617,19 +618,19 @@ public:
         if (gamma.size() > m_idx) {
             if (gamma[m_idx].size() > n_idx) {
                 // Ok, we can set the value
-                //cout << "Setting gamma[m="<<m_idx<<"][n="<<n_idx<<"] to " << value << endl;
-                //cout << m_idx << "," << n_idx << "," << value << endl;
+                //std::cout << "Setting gamma[m="<<m_idx<<"][n="<<n_idx<<"] to " << value << std::endl;
+                //std::cout << m_idx << "," << n_idx << "," << value << std::endl;
                 this->gamma[m_idx][n_idx] = value;
                 if (group_m == m_idx) {
                     this->group[n_idx] = value;
                     this->groupset.insert (value);
                 }
             } else {
-                cerr << "WARNING: DID NOT SET GAMMA (too few RT axon types for n_idx=" << n_idx << ")" << endl;
+                std::cerr << "WARNING: DID NOT SET GAMMA (too few RT axon types for n_idx=" << n_idx << ")" << std::endl;
                 return 1;
             }
         } else {
-            cerr << "WARNING: DID NOT SET GAMMA (too few guidance molecules for m_idx=" << m_idx << ")" << endl;
+            std::cerr << "WARNING: DID NOT SET GAMMA (too few guidance molecules for m_idx=" << m_idx << ")" << std::endl;
             return 2;
         }
         return 0;
@@ -1087,8 +1088,12 @@ public:
         }
 
         // _Five_ terms to compute; see Eq. 17 in methods_notes.pdf. Copy comp3.
-#pragma omp parallel for //schedule(static) // This was about 10% faster than schedule(dynamic,50).
+        volatile bool breakflag = false;
+#pragma omp parallel for shared(breakflag) //schedule(static) // This was about 10% faster than schedule(dynamic,50).
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
+
+            // In OpenMP, iterations must be finished.
+            if (breakflag) { continue; }
 
             // 1. The D Del^2 a_i term. Eq. 18.
             // 1a. Or D Del^2 Sum(a_i) (new)
@@ -1107,7 +1112,7 @@ public:
             if (isnan(term1)) {
                 std::cerr << "term1 isnan" << std::endl;
                 std::cerr << "thesum is " << thesum << " fa[hi=" << hi << "] = " << fa[hi] << std::endl;
-                exit (21);
+                breakflag = true;
             }
 
             Flt term1_1 = Flt{0};
@@ -1118,7 +1123,7 @@ public:
             if (isnan(term1_1)) {
                 std::cerr << "term1_1 isnan" << std::endl;
                 std::cerr << "fa[hi="<<hi<<"] = " << fa[hi] << ", this->div_ahat[hi] = " << this->div_ahat[hi] << std::endl;
-                exit (21);
+                breakflag = true;
             }
 
             Flt term1_2 = Flt{0};
@@ -1130,11 +1135,12 @@ public:
                 std::cerr << "term1_2 isnan at hi=" << hi << std::endl;
                 if (isnan(this->grad_ahat[0][hi])) {
                     std::cerr << "grad_ahat[0][hi] isnan\n";
+                    breakflag = true;
                 }
                 if (isnan(this->grad_ahat[1][hi])) {
                     std::cerr << "grad_ahat[1][hi] isnan\n";
+                    breakflag = true;
                 }
-                exit (21);
             }
 
             // 2. The (a div(g)) term.
@@ -1156,14 +1162,19 @@ public:
             // - term1_1/2 or + term1_1/2? It's + in the supp.tex
             this->divJ[i][hi] = term1 + term1_1 + term1_2 - term2 - term3;
         }
+        if (breakflag == true) {
+            throw std::runtime_error ("compute_divJ: There was a nan");
+        }
     }
 
     /*!
      * Compute divergence of \hat{a}_i
      */
     void compute_divahat (void) {
-#pragma omp parallel for
+        volatile bool breakflag = false;
+#pragma omp parallel for shared(breakflag)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
+            if (breakflag) { continue; }
             Flt thesum = -6 * this->ahat[hi];
             thesum += this->ahat[(HAS_NE(hi)  ? NE(hi)  : hi)];
             thesum += this->ahat[(HAS_NNE(hi) ? NNE(hi) : hi)];
@@ -1174,8 +1185,11 @@ public:
             this->div_ahat[hi] = this->twoover3dd * thesum;
             if (isnan(this->div_ahat[hi])) {
                 std::cerr << "div ahat isnan" << std::endl;
-                exit (3);
+                breakflag = true;
             }
+        }
+        if (breakflag == true) {
+            throw std::runtime_error ("div ahat isnan");
         }
     }
 

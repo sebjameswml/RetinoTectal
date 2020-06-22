@@ -3,16 +3,10 @@
  */
 
 #include <morph/MathAlgo.h>
-using morph::MathAlgo;
 #include <morph/MathConst.h>
 #include <morph/Random.h>
-using morph::RandNormal;
 #include <cmath>
-using std::floor;
-using std::ceil;
-using std::abs;
-using std::sin;
-using std::cos;
+#include <iostream>
 
 #define scf(a) static_cast<Flt>(a)
 
@@ -43,16 +37,16 @@ public:
     Flt ret_startangle = scf(0.0);
     Flt ret_endangle = scf(morph::TWO_PI_D);
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
-    vector<array<Flt, 2>> ret_coords;
+    std::vector<std::array<Flt, 2>> ret_coords;
     //! The Cartesian coordinates of the equivalent locations of the retinal neurons
     //! on the tectum. To compute these (from ret_coords) we use ellipse_a and
     //! ellipse_b.
-    vector<morph::Vector<Flt, 3>> tec_coords;
+    std::vector<morph::Vector<Flt, 3>> tec_coords;
     //! tec_offsets = tec_coords - reg_centroids
-    vector<morph::Vector<Flt, 3>> tec_offsets;
+    std::vector<morph::Vector<Flt, 3>> tec_offsets;
     //! Store the radii which can be passed to a visualization to give a colourmap
     //! indication of the radius.
-    vector<Flt> ret_coords_radii;
+    std::vector<Flt> ret_coords_radii;
     //! The ring-to-ring distance; also the approximate distance between points on
     //! each ring.
     Flt ring_d = 0;
@@ -60,25 +54,25 @@ public:
 
     //! A random distribution of noise for setting up the gamma values from retinal
     //! neuron positions.
-    RandNormal<Flt>* gamma_noise = (RandNormal<Flt>*)0;
+    morph::RandNormal<Flt>* gamma_noise = (morph::RandNormal<Flt>*)0;
     //! The standard deviation of the gamma_noise; noise to apply to the gammas. This
     //! is the sigma of a normal distribution of mean 0.
     Flt sigma_gamma = static_cast<Flt>(0.0);
 
     //! A random distribution of noise to add to the determination of the gradient of
     //! rho.
-    RandNormal<Flt>* rho_noise = (RandNormal<Flt>*)0;
+    morph::RandNormal<Flt>* rho_noise = (morph::RandNormal<Flt>*)0;
     //! Standard deviation for rho_noise
     Flt sigma_rho = static_cast<Flt>(0.0);
 
     //! Number of neurons. A duplicate of the RD_Barrel class's N
     unsigned int NN;
     //! Ellipse parameters ellipse_a goes in first, ellipse_b in second.
-    pair<float, float> ellipse_radii;
+    std::pair<float, float> ellipse_radii;
 
     //! Constructor is a no-op
     RetArrange (void) {
-        cout << "RetArrange constructor" << endl;
+        std::cout << "RetArrange constructor" << std::endl;
     }
 
     //! Deconstructor has some memory deallocation to carry out
@@ -98,7 +92,7 @@ public:
      */
     virtual void initRet (unsigned int N_, float e_a, float e_b) {
 
-        cout << "RetArrange initRet()" << endl;
+        std::cout << "RetArrange initRet()" << std::endl;
         this->NN = N_;
         this->ellipse_radii.first = e_a;
         this->ellipse_radii.second = e_b;
@@ -107,10 +101,10 @@ public:
         this->arrangeRetina();
         // Set the random number generator parameters
         if (this->sigma_gamma != scf(0.0)) {
-            this->gamma_noise = new RandNormal<Flt> (scf(0.0), this->sigma_gamma);
+            this->gamma_noise = new morph::RandNormal<Flt> (scf(0.0), this->sigma_gamma);
         }
         if (this->sigma_rho != scf(0.0)) {
-            this->rho_noise = new RandNormal<Flt> (scf(0.0), this->sigma_rho);
+            this->rho_noise = new morph::RandNormal<Flt> (scf(0.0), this->sigma_rho);
         }
     }
 
@@ -136,25 +130,25 @@ protected:
         int num = 0;
         for (d = scf(0.001); d<scf(1.0); d+=scf(0.001)) {
             // This works out number of dots on rings with a fixed d.
-            num = MathAlgo::numDotsOnRings<Flt> (this->ret_inner, this->ret_outer, d,
-                                                 abs(this->ret_endangle - this->ret_startangle));
+            num = morph::MathAlgo::numDotsOnRings<Flt> (this->ret_inner, this->ret_outer, d,
+                                                        std::abs(this->ret_endangle - this->ret_startangle));
             if (num <= static_cast<int>(this->NN)) {
-                cout << "break on num=" << num << endl;
+                std::cout << "break on num=" << num << std::endl;
                 break;
             }
         }
-        cout << "d = " << d << " which makes "  << num << " dots" << endl;
-        cout << "Need to insert N - num extras or " << this->NN << " - " << num << endl;
+        std::cout << "d = " << d << " which makes "  << num << " dots" << std::endl;
+        std::cout << "Need to insert N - num extras or " << this->NN << " - " << num << std::endl;
         int required_extras = ((int)this->NN - num);
-        cout << "Need to insert " << required_extras << " extras" << endl;
+        std::cout << "Need to insert " << required_extras << " extras" << std::endl;
         // Right. Extras could be negative. FIXME! Or is it a BUG that it's apparently negative?
         // Don't think it's actually a bug. Just the fact that you can't keep distances equivalent
         // with one dot in the middle and a row around it with < 6 dots.
 
         Flt r = this->ret_inner;
-        cout << "ret_inner is " << this->ret_inner << endl;
-        vector<Flt> ringlens;
-        vector<unsigned int> ringnums;
+        std::cout << "ret_inner is " << this->ret_inner << std::endl;
+        std::vector<Flt> ringlens;
+        std::vector<unsigned int> ringnums;
         unsigned int ntot = 0;
         Flt tlen = 0.0;
         // This loop puts all the lengths of the rings in ringlens adn all the numbers of dots on
@@ -162,25 +156,25 @@ protected:
         while (r <= this->ret_outer) {
             Flt prop = abs(this->ret_endangle - this->ret_startangle) / scf(morph::TWO_PI_D);
             Flt alen = (prop * scf(morph::TWO_PI_D) * r);
-            cout << "Ring/arc r=" << r << " has length " << alen << endl;
+            std::cout << "Ring/arc r=" << r << " has length " << alen << std::endl;
             ringlens.push_back (alen);
             tlen += ringlens.back();
-            ringnums.push_back (MathAlgo::numOnCircleArc<Flt> (r, d, abs(this->ret_endangle - this->ret_startangle)));
-            cout << "This ring has " << ringnums.back() << " dots on it" << endl;
+            ringnums.push_back (morph::MathAlgo::numOnCircleArc<Flt> (r, d, abs(this->ret_endangle - this->ret_startangle)));
+            std::cout << "This ring has " << ringnums.back() << " dots on it" << std::endl;
             ntot += ringnums.back();
             r += d;
         }
-        cout << "tlen = " << tlen << ", and ntot = " << ntot <<  endl;
+        std::cout << "tlen = " << tlen << ", and ntot = " << ntot <<  std::endl;
 
         Flt len_per_extra = tlen / ((int)this->NN - (int)num);
-        cout << "Insert extra every = " << len_per_extra << endl;
+        std::cout << "Insert extra every = " << len_per_extra << std::endl;
 
         int extras = (int)this->NN - (int)num;
-        cout << "extras = " << extras << endl;
-        typename vector<Flt>::iterator rli = ringlens.begin();
-        cout << "Setting up ringextras with size " << ringlens.size() << endl;
-        vector<unsigned int> ringextras (ringlens.size(), 0);
-        typename vector<unsigned int>::iterator rei = ringextras.begin();
+        std::cout << "extras = " << extras << std::endl;
+        typename std::vector<Flt>::iterator rli = ringlens.begin();
+        std::cout << "Setting up ringextras with size " << ringlens.size() << std::endl;
+        std::vector<unsigned int> ringextras (ringlens.size(), 0);
+        typename std::vector<unsigned int>::iterator rei = ringextras.begin();
         Flt l = len_per_extra;
         while (extras > 0) {
             l -= *rli;
@@ -197,14 +191,14 @@ protected:
                 // Insert an extra here.
                 (*rei)++;
                 --extras; // record that we added it
-                cout << "added extra *rei=" << (*rei) << endl;
+                std::cout << "added extra *rei=" << (*rei) << std::endl;
                 // Update the remaining ring len in which to distribute extras
                 *rli = -l;
                 // Reset l back to len_per_extra
                 l = len_per_extra;
             }
         }
-        cout << "At end, l = " << l << " extras = " << extras << endl;
+        std::cout << "At end, l = " << l << " extras = " << extras << std::endl;
 
         // loop through ringextras and ringlens and generate the coordinates.
         this->ret_coords.resize (this->NN);
@@ -219,8 +213,8 @@ protected:
 
         this->ring_d = d;
 
-        cout << "--------------------------" << endl;
-        vector<unsigned int> dots_in_ring(ringlens.size(), 0);
+        std::cout << "--------------------------" << std::endl;
+        std::vector<unsigned int> dots_in_ring(ringlens.size(), 0);
         // For each ring:
         for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
 
@@ -230,7 +224,7 @@ protected:
             // Number of dots in this ring
             dots_in_ring[ri] = ringextras[ri]+ringnums[ri];
 
-            cout << "Ring r=" << r << ", dots=" << dots_in_ring[ri] << " (extras was " << ringextras[ri] << ")" << endl;
+            std::cout << "Ring r=" << r << ", dots=" << dots_in_ring[ri] << " (extras was " << ringextras[ri] << ")" << std::endl;
 
             // The angle between each dot
             Flt a = this->ret_endangle - this->ret_startangle;
@@ -279,11 +273,11 @@ protected:
 
 //#define DEBUG__ 1
 #ifdef DEBUG__
-        cout << "Tectal coordinates:" << endl;
+        std::cout << "Tectal coordinates:" << std::endl;
         for (auto dot : this->tec_coords) {
-            cout << dot[0] << "," << dot[1] << endl;
+            std::cout << dot[0] << "," << dot[1] << std::endl;
         }
-        cout << __FUNCTION__ << ": Done." << endl;
+        std::cout << __FUNCTION__ << ": Done." << std::endl;
 #endif
     }
 
