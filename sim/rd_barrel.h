@@ -739,6 +739,9 @@ public:
                 std::string pth(path.str());
                 data.add_contained_vals (pth.c_str(), this->divg_over3d[m][i]);
             }
+            std::stringstream gpath;
+            gpath << "/gamma" << m;
+            data.add_contained_vals (gpath.str().c_str(), this->gamma[m]);
         }
     }
 
