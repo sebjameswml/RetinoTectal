@@ -9,10 +9,9 @@
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
 #include <stdexcept>
+#include <cmath>
 
-/*!
- * Enumerates the way that the guidance molecules are set up
- */
+//! Enumerates the way that the guidance molecules are set up
 enum class FieldShape
 {
     Gauss1D,
@@ -23,11 +22,9 @@ enum class FieldShape
     CircLinear2D
 };
 
-/*!
- * A small collection of parameters to define width and location of a symmetric
- * (i.e. circular) 2D Gaussian.
- */
-template <class Flt>
+//! A small collection of parameters to define width and location of a symmetric
+//! (i.e. circular) 2D Gaussian.
+template <typename Flt>
 struct GaussParams
 {
     Flt gain;
@@ -41,12 +38,13 @@ struct GaussParams
  * Pax6, Emx2 system, and instead an option to define several guidance molecules and
  * thalamocortical types (i.e. configurable N and M).
  *
- * This class also has a mechanism for providing normalization of the a variable.
+ * This class also has a mechanism for competition, as described in the BarrelEmerge
+ * paper.
  *
  * This is a template class using 'Flt' for the float type, this can either be single
  * precision (float) or double precision (double).
  */
-template <class Flt>
+template <typename Flt>
 class RD_Barrel : public morph::RD_Base<Flt>
 {
 public:
@@ -293,7 +291,8 @@ public:
      * I apply a sigmoid to the boundary hexes, so that the noise drops away towards
      * the edge of the domain.
      */
-    virtual void noiseify_vector_vector (std::vector<std::vector<Flt> >& vv, std::vector<GaussParams<Flt> >& gp)
+    virtual void noiseify_vector_vector (std::vector<std::vector<Flt> >& vv,
+                                         std::vector<GaussParams<Flt> >& gp)
     {
         for (unsigned int i = 0; i<this->N; ++i) {
             for (auto h : this->hg->hexen) {
@@ -302,7 +301,7 @@ public:
                 // normal value. Close to boundary, noise is less.
                 vv[i][h.vi] = morph::Tools::randF<Flt>() * this->aNoiseGain + this->aInitialOffset;
                 if (h.distToBoundary > -0.5) { // It's possible that distToBoundary is set to -1.0
-                    Flt bSig = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
+                    Flt bSig = 1.0/(1.0 + std::exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)));
                     vv[i][h.vi] = vv[i][h.vi] * bSig * gp[i].gain; // New: apply gain here (and not
                                                                    // in the Gaussian mask).
                 }
@@ -310,9 +309,8 @@ public:
         }
     }
 
-    /*!
-     * Similar to the above, but just adds noise to v (with a gain only) to \a vv. Has no boundary sigmoid.
-     */
+    //! Similar to the above, but just adds noise to v (with a gain only) to \a vv. Has
+    //! no boundary sigmoid.
     virtual void addnoise_vector (std::vector<Flt>& v)
     {
         std::cout << "Add noise to vector?...";
@@ -331,7 +329,8 @@ public:
         }
 
         // Set up the Gaussian convolution kernel on a circular HexGrid.
-        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0, morph::HexDomainShape::Boundary);
+        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0,
+                              morph::HexDomainShape::Boundary);
         kernel.setCircularBoundary (Flt{6}*this->mNoiseSigma);
         std::vector<Flt> kerneldata (kernel.num(), 0.0f);
         // Once-only parts of the calculation of the Gaussian.
@@ -387,8 +386,8 @@ public:
                 // Note that the gain of the gauss (gp[i].gain) has already been
                 // applied in noiseify_vector_vector()
                 Flt gauss = (one_over_sigma_root_2_pi
-                             * exp ( static_cast<Flt>(-(r*r))
-                                     / two_sigma_sq ));
+                             * std::exp ( static_cast<Flt>(-(r*r))
+                                          / two_sigma_sq ));
                 vv[i][h.vi] *= gauss;
             }
         }
@@ -620,19 +619,19 @@ public:
         if (gamma.size() > m_idx) {
             if (gamma[m_idx].size() > n_idx) {
                 // Ok, we can set the value
-                //std::cout << "Setting gamma[m="<<m_idx<<"][n="<<n_idx<<"] to " << value << std::endl;
-                //std::cout << m_idx << "," << n_idx << "," << value << std::endl;
                 this->gamma[m_idx][n_idx] = value;
                 if (group_m == m_idx) {
                     this->group[n_idx] = value;
                     this->groupset.insert (value);
                 }
             } else {
-                std::cerr << "WARNING: DID NOT SET GAMMA (too few RT axon types for n_idx=" << n_idx << ")" << std::endl;
+                std::cerr << "WARNING: DID NOT SET GAMMA (too few RT axon types for n_idx="
+                          << n_idx << ")" << std::endl;
                 return 1;
             }
         } else {
-            std::cerr << "WARNING: DID NOT SET GAMMA (too few guidance molecules for m_idx=" << m_idx << ")" << std::endl;
+            std::cerr << "WARNING: DID NOT SET GAMMA (too few guidance molecules for m_idx="
+                      << m_idx << ")" << std::endl;
             return 2;
         }
         return 0;
@@ -807,6 +806,7 @@ public:
         this->sum_a[_i] = sum_tmp;
     }
 
+#if 0
     //! The normalization/transfer function.
     virtual inline Flt transfer_a (const Flt& _a, const unsigned int _i)
     {
@@ -820,6 +820,7 @@ public:
         // Prevent a from becoming negative, necessary only when competition is implemented:
         return (a_rtn < 0.0) ? 0.0 : a_rtn;
     }
+#endif
 
     //! Compute the values of a, the branching density
     virtual void integrate_a()
@@ -919,20 +920,6 @@ public:
 #endif
     }
 
-    //! Sum up the integration and pass through the transfer function (i.e. the normalization)
-    virtual void summation_a()
-    {
-        for (unsigned int i=0; i<this->N; ++i) {
-            // Do any necessary computation which involves summing a here
-            this->sum_a_computation (i);
-            // Now apply the transfer function
-#pragma omp parallel for
-            for (unsigned int h=0; h<this->nhex; ++h) {
-                this->a[i][h] = this->transfer_a (this->a[i][h], i);
-            }
-        }
-    }
-
     //! One step of the simulation
     virtual void step()
     {
@@ -941,7 +928,6 @@ public:
         this->compute_n();
         // 2. Call Runge Kutta numerical integration code
         this->integrate_a();
-        this->summation_a();
         this->integrate_c();
         this->spatialAnalysisComputed = false;
     }
@@ -954,7 +940,8 @@ public:
     {
         for (auto h : this->hg->hexen) {
             if (abs(f[h.vi]) > dangerThresh) {
-                DBG ("Blow-up threshold exceeded at Hex.vi=" << h.vi << " ("<< h.ri <<","<< h.gi <<")" <<  ": " << f[h.vi]);
+                DBG ("Blow-up threshold exceeded at Hex.vi="
+                     << h.vi << " (" << h.ri << "," << h.gi <<")" << ": " << f[h.vi]);
                 unsigned int wait = 0;
                 while (wait++ < 120) {
                     usleep (1000000);
@@ -982,7 +969,7 @@ public:
     {
         for (auto h : this->hg->hexen) {
             // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
-            this->bSig[h.vi] = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
+            this->bSig[h.vi] = 1.0/(1.0 + std::exp(-100.0*(h.distToBoundary-this->boundaryFalloffDist)));
         }
     }
 
@@ -1104,6 +1091,9 @@ public:
             // 1a. Or D Del^2 Sum(a_i) (new)
             // Compute the sum around the neighbours
             Flt thesum = -6 * fa[hi];
+            if (isnan(thesum)) {
+                std::cerr << "thesum isnan from fa[hi]" << std::endl;
+            }
 
             thesum += fa[(HAS_NE(hi)  ? NE(hi)  : hi)];
             thesum += fa[(HAS_NNE(hi) ? NNE(hi) : hi)];
@@ -1116,7 +1106,8 @@ public:
             Flt term1 = this->twoDover3dd * thesum;
             if (isnan(term1)) {
                 std::cerr << "term1 isnan" << std::endl;
-                std::cerr << "thesum is " << thesum << " fa[hi=" << hi << "] = " << fa[hi] << std::endl;
+                std::cerr << "thesum is " << (double)thesum
+                          << " fa[hi=" << hi << "] = " << fa[hi] << std::endl;
                 breakflag = true;
             }
 
@@ -1127,7 +1118,8 @@ public:
 
             if (isnan(term1_1)) {
                 std::cerr << "term1_1 isnan" << std::endl;
-                std::cerr << "fa[hi="<<hi<<"] = " << fa[hi] << ", this->div_ahat[hi] = " << this->div_ahat[hi] << std::endl;
+                std::cerr << "fa[hi="<<hi<<"] = "
+                          << fa[hi] << ", this->div_ahat[hi] = " << this->div_ahat[hi] << std::endl;
                 breakflag = true;
             }
 
@@ -1137,7 +1129,7 @@ public:
                                               + this->grad_ahat[1][hi] * this->grad_a[i][1][hi]);
 
             if (isnan(term1_2)) {
-                std::cerr << "term1_2 isnan at hi=" << hi << std::endl;
+                std::cerr << "term1_2 isnan at hi=" << hi << "(step " << this->stepCount << ")" << std::endl;
                 if (isnan(this->grad_ahat[0][hi])) {
                     std::cerr << "grad_ahat[0][hi] isnan\n";
                     breakflag = true;
@@ -1180,6 +1172,9 @@ public:
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
             if (breakflag) { continue; }
             Flt thesum = -6 * this->ahat[hi];
+            if (isnan(thesum)) {
+                std::cerr << "Warning: thesum isnan already...\n";
+            }
             thesum += this->ahat[(HAS_NE(hi)  ? NE(hi)  : hi)];
             thesum += this->ahat[(HAS_NNE(hi) ? NNE(hi) : hi)];
             thesum += this->ahat[(HAS_NNW(hi) ? NNW(hi) : hi)];
@@ -1188,12 +1183,14 @@ public:
             thesum += this->ahat[(HAS_NSE(hi) ? NSE(hi) : hi)];
             this->div_ahat[hi] = this->twoover3dd * thesum;
             if (isnan(this->div_ahat[hi])) {
-                std::cerr << "div ahat isnan" << std::endl;
                 breakflag = true;
             }
         }
         if (breakflag == true) {
-            throw std::runtime_error ("div ahat isnan");
+            std::stringstream ee;
+            ee << "div ahat isnan at step " << this->stepCount;
+            std::cerr << ee.str() << std::endl;
+            throw std::runtime_error (ee.str().c_str());
         }
     }
 

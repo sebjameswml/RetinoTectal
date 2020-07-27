@@ -528,10 +528,10 @@ int main (int argc, char **argv)
         // Plot coordinates of the Retinal neurons.
         xzero +=  (1.7 * RD.hg->width());
         spatOff = { xzero, 0.0, 0.0 };
-        std::vector<std::array<float, 3>> ret_coordinates;
+        std::vector<morph::Vector<float, 3>> ret_coordinates;
         for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
             std::array<float, 2> rc = RD.ret_coords[c];
-            std::array<float, 3> rc3;
+            morph::Vector<float, 3> rc3;
             rc3[0] = rc[0];
             rc3[1] = rc[1];
             rc3[2] = 0.0f;
@@ -543,7 +543,7 @@ int main (int argc, char **argv)
         }
         float scatRad = RD.ring_d/10.0f;
         //v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData, scatRad, twoScaling, ColourMapType::RainbowZeroBlack);
-        v1.addVisualModel (new morph::ScatterVisual<FLT> (v1.shaderprog, &zerovecs, spatOff,
+        v1.addVisualModel (new morph::ScatterVisual<FLT> (v1.shaderprog, &ret_coordinates, spatOff,
                                                           &neuronColourData, scatRad, ctr_cscale,
                                                           morph::ColourMapType::RainbowZeroBlack));
 

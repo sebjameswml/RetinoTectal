@@ -82,7 +82,6 @@ public:
         }
         this->compute_n();
         this->integrate_a();
-        this->summation_a();
         this->integrate_c();
         this->spatialAnalysisComputed = false;
     }
