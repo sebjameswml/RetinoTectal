@@ -448,7 +448,9 @@ pointing axons towards their correct termination sites.}
 
 The orthogonal gradients in the current model which signal growth direction of
 axonal growth cones naturally provide the vector signals which ensure that
-regardless of entry point, growth cones tend towards their correct location.
+regardless of entry point, growth cones tend towards their correct
+location. Can prove with different distributions of initial branching density
+($a(\mb{x},t=0)$).
 
 \subsubsection{Shifting connections}
 
@@ -466,13 +468,23 @@ The current model should work under the condition that the underlying domain
 is increased in size, with the competition acting to ensure that the entire
 domain is filled and the ordering maintained.
 
-\subsubsection{Rotation experiments}
+To do: implement a HexGrid whose boundary increases with time. That will mean
+some tampering with \code{morph::HexGrid}.
+
+\subsubsection{Rotation experiments)}
 
 \begin{displayquote}
 \emph{If a Xenopus presumptive tectum is rotated early enough during development,
 a map is formed that is normal relative to the whole animal, whereas later
 rotations lead to a rotated map (Chung \& Cooke 1978).}
 \end{displayquote}
+
+These correspond to \cite{goodhill_retinotectal_1999}, Figs.~2B--D and can
+include retinal rotation as well as early/late tectal rotations.
+
+The model as it stands contains an assumption about the orientation of the
+guidance gradients. So rotating the tectum early enough means making no change
+(given that I have no model for \emph{creating} the guidance gradients).
 
 \subsubsection{Map compression and expansion}
 
@@ -486,12 +498,17 @@ ablated, the regenerated map is compressed into the remaining tectal space
 (Yoon 1971; Sharma 1972; Cook 1979; Finlay et al. 1979a).}
 \end{displayquote}
 
+I need to examine more carefully the timeline of these experiments.
+
+These correspond to \cite{goodhill_retinotectal_1999}, Figs.~2E and 2F.
+
 \subsubsection{Translocation}
 
 \begin{displayquote}
 \emph{A}
 \end{displayquote}
 
+These correspond to \cite{goodhill_retinotectal_1999}, Figs.~2I and 2J.
 
 \subsubsection{Compound-eye experiments}
 
@@ -499,6 +516,7 @@ ablated, the regenerated map is compressed into the remaining tectal space
 \emph{B}
 \end{displayquote}
 
+This corresponds to \cite{goodhill_retinotectal_1999}, Fig 2H.
 
 %
 % BIBLIOGRAPHY
