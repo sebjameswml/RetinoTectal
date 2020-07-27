@@ -1,17 +1,22 @@
-/*
+/*! \file
  * A population model system which derives from RD_Base and implements an axon
  * guidance system which lacks competition, but which instead incorporates a stopping
  * mechanism, wherein the diffusion of branching and interaction with morphogens
  * decays to zero in the region where the morphogen gradient reaches a correct level,
  * as measured by the afferent axons.
+ *
+ * \author Seb James
+ * \date 2020
  */
+
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
 
 /*!
  * Enumerates the way that the guidance molecules are set up
  */
-enum class FieldShape {
+enum class FieldShape
+{
     Gauss1D,
     Gauss2D,
     Exponential1D,
@@ -24,8 +29,9 @@ enum class FieldShape {
  * A small collection of parameters to define width and location of a symmetric
  * (i.e. circular) 2D Gaussian.
  */
-template <class Flt>
-struct GaussParams {
+template <typename Flt>
+struct GaussParams
+{
     Flt gain;
     Flt sigma;
     Flt x;
@@ -33,16 +39,12 @@ struct GaussParams {
 };
 
 /*!
- * Reaction diffusion system. Based on Karbowski 2004, but with a removal of the Fgf8,
- * Pax6, Emx2 system, and instead an option to define several guidance molecules and
- * thalamocortical types (i.e. configurable N and M).
- *
- * This class also has a mechanism for providing normalization of the a variable.
+ * Reaction diffusion system. Based on Karbowski 2004.
  *
  * This is a template class using 'Flt' for the float type, this can either be single
  * precision (float) or double precision (double).
  */
-template <class Flt>
+template <typename Flt>
 class RD_AG_NoComp : public morph::RD_Base<Flt>
 {
 public:
@@ -360,9 +362,7 @@ public:
     /*!
      * Simple constructor; no arguments. Just calls RD_Base constructor
      */
-    RD_AG_NoComp (void)
-        : morph::RD_Base<Flt>() {
-    }
+    RD_AG_NoComp() : morph::RD_Base<Flt>() {}
 
     /*!
      * Initialise this vector of vectors with noise. This is a model-specific
@@ -371,7 +371,9 @@ public:
      * I apply a sigmoid to the boundary hexes, so that the noise drops away towards
      * the edge of the domain.
      */
-    virtual void noiseify_vector_vector (std::vector<std::vector<Flt> >& vv, std::vector<GaussParams<Flt> >& gp) {
+    virtual void noiseify_vector_vector (std::vector<std::vector<Flt> >& vv,
+                                         std::vector<GaussParams<Flt> >& gp)
+    {
         for (unsigned int i = 0; i<this->N; ++i) {
             for (auto h : this->hg->hexen) {
                 // boundarySigmoid. Jumps sharply (100, larger is sharper) over length
@@ -394,8 +396,8 @@ public:
      *
      * This allows me to initialise the system in a more biologically realistic manner.
      */
-    void mask_a (std::vector<std::vector<Flt> >& vv, std::vector<GaussParams<Flt> >& gp) {
-
+    void mask_a (std::vector<std::vector<Flt> >& vv, std::vector<GaussParams<Flt> >& gp)
+    {
         // Once-only parts of the calculation of the Gaussian.
         const Flt root_2_pi = 2.506628275;
 
@@ -426,8 +428,8 @@ public:
     /*!
      * Perform memory allocations, vector resizes and so on.
      */
-    virtual void allocate (void) {
-
+    virtual void allocate()
+    {
         morph::RD_Base<Flt>::allocate();
 
         // Resize and zero-initialise the various containers
@@ -479,8 +481,8 @@ public:
      * of the model. This should be able to re-initialise a finished simulation as
      * well as initialise the first time.
      */
-    virtual void init (void) {
-
+    virtual void init()
+    {
         this->stepCount = 0;
         this->spatialAnalysisComputed = false;
 
@@ -596,7 +598,8 @@ protected:
      * Given a RT id string @idstr, look it up in rtnames and find the Flt ID that it
      * corresponds to. Client code should have set up rtnames.
      */
-    Flt rt_name_to_id (const std::string& idstr) {
+    Flt rt_name_to_id (const std::string& idstr)
+    {
         Flt theid = -1.0;
         typename std::map<Flt, std::string>::iterator rtn = this->rtnames.begin();
         while (rtn != this->rtnames.end()) {
@@ -615,44 +618,37 @@ protected:
      * Require private setter for d. Slightly different from the base class version.
      */
     //@{
-    void set_d (Flt d_) {
+    void set_d (Flt d_)
+    {
         morph::RD_Base<Flt>::set_d (d_);
         this->updateTwoDover3dd();
     }
     //@}
 
 public:
-    /*!
-     * Public accessors for D, as it requires another attribute to be updated at the
-     * same time.
-     */
-    //@{
-    void set_D (Flt D_) {
+    //! Public accessors for D, as it requires another attribute to be updated at the
+    //! same time.
+    void set_D (Flt D_)
+    {
         this->D = D_;
         this->updateTwoDover3dd();
     }
-    Flt get_D (void) {
+    Flt get_D()
+    {
         return this->D;
     }
-    //@}
 
 protected:
-    /*!
-     * Compute 2D/3d^2 (and 1/3d^2 too)
-     */
-    void updateTwoDover3dd (void) {
+    //! Compute 2D/3d^2 (and 1/3d^2 too)
+    void updateTwoDover3dd()
+    {
         this->twoDover3dd = (this->D+this->D) / (3*this->d*this->d);
     }
 
 public:
-    /*!
-     * Parameter setter methods
-     */
-    //@{
-    /*!
-     * setGamma for the guidance molecule index m_idx and the RT index n_idx to
-     * @value. If group_m==m_idx, then set this->group[n_idx]=@value
-     */
+
+    //! setGamma for the guidance molecule index m_idx and the RT index n_idx to
+    //! \a value. If group_m==m_idx, then set this->group[n_idx]=\a value
     int setGamma (unsigned int m_idx, unsigned int n_idx, Flt value, unsigned int group_m = 0) {
         if (gamma.size() > m_idx) {
             if (gamma[m_idx].size() > n_idx) {
@@ -675,28 +671,21 @@ public:
         return 0;
     }
 
-    /*!
-     * Set the w parameter
-     */
-    void set_w (Flt _w) {
+    //! Set the w parameter
+    void set_w (Flt _w)
+    {
         this->w = _w;
         // 2w * 2w:
         this->two_w_sq = 4.0 * _w * _w;
     }
-    Flt get_w (void) const {
+    Flt get_w() const
+    {
         return this->w;
     }
-    //@}
 
-    /*!
-     * HDF5 file saving/loading methods.
-     */
-    //@{
-
-    /*!
-     * Save the c, a and n variables.
-     */
-    virtual void save (void) {
+    //! Save the c, a and n variables to HDF5
+    virtual void save()
+    {
         std::stringstream fname;
         fname << this->logpath << "/c_";
         fname.width(5);
@@ -705,15 +694,12 @@ public:
         morph::HdfData data(fname.str());
         for (unsigned int i = 0; i<this->N; ++i) {
             std::stringstream path;
-            // The c variables
             path << "/c" << i;
             data.add_contained_vals (path.str().c_str(), this->c[i]);
-            // The a variable
             path.str("");
             path.clear();
             path << "/a" << i;
             data.add_contained_vals (path.str().c_str(), this->a[i]);
-            // divJ
             path.str("");
             path.clear();
             path << "/j" << i;
@@ -722,15 +708,18 @@ public:
         data.add_contained_vals ("/n", this->n);
     }
 
-    void saveHG (void) {
+    //! Save the HexGrid to a file
+    void saveHG()
+    {
         std::stringstream hgname;
         hgname << this->logpath << "/hexgrid.h5";
         this->hg->save(hgname.str().c_str());
     }
 
 #if 1
-    // Save out spatial analysis results
-    void saveRegions (void) {
+    //! Save out spatial analysis results
+    void saveRegions()
+    {
         std::stringstream fname;
         fname << this->logpath << "/regions_";
         fname.width(5);
@@ -757,10 +746,9 @@ public:
     }
 #endif
 
-    /*!
-     * Save asum, nsum and csum. Call once at end of simulation.
-     */
-    void savesums (void) {
+    //! Save asum, nsum and csum. Call once at end of simulation.
+    void savesums()
+    {
         std::stringstream fname;
         fname << this->logpath << "/sums.h5";
         morph::HdfData data(fname.str());
@@ -775,7 +763,8 @@ public:
      * Also save the experimental ID map in this file, as this is something that needs
      * saving once only.
      */
-    void saveGuidance (void) {
+    void saveGuidance()
+    {
         std::stringstream fname;
         fname << this->logpath << "/guidance.h5";
         morph::HdfData data(fname.str());
@@ -800,15 +789,9 @@ public:
         }
     }
 
-    /*!
-     * Computation methods
-     */
-    //@{
-
-    /*!
-     * Compute the values of c, the connection density
-     */
-    virtual void integrate_c (void) {
+    //! Compute the values of c, the connection density
+    virtual void integrate_c()
+    {
         // 3. Do integration of c
         for (unsigned int i=0; i<this->N; ++i) {
 
@@ -862,16 +845,10 @@ public:
         }
     }
 
-    /*!
-     * a Computation methods
-     */
-    //@{
-
-    /*!
-     * A possibly normalization-function specific task to carry out
-     * once after the sum of a has been computed.
-     */
-    virtual void sum_a_computation (const unsigned int _i) {
+    //! A possibly normalization-function specific task to carry out once after the sum
+    //! of a has been computed.
+    virtual void sum_a_computation (const unsigned int _i)
+    {
         // Compute the sum of a[i] across the sheet.
         this->sum_a[_i] = 0.0;
         Flt sum_tmp = 0.0;
@@ -882,10 +859,9 @@ public:
         this->sum_a[_i] = sum_tmp;
     }
 
-    /*!
-     * The normalization/transfer function.
-     */
-    virtual inline Flt transfer_a (const Flt& _a, const unsigned int _i) {
+    //! The normalization/transfer function.
+    virtual inline Flt transfer_a (const Flt& _a, const unsigned int _i)
+    {
 #ifdef NORMALIZE_TO_ONE
         // Divisive normalization to one
         Flt a_rtn = this->nhex * _a / this->sum_a[_i];
@@ -897,11 +873,9 @@ public:
         return (a_rtn < 0.0) ? 0.0 : a_rtn;
     }
 
-    /*!
-     * Compute the values of a, the branching density
-     */
-    virtual void integrate_a (void) {
-
+    //! Compute the values of a, the branching density
+    virtual void integrate_a()
+    {
         // 2. Do integration of a (RK in the 1D model). Involves computing axon branching flux.
 
         // Pre-compute:
@@ -966,11 +940,9 @@ public:
         }
     }
 
-    /*!
-     * Compute n
-     */
-    virtual void compute_n (void) {
-
+    //! Compute n
+    virtual void compute_n()
+    {
         Flt nsum = 0.0;
         Flt csum = 0.0;
 #pragma omp parallel for reduction(+:nsum,csum)
@@ -997,7 +969,8 @@ public:
     }
 
     //! Sum up the integration and pass through the transfer function (i.e. the normalization)
-    virtual void summation_a (void) {
+    virtual void summation_a()
+    {
         for (unsigned int i=0; i<this->N; ++i) {
             // Do any necessary computation which involves summing a here
             this->sum_a_computation (i);
@@ -1010,7 +983,8 @@ public:
     }
 
     //! One step of the simulation
-    virtual void step (void) {
+    virtual void step()
+    {
         this->stepCount++;
         // 1. Compute Karb2004 Eq 3. (coupling between connections made by each TC type)
         this->compute_n();
@@ -1021,11 +995,10 @@ public:
         this->spatialAnalysisComputed = false;
     }
 
-    /*!
-     * Examine the value in each Hex of the hexgrid of the scalar field f. If
-     * abs(f[h]) exceeds the size of dangerThresh, then output debugging information.
-     */
-    void debug_values (std::vector<Flt>& f, Flt dangerThresh) {
+    //! Examine the value in each Hex of the hexgrid of the scalar field f. If abs(f[h])
+    //! exceeds the size of dangerThresh, then output debugging information.
+    void debug_values (std::vector<Flt>& f, Flt dangerThresh)
+    {
         for (auto h : this->hg->hexen) {
             if (abs(f[h.vi]) > dangerThresh) {
                 DBG ("Blow-up threshold exceeded at Hex.vi=" << h.vi << " ("<< h.ri <<","<< h.gi <<")" <<  ": " << f[h.vi]);
@@ -1037,11 +1010,10 @@ public:
         }
     }
 
-    /*!
-     * Does: f = (alpha * f) + betaterm. c.f. Karb2004, Eq 1. f is c[i] or q from the
-     * RK algorithm.
-     */
-    std::vector<Flt> compute_dci_dt (std::vector<Flt>& f, unsigned int i) {
+    //! Does: f = (alpha * f) + betaterm. c.f. Karb2004, Eq 1. f is c[i] or q from the
+    //! RK algorithm.
+    std::vector<Flt> compute_dci_dt (std::vector<Flt>& f, unsigned int i)
+    {
         std::vector<Flt> dci_dt (this->nhex, 0.0);
 #pragma omp parallel for
         for (unsigned int h=0; h<this->nhex; h++) {
@@ -1051,19 +1023,18 @@ public:
     }
 
     // Compute bSig vector, which need be carried out once only.
-    void build_bSig (void) {
+    void build_bSig()
+    {
         for (auto h : this->hg->hexen) {
             // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
             this->bSig[h.vi] = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
         }
     }
 
-    /*!
-     * Compute the function f(gamma, rho) for each axon i. See \ref{eq:gf} in the
-     * notes/paper.
-     */
-    virtual void compute_f (void) {
-
+    //! Compute the function f(gamma, rho) for each axon i. See \ref{eq:gf} in the
+    //! notes/paper.
+    virtual void compute_f()
+    {
         // f is computed from \vec{\gamma} and \vec{\rho} (with params w and s).
         // Components of \vec{\gamma} are this->gamma[m][i] with m=0,1.
         // Components of \vec{\rho} are (\rho_0 [+ \xi_\rho]) and (\rho_1 [+ \xi_\rho])
@@ -1084,11 +1055,9 @@ public:
         }
     }
 
-    /*!
-     * Build g from the gradient of rho and the gammas.
-     */
-    virtual void build_g (void) {
-
+    //! Build g from the gradient of rho and the gammas.
+    virtual void build_g()
+    {
         // First zero g out
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
 
@@ -1108,8 +1077,8 @@ public:
      *
      * This computation is based on Gauss's theorem.
      */
-    void compute_divg_over3d (void) {
-
+    void compute_divg_over3d()
+    {
         // Change to have one for each m in M? They should then sum, right?
 
         for (unsigned int i = 0; i < this->N; ++i) {
@@ -1176,8 +1145,8 @@ public:
      *
      * Stable with dt = 0.0001;
      */
-    virtual void compute_divJ (std::vector<Flt>& fa, unsigned int i) {
-
+    virtual void compute_divJ (std::vector<Flt>& fa, unsigned int i)
+    {
         // Compute gradient of a_i(x), for use computing the third term, below.
         this->spacegrad2D (fa, this->grad_a[i]);
 
@@ -1226,7 +1195,8 @@ public:
      *
      * @m The molecule id
      */
-    void gaussian1D_guidance (unsigned int m) {
+    void gaussian1D_guidance (unsigned int m)
+    {
         for (auto h : this->hg->hexen) {
             Flt cosphi = (Flt) cos (this->TWOPI_OVER_360 * this->guidance_phi[m]);
             Flt sinphi = (Flt) sin (this->TWOPI_OVER_360 * this->guidance_phi[m]);
@@ -1240,8 +1210,8 @@ public:
      *
      * @m The molecule id
      */
-    void gaussian2D_guidance (unsigned int m) {
-
+    void gaussian2D_guidance (unsigned int m)
+    {
         // Centre of the Gaussian is offset from 0 by guidance_offset, then rotated by
         // guidance_phi
         Flt x_ = (Flt)this->guidance_offset[m];
@@ -1267,7 +1237,8 @@ public:
      *
      * @m The molecule id
      */
-    void exponential_guidance (unsigned int m) {
+    void exponential_guidance (unsigned int m)
+    {
         for (auto h : this->hg->hexen) {
             Flt cosphi = (Flt) cos (this->TWOPI_OVER_360 * this->guidance_phi[m]);
             Flt sinphi = (Flt) sin (this->TWOPI_OVER_360 * this->guidance_phi[m]);
@@ -1277,9 +1248,12 @@ public:
     }
 
     /*!
+     * a sigmoid guidance wave
+     *
      * @m The molecule id
      */
-    void sigmoid_guidance (unsigned int m) {
+    void sigmoid_guidance (unsigned int m)
+    {
         for (auto h : this->hg->hexen) {
             Flt cosphi = (Flt) cos (this->TWOPI_OVER_360 * this->guidance_phi[m]);
             Flt sinphi = (Flt) sin (this->TWOPI_OVER_360 * this->guidance_phi[m]);
@@ -1291,9 +1265,12 @@ public:
     }
 
     /*!
+     * Linearly increasing guidance field
+     *
      * @m The molecule id
      */
-    void linear_guidance (unsigned int m) {
+    void linear_guidance (unsigned int m)
+    {
         for (auto h : this->hg->hexen) {
             Flt cosphi = (Flt) cos (this->TWOPI_OVER_360 * this->guidance_phi[m]);
             Flt sinphi = (Flt) sin (this->TWOPI_OVER_360 * this->guidance_phi[m]);
@@ -1303,9 +1280,12 @@ public:
     }
 
     /*!
+     * Circularly symmetric linearly increasing guidance field
+     *
      * @m The molecule id
      */
-    void circlinear_guidance (unsigned int m) {
+    void circlinear_guidance (unsigned int m)
+    {
         for (auto h : this->hg->hexen) {
             // Initial position is guidance_offset * cosphi/sinphi
             Flt cosphi = (Flt) cos (this->TWOPI_OVER_360 * this->guidance_phi[m]);
@@ -1321,11 +1301,9 @@ public:
     }
 
 #if 1
-    /*!
-     * Carry out any sensible spatial analysis required
-     */
-    virtual void spatialAnalysis (void) {
-
+    //! Carry out any sensible spatial analysis required
+    virtual void spatialAnalysis()
+    {
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
             DBG ("analysis already computed, no need to recompute.");

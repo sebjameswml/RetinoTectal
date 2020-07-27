@@ -16,15 +16,15 @@ template <class Flt>
 class RD_RetTec_NoComp : public RD_AG_NoComp<Flt>, public RetArrange<Flt>
 {
 public:
-    RD_RetTec_NoComp (void) {}
-    ~RD_RetTec_NoComp (void) {}
+    RD_RetTec_NoComp() {}
+    ~RD_RetTec_NoComp() {}
 
-    virtual void allocate (void)
+    virtual void allocate()
     {
         RD_AG_NoComp<Flt>::allocate();
     }
 
-    virtual void init (void)
+    virtual void init()
     {
         std::cout << "RD_RetTec_NoComp init()" << std::endl;
         // Set up alpha, beta, epsilon (before RD_AG_NoComp::init)
@@ -39,7 +39,7 @@ public:
     }
 
 protected:
-    void setupGammas (void)
+    void setupGammas()
     {
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
@@ -53,7 +53,7 @@ protected:
         }
     }
 
-    void setupPerNParams (void)
+    void setupPerNParams()
     {
         // Index through thalamocortical fields, setting params:
         for (unsigned int i = 0; i < this->N; ++i) {
@@ -72,7 +72,7 @@ protected:
 
 public:
     //! Override step() to recompute g on each sim step (for noise)
-    virtual void step (void)
+    virtual void step()
     {
         this->stepCount++;
         // 0. Rebuild g, with a new set of random samples, if necessary
@@ -91,7 +91,7 @@ protected:
     /*!
      * Build g from the gradient of rho and the gammas, with an option for a noisy calculation.
      */
-    void build_g (void)
+    void build_g()
     {
         // First zero g.
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
@@ -131,7 +131,7 @@ protected:
 
 public:
     //! spatial analysis, adding the tec_coords-reg_centroids computation
-    virtual void spatialAnalysis (void)
+    virtual void spatialAnalysis()
     {
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
@@ -164,7 +164,7 @@ public:
         this->spatialAnalysisComputed = true;
     }
 
-    void saveSpatial (void)
+    void saveSpatial()
     {
         std::stringstream fname;
         fname << this->logpath << "/spatial_";

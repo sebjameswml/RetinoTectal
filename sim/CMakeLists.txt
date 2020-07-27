@@ -5,7 +5,7 @@
 # target_compile_definitions(james0 PUBLIC FLT=float COMPILE_PLOTTING)
 # target_link_libraries(james0 ${MORPH_LDFLAGS})
 
-# Divisive normalization of a_i along with competition (linear)
+# Competition based model based on the model in the BarrelEmerge paper
 add_executable(rettec rettec.cpp)
 target_compile_definitions(rettec PUBLIC FLT=float COMPILE_PLOTTING AXONCOMP)
 target_link_libraries(rettec ${MORPH_LDFLAGS} OpenGL::GL)
@@ -14,7 +14,10 @@ add_executable(rettec_c rettec.cpp)
 target_compile_definitions(rettec_c PUBLIC FLT=float AXONCOMP)
 target_link_libraries(rettec_c ${MORPH_LDFLAGS})
 
-# Difference with these two is that AXONCOMP is NOT defined
+# Difference here is that AXONCOMP is NOT defined and so a
+# model is compiled from rd_rettec_nocomp.h, which implements a
+# non-competition based stopping criterion, intended to be a
+# 'Sperry-like' model.
 add_executable(rettec_nc rettec.cpp)
 target_compile_definitions(rettec_nc PUBLIC FLT=float COMPILE_PLOTTING DEBUG)
 target_link_libraries(rettec_nc ${MORPH_LDFLAGS} OpenGL::GL)

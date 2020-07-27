@@ -13,7 +13,8 @@
 /*!
  * Enumerates the way that the guidance molecules are set up
  */
-enum class FieldShape {
+enum class FieldShape
+{
     Gauss1D,
     Gauss2D,
     Exponential1D,
@@ -27,7 +28,8 @@ enum class FieldShape {
  * (i.e. circular) 2D Gaussian.
  */
 template <class Flt>
-struct GaussParams {
+struct GaussParams
+{
     Flt gain;
     Flt sigma;
     Flt x;
@@ -282,7 +284,7 @@ public:
     std::vector<FieldShape> rhoMethod;
 
     //! A basic constructor
-    RD_Barrel (void) : morph::RD_Base<Flt>() {}
+    RD_Barrel() : morph::RD_Base<Flt>() {}
 
     /*!
      * Initialise this vector of vectors with noise. This is a model-specific
@@ -393,7 +395,7 @@ public:
     }
 
     //! Perform memory allocations, vector resizes and so on.
-    virtual void allocate (void)
+    virtual void allocate()
     {
         morph::RD_Base<Flt>::allocate();
 
@@ -449,7 +451,7 @@ public:
      * of the model. This should be able to re-initialise a finished simulation as
      * well as initialise the first time.
      */
-    virtual void init (void)
+    virtual void init()
     {
         this->stepCount = 0;
         this->spatialAnalysisComputed = false;
@@ -597,14 +599,14 @@ public:
         this->D = D_;
         this->updateTwoDover3dd();
     }
-    Flt get_D (void)
+    Flt get_D()
     {
         return this->D;
     }
 
 protected:
     //! Compute 2D/3d^2 (and 1/3d^2 too)
-    void updateTwoDover3dd (void) {
+    void updateTwoDover3dd() {
         this->twoDover3dd = (this->D+this->D) / (3*this->d*this->d);
     }
 
@@ -637,7 +639,7 @@ public:
     }
 
     //! Save the c, a and n variables.
-    virtual void save (void)
+    virtual void save()
     {
         std::stringstream fname;
         fname << this->logpath << "/c_";
@@ -665,7 +667,7 @@ public:
     }
 
     //! Save the hexgrid information into a separate file
-    void saveHG (void)
+    void saveHG()
     {
         std::stringstream hgname;
         hgname << this->logpath << "/hexgrid.h5";
@@ -674,7 +676,7 @@ public:
 
 #if 1
     // Save out spatial analysis results
-    void saveRegions (void)
+    void saveRegions()
     {
         std::stringstream fname;
         fname << this->logpath << "/regions_";
@@ -703,7 +705,7 @@ public:
 #endif
 
     //! Save asum, nsum and csum. Call once at end of simulation.
-    void savesums (void)
+    void savesums()
     {
         std::stringstream fname;
         fname << this->logpath << "/sums.h5";
@@ -719,7 +721,7 @@ public:
      * Also save the experimental ID map in this file, as this is something that needs
      * saving once only.
      */
-    void saveGuidance (void)
+    void saveGuidance()
     {
         std::stringstream fname;
         fname << this->logpath << "/guidance.h5";
@@ -746,7 +748,7 @@ public:
     }
 
     //! Compute the values of c, the connection density
-    virtual void integrate_c (void)
+    virtual void integrate_c()
     {
         // 3. Do integration of c
         for (unsigned int i=0; i<this->N; ++i) {
@@ -820,7 +822,7 @@ public:
     }
 
     //! Compute the values of a, the branching density
-    virtual void integrate_a (void)
+    virtual void integrate_a()
     {
         // 2. Do integration of a (RK in the 1D model). Involves computing axon
         // branching flux.
@@ -890,7 +892,7 @@ public:
         }
     }
 
-    virtual void compute_n (void)
+    virtual void compute_n()
     {
         Flt nsum = 0.0;
         Flt csum = 0.0;
@@ -918,7 +920,7 @@ public:
     }
 
     //! Sum up the integration and pass through the transfer function (i.e. the normalization)
-    virtual void summation_a (void)
+    virtual void summation_a()
     {
         for (unsigned int i=0; i<this->N; ++i) {
             // Do any necessary computation which involves summing a here
@@ -932,7 +934,7 @@ public:
     }
 
     //! One step of the simulation
-    virtual void step (void)
+    virtual void step()
     {
         this->stepCount++;
         // 1. Compute Karb2004 Eq 3. (coupling between connections made by each TC type)
@@ -976,7 +978,7 @@ public:
     }
 
     //! Compute bSig vector, which need be carried out once only.
-    void build_bSig (void)
+    void build_bSig()
     {
         for (auto h : this->hg->hexen) {
             // Sigmoid/logistic fn params: 100 sharpness, 0.02 dist offset from boundary
@@ -985,7 +987,7 @@ public:
     }
 
     //! Build g from the gradient of rho and the gammas.
-    virtual void build_g (void)
+    virtual void build_g()
     {
         // First zero g out
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
@@ -1006,7 +1008,7 @@ public:
      *
      * This computation is based on Gauss's theorem.
      */
-    void compute_divg_over3d (void)
+    void compute_divg_over3d()
     {
         // Change to have one for each m in M? They should then sum, right?
 
@@ -1069,7 +1071,7 @@ public:
     /*!
      * Computes the "flux of axonal branches" term, J_i(x) (Eq 4)
      *
-     * Inputs: this->g, fa (which is this->a[i] or a q in the RK algorithm), this->D, @a
+     * Inputs: this->g, fa (which is this->a[i] or a q in the RK algorithm), this->D, \a a
      * i, the TC type.  Helper functions: spacegrad2D().  Output: this->divJ
      *
      * In the competition term, it's possible to set \bar{a} equal to either sigmoid
@@ -1170,10 +1172,9 @@ public:
         }
     }
 
-    /*!
-     * Compute divergence of \hat{a}_i
-     */
-    void compute_divahat (void) {
+    //! Compute divergence of \hat{a}_i
+    void compute_divahat()
+    {
         volatile bool breakflag = false;
 #pragma omp parallel for shared(breakflag)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
@@ -1201,7 +1202,7 @@ public:
      *
      * Instead of using the Karbowski equations, just make some gaussian 'waves'
      *
-     * @m The molecule id
+     * \a m The molecule id
      */
     void gaussian1D_guidance (unsigned int m)
     {
@@ -1216,7 +1217,7 @@ public:
     /*!
      * Circular symmetric 2D Gaussian
      *
-     * @m The molecule id
+     * \a m The molecule id
      */
     void gaussian2D_guidance (unsigned int m)
     {
@@ -1244,7 +1245,7 @@ public:
     /*!
      * An exponential wave
      *
-     * @m The molecule id
+     * \a m The molecule id
      */
     void exponential_guidance (unsigned int m)
     {
@@ -1256,7 +1257,7 @@ public:
         }
     }
 
-    //! @m The molecule id
+    //! \a m The molecule id
     void sigmoid_guidance (unsigned int m)
     {
         for (auto h : this->hg->hexen) {
@@ -1299,7 +1300,7 @@ public:
 
 #if 1
     //! Carry out any sensible spatial analysis required
-    virtual void spatialAnalysis (void)
+    virtual void spatialAnalysis()
     {
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
