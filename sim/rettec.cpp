@@ -263,6 +263,9 @@ int main (int argc, char **argv)
     RD.boundaryFalloffDist = boundaryFalloffDist;
     RD.aNoiseGain = aNoiseGain;
     RD.aInitialOffset = aInitialOffset;
+    // Guidance molecule noise
+    RD.mNoiseGain = conf.getDouble ("mNoiseGain", 0.0);
+    RD.mNoiseSigma = conf.getDouble ("mNoiseSigma", 0.09);
     // After setting N and M, we can set up all the vectors in RD:
     RD.allocate();
     // After allocate(), we can set up the simulation parameters:

@@ -11,10 +11,9 @@
 
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
+#include <morph/Random.h>
 
-/*!
- * Enumerates the way that the guidance molecules are set up
- */
+//! Enumerates the way that the guidance molecules are set up
 enum class FieldShape
 {
     Gauss1D,
@@ -25,10 +24,9 @@ enum class FieldShape
     CircLinear2D
 };
 
-/*!
- * A small collection of parameters to define width and location of a symmetric
- * (i.e. circular) 2D Gaussian.
- */
+
+//! A small collection of parameters to define width and location of a symmetric
+//! (i.e. circular) 2D Gaussian.
 template <typename Flt>
 struct GaussParams
 {
@@ -49,26 +47,18 @@ class RD_AG_NoComp : public morph::RD_Base<Flt>
 {
 public:
 
-    /*!
-     * how many afferent axons are there?
-     */
+    //! how many afferent axons are there?
     alignas(Flt) unsigned int N = 5;
 
-    /*!
-     * M is the number of guidance molecules to use.
-     */
+    //! M is the number of guidance molecules to use.
     alignas(Flt) unsigned int M = 3;
 
-    /*!
-     * These are the c_i(x,t) variables from the Karb2004 paper. x is a std::vector in
-     * two-space.
-     */
+    //! These are the c_i(x,t) variables from the Karb2004 paper. x is a std::vector in
+    //! two-space.
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > c;
 
-    /*!
-     * To record dci/dt, as this is used in the computation of a.
-     */
+    //! To record dci/dt, as this is used in the computation of a.
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > dc;
 
@@ -96,17 +86,13 @@ public:
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > f;
 
-    /*!
-     * The `sharpness' of f.
-     */
+    //! The `sharpness' of f.
     alignas(Flt) Flt s = 15.0;
 
 protected:
-    /*!
-     * The width of the hill defined by the function f
-     */
+    //! The width of the hill defined by the function f
     alignas(Flt) Flt w = 0.2; // determine by subtracting adjacent gammas?
-    alignas(Flt) Flt two_w_sq = 4.0 * 0.2 * 0.2; // determine by subtracting adjacent gammas?
+    alignas(Flt) Flt two_w_sq = 4.0 * 0.2 * 0.2;
 
 public:
     /*!
@@ -116,9 +102,7 @@ public:
     alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
     std::vector<std::array<std::vector<Flt>, 2> > grad_a;
 
-    /*!
-     * Contains the chemo-attractant modifiers which are applied to a_i(x,t) in Eq 4.
-     */
+    //! Contains the chemo-attractant modifiers which are applied to a_i(x,t) in Eq 4.
     alignas(alignof(std::vector<std::vector<std::array<std::vector<Flt>, 2> > >))
     std::vector<std::vector<std::array<std::vector<Flt>, 2> > > g;
 
@@ -129,9 +113,7 @@ public:
     alignas(alignof(std::vector<std::vector<std::vector<Flt> > >))
     std::vector<std::vector<std::vector<Flt> > > divg_over3d;
 
-    /*!
-     * n(x,t) variable from the Karb2004 paper.
-     */
+    //! n(x,t) variable from the Karb2004 paper.
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> n;
 
@@ -142,46 +124,33 @@ public:
     alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
     std::vector<std::array<std::vector<Flt>, 2> > J;
 
-    /*!
-     * Holds the divergence of the J_i(x)s
-     */
+    //! Holds the divergence of the J_i(x)s
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > divJ;
 
-    /*!
-     * The power to which a_i(x,t) is raised in Eqs 1 and 2 in the paper.
-     */
+    //! The power to which a_i(x,t) is raised in Eqs 1 and 2 in the paper.
     alignas(Flt) Flt k = 3.0;
 
 protected:
-    /*!
-     * The diffusion parameter.
-     */
+    //! The diffusion parameter.
     alignas(Flt) Flt D = 0.1;
-
     alignas(Flt) Flt twoDover3dd = this->D+this->D / 3*this->d*this->d;
 
 public:
 
-    /*!
-     * alpha_i parameters
-     */
+    //! alpha_i parameters
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> alpha;
     //! To set a single alpha for all N
     alignas(Flt) Flt alpha_;
 
-    /*!
-     * beta_i parameters
-     */
+    //! beta_i parameters
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> beta;
     //! To set a single beta for all N
     alignas(Flt) Flt beta_;
 
-    /*!
-     * Parameters for initial 2D Gaussian masks over the initial branching levels.
-     */
+    //! Parameters for initial 2D Gaussian masks over the initial branching levels.
     alignas(alignof(std::vector<GaussParams<Flt> >))
     std::vector<GaussParams<Flt> > initmasks;
 
@@ -193,63 +162,44 @@ public:
     alignas(alignof(std::map<Flt, std::string>)) std::map<Flt, std::string> rtnames;
 
 protected: // We have a setter for gamma.
-    /*!
-     * gamma_A/B/C_i (etc) parameters from Eq 4. There are M std::vectors of Flts in here.
-     */
-    //@{
+
+    //! gamma_A/B/C_i (etc) parameters from Eq 4. There are M std::vectors of Flts in here.
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > gamma;
 
-    /*!
-     * Used for group-based competition. One of the sets of gammas is used as a group
-     * identifier.
-     */
+    //! Used for group-based competition. One of the sets of gammas is used as a group
+    //! identifier.
     alignas(alignof(std::vector<Flt>)) std::vector<Flt> group;
     alignas(alignof(std::set<Flt>)) std::set<Flt> groupset;
-    //@}
 
 public:
 
-    /*!
-     * Gain for setting gammas, if required.
-     */
+    //! Gain for setting gammas, if required.
     Flt G = static_cast<Flt>(0.0);
 
-    /*!
-     * A std::vector of parameters for the direction of the guidance molecules. This is an
-     * angle in Radians.
-     */
+    //! A std::vector of parameters for the direction of the guidance molecules. This is an
+    //! angle in Radians.
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> guidance_phi;
 
-    /*!
-     * Guidance molecule parameters for the width of the function
-     */
+    //! Guidance molecule parameters for the width of the function
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> guidance_width;
 
-    /*!
-     * Width in orthogonal direction, for 2D fields.
-     */
+    //! Width in orthogonal direction, for 2D fields.
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> guidance_width_ortho;
 
-    /*!
-     * Guidance molecule parameters for the offset of the function
-     */
+    //! Guidance molecule parameters for the offset of the function
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> guidance_offset;
 
-    /*!
-     * Guidance molecule parameters to be the gains of the functions
-     */
+    //! Guidance molecule parameters to be the gains of the functions
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> guidance_gain;
 
-    /*!
-     * Guidance molecule parameters to be the time (i.e. step) at which each guidance
-     * gradient is switched on.
-     */
+    //! Guidance molecule parameters to be the time (i.e. step) at which each guidance
+    //! gradient is switched on.
     alignas(alignof(std::vector<unsigned int>))
     std::vector<unsigned int> guidance_time_onset;
 
@@ -260,10 +210,8 @@ public:
      *
      * There are M std::vector<Flts> in rho.
      */
-    //@{
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > rho;
-    //@}
 
     /*!
      * Into grad_rho put the two components of the gradient of rho computed across the
@@ -271,54 +219,45 @@ public:
      *
      * There are M gradient fields stored in this variable.
      */
-    //@{
     alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
     std::vector<std::array<std::vector<Flt>, 2> > grad_rho;
-    //@}
 
-    /*!
-     * Memory to hold an intermediate result
-     */
+    //! Memory to hold an intermediate result
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > betaterm;
 
     /*!
-     * Holds an intermediate value for the computation of Eqs 1 and 2.
+    //! Holds an intermediate value for the computation of Eqs 1 and 2.
      */
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > alpha_c;
 
     /*!
-     * The contour threshold. For contour plotting [see plot_contour()], the field is
-     * normalised, then the contour is plotted where the field crosses this threshold.
+    //! The contour threshold. For contour plotting [see plot_contour()], the field is
+    //! normalised, then the contour is plotted where the field crosses this threshold.
      */
     alignas(Flt) Flt contour_threshold = 0.5;
 
     alignas(Flt) Flt aNoiseGain = 0.1;
     alignas(Flt) Flt aInitialOffset = 0.8;
 
-    /*!
-     * An N element vector holding the sum of a_i for each TC type.
-     */
+    //! Gain of guidance molecule noise
+    alignas(Flt) Flt mNoiseGain = Flt{0};
+    //! Controls the length scale of guidance molecule noise
+    alignas(Flt) Flt mNoiseSigma = 0.09;
+
+    //! An N element vector holding the sum of a_i for each TC type.
     alignas(std::vector<Flt>) std::vector<Flt> sum_a;
 
-    /*!
-     * An N element vector holding the initial sum of a_i for each TC type.
-     */
+    //! An N element vector holding the initial sum of a_i for each TC type.
     alignas(std::vector<Flt>) std::vector<Flt> sum_a_init;
 
-    /*!
-     * Data containers for summed n, c and a.
-     */
-    //@{
+    //! Data containers for summed n, c and a.
     alignas(std::vector<Flt>) std::vector<Flt> v_nsum;
     alignas(std::vector<Flt>) std::vector<Flt> v_csum;
     alignas(std::vector<Flt>) std::vector<Flt> v_asum;
-    //@}
 
-    /*!
-     * The fall-off multiplier used towards the boundary of the field
-     */
+    //! The fall-off multiplier used towards the boundary of the field
     alignas(std::vector<Flt>) std::vector<Flt> bSig;
 
     //! A per-hex variable. Holds the ID (as a Flt) of the index into c which has the
@@ -339,29 +278,21 @@ public:
     //! Set true when the spatial analysis has been computed
     bool spatialAnalysisComputed = false;
 
-    /*!
-     * Set true to have the function f modulate the strength of connection-making -
-     * i.e. beta.
-     */
+    //! Set true to have the function f modulate the strength of connection-making -
+    //! i.e. beta.
     bool fModulatesBeta = true;
     //! The proportion of the connection making which f modulates
     Flt prop_modulated = static_cast<Flt>(1);
     //! The proportion of the connection making which f does not modulate
     Flt prop_unmodulated = static_cast<Flt>(0);
 
-    /*!
-     * Set true to have f modulate the rate of decay of connections
-     */
+    //! Set true to have f modulate the rate of decay of connections
     bool fModulatesAlpha = true; // Reuse prop_modulated/unmodulated as above for now.
 
-    /*!
-     * Sets the function of the guidance molecule method
-     */
+    //! Sets the function of the guidance molecule method
     std::vector<FieldShape> rhoMethod;
 
-    /*!
-     * Simple constructor; no arguments. Just calls RD_Base constructor
-     */
+    //! Simple constructor; no arguments. Just calls RD_Base constructor
     RD_AG_NoComp() : morph::RD_Base<Flt>() {}
 
     /*!
@@ -386,6 +317,54 @@ public:
                                                                    // in the Gaussian mask).
                 }
             }
+        }
+    }
+
+    //! Adds noise (with gain and length given by mNoiseGain and mNoiseSigma) to \a
+    //! v. Has no boundary sigmoid rolloff effect.
+    virtual void addnoise_vector (std::vector<Flt>& v)
+    {
+        std::cout << "Add noise to vector?...";
+        if (this->mNoiseGain == Flt{0}) {
+            // No noise
+            std::cout << "NO.\n";
+            return;
+        }
+        std::cout << "Yes.\n";
+
+        // First, fill a duplicate vector with noise
+        morph::RandUniform<Flt> rng(-this->mNoiseGain/Flt{2}, this->mNoiseGain/Flt{2});
+        std::vector<Flt> noise (v.size(), Flt{0});
+        for (unsigned int h = 0; h<v.size(); ++h) {
+            noise[h] = rng.get();
+        }
+
+        // Set up the Gaussian convolution kernel on a circular HexGrid.
+        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0,
+                              morph::HexDomainShape::Boundary);
+        kernel.setCircularBoundary (Flt{6}*this->mNoiseSigma);
+        std::vector<Flt> kerneldata (kernel.num(), 0.0f);
+        // Once-only parts of the calculation of the Gaussian.
+        Flt one_over_sigma_root_2_pi = 1 / this->mNoiseSigma * 2.506628275;
+        Flt two_sigma_sq = 2.0f * this->mNoiseSigma * this->mNoiseSigma;
+        Flt gsum = 0;
+        for (auto& k : kernel.hexen) {
+            Flt gauss = (one_over_sigma_root_2_pi * std::exp ( -(k.r*k.r) / two_sigma_sq ));
+            kerneldata[k.vi] = gauss;
+            gsum += gauss;
+        }
+        // Renormalise
+        for (size_t k = 0; k < kernel.num(); ++k) { kerneldata[k] /= gsum; }
+
+        // A vector for the result
+        std::vector<Flt> convolved (v.size(), 0.0f);
+
+        // Call the convolution method from HexGrid:
+        this->hg->convolve (kernel, kerneldata, noise, convolved);
+
+        // Now add the noise to the vector:
+        for (size_t h = 0; h < v.size(); ++h) {
+            v[h] += convolved[h];
         }
     }
 
@@ -425,9 +404,7 @@ public:
         }
     }
 
-    /*!
-     * Perform memory allocations, vector resizes and so on.
-     */
+    //! Perform memory allocations, vector resizes and so on.
     virtual void allocate()
     {
         morph::RD_Base<Flt>::allocate();
@@ -550,23 +527,29 @@ public:
             if (this->rhoMethod[m] == FieldShape::Gauss1D) {
                 // Construct Gaussian-waves rather than doing the full-Karbowski shebang.
                 this->gaussian1D_guidance (m);
+                this->addnoise_vector (this->rho[m]);
 
             } else if (this->rhoMethod[m] == FieldShape::Gauss2D) {
                 // Construct 2 dimensional gradients
                 this->gaussian2D_guidance (m);
+                this->addnoise_vector (this->rho[m]);
 
             } else if (this->rhoMethod[m] == FieldShape::Exponential1D) {
                 // Construct an 'exponential wave'
                 this->exponential_guidance (m);
+                this->addnoise_vector (this->rho[m]);
 
             } else if (this->rhoMethod[m] == FieldShape::Sigmoid1D) {
                 this->sigmoid_guidance (m);
+                this->addnoise_vector (this->rho[m]);
 
             } else if (this->rhoMethod[m] == FieldShape::Linear1D) {
                 this->linear_guidance (m);
+                this->addnoise_vector (this->rho[m]);
 
             } else if (this->rhoMethod[m] == FieldShape::CircLinear2D) {
                 this->circlinear_guidance (m);
+                this->addnoise_vector (this->rho[m]);
             }
         }
 
@@ -614,25 +597,21 @@ protected:
         return theid;
     }
 
-    /*!
-     * Require private setter for d. Slightly different from the base class version.
-     */
-    //@{
+    //! Require private setter for d. Slightly different from the base class version.
     void set_d (Flt d_)
     {
         morph::RD_Base<Flt>::set_d (d_);
         this->updateTwoDover3dd();
     }
-    //@}
 
 public:
-    //! Public accessors for D, as it requires another attribute to be updated at the
-    //! same time.
+    //! Public setter for D to set D AND twoDover3dd
     void set_D (Flt D_)
     {
         this->D = D_;
         this->updateTwoDover3dd();
     }
+    //! Public getter for D also required
     Flt get_D()
     {
         return this->D;

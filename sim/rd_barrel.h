@@ -8,6 +8,7 @@
  */
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
+#include <morph/Random.h>
 #include <stdexcept>
 #include <cmath>
 
@@ -242,7 +243,6 @@ public:
     alignas(Flt) Flt mNoiseGain = Flt{0};
     alignas(Flt) Flt mNoiseSigma = 0.09; // hex to hex d is usually 0.03
 
-
     //! An N element vector holding the sum of a_i for each TC type.
     alignas(std::vector<Flt>) std::vector<Flt> sum_a;
 
@@ -309,8 +309,8 @@ public:
         }
     }
 
-    //! Similar to the above, but just adds noise to v (with a gain only) to \a vv. Has
-    //! no boundary sigmoid.
+    //! Adds noise (with gain and length given by mNoiseGain and mNoiseSigma) to \a
+    //! v. Has no boundary sigmoid rolloff effect.
     virtual void addnoise_vector (std::vector<Flt>& v)
     {
         std::cout << "Add noise to vector?...";
@@ -522,23 +522,24 @@ public:
             if (this->rhoMethod[m] == FieldShape::Gauss1D) {
                 // Construct Gaussian-waves rather than doing the full-Karbowski shebang.
                 this->gaussian1D_guidance (m);
-
+                this->addnoise_vector (this->rho[m]);
             } else if (this->rhoMethod[m] == FieldShape::Gauss2D) {
                 // Construct 2 dimensional gradients
                 this->gaussian2D_guidance (m);
-
+                this->addnoise_vector (this->rho[m]);
             } else if (this->rhoMethod[m] == FieldShape::Exponential1D) {
                 // Construct an 'exponential wave'
                 this->exponential_guidance (m);
-
+                this->addnoise_vector (this->rho[m]);
             } else if (this->rhoMethod[m] == FieldShape::Sigmoid1D) {
                 this->sigmoid_guidance (m);
-
+                this->addnoise_vector (this->rho[m]);
             } else if (this->rhoMethod[m] == FieldShape::Linear1D) {
                 this->linear_guidance (m);
-
+                this->addnoise_vector (this->rho[m]);
             } else if (this->rhoMethod[m] == FieldShape::CircLinear2D) {
                 this->circlinear_guidance (m);
+                this->addnoise_vector (this->rho[m]);
             }
         }
 
