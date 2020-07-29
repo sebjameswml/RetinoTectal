@@ -203,10 +203,8 @@ public:
      *
      * There are M vector<Flts> in rho.
      */
-    //@{
     alignas(alignof(std::vector<std::vector<Flt> >))
     std::vector<std::vector<Flt> > rho;
-    //@}
 
     /*!
      * Into grad_rho put the two components of the gradient of rho computed across the
@@ -214,10 +212,8 @@ public:
      *
      * There are M gradient fields stored in this variable.
      */
-    //@{
     alignas(alignof(std::vector<std::array<std::vector<Flt>, 2> >))
     std::vector<std::array<std::vector<Flt>, 2> > grad_rho;
-    //@}
 
     //! Memory to hold an intermediate result
     alignas(alignof(std::vector<std::vector<Flt> >))
@@ -272,6 +268,7 @@ public:
     std::map<Flt, int> region_areas;
     //! Set true when the spatial analysis has been computed
     bool spatialAnalysisComputed = false;
+
     /*!
      * ALIGNAS REGION ENDS.
      *
@@ -523,20 +520,25 @@ public:
                 // Construct Gaussian-waves rather than doing the full-Karbowski shebang.
                 this->gaussian1D_guidance (m);
                 this->addnoise_vector (this->rho[m]);
+
             } else if (this->rhoMethod[m] == FieldShape::Gauss2D) {
                 // Construct 2 dimensional gradients
                 this->gaussian2D_guidance (m);
                 this->addnoise_vector (this->rho[m]);
+
             } else if (this->rhoMethod[m] == FieldShape::Exponential1D) {
                 // Construct an 'exponential wave'
                 this->exponential_guidance (m);
                 this->addnoise_vector (this->rho[m]);
+
             } else if (this->rhoMethod[m] == FieldShape::Sigmoid1D) {
                 this->sigmoid_guidance (m);
                 this->addnoise_vector (this->rho[m]);
+
             } else if (this->rhoMethod[m] == FieldShape::Linear1D) {
                 this->linear_guidance (m);
                 this->addnoise_vector (this->rho[m]);
+
             } else if (this->rhoMethod[m] == FieldShape::CircLinear2D) {
                 this->circlinear_guidance (m);
                 this->addnoise_vector (this->rho[m]);
@@ -564,7 +566,7 @@ public:
 
 protected:
     /*!
-     * Given a RT id string @idstr, look it up in rtnames and find the Flt ID that it
+     * Given a RT id string \a idstr, look it up in rtnames and find the Flt ID that it
      * corresponds to. Client code should have set up rtnames.
      */
     Flt rt_name_to_id (const std::string& idstr)
@@ -613,7 +615,7 @@ protected:
 public:
     /*!
      * setGamma for the guidance molecule index m_idx and the RT index n_idx to
-     * @value. If group_m==m_idx, then set this->group[n_idx]=@value
+     * \a value. If group_m==m_idx, then set this->group[n_idx]=\a value
      */
     int setGamma (unsigned int m_idx, unsigned int n_idx, Flt value, unsigned int group_m = 0)
     {

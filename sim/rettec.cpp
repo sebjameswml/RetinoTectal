@@ -12,6 +12,9 @@
 #endif
 
 #include <iostream>
+#define DBGSTREAM std::cout
+#define DEBUG 1
+#include <morph/MorphDbg.h>
 
 //! A global variable used as a finished-the-loop flag. Global so that signalHandler can
 //! set it true to break out of the loop early, but with the program completing correctly.
@@ -187,9 +190,6 @@ int main (int argc, char **argv)
 
     DBG ("steps to simulate: " << steps);
 
-    // Number of axons is the N variable
-    unsigned int N_Axons =  conf.getUInt ("N", 0);
-
     // Guidance molecule array of parameters:
     const Json::Value guid = conf.getArray("guidance");
     unsigned int M_GUID = static_cast<unsigned int>(guid.size());
@@ -218,21 +218,16 @@ int main (int argc, char **argv)
     unsigned int win_height_default = static_cast<unsigned int>(0.8824f * (float)win_width);
     const unsigned int win_height = conf.getUInt ("win_height", win_height_default);
 
-    // Whole-scene offsetting
-    const float x_default = conf.getFloat ("x_default", 0.0f);
-    const float y_default = conf.getFloat ("y_default", 0.0f);
-    const float z_default = conf.getFloat ("z_default", -5.0f);
-    // If this is true, then mouse movements won't move the scene around
-    const bool sceneLocked = conf.getBool ("sceneLocked", false);
-
     // Set up the morph::Visual object
     morph::Visual v1 (win_width, win_height, "Retino-tectal simulation");
     v1.zNear = 0.001;
     v1.zFar = 50;
     v1.fov = 45;
-    v1.sceneLocked = sceneLocked;
-    v1.setZDefault (z_default);
-    v1.setSceneTransXY (x_default, y_default);
+    // If this is true, then mouse movements won't move the scene around
+    v1.sceneLocked = conf.getBool ("sceneLocked", false);
+    // Whole-scene offsetting
+    v1.setZDefault (conf.getFloat ("z_default", -5.0f));
+    v1.setSceneTransXY (conf.getFloat ("x_default", 0.0f), conf.getFloat ("y_default", 0.0f));
     // Make this larger to "scroll in and out of the image" faster
     v1.scenetrans_stepsize = 0.5;
 #endif // COMPILE_PLOTTING
@@ -252,7 +247,7 @@ int main (int argc, char **argv)
 
     RD.logpath = logpath;
     // NB: Set .N, .M BEFORE RD.allocate().
-    RD.N = N_Axons; // Number of RT axons.
+    RD.N = conf.getUInt ("N", 0); // Number of RT axons is N
     RD.M = M_GUID; // Number of guidance molecules that are sculpted
     // Set up timestep
     RD.set_dt (dt);
@@ -290,7 +285,7 @@ int main (int argc, char **argv)
         Json::Value v = guid[j];
         // What guidance molecule method will we use?
         std::string rmeth = v.get ("shape", "Sigmoid1D").asString();
-        DBG2 ("guidance molecule shape: " << rmeth);
+        DBG ("guidance molecule shape: " << rmeth);
         if (rmeth == "Sigmoid1D") {
             RD.rhoMethod[j] = FieldShape::Sigmoid1D;
         } else if (rmeth == "Linear1D") {
@@ -321,7 +316,7 @@ int main (int argc, char **argv)
         morph::Tools::createDir (logpath);
         if (morph::Tools::dirExists (logpath) == false) {
             std::cerr << "Failed to create the logpath directory "
-                      << logpath << " which does not exist."<< std::endl;
+                      << logpath << " which does not exist." << std::endl;
             return 1;
         }
     } else {
@@ -500,7 +495,7 @@ int main (int argc, char **argv)
                                                                     null_zscale,
                                                                     ctr_cscale,
                                                                     morph::ColourMapType::RainbowZeroWhite));
-        //array<float,3> hsv = {1.0, 0.0, 0.0};
+
         quiv_grid = v1.addVisualModel (new morph::QuiverVisual<FLT> (v1.shaderprog,
                                                                      &zerovecs,
                                                                      spatOff,
@@ -513,11 +508,11 @@ int main (int argc, char **argv)
     // guidance expression
     if (plot_guide) {
         spatOff = { xzero, 0.0, 0.0 };
-        float _m = 0.8; float _c = 0.0;
-        morph::Scale<FLT> gd_cscale; gd_cscale.setParams (_m, _c);
-
+        morph::Scale<FLT> gd_cscale;
+        gd_cscale.do_autoscale = true;
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
+            std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin (RD.rho[j]);
             v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
                                                               RD.hg,
                                                               spatOff,
@@ -585,7 +580,6 @@ int main (int argc, char **argv)
             float gg_m, gg_c;
             gg_m = 1.0f/(float)(maxg-ming);
             gg_c = -(gg_m * ming);
-            //const array<float, 4> guidegrad_scaling = { 0.0f, 0.0f, gg_m, gg_c };
             morph::Scale<float> gd_cscale; gd_cscale.setParams (gg_m, gg_c);
             // Create the grids
             v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
