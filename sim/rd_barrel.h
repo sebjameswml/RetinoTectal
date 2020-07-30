@@ -278,8 +278,30 @@ public:
     //! Sets the function of the guidance molecule method
     std::vector<FieldShape> rhoMethod;
 
+    //! Should seeds be fixed or set by default mechanism?
+    bool fixedSeeds = true;
+
+    //! The fixed seed to use in aNoiseSeed and mNoiseSeed.
+    unsigned int noiseSeed = 999;
+
+    //! A member random number generator for initializing a
+    morph::RandUniform<Flt>* aNoiseRng = (morph::RandUniform<Flt>*)0;
+
+    //! A member random number generator for initializing guidance molecule noise
+    morph::RandUniform<Flt>* mNoiseRng = (morph::RandUniform<Flt>*)0;
+
     //! A basic constructor
     RD_Barrel() : morph::RD_Base<Flt>() {}
+
+    //! Deconstructor to deallocate random number generators
+    ~RD_Barrel() {
+        if (this->mNoiseRng != (morph::RandUniform<Flt>*)0) {
+            delete (this->mNoiseRng);
+        }
+        if (this->aNoiseRng != (morph::RandUniform<Flt>*)0) {
+            delete (this->aNoiseRng);
+        }
+    }
 
     /*!
      * Initialise this vector of vectors with noise. This is a model-specific
@@ -296,7 +318,7 @@ public:
                 // boundarySigmoid. Jumps sharply (100, larger is sharper) over length
                 // scale 0.05 to 1. So if distance from boundary > 0.05, noise has
                 // normal value. Close to boundary, noise is less.
-                vv[i][h.vi] = morph::Tools::randF<Flt>() * this->aNoiseGain + this->aInitialOffset;
+                vv[i][h.vi] = this->aNoiseRng->get();//morph::Tools::randF<Flt>() * this->aNoiseGain + this->aInitialOffset;
                 if (h.distToBoundary > -0.5) { // It's possible that distToBoundary is set to -1.0
                     Flt bSig = 1.0/(1.0 + std::exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)));
                     vv[i][h.vi] = vv[i][h.vi] * bSig * gp[i].gain; // New: apply gain here (and not
@@ -319,10 +341,9 @@ public:
         std::cout << "Yes.\n";
 
         // First, fill a duplicate vector with noise
-        morph::RandUniform<Flt> rng(-this->mNoiseGain/Flt{2}, this->mNoiseGain/Flt{2});
         std::vector<Flt> noise (v.size(), Flt{0});
         for (unsigned int h = 0; h<v.size(); ++h) {
-            noise[h] = rng.get();
+            noise[h] = this->mNoiseRng->get();
         }
 
         // Set up the Gaussian convolution kernel on a circular HexGrid.
@@ -475,6 +496,22 @@ public:
         this->zero_vector_variable (this->ahat);
         this->zero_gradient_field (this->grad_ahat);
         this->zero_vector_variable (this->div_ahat);
+
+        // Configure random number generators
+        if (this->fixedSeeds == true) {
+            std::cout << "Fixed seed: " << this->noiseSeed << std::endl;
+            this->aNoiseRng = new morph::RandUniform<Flt>(this->aInitialOffset-(this->aNoiseGain/Flt{2}),
+                                                          this->aInitialOffset+(this->aNoiseGain/Flt{2}),
+                                                          this->noiseSeed);
+
+            this->mNoiseRng = new morph::RandUniform<Flt>(-this->mNoiseGain/Flt{2}, this->mNoiseGain/Flt{2},
+                                                          this->noiseSeed);
+        } else {
+            this->aNoiseRng = new morph::RandUniform<Flt>(this->aInitialOffset-(this->aNoiseGain/Flt{2}),
+                                                          this->aInitialOffset+(this->aNoiseGain/Flt{2}));
+
+            this->mNoiseRng = new morph::RandUniform<Flt>(-this->mNoiseGain/Flt{2}, this->mNoiseGain/Flt{2});
+        }
 
         // Initialise a with noise
         std::cout << "initmasks.size(): " << this->initmasks.size() << std::endl;

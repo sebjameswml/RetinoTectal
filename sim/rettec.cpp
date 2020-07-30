@@ -512,7 +512,6 @@ int main (int argc, char **argv)
         gd_cscale.do_autoscale = true;
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
-            std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin (RD.rho[j]);
             v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
                                                               RD.hg,
                                                               spatOff,
@@ -540,7 +539,6 @@ int main (int argc, char **argv)
             neuronColourData.push_back ((float)i/(float)(RD.N+1));
         }
         float scatRad = RD.ring_d/10.0f;
-        //v1.addScatterVisual (&ret_coordinates, spatOff, neuronColourData, scatRad, twoScaling, ColourMapType::RainbowZeroBlack);
         v1.addVisualModel (new morph::ScatterVisual<FLT> (v1.shaderprog, &ret_coordinates, spatOff,
                                                           &neuronColourData, scatRad, ctr_cscale,
                                                           morph::ColourMapType::RainbowZeroBlack));
