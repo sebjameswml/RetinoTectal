@@ -294,7 +294,8 @@ public:
     RD_Barrel() : morph::RD_Base<Flt>() {}
 
     //! Deconstructor to deallocate random number generators
-    ~RD_Barrel() {
+    ~RD_Barrel()
+    {
         if (this->mNoiseRng != (morph::RandUniform<Flt>*)0) {
             delete (this->mNoiseRng);
         }
@@ -414,6 +415,10 @@ public:
     //! Perform memory allocations, vector resizes and so on.
     virtual void allocate()
     {
+        // have this->ellipse_a and ellipse_b. Need to determine hexspan from this.
+        float max_ellipse_rad = std::max (this->ellipse_a, this->ellipse_b);
+        this->hexspan = 3.0f * max_ellipse_rad;
+        std::cout << "Hexspan is " << this->hexspan << std::endl;
         morph::RD_Base<Flt>::allocate();
 
         // Resize and zero-initialise the various containers

@@ -134,7 +134,6 @@ int main (int argc, char **argv)
     // Only start logging after simulation has got to this step:
     const unsigned int logfrom = conf.getUInt ("logfrom", 0UL);
     const float hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
-    const float hexspan = conf.getFloat ("hexspan", 4.0f);
     const float boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
     const std::string svgpath = conf.getString ("svgpath", "");
     // If svgpath is empty, then compute an elliptical boundary:
@@ -253,7 +252,7 @@ int main (int argc, char **argv)
     RD.set_dt (dt);
     // Control the size of the hexes, and therefore the number of hexes in the grid
     RD.hextohex_d = hextohex_d;
-    RD.hexspan = hexspan;
+    //RD.hexspan = hexspan; // auto-set in rd_barrel.h
     // Boundary fall-off distance
     RD.boundaryFalloffDist = boundaryFalloffDist;
     RD.aNoiseGain = aNoiseGain;
