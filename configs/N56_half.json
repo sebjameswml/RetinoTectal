@@ -1,0 +1,89 @@
+{
+    "description" : "A medium sized retino-tectal simulation, in which half the retina was ablated (expressed by setting ret_endangle to Pi).)",
+
+    "section_global" : "Global parameters",
+    "steps" : 5000,
+    "logevery": 100,
+    "logfrom" : 0,
+    "overwrite_logs": true,
+    "logbase" : "./log/",
+    "hextohex_d" : 0.0095,
+    "ellipse_a" : 0.7,
+    "ellipse_b" : 0.5,
+    "ret_startangle" : 0,
+    "ret_endangle_options" : "6.283185307, 3.141592654 or 1.570796327",
+    "ret_endangle" : 3.141592654,
+    "boundaryFalloffDist" : 0.15,
+    "D" : 0.03,
+    "G" : 1.0,
+
+    "desc_sigma_gamma" : "gamma noise. The std deviation of a 0-mean normal dist which is used to perturb each gamma. With sigma_rho==0; 0.1 makes a clear, visual disruption to the pattern",
+
+    "sigma_gamma" : 0.0,
+
+    "desc_sigma_rho" : "rho noise - the growth cones' sampling noise on direction of travel. Note that this has a performance hit, more or less doubling the time required for simulation. With sigma_gamma==0, 10 begins to disrupt pattern formation to begin with, possibly slowing pattern formation. 20 heavily disrupts the pattern, which still fails to form after 2x as many steps as the usual simulation. At 100, simulation fails numerically.",
+
+    "sigma_rho" : 0,
+
+    "k" : 3,
+    "N" : 56,
+    "alpha" : 3.6,
+    "beta" : 17,
+    "epsilon" : 1.2,
+
+    "desc_dt" : "Timestep. Defaults to 0.00001 if omitted here",
+    "dt" : 0.0005,
+
+    "desc_a_noise" : "It's necessary to have an initial activation in a, so aInitialOffset must be >0. However, it's not necessary to have any additional noise, and in fact, aNoiseGain > 0.005 may lead to unstable simulations.",
+    "aNoiseGain" : 0,
+    "aInitialOffset" : 0.2,
+
+    "desc_guidance" : "Array of parameters for the guidance molecules",
+    "guidance": [
+        {
+            "direction" : "x",
+            "shape"  : "Linear1D",
+            "gain"   : 1.0,
+            "phi"    : 0,
+            "width"  : 0.1,
+            "offset" : 0.0
+        },
+        {
+            "direction" : "y",
+            "shape"  : "Linear1D",
+            "gain"   : 1.0,
+            "phi"    : 90,
+            "width"  : 0.1,
+            "offset" : 0.0
+        }
+    ],
+
+    "section_stopping" : "Stopping parameters",
+    "s" : 9.0,
+    "w" : 0.01,
+
+    "contour_threshold" : 0.1,
+
+    "section_vis" : "Visualization parameters (ignored by computation-only binaries)",
+    "win_width": 1600,
+    "win_height": 600,
+    "plotevery": 50,
+    "desc_vidframes" : "If true, number video frame saves consecutively, rather than by simulation step number",
+    "vidframes": true,
+
+    "section_scene_parameters" : "Get these from Scenetrans: press 'z' in your window to see",
+    "x_default": -3.04,
+    "y_default": 0.134,
+    "desc_z_default" : "Larger/more negative to zoom out",
+    "z_default": -2.5,
+    "sceneLocked": false,
+
+    "plot_guide" : true,
+    "plot_contours" : true,
+    "plot_a_contours" : true,
+    "plot_a" : false,
+    "plot_c" : false,
+    "plot_f" : true,
+    "plot_n" : true,
+    "plot_dr" : true
+}
