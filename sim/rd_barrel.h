@@ -94,6 +94,14 @@ public:
     //! divergence of \hat{a}_i(x,t).
     alignas(alignof(std::vector<Flt>)) std::vector<Flt> div_ahat;
 
+    //! \bar{a}_i - result of processing a_i through a sigmoid.
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> abar;
+
+    //! Gradient of \bar{a}
+    alignas(alignof(std::array<std::vector<Flt>, 2>))
+    std::array<std::vector<Flt>, 2> grad_abar;
+
     /*!
      * To hold div(g) / 3d, a static scalar field. There are M vectors of N of these
      * vectors of Flts
@@ -118,6 +126,9 @@ public:
 
     //! The power to which a_i(x,t) is raised in Eqs 1 and 2 in the paper.
     alignas(Flt) Flt k = 3.0;
+
+    //! Maximum allowed value for a_i at the end of \a integrate_a
+    alignas(Flt) Flt a_max = 0.5;
 
 protected:
     //! The diffusion parameter.
@@ -454,6 +465,9 @@ public:
         this->resize_gradient_field (this->grad_ahat);
         this->resize_vector_variable (this->div_ahat);
 
+        this->resize_vector_variable (this->abar);
+        this->resize_gradient_field (this->grad_abar);
+
         // rhomethod is a vector of size M
         this->rhoMethod.resize (this->M);
         for (unsigned int j=0; j<this->M; ++j) {
@@ -501,6 +515,9 @@ public:
         this->zero_vector_variable (this->ahat);
         this->zero_gradient_field (this->grad_ahat);
         this->zero_vector_variable (this->div_ahat);
+
+        this->zero_vector_variable (this->abar);
+        this->zero_gradient_field (this->grad_abar);
 
         // Configure random number generators
         if (this->fixedSeeds == true) {
@@ -855,15 +872,14 @@ public:
     //! The normalization/transfer function.
     virtual inline Flt transfer_a (const Flt& _a, const unsigned int _i)
     {
-#ifdef NORMALIZE_TO_ONE
-        // Divisive normalization to one
-        Flt a_rtn = this->nhex * _a / this->sum_a[_i];
-#else
-        // Divisive norm with initial sum multiplier
-        Flt a_rtn = this->sum_a_init[_i] * _a / this->sum_a[_i];
-#endif
-        // Prevent a from becoming negative, necessary only when competition is implemented:
+#if 0
+        Flt a_rtn = _a < this->a_max ? _a : this->a_max;
+        // Also prevent a from becoming negative
         return (a_rtn < 0.0) ? 0.0 : a_rtn;
+#else
+        // Effectively no transfer fn.
+        return _a;
+#endif
     }
 #endif
 
@@ -1115,6 +1131,23 @@ public:
      */
     virtual void compute_divJ (std::vector<Flt>& fa, unsigned int i)
     {
+#ifdef SIGMOID_ROLLOFF_FOR_A
+        // Compute \bar{a}_i and its spatial gradient
+        Flt o = 5.0; // offset
+        Flt s = 0.5; // sharpness
+#pragma omp parallel for
+        for (unsigned int hi=0; hi<this->nhex; ++hi) {
+            this->abar[hi] = this->a_max / (1 - exp (o - s * fa[hi]));
+        }
+        this->spacegrad2D (this->abar, this->grad_abar);
+#elif defined LINEAR_MAX
+#pragma omp parallel for
+        for (unsigned int hi=0; hi<this->nhex; ++hi) {
+            this->abar[hi] = fa[hi] > this->a_max ? this->a_max : fa[hi];
+        }
+        this->spacegrad2D (this->abar, this->grad_abar);
+#endif
+
         // Compute gradient of a_i(x), for use computing the third term, below.
         this->spacegrad2D (fa, this->grad_a[i]);
 
@@ -1157,9 +1190,13 @@ public:
             }
 
             Flt term1_1 = Flt{0};
-
+#if defined SIGMOID_ROLLOFF_FOR_A || defined LINEAR_MAX
+            // Term 1.1 is epsilon/N-1 abar div(ahat)
+            term1_1 = this->epsilonOverNm1 * abar[hi] * this->div_ahat[hi];
+#else
             // Term 1.1 is F/N-1 a div(ahat)
             term1_1 = this->epsilonOverNm1 * fa[hi] * this->div_ahat[hi];
+#endif
 
             if (isnan(term1_1)) {
                 std::cerr << "term1_1 isnan" << std::endl;
@@ -1169,10 +1206,15 @@ public:
             }
 
             Flt term1_2 = Flt{0};
+#if defined SIGMOID_ROLLOFF_FOR_A || defined LINEAR_MAX
+            // Term 1.2 is F/N-1 grad(ahat) . grad(abar)
+            term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_abar[0][hi]
+                                              + this->grad_ahat[1][hi] * this->grad_abar[1][hi]);
+#else
             // Term 1.2 is eps/N-1 grad(ahat) . grad(a)
             term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_a[i][0][hi]
                                               + this->grad_ahat[1][hi] * this->grad_a[i][1][hi]);
-
+#endif
             if (isnan(term1_2)) {
                 std::cerr << "term1_2 isnan at hi=" << hi << "(step " << this->stepCount << ")" << std::endl;
                 if (isnan(this->grad_ahat[0][hi])) {

@@ -267,29 +267,34 @@ carried with the efferent axons to the tectum. This noise would be expected to
 be fixed after the axons had grown away from the retina.
 
 On arriving at the tectum, axon growth cones must determine their direction of
-movement. The model encapsulates the quantitative hypotheses that growth cone
+movement. The model encapsulates the quantitative hypothesis that growth cone
 movement is a combination of diffusion and guidance. The guidance is subject
 to sampling error and thus a second source of noise can be introduced to the
 model. This noise varies with time during the simulation and can be considered
 to have two contributions; one from variations in the true expression level of
-the signalling gradient and one from sampling error measuring it. We will
+the signalling gradient and one from sampling error measuring it. I will
 combine these into a single error. \textbf{Or maybe not:} Because the
 no-competition model (see Section \ref{sec:nocomp}) has a function
 $f(\gamma, \rho)$, which represents the axons' ability to sample the absolute
 value of $\rho$, it is important to represent the variability of the true
-value of $\rho(\mb{x})$.
+value of $\rho(\mb{x})$. \textbf{Update (July 2020):} Since I was last
+thinking about this, I added length- and amplitude-variable noise to $\rho$,
+so I will use that code here, and additionally consider noise in the sampling
+of $\rho$.
 
 The system equations are modified as follows. Starting from the branching equation
 
 \begin{equation} \label{eq:da}
-\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right) - \frac{\partial c_i}{\partial t} + \chi_i,
+\frac{\partial a_i}{\partial t} = \nabla\vcdot\left(D \nabla
+a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x}) + \chi_i \right) - \frac{\partial c_i}{\partial t},
 \end{equation}
 
 the term for the divergence of $\mb{J}$ can be written:
 %
 \begin{equation}
   \label{eq:divJ}
-  \nabla\vcdot\mb{J}_i(\mb{x},t) = \nabla\vcdot\left(D \nabla a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})\right).
+  \nabla\vcdot\mb{J}_i(\mb{x},t) = \nabla\vcdot\left(D \nabla
+  a_i-a_i\sum_{j=1}^{M} \gamma_{i,j}\nabla \rho_j(\mb{x})+ \chi_i \right).
 \end{equation}
 %
 In the barrels model, each $\rho_j(\mb{x})$ was assumed static, allowing the
@@ -299,7 +304,7 @@ definition of a time-independent $\mb{g}_i(\mb{x})$:
 \mb{g}_i(\mb{x}) \equiv \sum_{j=1}^{M} \gamma_{i,j} \nabla\rho_j(\mb{x}).
 \end{equation}
 %
-Here, we represent the time-dependence of the signalling molecule expression
+Here, I represent the time-dependence of the signalling molecule expression
 by noting that $\rho$ is now a function of time.  The error which the growth
 cones make in sampling $\rho$ and estimating $\nabla\rho_j(\mb{x})$ is
 $\xi_{\rho'}(t)$:
@@ -313,8 +318,8 @@ One problem with this representation is that the equations represent a
 population model. Within one spatial element of the discretized solution of
 the differential equations, the error, $\xi_{\rho'}(t)$ can have only one value at
 time $t$; this value is applied to all the individual axon growth cones that
-are represented by that element. Nonetheless, it's a useful, and fairly simple
-way to represent the guidance error in the system. In practice, we ignore the
+are represented by that element. Nonetheless, it's a useful (and fairly simple)
+way to represent the guidance error in the system. In practice, I ignore the
 variation in $\rho_j$ and write
 %
 \begin{equation}
@@ -345,7 +350,7 @@ deviation $\sigma_{\gamma}$.
 \subsection{Non-competition based stopping mechanism}
 \label{sec:nocomp}
 
-Here, we seek to model the `pure' chemospecificity theory in which axons are
+Here, I seek to model the `pure' chemospecificity theory in which axons are
 guided by orthogonal morphogen gradients until they reach their destination,
 which they must be able to sense. The axons, guided by the \emph{gradient} of
 the morphogen concentration are assumed also to be able to sample
@@ -355,7 +360,7 @@ the concentrations of the two orthogonal morphogens are simultaneously
 measured to be within the axon's `stopping' ranges.
 
 To find a way to implement this in a population model similar to the
-competitive model, we start from the branching equation (dropping the
+competitive model, I start from the branching equation (dropping the
 competition term, $\chi_i$):
 
 \begin{equation} \label{eq:da_again}
@@ -379,8 +384,8 @@ $\rho$. Note that $\tilde{\rho}_j(\mb{x})$ is the axon's \emph{measurement} of
 $\rho_j(\mb{x})$ and may include measurement noise, $\xi_\rho$:
 $\tilde{\rho}_j = \rho_j + \xi_\rho$. Given that the morphogen gradients are
 orthogonal, $(\tilde{\rho}_1,\tilde{\rho}_2)$ defines a vector field
-$\vec{\rho}\,(\mb{x})$. Similarly, we can combine $(\gamma_{i,1},\gamma_{i,2})$
-into the vector $\vec{\gamma}$.
+$\vec{\rho}\,(\mb{x})$. Similarly, $(\gamma_{i,1},\gamma_{i,2})$ can be
+combined to give the vector $\vec{\gamma}$.
 
 This makes it easy to start to build $f_i$ with a two dimensional Gaussian
 function:
@@ -517,6 +522,70 @@ These correspond to \cite{goodhill_retinotectal_1999}, Figs.~2I and 2J.
 \end{displayquote}
 
 This corresponds to \cite{goodhill_retinotectal_1999}, Fig 2H.
+
+\section{Implementation notes}
+
+\subsection{Stability}
+
+The model can become unstable due to the unbounded nature of $a$. Essentially,
+$a$ can blow up in the computation of $\dvrg J$.
+
+Stability with respect to $D$ is a particular issue, as is stability in the
+presence of noise.
+
+\subsection{Stability for small $D$}
+
+In the basic, $N=56$ wild type simulation, $D$ seems to need to be close to
+0.02. Unfortunately, the simulation is unstable for $\delta t=0.0001$ and
+$d=0.015$. Having fixed a bug which prevented me from reducing $d$ very much,
+and having implemented fixed seed random numbers for repeatable sims,
+I can now try to determine if a smaller $d$ will help the simujlation compute,
+though note that as $d$ is reduced, so $\delta t$ must be reduced, leading to
+longer simulation computations.
+
+Note: $\epsilon=1.2$ here in the following:
+
+D=0.02, dt=0.00005, d=0.007: Crash at step 13803.
+
+D=0.01, dt=0.0001, d=0.015: Crash at step 2629.
+
+D=0.015, dt=0.0001, d=0.015: Crash at step 4864.
+
+D=0.02, dt=0.0001, d=0.015: Crash at step 7280.
+
+D=0.025, dt=0.0001, d=0.015: Crash at step 9649.
+
+D=0.03, dt=0.0001, d=0.015: Crash at step 12394.
+
+This pattern is similar to that shown in Fig.~2 of the Barrels paper. To
+enable $D$ to be low, it's necessary to reduce $\epsilon$, BUT I want to
+explore increased competition, whilst maintaining low $D$.
+
+Thus, some sort of cap on $a$ may be called for.
+
+But, lets first see how much reduction of $\epsilon$ is required. Starting
+from D=0.01, dt=0.0001, d=0.015: Crash at step 2629, with $\epsilon=1.2$,
+reduce $\epsilon$.
+
+$\epsilon=0.8$: Crash step 4779.
+
+$\epsilon=0.4$: Crash step 9802.
+
+$\epsilon=0.1$: Computation makes it to step 24000 with no crash, but that's
+not enough competition for an even result.
+
+\subsection{Bounding $a$}
+
+I've already implemented systems in which $a$ is bounded. Simplest is probably
+best - a piecewise linear transfer function on $a$. Thus, I've added the code
+to rd_barrel.h to compute a transformed version of $a$ called $\bar{a}$ and
+use this in the computation. It mitigates the instabilities without
+making much change to the operation of the model. It adds an additional
+parameter to the model, $a_{max}$, which I've set to 0.5 by default.
+
+\subsection{Stability for noise}
+
+Write me.
 
 %
 % BIBLIOGRAPHY

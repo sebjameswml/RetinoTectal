@@ -43,6 +43,7 @@ namespace sighandling {
 
 //! Our Retinotectal reaction diffusion class
 #ifdef AXONCOMP
+#define LINEAR_MAX 1
 # include "rd_rettec.h"
 #else
 # include "rd_rettec_nocomp.h"
@@ -273,6 +274,7 @@ int main (int argc, char **argv)
     RD.beta_ = conf.getDouble ("beta", 20.0);
 #ifdef AXONCOMP
     RD.epsilon = conf.getDouble ("epsilon", 0.2);
+    RD.a_max = conf.getDouble ("a_max", 0.5);
 #else
     RD.s = conf.getDouble ("s", 1.0);
     RD.set_w (conf.getDouble ("w", 1.0));
