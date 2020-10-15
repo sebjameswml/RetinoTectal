@@ -90,7 +90,7 @@ void savePngs (const std::string& logpath, const std::string& name,
 
 //! Take the first element of the array and create a vector<vector<FLT>> to plot
 std::vector<std::vector<FLT> > separateVectorField (std::vector<std::array<std::vector<FLT>, 2> >& f,
-                                          unsigned int arrayIdx) {
+                                                    unsigned int arrayIdx) {
     std::vector<std::vector<FLT> > vf;
     for (std::array<std::vector<FLT>, 2> fia : f) {
         std::vector<FLT> tmpv = fia[arrayIdx];
