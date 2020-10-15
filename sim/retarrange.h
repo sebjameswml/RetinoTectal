@@ -32,9 +32,9 @@ public:
      * somas in rings.
      */
     //@{
-    Flt ret_inner = scf(0.0);
-    Flt ret_outer = scf(1.0);
-    Flt ret_startangle = scf(0.0);
+    Flt ret_inner = Flt{0.0};
+    Flt ret_outer = Flt{1.0};
+    Flt ret_startangle = Flt{0.0};
     Flt ret_endangle = scf(morph::TWO_PI_D);
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
     std::vector<std::array<Flt, 2>> ret_coords;
@@ -77,10 +77,10 @@ public:
 
     //! Deconstructor has some memory deallocation to carry out
     ~RetArrange (void) {
-        if (this->sigma_gamma != scf(0.0)) {
+        if (this->sigma_gamma != Flt{0.0}) {
             delete this->gamma_noise;
         }
-        if (this->sigma_rho != scf(0.0)) {
+        if (this->sigma_rho != Flt{0.0}) {
             delete this->rho_noise;
         }
     }
@@ -100,11 +100,11 @@ public:
         // This populates ret_coords:
         this->arrangeRetina();
         // Set the random number generator parameters
-        if (this->sigma_gamma != scf(0.0)) {
-            this->gamma_noise = new morph::RandNormal<Flt> (scf(0.0), this->sigma_gamma);
+        if (this->sigma_gamma != Flt{0.0}) {
+            this->gamma_noise = new morph::RandNormal<Flt> (Flt{0.0}, this->sigma_gamma);
         }
-        if (this->sigma_rho != scf(0.0)) {
-            this->rho_noise = new morph::RandNormal<Flt> (scf(0.0), this->sigma_rho);
+        if (this->sigma_rho != Flt{0.0}) {
+            this->rho_noise = new morph::RandNormal<Flt> (Flt{0.0}, this->sigma_rho);
         }
     }
 
@@ -126,9 +126,9 @@ protected:
     void arrangeRetinaInRings (void) {
 
         // First determine area to obtain an approximate distance between
-        Flt d = scf(0); // d is our min separation
+        Flt d = Flt{0}; // d is our min separation
         int num = 0;
-        for (d = scf(0.001); d<scf(1.0); d+=scf(0.001)) {
+        for (d = Flt{0.001}; d<Flt{1.0}; d+=Flt{0.001}) {
             // This works out number of dots on rings with a fixed d.
             num = morph::MathAlgo::numDotsOnRings<Flt> (this->ret_inner, this->ret_outer, d,
                                                         std::abs(this->ret_endangle - this->ret_startangle));
@@ -209,7 +209,7 @@ protected:
         int ri = 0;
         int ci = 0;
         // The starting position for the first dot on a ring.
-        Flt d_angle_start = scf(1.0);
+        Flt d_angle_start = Flt{1.0};
 
         this->ring_d = d;
 
@@ -228,11 +228,11 @@ protected:
 
             // The angle between each dot
             Flt a = this->ret_endangle - this->ret_startangle;
-            Flt d_angle = scf(0.0);
+            Flt d_angle = Flt{0.0};
             if (a == scf(morph::TWO_PI_D)) {
                 d_angle = a/scf(dots_in_ring[ri]);
                 // Set up the starting angle
-                d_angle_start = (d_angle_start == scf(0.0)) ? (d_angle/scf(2.0)) : scf(0.0);
+                d_angle_start = (d_angle_start == Flt{0.0}) ? (d_angle/Flt{2.0}) : Flt{0.0};
             } else {
                 // For NOT a full pie, i.e. for a pie slice, we can allow the neurons
                 // to start and end on both edges of the pie slice.
@@ -257,16 +257,21 @@ protected:
 
         // Now I loop through the rings again, setting up the variable tec_coords from
         // the values in ret_coords. A separate loop is necessary because I scale the
-        // posistions on the tectum based on the radius of the outer ring of neurons,
-        // rather than the radius of the circle that I originally specified.
+        // positions on the tectum based on the radius of a circle which is outside the
+        // outer ring of neurons (rather than the radius of the circle that I originally
+        // specified). This circle should have a radius which is one half the width of
+        // one of the rings on neurons on the retina.
         //
         // cout << "Before setting coordinates, r=" << r << "1/r=" << (1.0/r) << endl;
         ci = 0;
-        Flt r_mult = 1.0f/r; // A factor to frig the tectal positions a bit
+        // r_add defines a border around the outer ring on the retina.
+        Flt r_add = 1.0 * r / (ringlens.size() - 0.5);
+        Flt r_ext = r + r_add;
+        Flt r_mult = Flt{1.0} / r_ext;
         for (ri = 0; ri < static_cast<int>(ringlens.size()); ++ri) {
             for (unsigned int dir = 0; dir < dots_in_ring[ri]; ++dir) {
                 this->tec_coords[ci] = { r_mult*this->ellipse_radii.first*this->ret_coords[ci][0],
-                                         r_mult*this->ellipse_radii.second*this->ret_coords[ci][1], scf(0.0) };
+                                         r_mult*this->ellipse_radii.second*this->ret_coords[ci][1], Flt{0.0} };
                 ci++;
             }
         }
