@@ -74,7 +74,12 @@ include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_
 
 find_package(morphologica REQUIRED)
 
+# The include path for morphologica defaults to in-tree, but user can change it if necessary
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (default: here, in the RetinoTectal directory)")
+
+# Show message saying where morphologica is
+message(STATUS "morphologica path: ${MORPH_INCLUDE_PATH}")
+message(STATUS "  (This can be changed with, e.g.: `cmake -DMORPH_INCLUDE_PATH=/usr/local/include`")
 
 # Use our include path for the morph directories
 include_directories(${MORPH_INCLUDE_PATH})
