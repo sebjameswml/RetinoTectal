@@ -72,8 +72,6 @@ find_package(glfw3 REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR})
 
-find_package(morphologica REQUIRED)
-
 # The include path for morphologica defaults to in-tree, but user can change it if necessary
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (default: here, in the RetinoTectal directory)")
 
