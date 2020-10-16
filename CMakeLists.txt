@@ -74,6 +74,11 @@ include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_
 
 find_package(morphologica REQUIRED)
 
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (default: here, in the RetinoTectal directory)")
+
+# Use our include path for the morph directories
+include_directories(${MORPH_INCLUDE_PATH})
+
 add_subdirectory(sim)
 
 # For debugging of variables:
