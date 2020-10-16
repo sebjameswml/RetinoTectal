@@ -79,6 +79,10 @@ set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path
 # Use our include path for the morph directories
 include_directories(${MORPH_INCLUDE_PATH})
 
+if(NOT EXISTS "${MORPH_INCLUDE_PATH}/morph")
+  message(FATAL_ERROR "Make sure you have installed morphologica at the location: ${MORPH_INCLUDE_PATH}. The suggested way to do this is to git clone morphologica inside the ${PROJECT_NAME} base directory")
+endif()
+
 add_subdirectory(sim)
 
 # For debugging of variables:
