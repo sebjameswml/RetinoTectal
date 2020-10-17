@@ -31,7 +31,7 @@ find_package(OpenMP)
 
 # Set up compiler flags
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3 -Wno-missing-braces")
+  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
 else()
   # To use Intel compiler, call cmake as: cmake -DCMAKE_CXX_COMPILER=icpc ..
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
@@ -39,6 +39,11 @@ else()
   else() # GCC or Clang
     set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
   endif()
+endif()
+
+# Tell clang to be quiet about brace initialisers
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
 if(OpenMP_FOUND)
@@ -49,9 +54,7 @@ endif()
 #
 # Following `cmake --help-policy CMP0072`
 set(OpenGL_GL_PREFERENCE "GLVND")
-# maybe -DGL_GLEXT_PROTOTYPES
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 endif()
