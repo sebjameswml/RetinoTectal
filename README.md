@@ -1,7 +1,7 @@
 # RetinoTectal
 A model of the self-organization of the retino-tectal projection
 
-To build:
+To build, first install morphologica dependences, as described in morphologica's [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/master/README.install.linux.md) or [README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/master/README.install.mac.md), the follow this recipe:
 
 ```bash
 # If you didn't already, then clone RetinoTectal:
