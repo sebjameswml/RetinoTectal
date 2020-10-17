@@ -27,19 +27,22 @@ set(CMAKE_CXX_STANDARD 17)
 # Add the host definition to CXXFLAGS along with other switches
 #
 #OpenMP. With cmake 3.9+, this is the right way to do it:
-#find_package(OpenMP)
-#if(OpenMP_CXX_FOUND)
-#    target_link_libraries(MyTarget PUBLIC OpenMP::OpenMP_CXX)
-#endif()
-#
+find_package(OpenMP)
+
+# Set up compiler flags
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Xpreprocessor -fopenmp")
+  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3 -Wno-missing-braces")
 else()
-  if (CMAKE_CXX_COMPILER_ID MATCHES Intel) # Intel compiler
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -xHOST -O3 -qopenmp -D__ICC__")
-  else() # GCC
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  # To use Intel compiler, call cmake as: cmake -DCMAKE_CXX_COMPILER=icpc ..
+  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
+  else() # GCC or Clang
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
   endif()
+endif()
+
+if(OpenMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 # Additional GL compiler flags.
@@ -49,26 +52,22 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # maybe -DGL_GLEXT_PROTOTYPES
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
+if(APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
+endif()
+
 # Lib finding - we have to do this, so that the correct include paths
 # are present for OpenGL, OpenCV, etc; they're all included by
 # morphologica header files.
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
-#find_package(GLUT REQUIRED)
-#find_package(X11 REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(jsoncpp REQUIRED)
-
-# glfw3 library finding. However, it's possible to compile from
-# source, and there are instructions on the glfw3 website on how to do
-# this with cmake.
-#
-# glfw3 provides a cmake find_package script, though it doesn't set
-# lib paths etc. Then you just link with "glfw3" if you happened to
-# compile the static libglfw3.a or with "glfw" if you compiled the
-# dynamic libglfw.so
 find_package(glfw3 REQUIRED)
+if(OpenMP_FOUND)
+  link_libraries(OpenMP::OpenMP_CXX)
+endif()
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR})
 

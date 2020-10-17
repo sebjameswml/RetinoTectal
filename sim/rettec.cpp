@@ -49,32 +49,31 @@ namespace sighandling {
 # include "rd_rettec_nocomp.h"
 #endif
 
-#include "morph/Vector.h"
+#include <morph/Vector.h>
 // Shape analysis utilities
-#include "morph/ShapeAnalysis.h"
+#include <morph/ShapeAnalysis.h>
 //! Included for directory manipulation code
 #include <morph/tools.h>
 //! A jsoncpp-wrapping class for configuration.
 #include <morph/Config.h>
 
 #ifdef COMPILE_PLOTTING
-# include <GLFW/glfw3.h>
 // Scaling of values to be suitable for plotting
-# include "morph/Scale.h"
+# include <morph/Scale.h>
 // Colour maps!
-# include "morph/ColourMap.h"
+# include <morph/ColourMap.h>
 // A Visual gives you a 'visual scene'
-# include "morph/Visual.h"
+# include <morph/Visual.h>
 // All the Visual models here derive from VisualDataModel
-# include "morph/VisualDataModel.h"
+# include <morph/VisualDataModel.h>
 // Alias VisualDataModel<FLT>* as VdmPtr, to neaten code
 typedef morph::VisualDataModel<FLT>* VdmPtr;
 // We're visualizing HexGrids...
-# include "morph/HexGridVisual.h"
+# include <morph/HexGridVisual.h>
 // and doing quiver plots...
-# include "morph/QuiverVisual.h"
+# include <morph/QuiverVisual.h>
 // and a scatter plot.
-# include "morph/ScatterVisual.h"
+# include <morph/ScatterVisual.h>
 
 # include <morph/MathAlgo.h>
 
