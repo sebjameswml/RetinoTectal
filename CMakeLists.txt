@@ -1,88 +1,80 @@
-# Min version 3.1 for the modern way to select c++-11/14/17/etc
-cmake_minimum_required(VERSION 3.1)
+# Min version 3.9 for OpenMP find_package
+cmake_minimum_required(VERSION 3.9)
 project(RetinoTectal)
 
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-set (CMAKE_CXX_STANDARD 17)
-
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
-# __WIN__ are required
+# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
 if(CMAKE_SYSTEM MATCHES Linux.*)
-  set(MORPH_HOST_DEFINITION "-D__GLN__")
+  set(EXTRA_HOST_DEFINITION "-D__GLN__")
 elseif(CMAKE_SYSTEM MATCHES BSD.*)
-  set(MORPH_HOST_DEFINITION "-D__NIX__")
+  set(EXTRA_HOST_DEFINITION "-D__NIX__")
 elseif(APPLE)
-  set(MORPH_HOST_DEFINITION "-D__OSX__")
-elseif(CMAKE_SYSTEM MATCHES Win.*)
-  set(MORPH_HOST_DEFINITION "-D__WIN__")
+  set(EXTRA_HOST_DEFINITION "-D__OSX__")
 else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
+# morphologica uses c++-17 language features
 set(CMAKE_CXX_STANDARD 17)
 
-# Add the host definition to CXXFLAGS along with other switches
-#
-#OpenMP. With cmake 3.9+, this is the right way to do it:
-find_package(OpenMP)
-
-# Set up compiler flags
+# Add the host definition to CXXFLAGS along with other switches,
+# depending on OS/Compiler and your needs/preferences
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
-else()
-  # To use Intel compiler, call cmake as: cmake -DCMAKE_CXX_COMPILER=icpc ..
-  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
-  else() # GCC or Clang
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
-  endif()
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -O3")
+else() # assume g++ (or a gcc/g++ mimic like Clang)
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
 endif()
 
-# Tell clang to be quiet about brace initialisers
+# Tell clang to be quiet about brace initialisers:
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
+# Add OpenMP flags here, if necessary
+find_package(OpenMP)
 if(OpenMP_FOUND)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 # Additional GL compiler flags.
-#
-# Following `cmake --help-policy CMP0072`
 set(OpenGL_GL_PREFERENCE "GLVND")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 endif()
 
+# Tell the program where the morph fonts are, to compile them into the binary
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
+
 # Lib finding - we have to do this, so that the correct include paths
 # are present for OpenGL, OpenCV, etc; they're all included by
 # morphologica header files.
-find_package(OpenCV REQUIRED)
-find_package(OpenGL REQUIRED)
+find_package(jsoncpp REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(Armadillo REQUIRED)
-find_package(jsoncpp REQUIRED)
-find_package(glfw3 REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
+find_package(Freetype REQUIRED)
+
+# Define collections of includes for the dependencies
+get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
+set(MORPH_INC_CORE ${JSON_INC_PATH} ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
+include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
+
+# Assuming that you installed morphologica in-tree (i.e. 'next to' schnakenberg.cpp).
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
+
 if(OpenMP_FOUND)
   link_libraries(OpenMP::OpenMP_CXX)
 endif()
-
-include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR})
-
-# The include path for morphologica defaults to in-tree, but user can change it if necessary
-set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (default: here, in the RetinoTectal directory)")
-
-# Show message saying where morphologica is
-message(STATUS "morphologica path: ${MORPH_INCLUDE_PATH}")
-message(STATUS "  (This can be changed with, e.g.: `cmake -DMORPH_INCLUDE_PATH=/usr/local/include`")
-
-# Use our include path for the morph directories
-include_directories(${MORPH_INCLUDE_PATH})
 
 if(NOT EXISTS "${MORPH_INCLUDE_PATH}/morph")
   message(FATAL_ERROR "Make sure you have installed morphologica at the location: ${MORPH_INCLUDE_PATH}. The suggested way to do this is to git clone morphologica inside the ${PROJECT_NAME} base directory")

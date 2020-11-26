@@ -1,6 +1,6 @@
 # Define collections of links that have to be made for morphologica
-set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${HDF5_C_LIBRARIES} jsoncpp_lib)
-set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL glfw)
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
 
 # James model 0. 2-D RD Karbowski with variable numbers of guidance
 # molecules and TC populations and runtime setting of parameters to
