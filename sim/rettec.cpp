@@ -384,13 +384,14 @@ int main (int argc, char **argv)
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
             unsigned int idx = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                                 v1.tshaderprog,
                                                                                  RD.hg,
                                                                                  spatOff,
                                                                                  &RD.a[i],
                                                                                  zscale,
                                                                                  cscale,
                                                                                  morph::ColourMapType::Monochrome,
-                                                                                 (float)i/(float)RD.N)); // hue
+                                                                                 (float)i/(float)RD.N, false));
             agrids.push_back (idx);
         }
         xzero = spatOff[0] + RD.hg->width();
@@ -404,13 +405,14 @@ int main (int argc, char **argv)
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
             unsigned int idx = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                                 v1.tshaderprog,
                                                                                  RD.hg,
                                                                                  spatOff,
                                                                                  &RD.c[i],
                                                                                  zscale,
                                                                                  cscale,
                                                                                  morph::ColourMapType::Monochrome,
-                                                                                 (float)i/(float)RD.N)); // hue
+                                                                                 (float)i/(float)RD.N, false));
             cgrids.push_back (idx);
         }
         xzero = spatOff[0] + RD.hg->width();
@@ -425,13 +427,14 @@ int main (int argc, char **argv)
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
             unsigned int idx = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                                 v1.tshaderprog,
                                                                                  RD.hg,
                                                                                  spatOff,
                                                                                  &RD.f[i],
                                                                                  zscale2,
                                                                                  cscale2,
                                                                                  morph::ColourMapType::Monochrome,
-                                                                                 (float)i/(float)RD.N)); // hue
+                                                                                 (float)i/(float)RD.N, false));
             fgrids.push_back (idx);
         }
         xzero = spatOff[0] + RD.hg->width();
@@ -442,6 +445,7 @@ int main (int argc, char **argv)
     if (plot_n) {
         spatOff = { xzero, 0.0, 0.0 };
         ngrid = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                  v1.tshaderprog,
                                                                   RD.hg,
                                                                   spatOff,
                                                                   &RD.n,
@@ -465,6 +469,7 @@ int main (int argc, char **argv)
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
         c_ctr_grid = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                       v1.tshaderprog,
                                                                        RD.hg,
                                                                        spatOff,
                                                                        &zeromap,
@@ -477,6 +482,7 @@ int main (int argc, char **argv)
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
         a_ctr_grid = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                       v1.tshaderprog,
                                                                        RD.hg,
                                                                        spatOff,
                                                                        &zeromap,
@@ -489,6 +495,7 @@ int main (int argc, char **argv)
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
         dr_grid = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                    v1.tshaderprog,
                                                                     RD.hg,
                                                                     spatOff,
                                                                     &zeromap,
@@ -513,6 +520,7 @@ int main (int argc, char **argv)
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
             v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                              v1.tshaderprog,
                                                               RD.hg,
                                                               spatOff,
                                                               &RD.rho[j],
@@ -581,6 +589,7 @@ int main (int argc, char **argv)
             morph::Scale<float> gd_cscale; gd_cscale.setParams (gg_m, gg_c);
             // Create the grids
             v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                              v1.tshaderprog,
                                                               RD.hg,
                                                               spatOff,
                                                               &gx[j],
@@ -589,6 +598,7 @@ int main (int argc, char **argv)
                                                               morph::ColourMapType::Jet));
             spatOff[0] += RD.hg->width();
             v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                              v1.tshaderprog,
                                                               RD.hg,
                                                               spatOff,
                                                               &gy[j],
