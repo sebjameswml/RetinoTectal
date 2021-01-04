@@ -14,6 +14,7 @@ add_executable(rettec rettec.cpp)
 target_compile_definitions(rettec PUBLIC FLT=float COMPILE_PLOTTING AXONCOMP)
 target_link_libraries(rettec ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
+# Competition model with no graphics
 add_executable(rettec_c rettec.cpp)
 target_compile_definitions(rettec_c PUBLIC FLT=float AXONCOMP)
 target_link_libraries(rettec_c ${MORPH_LIBS_CORE})
@@ -26,6 +27,7 @@ add_executable(rettec_nc rettec.cpp)
 target_compile_definitions(rettec_nc PUBLIC FLT=float COMPILE_PLOTTING DEBUG)
 target_link_libraries(rettec_nc ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
+# No-graphics Sperry-like model
 add_executable(rettec_nc_c rettec.cpp)
 target_compile_definitions(rettec_nc_c PUBLIC FLT=float)
 target_link_libraries(rettec_nc_c ${MORPH_LIBS_CORE})

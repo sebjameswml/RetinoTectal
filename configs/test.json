@@ -8,7 +8,7 @@
     "overwrite_logs": true,
     "logbase" : "./log/",
     "hextohex_d" : 0.03,           // Hex to hex distance, determines num hexes
-    "svgpath" : "./boundaries/ellipse.svg",
+    "svgpath" : "./morphologica/boundaries/ellipse.svg",
     "boundaryFalloffDist" : 0.03,
     // Diffusion const
     "D" : 0.2,

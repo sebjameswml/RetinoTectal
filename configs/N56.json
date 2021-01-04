@@ -6,11 +6,13 @@
     "dt" : 0.0001,
     "desc_steps" : "The number of timesteps. Simulation time is steps * dt",
     "steps" : 24000,
+    "finish_asap" : false,
     "logevery": 1000,
     "logfrom" : 0,
     "overwrite_logs": true,
     "logbase" : "./log/",
-    "hextohex_d" : 0.015,
+    "hextohex_d" : 0.02,
+    "graph_hex" : 2393, /* 2243 is what goes nan. 2393 does too. */
     "ellipse_a" : 0.7,
     "ellipse_b" : 0.5,
     "ret_startangle" : 0,
@@ -35,7 +37,7 @@
     "beta" : 17,
     "epsilon" : 4.0,
     "desc_a_max" : "Used in computation of \bar{a}.",
-    "a_max" : 0.5,
+    "a_max" : 0.9,
 
     "aNoiseGain" : 0.2,
     "aInitialOffset" : 0.2,
@@ -69,7 +71,7 @@
     "section_vis" : "Visualization parameters (ignored by computation-only binaries)",
     "win_width": 2000,
     "win_height": 900,
-    "plotevery": 250,
+    "plotevery": 100,
     "desc_vidframes" : "If true, number video frame saves consecutively, rather than by simulation step number",
     "vidframes": true,
 
@@ -83,8 +85,8 @@
     "plot_guide" : true,
     "plot_contours" : true,
     "plot_a_contours" : true,
-    "plot_a" : false,
-    "plot_c" : false,
+    "plot_a" : true,
+    "plot_c" : true,
     "plot_f" : true,
     "plot_n" : true,
     "plot_dr" : true

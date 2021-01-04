@@ -476,7 +476,7 @@ domain is filled and the ordering maintained.
 To do: implement a HexGrid whose boundary increases with time. That will mean
 some tampering with \code{morph::HexGrid}.
 
-\subsubsection{Rotation experiments)}
+\subsubsection{Rotation experiments}
 
 \begin{displayquote}
 \emph{If a Xenopus presumptive tectum is rotated early enough during development,
@@ -539,7 +539,7 @@ In the basic, $N=56$ wild type simulation, $D$ seems to need to be close to
 0.02. Unfortunately, the simulation is unstable for $\delta t=0.0001$ and
 $d=0.015$. Having fixed a bug which prevented me from reducing $d$ very much,
 and having implemented fixed seed random numbers for repeatable sims,
-I can now try to determine if a smaller $d$ will help the simujlation compute,
+I can now try to determine if a smaller $d$ will help the simulation compute,
 though note that as $d$ is reduced, so $\delta t$ must be reduced, leading to
 longer simulation computations.
 
@@ -578,7 +578,7 @@ not enough competition for an even result.
 
 I've already implemented systems in which $a$ is bounded. Simplest is probably
 best - a piecewise linear transfer function on $a$. Thus, I've added the code
-to rd_barrel.h to compute a transformed version of $a$ called $\bar{a}$ and
+to rd\_barrel.h to compute a transformed version of $a$ called $\bar{a}$ and
 use this in the computation. It mitigates the instabilities without
 making much change to the operation of the model. It adds an additional
 parameter to the model, $a_{max}$, which I've set to 0.5 by default.

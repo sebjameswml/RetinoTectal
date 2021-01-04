@@ -66,6 +66,7 @@ namespace sighandling {
 # include <morph/Visual.h>
 // All the Visual models here derive from VisualDataModel
 # include <morph/VisualDataModel.h>
+# include <morph/GraphVisual.h>
 // Alias VisualDataModel<FLT>* as VdmPtr, to neaten code
 typedef morph::VisualDataModel<FLT>* VdmPtr;
 // We're visualizing HexGrids...
@@ -229,6 +230,8 @@ int main (int argc, char **argv)
     v1.setSceneTransXY (conf.getFloat ("x_default", 0.0f), conf.getFloat ("y_default", 0.0f));
     // Make this larger to "scroll in and out of the image" faster
     v1.scenetrans_stepsize = 0.5;
+    // Config can tell the program to finish as soon as the sim is done
+    v1.readyToFinish = conf.getBool ("finish_asap", false);
 #endif // COMPILE_PLOTTING
 
     // Instantiate and set up the model object
@@ -348,7 +351,8 @@ int main (int argc, char **argv)
     // Z position scaling - how hilly/bumpy the visual will be.
     morph::Scale<FLT> zscale; zscale.setParams (_m/10.0f, _c/10.0f);
     // The second is the colour scaling.
-    morph::Scale<FLT> cscale; cscale.setParams (_m, _c);
+    //morph::Scale<FLT> cscale; cscale.setParams (_m, _c);
+    morph::Scale<FLT> cscale; cscale.compute_autoscale (0, 1);
 # ifndef AXONCOMP
     // scaling2
     morph::Scale<FLT> zscale2; zscale2.setParams (1.0f/5.0f, 0.0f);
@@ -376,44 +380,49 @@ int main (int argc, char **argv)
 # endif
 
     // The a variable
-    std::vector<unsigned int> agrids;
+    std::vector<unsigned int> agrids (RD.N, 0);
     unsigned int side = static_cast<unsigned int>(floor (sqrt (RD.N)));
     if (plot_a) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            unsigned int idx = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
-                                                                                 v1.tshaderprog,
-                                                                                 RD.hg,
-                                                                                 spatOff,
-                                                                                 &RD.a[i],
-                                                                                 zscale,
-                                                                                 cscale,
-                                                                                 morph::ColourMapType::Monochrome,
-                                                                                 (float)i/(float)RD.N, false));
-            agrids.push_back (idx);
+            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog,
+                                                                            RD.hg,
+                                                                            spatOff,
+                                                                            &(RD.a[i]),
+                                                                            zscale,
+                                                                            cscale,
+                                                                            morph::ColourMapType::Monochrome,
+                                                                            (float)i/(float)RD.N, false);
+
+            std::stringstream ss;
+            ss << "a[" << i << "]";
+            hgv->addLabel (ss.str(), {-RD.ellipse_a+0.02f, RD.ellipse_b-0.05f, 0.01f}, morph::colour::red);
+            agrids[i] = v1.addVisualModel (hgv);
         }
         xzero = spatOff[0] + RD.hg->width();
     }
 
     // The c variable
-    std::vector<unsigned int> cgrids;
+    std::vector<unsigned int> cgrids (RD.N, 0);
     if (plot_c) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            unsigned int idx = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
-                                                                                 v1.tshaderprog,
-                                                                                 RD.hg,
-                                                                                 spatOff,
-                                                                                 &RD.c[i],
-                                                                                 zscale,
-                                                                                 cscale,
-                                                                                 morph::ColourMapType::Monochrome,
-                                                                                 (float)i/(float)RD.N, false));
-            cgrids.push_back (idx);
+            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog,
+                                                                            RD.hg,
+                                                                            spatOff,
+                                                                            &(RD.c[i]),
+                                                                            zscale,
+                                                                            cscale,
+                                                                            morph::ColourMapType::Monochrome,
+                                                                            (float)i/(float)RD.N, false);
+            std::stringstream ss;
+            ss << "c[" << i << "]";
+            hgv->addLabel (ss.str(), {-RD.ellipse_a+0.02f, RD.ellipse_b-0.05f, 0.01f}, morph::colour::green);
+            cgrids[i] = v1.addVisualModel (hgv);
         }
         xzero = spatOff[0] + RD.hg->width();
     }
@@ -468,27 +477,31 @@ int main (int argc, char **argv)
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
-        c_ctr_grid = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
-                                                                       v1.tshaderprog,
-                                                                       RD.hg,
-                                                                       spatOff,
-                                                                       &zeromap,
-                                                                       null_zscale,
-                                                                       ctr_cscale,
-                                                                       morph::ColourMapType::RainbowZeroBlack));
+        morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                        v1.tshaderprog,
+                                                                        RD.hg,
+                                                                        spatOff,
+                                                                        &zeromap,
+                                                                        null_zscale,
+                                                                        ctr_cscale,
+                                                                        morph::ColourMapType::RainbowZeroBlack);
+        hgv->addLabel ("c contours", {-0.1f, RD.ellipse_b+0.05f, 0.01f}, morph::colour::green);
+        c_ctr_grid = v1.addVisualModel (hgv);
         xzero += RD.hg->width();
     }
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        a_ctr_grid = v1.addVisualModel (new morph::HexGridVisual<FLT> (v1.shaderprog,
-                                                                       v1.tshaderprog,
-                                                                       RD.hg,
-                                                                       spatOff,
-                                                                       &zeromap,
-                                                                       null_zscale,
-                                                                       ctr_cscale,
-                                                                       morph::ColourMapType::RainbowZeroWhite));
+        morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog,
+                                                                        v1.tshaderprog,
+                                                                        RD.hg,
+                                                                        spatOff,
+                                                                        &zeromap,
+                                                                        null_zscale,
+                                                                        ctr_cscale,
+                                                                        morph::ColourMapType::RainbowZeroWhite);
+        hgv->addLabel ("a contours", {-0.1f, RD.ellipse_b+0.05f, 0.01f}, morph::colour::red);
+        a_ctr_grid = v1.addVisualModel (hgv);
         xzero += (1.2 * RD.hg->width());
     }
 
@@ -611,6 +624,46 @@ int main (int argc, char **argv)
         xzero +=  (1.5 * RD.hg->width());
     }
 
+#define DEBUG_GRAPH 1
+#ifdef DEBUG_GRAPH
+    //
+    // This is a graph of a selected hex to try to determine where the crashing is
+    // occurring.
+    //
+    int hexidx = conf.getInt ("graph_hex", -1);
+    int hexri = conf.getInt ("graph_hexri", 0);
+    int hexgi = conf.getInt ("graph_hexgi", 0);
+    if (hexidx == -1) {
+        // Find a hex by ri/gi to graph
+        for (auto h : RD.hg->hexen) {
+            if (h.ri == hexri && h.gi == hexgi) {
+                hexidx = h.vi;
+                std::cout << "Hex at r/g = " << hexri << "/" << hexgi << " is hex index " << hexidx << std::endl;
+                break;
+            }
+        }
+    }
+    if (hexidx == -1) { hexidx = 0; }
+
+    morph::Vector<FLT, 3> spatOff_grph = {2, 1, 0};
+    morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
+    graph1->setdarkbg(); // colours axes and text
+    graph1->twodimensional = false;
+    graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_single_ymax", 1.0f));
+    graph1->policy = morph::stylepolicy::lines;
+    std::stringstream yy;
+    yy << "a[0][" << hexidx << "]";
+    graph1->ylabel = yy.str();
+    graph1->xlabel = "Sim time";
+    for (unsigned int i = 0; i < RD.N; ++i) {
+        std::stringstream ss;
+        ss << "a[" << i << "][" << hexidx << "]";
+        graph1->prepdata (ss.str());
+    }
+    graph1->finalize();
+    v1.addVisualModel (static_cast<morph::VisualModel*>(graph1));
+#endif
+
     // Saving of t=0 images in log folder
     if ((RD.M > 0 && plot_guide) || plot_a) {
         savePngs (logpath, "sim", 0, v1);
@@ -656,6 +709,9 @@ int main (int argc, char **argv)
 
                 if (plot_a) {
                     for (unsigned int i = 0; i<RD.N; ++i) {
+                        if (i==0) {
+                            std::cout << "Plotting a["<<i<<"][0] = " << (RD.a[i][0]) << std::endl;
+                        }
                         mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
                         mdlptr->updateData (&RD.a[i]);
                     }
@@ -717,6 +773,15 @@ int main (int argc, char **argv)
                 RD.spatialAnalysis();
                 // And save it
                 RD.saveSpatial();
+
+#ifdef COMPILE_PLOTTING
+                // Update the graph(s)
+                for (unsigned int i = 0; i < RD.N; ++i) {
+                    //std::cout << "Append data (" << RD.stepCount << "," << RD.a[0][hexidx] << ")\n";
+                    graph1->append ((float)RD.stepCount*RD.get_dt(), RD.a[i][hexidx], i);
+                }
+#endif
+
             }
 
             if (RD.stepCount > steps) {
