@@ -71,7 +71,7 @@
     "section_vis" : "Visualization parameters (ignored by computation-only binaries)",
     "win_width": 2000,
     "win_height": 900,
-    "plotevery": 100,
+    "plotevery": 1,
     "desc_vidframes" : "If true, number video frame saves consecutively, rather than by simulation step number",
     "vidframes": true,
 
@@ -86,7 +86,7 @@
     "plot_contours" : true,
     "plot_a_contours" : true,
     "plot_a" : true,
-    "plot_c" : true,
+    "plot_c" : false,
     "plot_f" : true,
     "plot_n" : true,
     "plot_dr" : true
