@@ -565,7 +565,7 @@ int main (int argc, char **argv)
                                                           morph::ColourMapType::RainbowZeroBlack));
 
 
-        xzero +=  (1.2 * RD.hg->width());
+        xzero += (1.2 * RD.hg->width());
     }
 
     // Now plot fields and redraw display
@@ -665,9 +665,7 @@ int main (int argc, char **argv)
 #endif
 
     // Saving of t=0 images in log folder
-    if ((RD.M > 0 && plot_guide) || plot_a) {
-        savePngs (logpath, "sim", 0, v1);
-    }
+    if ((RD.M > 0 && plot_guide) || plot_a) { savePngs (logpath, "sim", 0, v1); }
 
     // if using plotting, then set up the render clock
     std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
@@ -709,9 +707,6 @@ int main (int argc, char **argv)
 
                 if (plot_a) {
                     for (unsigned int i = 0; i<RD.N; ++i) {
-                        if (i==0) {
-                            std::cout << "Plotting a["<<i<<"][0] = " << (RD.a[i][0]) << std::endl;
-                        }
                         mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
                         mdlptr->updateData (&RD.a[i]);
                     }
@@ -758,11 +753,13 @@ int main (int argc, char **argv)
 
             // rendering the graphics.
             std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
+# if 1
             if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
                 glfwPollEvents();
                 v1.render();
                 lastrender = std::chrono::steady_clock::now();
             }
+# endif
 #endif // COMPILE_PLOTTING
 
             // Save data every 'logevery' steps
@@ -775,18 +772,17 @@ int main (int argc, char **argv)
                 RD.saveSpatial();
 
 #ifdef COMPILE_PLOTTING
+# ifdef DEBUG_GRAPH
                 // Update the graph(s)
                 for (unsigned int i = 0; i < RD.N; ++i) {
                     //std::cout << "Append data (" << RD.stepCount << "," << RD.a[0][hexidx] << ")\n";
                     graph1->append ((float)RD.stepCount*RD.get_dt(), RD.a[i][hexidx], i);
                 }
+# endif
 #endif
-
             }
 
-            if (RD.stepCount > steps) {
-                sighandling::finished = true;
-            }
+            if (RD.stepCount > steps) { sighandling::finished = true; }
         }
     } catch (const std::exception& e) {
         // Set some stuff in the config as to what happened, so it'll get saved into params.conf
@@ -797,9 +793,7 @@ int main (int argc, char **argv)
     }
 
     // Save out the sums.
-    if (logevery > 0) {
-        RD.savesums();
-    }
+    if (logevery > 0) { RD.savesums(); }
 
     // Before saving the json, we'll place any additional useful info
     // in there, such as the FLT. If float_width is 4, then
