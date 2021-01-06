@@ -71,7 +71,7 @@
     "section_vis" : "Visualization parameters (ignored by computation-only binaries)",
     "win_width": 2000,
     "win_height": 900,
-    "plotevery": 1,
+    "plotevery": 100,
     "desc_vidframes" : "If true, number video frame saves consecutively, rather than by simulation step number",
     "vidframes": true,
 
