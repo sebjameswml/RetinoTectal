@@ -85,14 +85,14 @@ public:
     std::vector<std::vector<std::array<std::vector<Flt>, 2> > > g;
 
     //! \hat{a}_i. the sum of the branching densities of all axon types except i.
-    alignas(alignof(std::vector<Flt>)) std::vector<Flt> ahat;
+    alignas(alignof(std::vector<std::vector<Flt>>)) std::vector<std::vector<Flt>> ahat;
 
     //! Gradient of ahat
     alignas(alignof(std::array<std::vector<Flt>, 2>))
     std::array<std::vector<Flt>, 2> grad_ahat;
 
     //! divergence of \hat{a}_i(x,t).
-    alignas(alignof(std::vector<Flt>)) std::vector<Flt> div_ahat;
+    alignas(alignof(std::vector<std::vector<Flt>>)) std::vector<std::vector<Flt>> div_ahat;
 
     //! \bar{a}_i - result of processing a_i through a sigmoid.
     alignas(alignof(std::vector<Flt>))
@@ -461,9 +461,9 @@ public:
 
         this->resize_vector_variable (this->bSig);
 
-        this->resize_vector_variable (this->ahat);
+        this->resize_vector_vector (this->ahat, this->N);
         this->resize_gradient_field (this->grad_ahat);
-        this->resize_vector_variable (this->div_ahat);
+        this->resize_vector_vector (this->div_ahat, this->N);
 
         this->resize_vector_variable (this->abar);
         this->resize_gradient_field (this->grad_abar);
@@ -512,9 +512,9 @@ public:
 
         this->zero_vector_variable (this->bSig);
 
-        this->zero_vector_variable (this->ahat);
+        this->zero_vector_vector (this->ahat, this->N);
         this->zero_gradient_field (this->grad_ahat);
-        this->zero_vector_variable (this->div_ahat);
+        this->zero_vector_vector (this->div_ahat, this->N);
 
         this->zero_vector_variable (this->abar);
         this->zero_gradient_field (this->grad_abar);
@@ -723,6 +723,16 @@ public:
             path.clear();
             path << "/j" << i;
             data.add_contained_vals (path.str().c_str(), this->divJ[i]);
+            // The ahat variable
+            path.str("");
+            path.clear();
+            path << "/ahat" << i;
+            data.add_contained_vals (path.str().c_str(), this->ahat[i]);
+            // divahat
+            path.str("");
+            path.clear();
+            path << "/divahat" << i;
+            data.add_contained_vals (path.str().c_str(), this->div_ahat[i]);
         }
         data.add_contained_vals ("/n", this->n);
     }
@@ -904,17 +914,18 @@ public:
 
             // --- START specific to comp2 method ---
             // Compute "the sum of all a_j for which j!=i"
-            this->zero_vector_variable (this->ahat);
+            this->zero_vector_variable (this->ahat[i]);
             for (unsigned int j=0; j<this->N; ++j) {
                 if (j==i) { continue; }
 #pragma omp parallel for
                 for (unsigned int h=0; h<this->nhex; ++h) {
-                    this->ahat[h] += this->a[j][h];
+                    // ahat[i][h] or ahat[j][h]? i, I think
+                    this->ahat[i][h] += this->a[j][h];
                 }
             }
             // 1.1 Compute divergence and gradient of ahat
-            this->compute_divahat();
-            this->spacegrad2D (this->ahat, this->grad_ahat);
+            this->compute_divahat(i);
+            this->spacegrad2D (this->ahat[i], this->grad_ahat);
             // --- END specific to comp2 method ---
 
             // Runge-Kutta integration for A
@@ -1129,7 +1140,7 @@ public:
      * necessary, but it is not (though use of a transfer function does extend the range
      * of parameters for which this model is stable).
      */
-    virtual void compute_divJ (std::vector<Flt>& fa, unsigned int i)
+    void compute_divJ (std::vector<Flt>& fa, unsigned int i)
     {
 #ifdef SIGMOID_ROLLOFF_FOR_A
         // Compute \bar{a}_i and its spatial gradient
@@ -1192,16 +1203,16 @@ public:
             Flt term1_1 = Flt{0};
 #if defined SIGMOID_ROLLOFF_FOR_A || defined LINEAR_MAX
             // Term 1.1 is epsilon/N-1 abar div(ahat)
-            term1_1 = this->epsilonOverNm1 * abar[hi] * this->div_ahat[hi];
+            term1_1 = this->epsilonOverNm1 * abar[hi] * this->div_ahat[i][hi];
 #else
             // Term 1.1 is F/N-1 a div(ahat)
-            term1_1 = this->epsilonOverNm1 * fa[hi] * this->div_ahat[hi];
+            term1_1 = this->epsilonOverNm1 * fa[hi] * this->div_ahat[i][hi];
 #endif
 
             if (isnan(term1_1)) {
                 std::cerr << "term1_1 isnan" << std::endl;
                 std::cerr << "fa[hi="<<hi<<"] = "
-                          << fa[hi] << ", this->div_ahat[hi] = " << this->div_ahat[hi] << std::endl;
+                          << fa[hi] << ", this->div_ahat[i][hi] = " << this->div_ahat[i][hi] << std::endl;
                 breakflag = true;
             }
 
@@ -1251,34 +1262,65 @@ public:
         }
     }
 
-    //! Compute divergence of \hat{a}_i
-    void compute_divahat()
+    //! Compute divergence of fa. Result into div_ahat[i]
+    void compute_divahat (std::vector<Flt>& fa, unsigned int i)
     {
-        volatile bool breakflag = false;
-#pragma omp parallel for shared(breakflag)
+        Flt maxsum = -1e9, minsum = 1e9;
+//#pragma omp parallel for shared(fa, div_ahat)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
-            if (breakflag) { continue; }
-            Flt thesum = -6 * this->ahat[hi];
-            if (isnan(thesum)) {
-                std::cerr << "Warning: thesum isnan already...\n";
-            }
-            thesum += this->ahat[(HAS_NE(hi)  ? NE(hi)  : hi)];
-            thesum += this->ahat[(HAS_NNE(hi) ? NNE(hi) : hi)];
-            thesum += this->ahat[(HAS_NNW(hi) ? NNW(hi) : hi)];
-            thesum += this->ahat[(HAS_NW(hi)  ? NW(hi)  : hi)];
-            thesum += this->ahat[(HAS_NSW(hi) ? NSW(hi) : hi)];
-            thesum += this->ahat[(HAS_NSE(hi) ? NSE(hi) : hi)];
-            this->div_ahat[hi] = this->twoover3dd * thesum;
-            if (isnan(this->div_ahat[hi])) {
-                breakflag = true;
-            }
+            Flt thesum = -6 * fa[hi];
+            thesum += fa[(HAS_NE(hi)  ? NE(hi)  : hi)];
+            thesum += fa[(HAS_NNE(hi) ? NNE(hi) : hi)];
+            thesum += fa[(HAS_NNW(hi) ? NNW(hi) : hi)];
+            thesum += fa[(HAS_NW(hi)  ? NW(hi)  : hi)];
+            thesum += fa[(HAS_NSW(hi) ? NSW(hi) : hi)];
+            thesum += fa[(HAS_NSE(hi) ? NSE(hi) : hi)];
+            this->div_ahat[i][hi] = this->twoover3dd * thesum;
+            maxsum = this->div_ahat[i][hi] > maxsum ? this->div_ahat[i][hi] : maxsum;
+            minsum = this->div_ahat[i][hi] < minsum ? this->div_ahat[i][hi] : minsum;
         }
-        if (breakflag == true) {
-            std::stringstream ee;
-            ee << "div ahat isnan at step " << this->stepCount;
-            std::cerr << ee.str() << std::endl;
-            throw std::runtime_error (ee.str().c_str());
+        if (i == 41) {
+            std::cout << "i=41, step=" << this->stepCount << ", div(ahat) min/max: " << minsum << "/" << maxsum << std::endl;
         }
+    }
+
+    //! Compute divergence of \hat{a}_i
+    void compute_divahat (unsigned int i)
+    {
+        Flt maxsum = -1e9, minsum = 1e9;
+//#pragma omp parallel for shared(ahat, div_ahat)
+        for (unsigned int hi=0; hi<this->nhex; ++hi) {
+            Flt thesum = -6 * this->ahat[i][hi];
+            thesum += this->ahat[i][(HAS_NE(hi)  ? NE(hi)  : hi)];
+            thesum += this->ahat[i][(HAS_NNE(hi) ? NNE(hi) : hi)];
+            thesum += this->ahat[i][(HAS_NNW(hi) ? NNW(hi) : hi)];
+            thesum += this->ahat[i][(HAS_NW(hi)  ? NW(hi)  : hi)];
+            thesum += this->ahat[i][(HAS_NSW(hi) ? NSW(hi) : hi)];
+            thesum += this->ahat[i][(HAS_NSE(hi) ? NSE(hi) : hi)];
+            this->div_ahat[i][hi] = this->twoover3dd * thesum;
+            maxsum = this->div_ahat[i][hi] > maxsum ? this->div_ahat[i][hi] : maxsum;
+            minsum = this->div_ahat[i][hi] < minsum ? this->div_ahat[i][hi] : minsum;
+        }
+        if (i == 41) {
+            std::cout << "i=41, step=" << this->stepCount << ", div(ahat) min/max: " << minsum << "/" << maxsum << std::endl;
+        }
+#ifdef __DEBUG__
+        if (i == 41) {
+            unsigned int hi = 2731;
+            std::cout << "div_ahat[41]["<<hi<<"]: ahat[hi]=" << this->ahat[i][hi];
+            std::cout <<  " NES: "
+                      << (HAS_NNE(hi) ? " ne" : " !ne") << (this->ahat[i][(HAS_NNE(hi) ? NNE(hi) : hi)])
+                      << (HAS_NE(hi) ? " e" : " !e") << (this->ahat[i][(HAS_NE(hi) ? NE(hi) : hi)])
+                      << (HAS_NNE(hi) ? " se" : " !se") << (this->ahat[i][(HAS_NSE(hi) ? NSE(hi) : hi)]);
+            std::cout<< " > " << this->div_ahat[i][hi] << " <";
+            std::cout <<  " NWS: "
+                      << (HAS_NNE(hi) ? " nw" : " !nw") << (this->ahat[i][(HAS_NNW(hi) ? NNW(hi) : hi)])
+                      << (HAS_NE(hi) ? " w" : " !w") << (this->ahat[i][(HAS_NW(hi) ? NW(hi) : hi)])
+                      << (HAS_NNE(hi) ? " sw" : " !sw") << (this->ahat[i][(HAS_NSW(hi) ? NSW(hi) : hi)]);
+            std::cout << std::endl;
+            std::cout << "twoover3dd = "<< this->twoover3dd << std::endl;
+        }
+#endif
     }
 
     /*!

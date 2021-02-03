@@ -14,6 +14,10 @@ add_executable(rettec rettec.cpp)
 target_compile_definitions(rettec PUBLIC FLT=float COMPILE_PLOTTING AXONCOMP)
 target_link_libraries(rettec ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
+add_executable(rettecd rettec.cpp)
+target_compile_definitions(rettecd PUBLIC FLT=double COMPILE_PLOTTING AXONCOMP)
+target_link_libraries(rettecd ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
 # Competition model with no graphics
 add_executable(rettec_c rettec.cpp)
 target_compile_definitions(rettec_c PUBLIC FLT=float AXONCOMP)

@@ -72,7 +72,7 @@ protected:
 
 public:
     //! Override step() to recompute g on each sim step
-    virtual void step()
+    void step() override
     {
         this->stepCount++;
         // 0. Rebuild g, with a new set of random samples, if necessary
@@ -88,7 +88,7 @@ public:
 
 protected:
     //! Build g from the gradient of rho and the gammas, with an option for a noisy calculation.
-    void build_g()
+    void build_g() override
     {
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
         if (this->sigma_rho == scf(0.0)) {

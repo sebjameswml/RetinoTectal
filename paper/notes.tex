@@ -583,6 +583,13 @@ use this in the computation. It mitigates the instabilities without
 making much change to the operation of the model. It adds an additional
 parameter to the model, $a_{max}$, which I've set to 0.5 by default.
 
+\emph{January 2021.} I did a lot of work on the visualisation code, making it a lot
+faster. This allowed me to get to the bottom of the blow up. The culprit is
+$\hat{a}$ and its divergence. There's a positive feedback loop here. I don't
+think this invalidates the model of using the gradient of $\hat{a}$ as
+competition, because in a real, biological system, $a$, and hence $\hat{a}$
+are bounded by finite resources. I'm thus going to allow bounding of $a_i$.
+
 \subsection{Stability for noise}
 
 Write me.
