@@ -5,7 +5,7 @@ To build, first install morphologica dependences, as described in morphologica's
 
 ```bash
 # If you didn't already, then clone RetinoTectal:
-git clone https://github.com/ABRG-Models/RetinoTectal.git
+git clone https://github.com/sebjameswml/RetinoTectal.git
 cd RetinoTectal
 # Clone the header-only morphologica in-tree:
 git clone https://github.com/ABRG-Models/morphologica.git
