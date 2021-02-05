@@ -521,7 +521,7 @@ int main (int argc, char **argv)
     std::vector<morph::Vector<FLT,3>> zerovecs;
     zerovecs.resize (RD.N);
     std::vector<morph::Vector<float,3>> zerovecsf;
-    zerovecs.resize (RD.N);
+    zerovecsf.resize (RD.N);
 
     if (plot_contours) {
         spatOff = { xzero, 0.0, 0.0 };
@@ -530,7 +530,9 @@ int main (int argc, char **argv)
         morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
-        hgv->colourScale.setParams (1.0f, 0.0f);
+        //hgv->colourScale.setParams (1.0f, 0.0f); // <-- no good?
+        //hgv->colourScale.do_autoscale = true;   // <-- no good?
+        hgv->colourScale = ctr_cscale; // <-- good
         hgv->cm.setType (morph::ColourMapType::RainbowZeroBlack);
         hgv->finalize();
         hgv->addLabel ("c contours", {-0.1f, RD.ellipse_b+0.05f, 0.01f}, morph::colour::green);
@@ -543,7 +545,8 @@ int main (int argc, char **argv)
         morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
-        hgv->colourScale.setParams (1.0f, 0.0f);
+        //hgv->colourScale.setParams (1.0f, 0.0f); // <-- no good?
+        hgv->colourScale = ctr_cscale; // <-- good
         hgv->cm.setType (morph::ColourMapType::RainbowZeroWhite);
         hgv->finalize();
         hgv->addLabel ("a contours", {-0.1f, RD.ellipse_b+0.05f, 0.01f}, morph::colour::red);
@@ -556,7 +559,8 @@ int main (int argc, char **argv)
         morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
-        hgv->colourScale.setParams (1.0f, 0.0f);
+        //hgv->colourScale.setParams (1.0f, 0.0f); // <-- no good?
+        hgv->colourScale = ctr_cscale; // <-- good
         hgv->cm.setType (morph::ColourMapType::RainbowZeroWhite);
         hgv->finalize();
         dr_grid = v1.addVisualModel (hgv);

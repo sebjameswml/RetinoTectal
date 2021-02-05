@@ -5,20 +5,20 @@
     "desc_dt" : "Timestep. Defaults to 0.00001 if omitted here",
     "dt" : 0.0001,
     "desc_steps" : "The number of timesteps. Simulation time is steps * dt",
-    "steps" : 24000,
+    "steps" : 30000,
     "finish_asap" : false,
     "logevery": 1000,
     "logfrom" : 0,
     "overwrite_logs": true,
     "logbase" : "./log/",
     "hextohex_d" : 0.02,
-    "graph_hex" : 2393, /* 2243 is what goes nan. 2393 does too. */
+    "boundaryFalloffDist" : 0.06,
+    "graph_hex" : 2731, /* 2243 is what goes nan. 2393 does too. */
     "ellipse_a" : 0.7,
     "ellipse_b" : 0.5,
     "ret_startangle" : 0,
     "ret_endangle_options" : "6.283185307, 3.141592654 or 1.570796327",
     "ret_endangle" : 6.283185307,
-    "boundaryFalloffDist" : 0.1,
     "desc_D" : "Diffusion constant. larger D (e.g. 0.2) leads to an over-representation of the outer-most ring of axon types. Smaller D leads to simulation blow up, so perhaps in that case tweak dt.",
     "D" : 0.05,
     "G" : 1.0,
@@ -35,7 +35,7 @@
     "N" : 56,
     "alpha" : 3.6,
     "beta" : 17,
-    "epsilon" : 4.0,
+    "epsilon" : 4, //-0.001, // 4 for unstable
     "desc_a_max" : "Used in computation of \bar{a}.",
     "a_max" : 0.9,
 
@@ -73,7 +73,7 @@
     "win_height": 900,
     "plotevery": 100,
     "desc_vidframes" : "If true, number video frame saves consecutively, rather than by simulation step number",
-    "vidframes": true,
+    "vidframes": false,
 
     "section_scene_parameters" : "Get these from Scenetrans: press 'z' in your window to see",
     "x_default": -3.598,

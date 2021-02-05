@@ -878,20 +878,13 @@ public:
         this->sum_a[_i] = sum_tmp;
     }
 
-#if 0
-    //! The normalization/transfer function.
-    inline Flt transfer_a (const Flt& _a, const unsigned int _i)
+    //! The normalization/transfer function on the branching density
+    inline Flt transfer_a (const Flt& _a)
     {
-#if 0
         Flt a_rtn = _a < this->a_max ? _a : this->a_max;
         // Also prevent a from becoming negative
         return (a_rtn < 0.0) ? 0.0 : a_rtn;
-#else
-        // Effectively no transfer fn.
-        return _a;
-#endif
     }
-#endif
 
     //! Compute the values of a, the branching density
     void integrate_a()
@@ -961,6 +954,8 @@ public:
             for (unsigned int h=0; h<this->nhex; ++h) {
                 k4[h] = this->divJ[i][h] - this->dc[i][h];
                 this->a[i][h] += (k1[h] + 2.0 * (k2[h] + k3[h]) + k4[h]) * this->sixthdt;
+                // Apply transfer fn
+                this->a[i][h] = this->transfer_a (this->a[i][h]);
             }
         }
     }
@@ -1142,17 +1137,19 @@ public:
      */
     void compute_divJ (std::vector<Flt>& fa, unsigned int i)
     {
+        // These ifdeffed out methods were an approach to prevent divJ from blowing
+        // up. Alternative is to place a max on a_i.
 #ifdef SIGMOID_ROLLOFF_FOR_A
         // Compute \bar{a}_i and its spatial gradient
         Flt o = 5.0; // offset
         Flt s = 0.5; // sharpness
-#pragma omp parallel for
+# pragma omp parallel for
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
             this->abar[hi] = this->a_max / (1 - exp (o - s * fa[hi]));
         }
         this->spacegrad2D (this->abar, this->grad_abar);
 #elif defined LINEAR_MAX
-#pragma omp parallel for
+# pragma omp parallel for
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
             this->abar[hi] = fa[hi] > this->a_max ? this->a_max : fa[hi];
         }
