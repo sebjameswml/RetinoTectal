@@ -816,7 +816,6 @@ int main (int argc, char **argv)
             std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
             if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
                 glfwPollEvents();
-                std::cout << "render at sim step " << RD.stepCount << std::endl;
                 v1.render();
                 lastrender = std::chrono::steady_clock::now();
             }
@@ -825,7 +824,7 @@ int main (int argc, char **argv)
 
             // Save data every 'logevery' steps
             if (logevery != 0 && RD.stepCount >= logfrom && (RD.stepCount == 1 || (RD.stepCount % logevery) == 0)) {
-                DBG ("Logging data at step " << RD.stepCount);
+                //DBG ("Logging data at step " << RD.stepCount);
                 RD.save();
                 // If spatial analysis, then add line here to do it
                 RD.spatialAnalysis();
