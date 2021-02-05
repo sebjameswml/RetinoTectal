@@ -880,7 +880,7 @@ public:
 
 #if 0
     //! The normalization/transfer function.
-    virtual inline Flt transfer_a (const Flt& _a, const unsigned int _i)
+    inline Flt transfer_a (const Flt& _a, const unsigned int _i)
     {
 #if 0
         Flt a_rtn = _a < this->a_max ? _a : this->a_max;
@@ -894,7 +894,7 @@ public:
 #endif
 
     //! Compute the values of a, the branching density
-    virtual void integrate_a()
+    void integrate_a()
     {
         // 2. Do integration of a (RK in the 1D model). Involves computing axon
         // branching flux.
@@ -1265,8 +1265,7 @@ public:
     //! Compute divergence of fa. Result into div_ahat[i]
     void compute_divahat (std::vector<Flt>& fa, unsigned int i)
     {
-        Flt maxsum = -1e9, minsum = 1e9;
-//#pragma omp parallel for shared(fa, div_ahat)
+#pragma omp parallel for shared(fa, div_ahat)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
             Flt thesum = -6 * fa[hi];
             thesum += fa[(HAS_NE(hi)  ? NE(hi)  : hi)];
@@ -1276,19 +1275,13 @@ public:
             thesum += fa[(HAS_NSW(hi) ? NSW(hi) : hi)];
             thesum += fa[(HAS_NSE(hi) ? NSE(hi) : hi)];
             this->div_ahat[i][hi] = this->twoover3dd * thesum;
-            maxsum = this->div_ahat[i][hi] > maxsum ? this->div_ahat[i][hi] : maxsum;
-            minsum = this->div_ahat[i][hi] < minsum ? this->div_ahat[i][hi] : minsum;
-        }
-        if (i == 41) {
-            std::cout << "i=41, step=" << this->stepCount << ", div(ahat) min/max: " << minsum << "/" << maxsum << std::endl;
         }
     }
 
     //! Compute divergence of \hat{a}_i
     void compute_divahat (unsigned int i)
     {
-        Flt maxsum = -1e9, minsum = 1e9;
-//#pragma omp parallel for shared(ahat, div_ahat)
+#pragma omp parallel for shared(ahat, div_ahat)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
             Flt thesum = -6 * this->ahat[i][hi];
             thesum += this->ahat[i][(HAS_NE(hi)  ? NE(hi)  : hi)];
@@ -1298,11 +1291,6 @@ public:
             thesum += this->ahat[i][(HAS_NSW(hi) ? NSW(hi) : hi)];
             thesum += this->ahat[i][(HAS_NSE(hi) ? NSE(hi) : hi)];
             this->div_ahat[i][hi] = this->twoover3dd * thesum;
-            maxsum = this->div_ahat[i][hi] > maxsum ? this->div_ahat[i][hi] : maxsum;
-            minsum = this->div_ahat[i][hi] < minsum ? this->div_ahat[i][hi] : minsum;
-        }
-        if (i == 41) {
-            std::cout << "i=41, step=" << this->stepCount << ", div(ahat) min/max: " << minsum << "/" << maxsum << std::endl;
         }
 #ifdef __DEBUG__
         if (i == 41) {
