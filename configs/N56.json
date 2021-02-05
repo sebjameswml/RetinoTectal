@@ -37,7 +37,7 @@
     "beta" : 17,
     "epsilon" : 4, //-0.001, // 4 for unstable
     "desc_a_max" : "Used in computation of \bar{a}.",
-    "a_max" : 0.9,
+    "a_max" : 0.5,
 
     "aNoiseGain" : 0.2,
     "aInitialOffset" : 0.2,
