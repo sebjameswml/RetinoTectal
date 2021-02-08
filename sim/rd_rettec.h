@@ -125,8 +125,9 @@ protected:
     }
 
 public:
-    //! Overrides RD_Barrel spatial analysis, adding the tec_coords-reg_centroids computation
-    virtual void spatialAnalysis()
+    //! Different spatial analysis to that in the Barrels system, adding the
+    //! tec_coords-reg_centroids computation
+    void spatialAnalysis()
     {
         // Don't recompute unnecessarily
         if (this->spatialAnalysisComputed == true) {
@@ -143,6 +144,7 @@ public:
         // resulting vectors in tec_offsets. To get a scalar value for the pattern's
         // match to the origin pattern, can simply sum the squares of the tec_offset
         // vector lengths.
+        this->tec_sos = Flt{0};
         for (unsigned int i = 0; i < this->N; ++i) {
             std::array<Flt, 2> tc = { this->tec_coords[i][0], this->tec_coords[i][1] };
             std::pair<Flt, Flt> rc = this->reg_centroids[(Flt)i/(Flt)this->N];
@@ -152,6 +154,7 @@ public:
             // tec_offsets contains vectors pointing FROM reg_centroids TO tc_coords
             this->tec_offsets[i][0] = vec[0];
             this->tec_offsets[i][1] = vec[1];
+            this->tec_sos += this->tec_offsets[i].length_sq();
         }
 
         this->spatialAnalysisComputed = true;

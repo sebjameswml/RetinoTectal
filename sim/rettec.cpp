@@ -692,7 +692,7 @@ int main (int argc, char **argv)
     }
     if (hexidx == -1) { hexidx = 0; }
 
-    morph::Vector<FLT, 3> spatOff_grph = {2, 1, 0};
+    morph::Vector<float, 3> spatOff_grph = {2, 1, 0};
     morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
     graph1->setdarkbg(); // colours axes and text
     graph1->twodimensional = false;
@@ -709,6 +709,20 @@ int main (int argc, char **argv)
     }
     graph1->finalize();
     v1.addVisualModel (static_cast<morph::VisualModel*>(graph1));
+#endif
+
+#if 1
+    morph::Vector<float, 3> spatOff_grph = {2, -2, 0};
+    morph::GraphVisual<FLT>* graph2 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
+    graph2->setdarkbg(); // colours axes and text
+    graph2->twodimensional = false;
+    graph2->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_single_ymax", 1.0f));
+    graph2->policy = morph::stylepolicy::lines;
+    graph2->ylabel = "SOS";
+    graph2->xlabel = "Sim time";
+    graph2->prepdata ("tec_sos");
+    graph2->finalize();
+    v1.addVisualModel (static_cast<morph::VisualModel*>(graph2));
 #endif
 
     // Saving of t=0 images in log folder
@@ -836,6 +850,7 @@ int main (int argc, char **argv)
                 RD.saveSpatial();
 
 #ifdef COMPILE_PLOTTING
+                graph2->append ((float)RD.stepCount * RD.get_dt(), RD.tec_sos, 0);
 # ifdef DEBUG_GRAPH
                 // Update the graph(s)
                 for (unsigned int i = 0; i < RD.N; ++i) {

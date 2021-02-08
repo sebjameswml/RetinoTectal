@@ -286,6 +286,10 @@ public:
      * Below here, there's no need to worry about alignas keywords.
      */
 
+    //! Smoothing kernel for ahat
+    morph::HexGrid* ahat_kernel;
+    std::vector<Flt> ahat_kerneldata;
+
     //! Sets the function of the guidance molecule method
     std::vector<FieldShape> rhoMethod;
 
@@ -621,6 +625,25 @@ public:
             this->sum_a_computation(i);
         }
         this->sum_a_init = this->sum_a;
+
+        // Set up the Gaussian kernel for smoothing ahat
+        if constexpr (this->smooth_ahat == true || smooth_divahat == true) {
+            Flt ahat_sigma = this->hextohex_d * Flt{1};
+            this->ahat_kernel = new morph::HexGrid (this->hextohex_d, ahat_sigma*Flt{7}, 0, morph::HexDomainShape::Boundary);
+            this->ahat_kernel->setCircularBoundary (Flt{3}*ahat_sigma);
+            this->ahat_kerneldata.resize (this->ahat_kernel->num(), 0.0f);
+            // Once-only parts of the calculation of the Gaussian.
+            Flt one_over_sigma_root_2_pi = 1 / ahat_sigma * 2.506628275;
+            Flt two_sigma_sq = 2.0f * ahat_sigma * ahat_sigma;
+            Flt gsum = 0;
+            for (auto& k : this->ahat_kernel->hexen) {
+                Flt gauss = (one_over_sigma_root_2_pi * std::exp ( -(k.r*k.r) / two_sigma_sq ));
+                this->ahat_kerneldata[k.vi] = gauss;
+                gsum += gauss;
+            }
+            // Renormalise
+            for (size_t k = 0; k < this->ahat_kernel->num(); ++k) { this->ahat_kerneldata[k] /= gsum; }
+        }
     }
 
 protected:
@@ -886,6 +909,11 @@ public:
         return (a_rtn < 0.0) ? 0.0 : a_rtn;
     }
 
+    //! Whether or not smoothing should be applied to ahat by means of Gaussian convolution
+    static constexpr bool smooth_ahat = false;
+    //! Smooth div(ahat)?
+    static constexpr bool smooth_divahat = true;
+
     //! Compute the values of a, the branching density
     void integrate_a()
     {
@@ -916,6 +944,15 @@ public:
                     this->ahat[i][h] += this->a[j][h];
                 }
             }
+
+            // Smooth the result of ahat over a distance of a few hexes, to avoid numerical peculiarities in div(ahat)
+            if constexpr (smooth_ahat == true) {
+                std::vector<Flt> convolved (this->ahat[i].size(), 0.0f);
+                //std::cout << "Convolve ahat[" << i << "] with kernel size " << this->ahat_kernel->num() << " hexes...\n";
+                this->hg->convolve (*this->ahat_kernel, this->ahat_kerneldata, this->ahat[i], convolved);
+                this->ahat[i].swap (convolved);
+            }
+
             // 1.1 Compute divergence and gradient of ahat
             this->compute_divahat(i);
             this->spacegrad2D (this->ahat[i], this->grad_ahat);
@@ -978,26 +1015,10 @@ public:
             this->n[hi] = 1. - this->n[hi];
             nsum += this->n[hi];
         }
-
-#ifdef DEBUG__
-        if (this->stepCount % 100 == 0) {
-            DBG ("System computed " << this->stepCount << " times so far...");
-            DBG ("sum of n+c is " << nsum+csum);
-        }
-#endif
     }
 
     //! One step of the simulation
-    virtual void step()
-    {
-        this->stepCount++;
-        // 1. Compute Karb2004 Eq 3. (coupling between connections made by each TC type)
-        this->compute_n();
-        // 2. Call Runge Kutta numerical integration code
-        this->integrate_a();
-        this->integrate_c();
-        this->spatialAnalysisComputed = false;
-    }
+    virtual void step() = 0;
 
     /*!
      * Examine the value in each Hex of the hexgrid of the scalar field f. If
@@ -1122,6 +1143,9 @@ public:
         }
     }
 
+    static constexpr bool sigmoid_rolloff_for_a_bar = false;
+    static constexpr bool linear_max_for_a_bar = false;
+
     /*!
      * Computes the "flux of axonal branches" term, J_i(x) (Eq 4)
      *
@@ -1129,32 +1153,30 @@ public:
      * i, the TC type.  Helper functions: spacegrad2D().  Output: this->divJ
      *
      * In the competition term, it's possible to set \bar{a} equal to either sigmoid
-     * transfer function of {a} with SIGMOID_ROLLOFF_FOR_A (which maxes out at 2.0) or a
-     * linear transfer function of {a} with a maximum of 2.0 with LINEAR_MAX. Do so when
-     * compiling with, e.g. -DLINEAR_MAX. Initially, I thought a transfer function was
-     * necessary, but it is not (though use of a transfer function does extend the range
-     * of parameters for which this model is stable).
+     * transfer function of {a} with sigmoid_rolloff_for_a_bar (which maxes out at 2.0)
+     * or a linear transfer function of {a} with a maximum of 2.0 with LINEAR_MAX. Do so
+     * by setting the static constexprs above.
      */
     void compute_divJ (std::vector<Flt>& fa, unsigned int i)
     {
-        // These ifdeffed out methods were an approach to prevent divJ from blowing
-        // up. Alternative is to place a max on a_i.
-#ifdef SIGMOID_ROLLOFF_FOR_A
-        // Compute \bar{a}_i and its spatial gradient
-        Flt o = 5.0; // offset
-        Flt s = 0.5; // sharpness
+        // These methods were an approach to prevent divJ from blowing up. Alternative
+        // (which I now prefer in Feb 2021) is to place a maximum on a_i.
+        if constexpr (sigmoid_rolloff_for_a_bar == true) {
+            // Compute \bar{a}_i and its spatial gradient
+            Flt o = 5.0; // offset
+            Flt s = 0.5; // sharpness
 # pragma omp parallel for
-        for (unsigned int hi=0; hi<this->nhex; ++hi) {
-            this->abar[hi] = this->a_max / (1 - exp (o - s * fa[hi]));
-        }
-        this->spacegrad2D (this->abar, this->grad_abar);
-#elif defined LINEAR_MAX
+            for (unsigned int hi=0; hi<this->nhex; ++hi) {
+                this->abar[hi] = this->a_max / (1 - exp (o - s * fa[hi]));
+            }
+            this->spacegrad2D (this->abar, this->grad_abar);
+        } else if constexpr (linear_max_for_a_bar == true) {
 # pragma omp parallel for
-        for (unsigned int hi=0; hi<this->nhex; ++hi) {
-            this->abar[hi] = fa[hi] > this->a_max ? this->a_max : fa[hi];
+            for (unsigned int hi=0; hi<this->nhex; ++hi) {
+                this->abar[hi] = fa[hi] > this->a_max ? this->a_max : fa[hi];
+            }
+            this->spacegrad2D (this->abar, this->grad_abar);
         }
-        this->spacegrad2D (this->abar, this->grad_abar);
-#endif
 
         // Compute gradient of a_i(x), for use computing the third term, below.
         this->spacegrad2D (fa, this->grad_a[i]);
@@ -1198,13 +1220,13 @@ public:
             }
 
             Flt term1_1 = Flt{0};
-#if defined SIGMOID_ROLLOFF_FOR_A || defined LINEAR_MAX
-            // Term 1.1 is epsilon/N-1 abar div(ahat)
-            term1_1 = this->epsilonOverNm1 * abar[hi] * this->div_ahat[i][hi];
-#else
-            // Term 1.1 is F/N-1 a div(ahat)
-            term1_1 = this->epsilonOverNm1 * fa[hi] * this->div_ahat[i][hi];
-#endif
+            if constexpr (sigmoid_rolloff_for_a_bar == true || linear_max_for_a_bar == true) {
+                // Term 1.1 is epsilon/N-1 abar div(ahat)
+                term1_1 = this->epsilonOverNm1 * abar[hi] * this->div_ahat[i][hi];
+            } else {
+                // Term 1.1 is F/N-1 a div(ahat)
+                term1_1 = this->epsilonOverNm1 * fa[hi] * this->div_ahat[i][hi];
+            }
 
             if (isnan(term1_1)) {
                 std::cerr << "term1_1 isnan" << std::endl;
@@ -1214,15 +1236,16 @@ public:
             }
 
             Flt term1_2 = Flt{0};
-#if defined SIGMOID_ROLLOFF_FOR_A || defined LINEAR_MAX
-            // Term 1.2 is F/N-1 grad(ahat) . grad(abar)
-            term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_abar[0][hi]
-                                              + this->grad_ahat[1][hi] * this->grad_abar[1][hi]);
-#else
-            // Term 1.2 is eps/N-1 grad(ahat) . grad(a)
-            term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_a[i][0][hi]
-                                              + this->grad_ahat[1][hi] * this->grad_a[i][1][hi]);
-#endif
+            if constexpr (sigmoid_rolloff_for_a_bar == true || linear_max_for_a_bar == true) {
+                // Term 1.2 is F/N-1 grad(ahat) . grad(abar)
+                term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_abar[0][hi]
+                                                  + this->grad_ahat[1][hi] * this->grad_abar[1][hi]);
+            } else {
+                // Term 1.2 is eps/N-1 grad(ahat) . grad(a)
+                term1_2 = this->epsilonOverNm1 * (this->grad_ahat[0][hi] * this->grad_a[i][0][hi]
+                                                  + this->grad_ahat[1][hi] * this->grad_a[i][1][hi]);
+            }
+
             if (isnan(term1_2)) {
                 std::cerr << "term1_2 isnan at hi=" << hi << "(step " << this->stepCount << ")" << std::endl;
                 if (isnan(this->grad_ahat[0][hi])) {
@@ -1259,22 +1282,6 @@ public:
         }
     }
 
-    //! Compute divergence of fa. Result into div_ahat[i]
-    void compute_divahat (std::vector<Flt>& fa, unsigned int i)
-    {
-#pragma omp parallel for shared(fa, div_ahat)
-        for (unsigned int hi=0; hi<this->nhex; ++hi) {
-            Flt thesum = -6 * fa[hi];
-            thesum += fa[(HAS_NE(hi)  ? NE(hi)  : hi)];
-            thesum += fa[(HAS_NNE(hi) ? NNE(hi) : hi)];
-            thesum += fa[(HAS_NNW(hi) ? NNW(hi) : hi)];
-            thesum += fa[(HAS_NW(hi)  ? NW(hi)  : hi)];
-            thesum += fa[(HAS_NSW(hi) ? NSW(hi) : hi)];
-            thesum += fa[(HAS_NSE(hi) ? NSE(hi) : hi)];
-            this->div_ahat[i][hi] = this->twoover3dd * thesum;
-        }
-    }
-
     //! Compute divergence of \hat{a}_i
     void compute_divahat (unsigned int i)
     {
@@ -1289,23 +1296,12 @@ public:
             thesum += this->ahat[i][(HAS_NSE(hi) ? NSE(hi) : hi)];
             this->div_ahat[i][hi] = this->twoover3dd * thesum;
         }
-#ifdef __DEBUG__
-        if (i == 41) {
-            unsigned int hi = 2731;
-            std::cout << "div_ahat[41]["<<hi<<"]: ahat[hi]=" << this->ahat[i][hi];
-            std::cout <<  " NES: "
-                      << (HAS_NNE(hi) ? " ne" : " !ne") << (this->ahat[i][(HAS_NNE(hi) ? NNE(hi) : hi)])
-                      << (HAS_NE(hi) ? " e" : " !e") << (this->ahat[i][(HAS_NE(hi) ? NE(hi) : hi)])
-                      << (HAS_NNE(hi) ? " se" : " !se") << (this->ahat[i][(HAS_NSE(hi) ? NSE(hi) : hi)]);
-            std::cout<< " > " << this->div_ahat[i][hi] << " <";
-            std::cout <<  " NWS: "
-                      << (HAS_NNE(hi) ? " nw" : " !nw") << (this->ahat[i][(HAS_NNW(hi) ? NNW(hi) : hi)])
-                      << (HAS_NE(hi) ? " w" : " !w") << (this->ahat[i][(HAS_NW(hi) ? NW(hi) : hi)])
-                      << (HAS_NNE(hi) ? " sw" : " !sw") << (this->ahat[i][(HAS_NSW(hi) ? NSW(hi) : hi)]);
-            std::cout << std::endl;
-            std::cout << "twoover3dd = "<< this->twoover3dd << std::endl;
+
+        if constexpr (smooth_divahat == true) {
+            std::vector<Flt> convolved (this->div_ahat[i].size(), 0.0f);
+            this->hg->convolve (*this->ahat_kernel, this->ahat_kerneldata, this->div_ahat[i], convolved);
+            this->div_ahat[i].swap (convolved);
         }
-#endif
     }
 
     /*!
@@ -1409,28 +1405,4 @@ public:
         }
     }
 
-#if 1
-    //! Carry out any sensible spatial analysis required
-    virtual void spatialAnalysis()
-    {
-        // Don't recompute unnecessarily
-        if (this->spatialAnalysisComputed == true) {
-            DBG ("analysis already computed, no need to recompute.");
-            return;
-        }
-
-        // Clear out previous results from an earlier timestep
-        this->regions.clear();
-        //this->vertices.clear(); // Not interested in a Dirichlet analysis for this
-        // work, but it could be done Find regions. Based on an 'ID field'. Note that
-        // although this is called dirichlet_regions, there's nothing specifically
-        // Dirichlet-analysis about the function. It just finds the
-        // i-that-give-the-max-of arg number 2 (this->c).
-        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
-        // Compute centroids of regions; used to determine aligned-ness of the barrels
-        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
-
-        this->spatialAnalysisComputed = true;
-    }
-#endif
 }; // RD_Barrel

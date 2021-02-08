@@ -44,6 +44,9 @@ public:
     std::vector<morph::Vector<Flt, 3>> tec_coords;
     //! tec_offsets = tec_coords - reg_centroids
     std::vector<morph::Vector<Flt, 3>> tec_offsets;
+    //! sum of squared lengths of tec_offsets. Provides a scalar for the quality of the
+    //! pattern.
+    Flt tec_sos = Flt{0};
     //! Store the radii which can be passed to a visualization to give a colourmap
     //! indication of the radius.
     std::vector<Flt> ret_coords_radii;

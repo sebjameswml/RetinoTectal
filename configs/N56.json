@@ -23,6 +23,8 @@
     "D" : 0.05,
     "G" : 1.0,
 
+    "graph_single_ymax" : 10,
+
     "desc_sigma_gamma" : "gamma noise. The std deviation of a 0-mean normal dist which is used to perturb each gamma. With sigma_rho==0; 0.1 makes a clear, visual disruption to the pattern",
 
     "sigma_gamma" : 0.0,
