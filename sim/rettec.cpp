@@ -611,10 +611,14 @@ int main (int argc, char **argv)
         }
         float scatRad = RD.ring_d/10.0f;
         morph::Scale<float, float> ctr_cscale_f; ctr_cscale_f.setParams (1.0f, 0.0f);
-        v1.addVisualModel (new morph::ScatterVisual<float> (v1.shaderprog, &ret_coordinates, spatOff,
-                                                            &neuronColourData, scatRad, ctr_cscale_f,
-                                                            morph::ColourMapType::RainbowZeroBlack));
-
+        morph::ScatterVisual<float>* svm = new morph::ScatterVisual<float> (v1.shaderprog, spatOff);
+        svm->setDataCoords (&ret_coordinates);
+        svm->setScalarData (&neuronColourData);
+        svm->radiusFixed = scatRad;
+        svm->setCScale (ctr_cscale_f);
+        svm->cm.setType (morph::ColourMapType::RainbowZeroBlack);
+        svm->finalize();
+        v1.addVisualModel (svm);
 
         xzero += (1.2 * RD.hg->width());
     }
