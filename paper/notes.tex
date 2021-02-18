@@ -387,6 +387,9 @@ orthogonal, $(\tilde{\rho}_1,\tilde{\rho}_2)$ defines a vector field
 $\vec{\rho}\,(\mb{x})$. Similarly, $(\gamma_{i,1},\gamma_{i,2})$ can be
 combined to give the vector $\vec{\gamma}$.
 
+(Note, Feb 2021: I think the above mechanism is essentially Honda's
+`servomechanism' \cite{honda_competition_2003,honda_topographic_1998})
+
 This makes it easy to start to build $f_i$ with a two dimensional Gaussian
 function:
 
@@ -588,7 +591,29 @@ faster. This allowed me to get to the bottom of the blow up. The culprit is
 $\hat{a}$ and its divergence. There's a positive feedback loop here. I don't
 think this invalidates the model of using the gradient of $\hat{a}$ as
 competition, because in a real, biological system, $a$, and hence $\hat{a}$
-are bounded by finite resources. I'm thus going to allow bounding of $a_i$.
+are bounded by finite resources. I'm thus going to allow bounding of $a_i$ by
+a transfer function at the end of the \code{integrate\_a} function.
+
+\begin{figure}\label{fig:stipples}
+\includegraphics[width=\textwidth]{images/stipples.png}
+\caption{Numerical artefact visible in $\hat{a}$. This stippling shows up in
+the final pattern (the graph I call `dr').}
+\end{figure}
+
+\begin{figure}\label{fig:stipple_src}
+\includegraphics[width=\textwidth]{images/stipple_source1.png}
+\caption{The source of the numerical artefact; the high frequency
+oscillations in $\dvrg{\hat{a}}$.}
+\end{figure}
+
+This resolves the instabilities and gives a simulation with $\epsilon=4$ that
+shows organisation of 56 or 96 axons which originate on a circular retina into
+an ordered pattern on an elliptical tectum. However, there are some numerical
+artefacts visible in the form of a `stippled' pattern in $\hat{a}$. These
+originate in high frequency power in the computation of $\dvrg{\hat{a}_i}$. At
+considerable computational cost, a smoothing of $\dvrg{\hat{a}_i}$ by Gaussian
+convolution resolves the stippling issue.
+
 
 \subsection{Stability for noise}
 

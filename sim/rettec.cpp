@@ -403,9 +403,10 @@ int main (int argc, char **argv)
     }
 
 # ifdef AXONCOMP
-    // ahat/div_ahat
+    // ahat/div_ahat - not runtime selectable - used only for debugging
     std::vector<unsigned int> ahatgrids (RD.N, 0);
-    if (true) {
+    static constexpr bool plot_ahat = false;
+    if constexpr (plot_ahat == true) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
@@ -429,7 +430,7 @@ int main (int argc, char **argv)
     }
 
     std::vector<unsigned int> divahatgrids (RD.N, 0);
-    if (true) {
+    if constexpr (plot_ahat == true) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
@@ -461,6 +462,7 @@ int main (int argc, char **argv)
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
             morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            hgv->setScalarData (&RD.c[i]);
             hgv->zScale.setParams (_m/10.0f, _c/10.0f);
             hgv->colourScale.compute_autoscale (0, 1);
             hgv->cm.setHue ((float)i/(float)RD.N);
@@ -771,22 +773,17 @@ int main (int argc, char **argv)
                         mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
                         mdlptr->updateData (&RD.a[i]);
 # ifdef AXONCOMP
-                        mdlptr = (VdmPtr)v1.getVisualModel (ahatgrids[i]);
-                        mdlptr->colourScale.autoscale_from (RD.ahat[i]);
-                        //mdlptr->zScale.autoscale_from (RD.ahat[i]);
-                        mdlptr->updateData (&RD.ahat[i]);
-                        mdlptr = (VdmPtr)v1.getVisualModel (divahatgrids[i]);
-                        mdlptr->colourScale.autoscale_from (RD.div_ahat[i]);
-                        //mdlptr->zScale.autoscale_from (RD.div_ahat[i]);
-                        mdlptr->updateData (&RD.div_ahat[i]);
-# endif
-                        if (i == 0) {
-                            mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
-# ifdef AXONCOMP
+                        if constexpr (plot_ahat == true) {
                             mdlptr = (VdmPtr)v1.getVisualModel (ahatgrids[i]);
+                            mdlptr->colourScale.autoscale_from (RD.ahat[i]);
+                            //mdlptr->zScale.autoscale_from (RD.ahat[i]);
+                            mdlptr->updateData (&RD.ahat[i]);
                             mdlptr = (VdmPtr)v1.getVisualModel (divahatgrids[i]);
-# endif
+                            mdlptr->colourScale.autoscale_from (RD.div_ahat[i]);
+                            //mdlptr->zScale.autoscale_from (RD.div_ahat[i]);
+                            mdlptr->updateData (&RD.div_ahat[i]);
                         }
+# endif
                     }
                 }
                 if (plot_c) {

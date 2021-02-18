@@ -1,0 +1,269 @@
+% This is an example of using latex for a paper/report of specified
+% size/layout. It's useful if you want to provide a PDF that looks
+% like it was made in a normal word processor.
+
+% While writing, don't stop for errors
+\nonstopmode
+
+% Use the article doc class, with an 11 pt basic font size
+\documentclass[11pt, a4paper]{article}
+
+% Makes the main font Nimbus Roman, a Times New Roman lookalike:
+%\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
+% OR use this for proper Times New Roman (from msttcorefonts package
+% on Ubuntu). Use xelatex instead of pdflatex to compile:
+\usepackage{fontspec}
+\usepackage{xltxtra}
+\usepackage{xunicode}
+\defaultfontfeatures{Scale=MatchLowercase,Mapping=tex-text}
+\setmainfont{Times New Roman}
+
+% Set margins
+\usepackage[margin=2.5cm]{geometry}
+
+% Multilingual support
+\usepackage[english]{babel}
+
+% Nice mathematics
+\usepackage{amsmath}
+
+% Left right harpoons for kinetic equations
+\usepackage{mathtools}
+
+% Control over maketitle
+\usepackage{titling}
+
+% Section styling
+\usepackage{titlesec}
+
+% Ability to use colour in text
+\usepackage[usenames]{color}
+
+% For the \degree symbol
+\usepackage{gensymb}
+
+% Allow includegraphics and nice wrapped figures
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage[outercaption]{sidecap}
+
+% Nice quotes
+\usepackage{csquotes}
+
+% Set formats using titlesec
+\titleformat*{\section}{\bfseries\rmfamily}
+\titleformat*{\subsection}{\bfseries\itshape\rmfamily}
+
+% thetitle is the number of the section. This sets the distance from
+% the number to the section text.
+\titlelabel{\thetitle.\hskip0.3em\relax}
+
+% Set title spacing with titlesec, too.  The first {1.0ex plus .2ex
+% minus .7ex} sets the spacing above the section title. The second
+% {-1.0ex plus 0.2ex} sets the spacing the section title to the
+% paragraph.
+\titlespacing{\section}{0pc}{1.0ex plus .2ex minus .7ex}{-1.1ex plus 0.2ex}
+
+%% Trick to define a language alias and permit language = {en} in the .bib file.
+% From: http://tex.stackexchange.com/questions/199254/babel-define-language-synonym
+\usepackage{letltxmacro}
+\LetLtxMacro{\ORIGselectlanguage}{\selectlanguage}
+\makeatletter
+\DeclareRobustCommand{\selectlanguage}[1]{%
+  \@ifundefined{alias@\string#1}
+    {\ORIGselectlanguage{#1}}
+    {\begingroup\edef\x{\endgroup
+       \noexpand\ORIGselectlanguage{\@nameuse{alias@#1}}}\x}%
+}
+\newcommand{\definelanguagealias}[2]{%
+  \@namedef{alias@#1}{#2}%
+}
+\makeatother
+\definelanguagealias{en}{english}
+\definelanguagealias{eng}{english}
+%% End language alias trick
+
+%% Any aliases here
+\newcommand{\mb}[1]{\mathbf{#1}} % this won't work?
+% Emphasis and bold.
+\newcommand{\e}{\emph}
+\newcommand{\mycite}[1]{\cite{#1}}
+\newcommand{\code}[1]{\textsf{#1}}
+\newcommand{\dvrg}{\nabla\vcdot\nabla}
+%% END aliases
+
+% Custom font defs
+% fontsize is \fontsize{fontsize}{linespacesize}
+\def\authorListFont{\fontsize{11}{11} }
+\def\corrAuthorFont{\fontsize{10}{10} }
+\def\affiliationListFont{\fontsize{11}{11}\itshape }
+\def\titleFont{\fontsize{14}{11} \bfseries }
+\def\textFont{\fontsize{11}{11} }
+\def\sectionHdrFont{\fontsize{11}{11}\bfseries}
+\def\bibFont{\fontsize{10}{10} }
+\def\captionFont{\fontsize{10}{10} }
+
+% Caption font size to be small.
+\usepackage[font=small,labelfont=bf]{caption}
+
+% Make a dot for the dot product, call it vcdot for 'vector calculus
+% dot'. Bigger than \cdot, smaller than \bullet.
+\makeatletter
+\newcommand*\vcdot{\mathpalette\vcdot@{.35}}
+\newcommand*\vcdot@[2]{\mathbin{\vcenter{\hbox{\scalebox{#2}{$\m@th#1\bullet$}}}}}
+\makeatother
+
+\def\firstAuthorLast{James}
+
+% Affiliations
+\def\Address{\\
+\affiliationListFont Adaptive Behaviour Research Group, Department of Psychology,
+  The University of Sheffield, Sheffield, UK \\
+}
+
+% The Corresponding Author should be marked with an asterisk. Provide
+% the exact contact address (this time including street name and city
+% zip code) and email of the corresponding author
+\def\corrAuthor{Seb James}
+\def\corrAddress{Department of Psychology, The University of Sheffield,
+  Western Bank, Sheffield, S10 2TP, UK}
+\def\corrEmail{seb.james@sheffield.ac.uk}
+
+% Figure out the font for the author list..
+\def\Authors{\authorListFont Sebastian~S.~James, Stuart~P.~Wilson  \Address \\
+  \corrAuthorFont $^{*}$ Correspondence: \corrEmail}
+
+% No page numbering please
+\pagenumbering{gobble}
+
+% A trick to get the bibliography to show up with 1. 2. etc in place
+% of [1], [2] etc.:
+\makeatletter
+\renewcommand\@biblabel[1]{#1.}
+\makeatother
+
+% reduce separation between bibliography items if not using natbib:
+\let\OLDthebibliography\thebibliography
+\renewcommand\thebibliography[1]{
+  \OLDthebibliography{#1}
+  \setlength{\parskip}{0pt}
+  \setlength{\itemsep}{0pt plus 0.3ex}
+}
+
+% Set correct font for bibliography (doesn't work yet)
+%\renewcommand*{\bibfont}{\bibFont}
+
+% No paragraph indenting to match the VPH format
+\setlength{\parindent}{0pt}
+
+% Skip a line after paragraphs
+\setlength{\parskip}{0.5\baselineskip}
+\onecolumn
+
+% titling definitions
+\pretitle{\begin{center}\titleFont}
+\posttitle{\par\end{center}\vskip 0em}
+\preauthor{ % Fonts are set within \Authors
+        \vspace{-1.1cm} % Bring authors up towards title
+        \begin{center}
+        \begin{tabular}[t]{c}
+}
+\postauthor{\end{tabular}\par\end{center}}
+
+% Define title, empty date and authors
+\title {
+  Competition can provide a stopping mechanism for the retinotectal
+  projection \\
+  or \\
+  Competition provides a stopping mechanism for the chemoaffinity
+  theory which is robust to noise \\
+  or \\
+  Self-organisation of topographically ordered axon connections can take place
+  in a noisy environment if axons compete
+}
+\date{} % No date please
+\author{\Authors}
+
+%% END OF PREAMBLE
+
+\begin{document}
+
+\setlength{\droptitle}{-1.8cm} % move the title up a suitable amount
+\maketitle
+
+\vspace{-1.8cm} % HACK bring the introduction up towards the title. It
+                % would be better to do this with titling in \maketitle
+
+\emph{Abstract here.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+The retinotectal projection has proved to be a deep mine of information for
+the study of how the cells of the central nervous system are accurately
+connected together into functional networks. This projection connects the
+light-gathering cells in the retina to movement related cells in the optic
+tectum (known as the superior colliculus in mammals). Light sources
+originating close to each other in the environment tend to activate retinal
+cells situated close together in the eye so that an image of the environment
+is formed on the retinal surface. It has been discovered that the topography
+of the retina is preserved within brain regions that process this information
+such that cells which are adjacent within the retina primarily excite cells
+adjacent in the tectum. This indicates that during development there must
+exist a mechanism which ensures the correct wiring of the axons which leave
+the retina and connect to cells in the tectum.
+
+One reason for the success of the study of the retinotectal projection is its
+capacity to be experimentally manipulated. In some non-mammalian species, both
+the retina and the tectum can be partially ablated, or even physically
+reorganised in-vivo, after which axons regrow to restore the order and
+function of the system for the individual animal. This manipulability was
+exploited in influential work by R. W. Sperry and co-workers during the
+mid-twentieth century, leading to Sperry's 1963 summary of
+the \emph{chemoaffinity theory}~\cite{sperry_chemoaffinity_1963} which
+proposes the existence of morphogenetic gradients that guide axons to their
+destination. The chemoaffinity theory was given robust support by the
+discovery of the ephrin ligands and their receptors~\cite{first_ephrin_paper}
+which have been shown to form into graded expression fields in the
+retina~\cite{ephrin_retina}, tectum~\cite{ephrin_tectum} as well as in other
+sensory systems, such as the somatosensory
+system~\cite{vanderhaegen_as_in_elife_paper}. The Ephrin ligands have a clear
+effect on axonal outgrowth, as shown in in-vitro~\cite{one} and
+in-vivo~\cite{another} studies.
+
+It is tempting to consider the retinotectal projection well understood. With a
+comprehensive theory supported by a biochemical mechanism, is there anything
+left to understand? That question can be answered by reviewing retinotectal
+modelling papers.
+
+Mini-review here, which contrasts some of the modelling papers. The upshot is
+that a central problem with models is not how the axons know how to get closer
+to their destination, but how they know they have \emph{arrived} at their true
+destination.
+
+In a recent paper, we proposed a self-organising mechanism, based on
+morphogenetic signalling gradients, which can arrange
+axons growing from the thalamus into the somatosensory cortex into the well
+known murine barrel cortex pattern~\cite{james_modelling_2020}. In
+characterising that system, we explored the effect of various types of
+noise. We found that the mechanism was robust to noise in the expression of
+the signalling molecules over a wide range of amplitudes and length-scales,
+and that noise in the interaction parameters, which are obtained by sampling
+the signalling molecules in the source tissue (the thalamic barreloid field)
+could cause topological defects. The question of noise in axon guidance has
+been explored by Goodhill~\cite{goodhill_can_2016}.
+
+\section{Model}
+
+\section{Results}
+
+\section{Discussion}
+
+%
+% BIBLIOGRAPHY
+%
+\selectlanguage{English}
+\bibliographystyle{abbrvnotitle}
+\bibliography{RetinoTectal}
+
+\end{document}
