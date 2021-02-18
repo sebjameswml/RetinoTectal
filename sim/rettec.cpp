@@ -508,6 +508,7 @@ int main (int argc, char **argv)
         morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
         hgv->setScalarData (&(RD.n));
         hgv->zScale.setParams (_m/10.0f, _c/10.0f);
+        hgv->setCScale (cscale);
         hgv->cm.setType (morph::ColourMapType::Plasma);
         hgv->finalize();
         ngrid = v1.addVisualModel (hgv);
