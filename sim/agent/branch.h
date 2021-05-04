@@ -16,8 +16,12 @@ struct branch
     {
         // Current location is named b
         morph::Vector<T, 2> b = path.back();
-        // Chemoaffinity is G
-        morph::Vector<T, 2> G = this->tz - b; // or x_b0 - x_b, in paper
+
+        // Chemoaffinity is G. REMOVE THIS. Instead, have an interaction based on the origin of each axon.
+        // So. Termination zone is a vector in the retina. That gives the interaction parameter.
+        morph::Vector<T, 2> G = this->tz; // or x_b0 - x_b, in paper
+        //std::cout << "G=" << G << std::endl; // range 0,0 to 1,1
+
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
         // over the other branches
         morph::Vector<T, 2> C = {0, 0};
@@ -87,16 +91,9 @@ struct branch
             B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
         }
 
-#ifdef _DEBUG
-        morph::Vector<T, 2> thestep = (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-        if (thestep.length() > 0.1f) {
-            std::cout << "Step size is " << thestep.length() << std::endl;
-        }
-        b += thestep; // * v where v=1
-#else
         // Paper equation 1
         b += (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-#endif
+
         this->next = b;
     }
     // The location and all previous locations of this branch.

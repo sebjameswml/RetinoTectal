@@ -153,7 +153,7 @@ struct Agent1
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
         unsigned int wh = static_cast<unsigned int>(0.5625f * (float)ww);
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
-        this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
+        this->v = new morph::Visual (ww, wh, "Seb's agent based retinotectal model");
         this->v->backgroundWhite();
         this->v->lightingEffects();
 
