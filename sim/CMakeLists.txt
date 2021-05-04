@@ -35,3 +35,5 @@ target_link_libraries(rettec_nc ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 add_executable(rettec_nc_c rettec.cpp)
 target_compile_definitions(rettec_nc_c PUBLIC FLT=float)
 target_link_libraries(rettec_nc_c ${MORPH_LIBS_CORE})
+
+add_subdirectory (agent)
