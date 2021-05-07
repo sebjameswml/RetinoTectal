@@ -88,9 +88,9 @@ public:
             mpcolours[b.aid] = clr;
             if (meanpaths.count(b.aid)== 0) {
                 // b.path/b.bpa divides each Vector element of the vVector path by bpa (a scalar)
-                meanpaths[b.aid] = (b.path/8.0f); // HACK need to bring in bpa from Agent class
+                meanpaths[b.aid] = (b.path/static_cast<Flt>(this->bpa));
             } else {
-                meanpaths[b.aid] += (b.path/8.0f); // HACK need to bring in bpa from Agent class
+                meanpaths[b.aid] += (b.path/static_cast<Flt>(this->bpa));
             }
         }
 
@@ -147,4 +147,6 @@ public:
     unsigned int histlen = 20;
     //! Identities of axons to show in the axon view
     std::set<int> seeaxons;
+    //! Branches per axon. Required for the 'single axon view' mode
+    unsigned int bpa = 8;
 };

@@ -179,8 +179,10 @@ struct Agent1
         offset[0] += 1.3f;
         this->av = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
         this->av->axonview = true;
+        this->av->bpa = this->bpa;
         this->av->seeaxons.insert(21);
         this->av->seeaxons.insert(38);
+        this->av->seeaxons.insert(189);
         this->av->seeaxons.insert(378);
         this->av->seeaxons.insert(361);
         this->av->EphA_scale.compute_autoscale (EphA_min, EphA_max);
