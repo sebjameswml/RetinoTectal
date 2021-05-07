@@ -83,14 +83,13 @@ struct Agent1
         // Update centroids
         for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
-            //unsigned int ri = b.id/this->bpa; // or b.aid now
-            this->ax_centroids.p[b.aid/*ri*/][0] += b.next[0] / static_cast<T>(this->bpa);
-            this->ax_centroids.p[b.aid/*ri*/][1] += b.next[1] / static_cast<T>(this->bpa);
+            this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
+            this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
         }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
             b.path.push_back (b.next);
-            if (b.path.size() > this->history) { b.path.pop_front(); }
+            if (b.path.size() > this->history) { b.pathfront++; }
         }
     }
 
@@ -180,8 +179,10 @@ struct Agent1
         offset[0] += 1.3f;
         this->av = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
         this->av->axonview = true;
-        this->av->seeaxons.insert(0);
-        this->av->seeaxons.insert(50);
+        this->av->seeaxons.insert(21);
+        this->av->seeaxons.insert(38);
+        this->av->seeaxons.insert(378);
+        this->av->seeaxons.insert(361);
         this->av->EphA_scale.compute_autoscale (EphA_min, EphA_max);
         this->av->finalize();
         v->addVisualModel (this->av);

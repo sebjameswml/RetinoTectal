@@ -51,9 +51,9 @@ public:
             // Colour comes from target location.
             std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
             std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
-            morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
 #if 0
+            morph::Vector<float, 3> last = { 0, 0, 0 };
             // First draw the path. Problem here is where to *start* in the history
             for (unsigned int i = 1; i < b.path.size() && i < this->histlen; ++i) {
                 last[0] = b.path[i-1][0];
@@ -75,28 +75,54 @@ public:
     void initializeAxonview()
     {
         VBOint idx = 0;
-        // For each branch, draw lines for the path history and a sphere for the current
-        // location, with a second colour for the EphA expression.
+
+        std::map<int, morph::vVector<morph::Vector<Flt, 2>>> meanpaths;
+        std::map<int, std::array<float, 3>> mpcolours;
+
+        // Add up the path to get the mean path for the
+        // axon, to replicate the visualization in Simpson & Goodhill.
         for (auto b : *this->branches) {
 
             if (!this->seeaxons.count(b.aid)) { continue; }
-
-            // Colour comes from target location.
             std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
-            std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
+            mpcolours[b.aid] = clr;
+            if (meanpaths.count(b.aid)== 0) {
+                // b.path/b.bpa divides each Vector element of the vVector path by bpa (a scalar)
+                meanpaths[b.aid] = (b.path/8.0f); // HACK need to bring in bpa from Agent class
+            } else {
+                meanpaths[b.aid] += (b.path/8.0f); // HACK need to bring in bpa from Agent class
+            }
+        }
+
+        // Now vis meanpaths
+        for (auto mp : meanpaths) {
+            std::array<float, 3> clr = mpcolours[mp.first];
             morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
-            // First draw the path
-            for (unsigned int i = 1; i < b.path.size(); ++i) {
-                last[0] = b.path[i-1][0];
-                last[1] = b.path[i-1][1];
-                cur[0] = b.path[i][0];
-                cur[1] = b.path[i][1];
+            for (unsigned int i = 1; i < mp.second.size(); ++i) {
+                // draw line from mp[i-1] to mp[i]
+                last[0] = mp.second[i-1][0];
+                last[1] = mp.second[i-1][1];
+                cur[0] = mp.second[i][0];
+                cur[1] = mp.second[i][1];
                 this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
             }
-            // Finally, a sphere at the last location. Tune number of rings (second last
-            // arg) in sphere to change size of clr2 disc at top
+        }
+
+        // For each branch, draw spheres for the current location, with a second colour
+        // for the EphA expression. Also lines from end of common path to each sphere.
+        for (auto b : *this->branches) {
+            if (!this->seeaxons.count(b.aid)) { continue; }
+            std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
+            std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
+            morph::Vector<float, 3> cur = { 0, 0, 0 };
+            cur[0] = b.path.back()[0];
+            cur[1] = b.path.back()[1];
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
+            morph::Vector<float, 3> last = { 0, 0, 0 };
+            last[0] = meanpaths[b.aid].back()[0];
+            last[1] = meanpaths[b.aid].back()[1];
+            this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth/2.0f, 0.0f, true, false);
         }
     }
 
