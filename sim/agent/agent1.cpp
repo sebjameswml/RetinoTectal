@@ -53,11 +53,12 @@ struct Agent1
             glfwPollEvents();
         }
         this->bv->reinit();
+        this->av->reinit();
         this->cv->reinit();
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
-            frame << "frames/";
+            frame << "log/agent/";
             frame.width(4);
             frame.fill('0');
             frame << stepnum;
@@ -82,17 +83,14 @@ struct Agent1
         // Update centroids
         for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
-            unsigned int ri = b.id/this->bpa;
-            this->ax_centroids.p[ri][0] += b.next[0] / static_cast<T>(this->bpa);
-            this->ax_centroids.p[ri][1] += b.next[1] / static_cast<T>(this->bpa);
+            //unsigned int ri = b.id/this->bpa; // or b.aid now
+            this->ax_centroids.p[b.aid/*ri*/][0] += b.next[0] / static_cast<T>(this->bpa);
+            this->ax_centroids.p[b.aid/*ri*/][1] += b.next[1] / static_cast<T>(this->bpa);
         }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
-            //if (b.id%1000 == 0) {
-            //if (b.id == 1000) {
             b.path.push_back (b.next);
             if (b.path.size() > this->history) { b.path.pop_front(); }
-            //}
         }
     }
 
@@ -127,6 +125,7 @@ struct Agent1
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
+            this->branches[i].aid = (int)ri; // axon index
             this->branches[i].tz = {this->retina->d_x[ri], this->retina->d_y[ri]};
             // Set its ephrin interaction parameters (though these may be related to the tz)
             this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[ri])); // R(x) = 0.26e^(2.3x) + 1.05,
@@ -160,20 +159,7 @@ struct Agent1
         // Offset for visuals
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
-        // Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
-        this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
-        this->bv->finalize();
-        v->addVisualModel (this->bv);
-
-        // Centroids of branches viewed with a NetVisual
-        offset[0] += 1.3f;
-        this->cv = new NetVisual<T> (v->shaderprog, offset, &this->ax_centroids);
-        this->cv->finalize();
-        v->addVisualModel (this->cv);
-
         // Show a vis of the retina, to compare positions/colours
-        offset[0] += 1.3f;
         morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
@@ -182,6 +168,29 @@ struct Agent1
         cgv->cm.setHueRG();
         cgv->finalize();
         v->addVisualModel (cgv);
+
+        // Visualise the branches with a custom VisualModel
+        offset[0] += 1.3f;
+        this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
+        this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        this->bv->finalize();
+        v->addVisualModel (this->bv);
+
+        // This one gives an 'axon view'
+        offset[0] += 1.3f;
+        this->av = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
+        this->av->axonview = true;
+        this->av->seeaxons.insert(0);
+        this->av->seeaxons.insert(50);
+        this->av->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        this->av->finalize();
+        v->addVisualModel (this->av);
+
+        // Centroids of branches viewed with a NetVisual
+        offset[0] += 1.3f;
+        this->cv = new NetVisual<T> (v->shaderprog, offset, &this->ax_centroids);
+        this->cv->finalize();
+        v->addVisualModel (this->cv);
     }
 
     std::vector<T> ephcolourdata;
@@ -194,8 +203,9 @@ struct Agent1
     unsigned int rgcside = 21;
     // If true, then slow things down a bit in the visualization
     bool goslow = false;
-    // How many steps to store/show history?
-    static constexpr size_t history = 20;
+    // How many steps to store history. Note, we might choose not to show all of these
+    // in a visualisation?
+    static constexpr size_t history = 2000;
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
@@ -212,6 +222,8 @@ struct Agent1
     morph::Visual* v;
     // Specialised visualization of agents with a history
     BranchVisual<T>* bv;
+    // Another visualization to show axon paths with only a few axons
+    BranchVisual<T>* av;
     // Centroid visual
     NetVisual<T>* cv;
 };

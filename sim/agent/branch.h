@@ -17,9 +17,9 @@ struct branch
         // Current location is named b
         morph::Vector<T, 2> b = path.back();
 
-        // Chemoaffinity is G. REMOVE THIS. Instead, have an interaction based on the origin of each axon.
-        // So. Termination zone is a vector in the retina. That gives the interaction parameter.
-        morph::Vector<T, 2> G = this->tz; // or x_b0 - x_b, in paper
+        // Chemoaffinity, graded by origin position (i.e termination zone) of each axon
+        // in the retina.
+        morph::Vector<T, 2> G = this->tz + morph::Vector<T,2>({-0.5,-0.5});
         //std::cout << "G=" << G << std::endl; // range 0,0 to 1,1
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
@@ -108,6 +108,8 @@ struct branch
     T EphA = 0;
     // A sequence id
     int id = 0;
+    // An id for the parent axon (there are many branches per axon)
+    int aid = 0; // this is id/bpa (computed with integer divisiona)
     // Distance parameter r is used as 2r
     static constexpr T two_r = T{0.1};
     static constexpr T r = T{0.05};
