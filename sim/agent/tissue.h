@@ -1,5 +1,6 @@
 #pragma once
 
+#include <morph/vVector.h>
 #include <morph/Vector.h>
 
 //! Some 2D brain tissue, arranged as a cartesian grid of neurons of width w and height h.

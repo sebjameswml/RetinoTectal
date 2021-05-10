@@ -47,26 +47,20 @@ public:
 
         unsigned int idx = 0;
 
-        // This changes to use the interaction parameter of the retina object.
-        this->dcopy.resize (this->ret->interaction.size());
+        // Use the interaction parameter of the retina object to set the colours of the elements
         this->dcolour.resize (this->ret->interaction.size());
         this->dcolour2.resize (this->ret->interaction.size());
         for (unsigned int i = 0; i < this->ret->interaction.size(); ++i) {
-            std::cout << "ret->interaction["<<i<<"] = " << this->ret->interaction[i] << std::endl;
             this->dcolour[i] = this->ret->interaction[i][0];
             this->dcolour2[i] = this->ret->interaction[i][1];
         }
         this->colourScale.transform (this->dcolour, this->dcolour);
-        std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
         this->colourScale.autoscaled = false;
         this->colourScale.transform (this->dcolour2, this->dcolour2);
-        std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
-        std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
-                  << " and G maxmin: " << maxmin2.first << ","<< maxmin2.second << std::endl;
 
-        float z = 0.0f;
-
+        // Loop and make rectangles out of 4 triangles. Could be 2, but I converted code from CartGrid.
         morph::Vector<float> vtx_0, vtx_1, vtx_2;
+        float z = 0.0f;
         for (unsigned int ri = 0; ri < this->ret->num(); ++ri) {
 
             std::array<float, 3> clr = this->setColour (ri);
@@ -150,9 +144,7 @@ protected:
     //! The retina data to visualize
     const retina<T>* ret;
 
-    //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
-    std::vector<float> dcopy;
-    //! A copy of the scalarData (or first field of vectorData), scaled to be a colour value
+    //! Colour mapping
     std::vector<float> dcolour;
     std::vector<float> dcolour2;
 };
