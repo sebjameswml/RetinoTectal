@@ -8,7 +8,7 @@ struct tissue
 {
     size_t w;
     size_t h;
-    size_t num() { return w * h; }
+    const size_t num() const { return w * h; }
     // The distance from neuron to neuron; horizontally and vertically.
     morph::Vector<T,2> dx;
     // Position of bottom left neuron
@@ -22,7 +22,7 @@ struct tissue
         this->posn.resize(w*h);
         for (size_t i = 0; i < this->h; ++i) {
             for (size_t j = 0; j < this->w; ++j) {
-                posn[i*w+j] = {dx*j, dy*i};
+                posn[i*w+j] = {dx[0]*j, dx[1]*i};
             }
         }
     }
@@ -38,13 +38,12 @@ struct retina : public tissue<T>
 
     // Init the wildtype retina's interaction parameters, which stand in for the Ephrins.
     retina(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0)
-        : tissue (_w, _h, _dx, _x0)
+        : tissue<T> (_w, _h, _dx, _x0)
     {
-        this->interaction.resize(w*h);
+        this->interaction.resize(this->w*this->h);
         for (size_t i = 0; i < this->h; ++i) {
             for (size_t j = 0; j < this->w; ++j) {
-                //interaction[i*w+j] = {dx[0]*j-x0[0], dx[1]*i-x0[1]};
-                this->interaction[i*w+j] = (dx*j)-x0;
+                this->interaction[i*this->w+j] = (this->dx*morph::Vector<T,2>({(float)j,(float)i})) - this->x0;
 
             }
         }

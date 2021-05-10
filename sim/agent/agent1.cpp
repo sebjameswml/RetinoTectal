@@ -24,6 +24,7 @@
 #include "netvisual.h"
 #include "net.h"
 #include "tissue.h"
+#include "retvisual.h"
 
 template<typename T>
 struct Agent1
@@ -33,7 +34,7 @@ struct Agent1
         this->conf = cfg;
         this->init();
     }
-    ~Agent1() { delete this->retina; }
+    ~Agent1() { delete this->ret; }
 
     void run()
     {
@@ -46,7 +47,7 @@ struct Agent1
         this->v->keepOpen();
     }
 
-    void vis(unsigned int stepnum)
+    void vis (unsigned int stepnum)
     {
         if (this->goslow == true) {
             glfwWaitEventsTimeout (0.1); // to add artificial slowing
@@ -82,7 +83,7 @@ struct Agent1
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
 #endif
         // Update centroids
-        for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
+        for (unsigned int i = 0; i < this->ret->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
@@ -104,30 +105,32 @@ struct Agent1
         T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
-        this->retina = new retina(gr, gr, {0.0f, 0.0f}, {0.95f, 0.95f});
-        std::cout << "Retina has " << this->retina->num() << " cells\n";
-        this->branches.resize(this->retina->num() * bpa);
 
-        std::cout << "Retina is " << this->retina->w << " wide and " << this->retina->h << " high\n";
-        this->ax_centroids.init (this->retina->w, this->retina->h);
+        this->ret = new retina<T>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+
+        std::cout << "Retina has " << this->ret->num() << " cells\n";
+        this->branches.resize(this->ret->num() * bpa);
+
+        std::cout << "Retina is " << this->ret->w << " wide and " << this->ret->h << " high\n";
+        this->ax_centroids.init (this->ret->w, this->ret->h);
         // Axon initial positions x and y are uniformly randomly selected
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
         // A normally distributed perturbation is added for each branch. SD=0.1.
         morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
         // Generate random number sequences all at once
-        std::vector<T> rn_x = rng_x.get (this->retina->num());
-        std::vector<T> rn_y = rng_y.get (this->retina->num());
-        std::vector<T> rn_p = rng_p.get (this->retina->num() * 2 * bpa);
+        std::vector<T> rn_x = rng_x.get (this->ret->num());
+        std::vector<T> rn_y = rng_y.get (this->ret->num());
+        std::vector<T> rn_p = rng_p.get (this->ret->num() * 2 * bpa);
         T EphA_max = -1e9;
         T EphA_min = 1e9;
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].aid = (int)ri; // axon index
-            this->branches[i].tz = {this->retina->posn[ri][0], this->retina->posn[ri][1]};
+            this->branches[i].tz = {this->ret->posn[ri][0], this->ret->posn[ri][1]};
             // Set its ephrin interaction parameters (though these may be related to the tz)
-            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
+            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->ret->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
@@ -159,11 +162,7 @@ struct Agent1
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Show a vis of the retina, to compare positions/colours
-        //morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
-        retvisual<float>* retv = new retvisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
-        //retv->cartVisMode = morph::CartVisMode::RectInterp;
-        std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
-        //retv->setVectorData (&points);
+        retvisual<float>* retv = new retvisual<float>(v->shaderprog, v->tshaderprog, ret, offset);
         retv->cm.setType (morph::ColourMapType::Duochrome);
         retv->cm.setHueRG();
         retv->finalize();
@@ -213,7 +212,7 @@ struct Agent1
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
-    retina<T>* retina;
+    retina<T>* ret;
     // Parameters vecto (See Table 2 in the paper)
     morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
