@@ -23,6 +23,7 @@
 #include "branch.h"
 #include "netvisual.h"
 #include "net.h"
+#include "tissue.h"
 
 template<typename T>
 struct Agent1
@@ -103,13 +104,12 @@ struct Agent1
         T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
-        this->retina = new morph::CartGrid(gr, gr, 0.0f, 0.0f, 0.95f, 0.95f);
-        this->retina->setBoundaryOnOuterEdge();
+        this->retina = new retina(gr, gr, {0.0f, 0.0f}, {0.95f, 0.95f});
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
 
-        std::cout << "Retina is " << this->retina->widthnum() << " wide and " << this->retina->depthnum() << " high\n";
-        this->ax_centroids.init (this->retina->widthnum(), this->retina->depthnum());
+        std::cout << "Retina is " << this->retina->w << " wide and " << this->retina->h << " high\n";
+        this->ax_centroids.init (this->retina->w, this->retina->h);
         // Axon initial positions x and y are uniformly randomly selected
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
@@ -125,9 +125,9 @@ struct Agent1
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].aid = (int)ri; // axon index
-            this->branches[i].tz = {this->retina->d_x[ri], this->retina->d_y[ri]};
+            this->branches[i].tz = {this->retina->posn[ri][0], this->retina->posn[ri][1]};
             // Set its ephrin interaction parameters (though these may be related to the tz)
-            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[ri])); // R(x) = 0.26e^(2.3x) + 1.05,
+            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
@@ -159,14 +159,15 @@ struct Agent1
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Show a vis of the retina, to compare positions/colours
-        morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
-        cgv->cartVisMode = morph::CartVisMode::RectInterp;
+        //morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
+        retvisual<float>* retv = new retvisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
+        //retv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
-        cgv->setVectorData (&points);
-        cgv->cm.setType (morph::ColourMapType::Duochrome);
-        cgv->cm.setHueRG();
-        cgv->finalize();
-        v->addVisualModel (cgv);
+        //retv->setVectorData (&points);
+        retv->cm.setType (morph::ColourMapType::Duochrome);
+        retv->cm.setHueRG();
+        retv->finalize();
+        v->addVisualModel (retv);
 
         // Visualise the branches with a custom VisualModel
         offset[0] += 1.3f;
@@ -212,7 +213,7 @@ struct Agent1
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
-    morph::CartGrid* retina;
+    retina<T>* retina;
     // Parameters vecto (See Table 2 in the paper)
     morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
