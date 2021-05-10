@@ -49,7 +49,7 @@ public:
         // location, with a second colour for the EphA expression.
         for (auto b : *this->branches) {
             // Colour comes from target location.
-            std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
+            std::array<float, 3> clr = { b.interaction[0], b.interaction[1], 0 };
             std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
 #if 0
@@ -84,7 +84,7 @@ public:
         for (auto b : *this->branches) {
 
             if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
+            std::array<float, 3> clr = { b.interaction[0], b.interaction[1], 0 };
             mpcolours[b.aid] = clr;
             if (meanpaths.count(b.aid)== 0) {
                 // b.path/b.bpa divides each Vector element of the vVector path by bpa (a scalar)
@@ -113,7 +113,7 @@ public:
         // for the EphA expression. Also lines from end of common path to each sphere.
         for (auto b : *this->branches) {
             if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
+            std::array<float, 3> clr = { b.interaction[0], b.interaction[1], 0 };
             std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             cur[0] = b.path.back()[0];

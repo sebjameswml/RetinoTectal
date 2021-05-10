@@ -20,7 +20,7 @@ struct branch
 
         // Chemoaffinity, graded by origin position (i.e termination zone) of each axon
         // in the retina.
-        morph::Vector<T, 2> G = this->tz + morph::Vector<T,2>({-0.5,-0.5});
+        morph::Vector<T, 2> G = this->interaction + morph::Vector<T,2>({-0.5,-0.5});
         //std::cout << "G=" << G << std::endl; // range 0,0 to 1,1
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
@@ -109,8 +109,8 @@ struct branch
     // don't modify the numbers we're working from. After looping through all branches,
     // add this to path.
     morph::Vector<T, 2> next;
-    // Termination zone for this branch
-    morph::Vector<T, 2> tz = {0, 0};
+    // Interaction parameters for this branch, taken from the soma's source tissue.
+    morph::Vector<T, 2> interaction = {0, 0};
     // EphA expression for this branch
     T EphA = 0;
     // A sequence id

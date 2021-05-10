@@ -130,9 +130,9 @@ struct Agent1
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].aid = (int)ri; // axon index
-            this->branches[i].tz = this->ret->interaction[ri]; // FIXME: Rename tz to be interaction.
-            // Set its ephrin interaction parameters (though these may be related to the tz)
-            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->ret->interaction[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
+            this->branches[i].interaction = this->ret->interaction[ri];
+            // Set its ephrin interaction parameter
+            this->branches[i].EphA = this->ret->EphA[ri];
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
