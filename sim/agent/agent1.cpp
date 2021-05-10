@@ -106,7 +106,9 @@ struct Agent1
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
 
-        this->ret = new retina<T>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+        this->ret = new guidingtissue<T>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+
+        this->ret->patchswap ({4,4}, {4,4}, {12,12});
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
         this->branches.resize(this->ret->num() * bpa);
@@ -128,9 +130,9 @@ struct Agent1
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].aid = (int)ri; // axon index
-            this->branches[i].tz = {this->ret->posn[ri][0], this->ret->posn[ri][1]};
+            this->branches[i].tz = this->ret->interaction[ri]; // FIXME: Rename tz to be interaction.
             // Set its ephrin interaction parameters (though these may be related to the tz)
-            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->ret->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
+            this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->ret->interaction[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
@@ -212,7 +214,7 @@ struct Agent1
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
-    retina<T>* ret;
+    guidingtissue<T>* ret;
     // Parameters vecto (See Table 2 in the paper)
     morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate

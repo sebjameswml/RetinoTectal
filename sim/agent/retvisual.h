@@ -22,7 +22,7 @@ class retvisual : public morph::VisualModel
 {
 public:
     //! Single constructor for simplicity
-    retvisual(GLuint sp, GLuint tsp, const retina<T>* _r, const morph::Vector<float> _offset)
+    retvisual(GLuint sp, GLuint tsp, const guidingtissue<T>* _r, const morph::Vector<float> _offset)
     {
         this->shaderprog = sp;
         this->tshaderprog = tsp;
@@ -142,7 +142,7 @@ protected:
     }
 
     //! The retina data to visualize
-    const retina<T>* ret;
+    const guidingtissue<T>* ret;
 
     //! Colour mapping
     std::vector<float> dcolour;
