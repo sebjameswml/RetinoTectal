@@ -37,12 +37,18 @@ struct guidingtissue : public tissue<T>
     //! A left-right interaction parameter and an up-down interaction parameter for each
     //! retinal neuron (hence Vectors with 2 elements, each of which can be +/-)
     morph::vVector<morph::Vector<T,2>> interaction;
+    morph::vVector<T> EphA;
 
     //! Init the wildtype retina's interaction parameters, which stand in for the Ephrins.
     guidingtissue(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0)
         : tissue<T> (_w, _h, _dx, _x0)
     {
         this->interaction = this->posn - this->x0;
+
+        this->EphA.resize (this->posn.size());
+        for (size_t ri = 0; ri < this->posn.size(); ++ri) {
+            this->EphA[ri] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
+        }
     }
 
     //! Move a rectangular patch of tissue at indexed location original, of size
@@ -52,13 +58,14 @@ struct guidingtissue : public tissue<T>
                     morph::Vector<size_t,2> newlocn)
     {
         // This is all about moving a section of interaction. Have to move row by row though.
-        morph::vVector<morph::Vector<T,2>> tmp; // Temporarily holds a section of interaction
+        morph::vVector<morph::Vector<T,2>> tmp_intrct; // Temporarily holds a section of interaction
+        morph::vVector<T> tmp_ephA;
 
         size_t patchrowlen = patchsize[0];
         size_t patchnumrows = patchsize[1];
 
-        tmp.resize (patchrowlen);
-        std::cout << "tmp size: " << tmp.size() << ", from " << patchsize << std::endl;
+        tmp_intrct.resize (patchrowlen);
+        tmp_ephA.resize (patchrowlen);
 
         size_t orig_idx = original[0] + this->w * original[1];
         size_t new_idx = newlocn[0] + this->w * newlocn[1];
@@ -68,13 +75,24 @@ struct guidingtissue : public tissue<T>
                 || new_idx + patchrowlen > this->interaction.size()) {
                 throw std::runtime_error ("Can't make that patchswap");
             }
+
+            // Swap interaction parameters
             auto oi = this->interaction.begin();
             oi += orig_idx;
             auto ni = this->interaction.begin();
             ni += new_idx;
-            std::copy_n (ni, patchrowlen, tmp.begin());
+            std::copy_n (ni, patchrowlen, tmp_intrct.begin());
             std::copy_n (oi, patchrowlen, ni);
-            std::copy_n (tmp.begin(), patchrowlen, oi);
+            std::copy_n (tmp_intrct.begin(), patchrowlen, oi);
+
+            // Swap Ephrin A
+            auto oi2 = this->EphA.begin();
+            oi2 += orig_idx;
+            auto ni2 = this->EphA.begin();
+            ni2 += new_idx;
+            std::copy_n (ni2, patchrowlen, tmp_ephA.begin());
+            std::copy_n (oi2, patchrowlen, ni2);
+            std::copy_n (tmp_ephA.begin(), patchrowlen, oi2);
 
             orig_idx += this->w;
             new_idx += this->w;
