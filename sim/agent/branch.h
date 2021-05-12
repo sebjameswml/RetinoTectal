@@ -1,27 +1,38 @@
 #pragma once
 
 #include <vector>
-//#include <deque>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
+#include "tissue.h"
 
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
 // termination zone, and the algorithm for computing the next position. Could derive
-// from an 'agent' base class.
-template<typename T>
+// from an 'agent' base class. The branches express N Ephrin receptor types (EphA, EphB etc)
+template<typename T, size_t N>
 struct branch
 {
     // Compute the next position for this branch, using information from all other
-    // branches and the parameters vector, m
-    void compute_next (const std::vector<branch<T>>& branches, const morph::Vector<T, 4>& m)
+    // branches and the parameters vector, m. Will also need location on target tissue,
+    // to get its ephrin values.
+    void compute_next (const std::vector<branch<T, N>>& branches,
+                       const guidingtissue<T, N>* tissue,
+                       const morph::Vector<T, 4>& m)
     {
         // Current location is named b
         morph::Vector<T, 2> b = path.back();
 
         // Chemoaffinity, graded by origin position (i.e termination zone) of each axon
         // in the retina.
-        morph::Vector<T, 2> G = this->interaction + morph::Vector<T,2>({-0.5,-0.5});
-        //std::cout << "G=" << G << std::endl; // range 0,0 to 1,1
+        morph::Vector<T, 2> G;
+        if constexpr (N==4) {
+            // With 4 receptor/ligand pairs, the x component is zeroth minus the 2nd
+            G[0] = this->rcpt[0] * tissue->lgnd[aid][0] - this->rcpt[2] * tissue->lgnd[aid][2];
+            // and y component is the first minus the 3rd
+            G[1] = this->rcpt[1] * tissue->lgnd[aid][1] - this->rcpt[3] * tissue->lgnd[aid][3];
+        } else if constexpr (N==2) {
+            G[0] = this->rcpt[0] * tissue->lgnd[aid][0];
+            G[1] = this->rcpt[1] * tissue->lgnd[aid][1];
+        }
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
         // over the other branches
@@ -38,9 +49,10 @@ struct branch
             morph::Vector<T, 2> kb = b - k.path.back();
             T d = kb.length();
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
-            T Q = k.EphA / this->EphA; // forward signalling (used predominantly in paper)
-            //T Q = this->EphA / k.EphA; // reverse signalling
-            //T Q = std::max(k.EphA / this->EphA, this->EphA / k.EphA); // bi-dir signalling
+            // Note, for now, just as in Simpson & Goodhill, just choose a single receptor for axon-axon interactions.
+            T Q = k.rcpt[0] / this->rcpt[0]; // forward signalling (used predominantly in paper)
+            //T Q = this->rcpt[0] / k.rcpt[0]; // reverse signalling
+            //T Q = std::max(k.rcpt[0] / this->rcpt[0], this->rcpt[0] / k.rcpt[0]); // bi-dir signalling
             kb.renormalize(); // as in paper, vector bk is a unit vector
             I += Q > this->s ? kb * W : nullvec;
             C += kb * W;
@@ -109,14 +121,13 @@ struct branch
     // don't modify the numbers we're working from. After looping through all branches,
     // add this to path.
     morph::Vector<T, 2> next;
-    // Interaction parameters for this branch, taken from the soma's source tissue.
-    morph::Vector<T, 2> interaction = {0, 0};
-    // EphA expression for this branch
-    T EphA = 0;
+    // Interaction parameters for this branch, taken from the soma in the source
+    // tissue. This is the N receptor expressions at the growth cone.
+    morph::Vector<T, N> rcpt;
     // A sequence id
     int id = 0;
     // An id for the parent axon (there are many branches per axon)
-    int aid = 0; // this is id/bpa (computed with integer divisiona)
+    int aid = 0; // this is id/bpa (computed with integer division)
     // Distance parameter r is used as 2r
     static constexpr T two_r = T{0.1};
     static constexpr T r = T{0.05};

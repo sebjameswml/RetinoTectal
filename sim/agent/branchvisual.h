@@ -24,21 +24,23 @@
 
 #include "branch.h"
 
-template <typename Flt>
+template <typename Flt, size_t N>
 class BranchVisual : public morph::VisualModel
 {
 public:
-    BranchVisual(GLuint sp, const morph::Vector<float, 3> _offset,
-                 std::vector<branch<Flt>>* _branches, bool _axonview = false)
+    BranchVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset,
+                 std::vector<branch<Flt, N>>* _branches, bool _axonview = false)
     {
         this->branches = _branches;
         this->axonview = _axonview;
         this->shaderprog = sp;
+        this->tshaderprog = tsp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
 
-    morph::Scale<Flt, Flt> EphA_scale;
+    // Receptor and ligand need to be scaled to 0/1 range
+    morph::Scale<Flt, Flt> rcpt_scale;
 
     void initializeVertices()
     {
@@ -46,23 +48,14 @@ public:
 
         VBOint idx = 0;
         // For each branch, draw lines for the path history and a sphere for the current
-        // location, with a second colour for the EphA expression.
+        // location, with a second colour for the rcpt expression.
         for (auto b : *this->branches) {
             // Colour comes from target location.
-            std::array<float, 3> clr = { b.interaction[0], b.interaction[1], 0 };
-            std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
+            // Prolly need receptor scaling here:
+            std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
+                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
+            std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
-#if 0
-            morph::Vector<float, 3> last = { 0, 0, 0 };
-            // First draw the path. Problem here is where to *start* in the history
-            for (unsigned int i = 1; i < b.path.size() && i < this->histlen; ++i) {
-                last[0] = b.path[i-1][0];
-                last[1] = b.path[i-1][1];
-                cur[0] = b.path[i][0];
-                cur[1] = b.path[i][1];
-                this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
-            }
-#endif
             // Finally, a sphere at the last location. Tune number of rings (second last
             // arg) in sphere to change size of clr2 disc at top
             morph::Vector<float, 2> bk = b.path.back();
@@ -84,7 +77,8 @@ public:
         for (auto b : *this->branches) {
 
             if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { b.interaction[0], b.interaction[1], 0 };
+            std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
+                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             mpcolours[b.aid] = clr;
             if (meanpaths.count(b.aid)== 0) {
                 // b.path/b.bpa divides each Vector element of the vVector path by bpa (a scalar)
@@ -110,11 +104,12 @@ public:
         }
 
         // For each branch, draw spheres for the current location, with a second colour
-        // for the EphA expression. Also lines from end of common path to each sphere.
+        // for the rcpt expression. Also lines from end of common path to each sphere.
         for (auto b : *this->branches) {
             if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { b.interaction[0], b.interaction[1], 0 };
-            std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
+            std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
+                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
+            std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             cur[0] = b.path.back()[0];
             cur[1] = b.path.back()[1];
@@ -134,7 +129,7 @@ public:
     }
 
     //! Pointer to a vector of branches to visualise
-    std::vector<branch<Flt>>* branches = (std::vector<branch<Flt>>*)0;
+    std::vector<branch<Flt, N>>* branches = (std::vector<branch<Flt, N>>*)0;
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;

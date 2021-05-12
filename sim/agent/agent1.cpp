@@ -26,7 +26,7 @@
 #include "tissue.h"
 #include "retvisual.h"
 
-template<typename T>
+template<typename T, size_t N>
 struct Agent1
 {
     Agent1 (morph::Config* cfg)
@@ -76,11 +76,11 @@ struct Agent1
         // Mac compiler didn't like omp parallel for in front of a for(auto...
 #pragma omp parallel for
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
-            this->branches[i].compute_next (this->branches, this->m);
+            this->branches[i].compute_next (this->branches, this->tectum, this->m);
         }
 #else
 #pragma omp parallel for
-        for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
+        for (auto& b : this->branches) { b.compute_next (this->branches, this->tectum, this->m); }
 #endif
         // Update centroids
         for (unsigned int i = 0; i < this->ret->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
@@ -106,9 +106,13 @@ struct Agent1
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
 
-        this->ret = new guidingtissue<T>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+        this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+        // this->tectum->patchswap etc
 
-        this->ret->patchswap ({4,4}, {4,4}, {12,12});
+        this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+        if (this->conf->getBool ("retinal_graftswap", false)) {
+            this->ret->graftswap ({4,4}, {4,4}, {12,12});
+        }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
         this->branches.resize(this->ret->num() * bpa);
@@ -130,12 +134,11 @@ struct Agent1
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].aid = (int)ri; // axon index
-            this->branches[i].interaction = this->ret->interaction[ri];
-            // Set its ephrin interaction parameter
-            this->branches[i].EphA = this->ret->EphA[ri];
-            EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
-            EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
-            // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
+            this->branches[i].rcpt = this->ret->rcpt[ri];
+            // Call the first interaction parameter 'EphA'
+            EphA_max =  this->branches[i].rcpt[0] > EphA_max ? branches[i].rcpt[0] : EphA_max;
+            EphA_min =  this->branches[i].rcpt[0] < EphA_min ? branches[i].rcpt[0] : EphA_min;
+            // Set as in the S&G paper - starting at bottom in region x=(0,1), y=(-0.2,0)
             morph::Vector<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
             morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
@@ -143,7 +146,7 @@ struct Agent1
             this->branches[i].path.push_back (initpos2);
             this->branches[i].id = i;
         }
-        // The min/max of EphA is used below to set a morph::Scale in branchvisual
+        // The min/max of EphA (rcpt[0]) is used below to set a morph::Scale in branchvisual
         std::cout << "EphA range: " << EphA_min << " to " << EphA_max << std::endl;
 
         // Parameters settable from json
@@ -164,22 +167,33 @@ struct Agent1
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Show a vis of the retina, to compare positions/colours
-        retvisual<float>* retv = new retvisual<float>(v->shaderprog, v->tshaderprog, ret, offset);
+        retvisual<float, N>* retv = new retvisual<float, N>(v->shaderprog, v->tshaderprog, ret, offset);
         retv->cm.setType (morph::ColourMapType::Duochrome);
         retv->cm.setHueRG();
+        retv->addLabel ("Retina", {0.0f, 1.1f, 0.0f});
         retv->finalize();
         v->addVisualModel (retv);
 
+        morph::Vector<float> offset2 = offset;
+        offset2[1] += 1.3f;
+        retvisual<float, N>* tecv = new retvisual<float, N>(v->shaderprog, v->tshaderprog, tectum, offset2);
+        tecv->cm.setType (morph::ColourMapType::Duochrome);
+        tecv->cm.setHueRG();
+        tecv->addLabel ("Tectum", {0.0f, 1.1f, 0.0f});
+        tecv->finalize();
+        v->addVisualModel (tecv);
+
         // Visualise the branches with a custom VisualModel
         offset[0] += 1.3f;
-        this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
-        this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches);
+        this->bv->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
         this->bv->finalize();
+        this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->bv);
 
         // This one gives an 'axon view'
         offset[0] += 1.3f;
-        this->av = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
+        this->av = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches);
         this->av->axonview = true;
         this->av->bpa = this->bpa;
         this->av->seeaxons.insert(21);
@@ -187,14 +201,16 @@ struct Agent1
         this->av->seeaxons.insert(189);
         this->av->seeaxons.insert(378);
         this->av->seeaxons.insert(361);
-        this->av->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        this->av->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
         this->av->finalize();
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->av);
 
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
-        this->cv = new NetVisual<T> (v->shaderprog, offset, &this->ax_centroids);
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
         this->cv->finalize();
+        this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->cv);
     }
 
@@ -214,21 +230,23 @@ struct Agent1
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
-    guidingtissue<T>* ret;
+    guidingtissue<T, N>* ret;
+    // Same sized tectum tissue
+    guidingtissue<T, N>* tectum;
     // Parameters vecto (See Table 2 in the paper)
     morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
     // (rgcside^2 * bpa) branches, as per the paper
-    std::vector<branch<T>> branches;
+    std::vector<branch<T, N>> branches;
     // Centroid of the branches for each axon
     net<T> ax_centroids;
     // A visual environment
     morph::Visual* v;
-    // Specialised visualization of agents with a history
-    BranchVisual<T>* bv;
+    // Specialised visualization of agents as spheres with a little extra colour patch on top
+    BranchVisual<T, N>* bv;
     // Another visualization to show axon paths with only a few axons
-    BranchVisual<T>* av;
+    BranchVisual<T, N>* av;
     // Centroid visual
     NetVisual<T>* cv;
 };
@@ -250,7 +268,7 @@ int main (int argc, char **argv)
         std::cerr << "Failed to read config " << paramsfile << ". Exiting.\n";
         return 1;
     }
-    Agent1<float> model (&conf);
+    Agent1<float, 4> model (&conf);
     model.run();
 
     return 0;

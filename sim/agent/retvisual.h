@@ -17,12 +17,12 @@
 
 #include "tissue.h"
 
-template <class T>
+template <class T, size_t N>
 class retvisual : public morph::VisualModel
 {
 public:
     //! Single constructor for simplicity
-    retvisual(GLuint sp, GLuint tsp, const guidingtissue<T>* _r, const morph::Vector<float> _offset)
+    retvisual(GLuint sp, GLuint tsp, const guidingtissue<T, N>* _r, const morph::Vector<float> _offset)
     {
         this->shaderprog = sp;
         this->tshaderprog = tsp;
@@ -48,11 +48,11 @@ public:
         unsigned int idx = 0;
 
         // Use the interaction parameter of the retina object to set the colours of the elements
-        this->dcolour.resize (this->ret->interaction.size());
-        this->dcolour2.resize (this->ret->interaction.size());
-        for (unsigned int i = 0; i < this->ret->interaction.size(); ++i) {
-            this->dcolour[i] = this->ret->interaction[i][0];
-            this->dcolour2[i] = this->ret->interaction[i][1];
+        this->dcolour.resize (this->ret->rcpt.size());
+        this->dcolour2.resize (this->ret->rcpt.size());
+        for (unsigned int i = 0; i < this->ret->rcpt.size(); ++i) {
+            this->dcolour[i] = this->ret->rcpt[i][0];
+            this->dcolour2[i] = this->ret->rcpt[i][1];
         }
         this->colourScale.transform (this->dcolour, this->dcolour);
         this->colourScale.autoscaled = false;
@@ -142,7 +142,7 @@ protected:
     }
 
     //! The retina data to visualize
-    const guidingtissue<T>* ret;
+    const guidingtissue<T, N>* ret;
 
     //! Colour mapping
     std::vector<float> dcolour;

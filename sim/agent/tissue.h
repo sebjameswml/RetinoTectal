@@ -30,86 +30,89 @@ struct tissue
     }
 };
 
-//! Tissue which has guidance parameters in the form of an interaction parameter vector
-template<typename T>
+//! Tissue which has guidance parameters in the form of a 2D vector which stands for the
+//! expression of 2 or possibly 4 receptor molecules. If positive/negative values are
+//! allowed, then it's 4.
+template<typename T, size_t N>
 struct guidingtissue : public tissue<T>
 {
     //! A left-right interaction parameter and an up-down interaction parameter for each
-    //! retinal neuron (hence Vectors with 2 elements, each of which can be +/-)
-    morph::vVector<morph::Vector<T,2>> interaction;
-    morph::vVector<T> EphA;
+    //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
+    //! expressions for each cell.
+    morph::vVector<morph::Vector<T,N>> rcpt;
 
-    //! Init the wildtype retina's interaction parameters, which stand in for the Ephrins.
+    //! The tissue also has an expression of ligands to interact with receptors of other
+    //! cells/agents
+    morph::vVector<morph::Vector<T,N>> lgnd;
+
+    //! Init the wildtype tissue's receptors and ligands.
     guidingtissue(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0)
         : tissue<T> (_w, _h, _dx, _x0)
     {
-        this->interaction = this->posn - this->x0;
+        this->rcpt.resize (this->posn.size());
+        this->lgnd.resize (this->posn.size());
 
-        this->EphA.resize (this->posn.size());
+        T max_x = this->w * this->dx[0] + this->x0[0];
+        T max_y = this->h * this->dx[1] + this->x0[1];
+
+        // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
-            this->EphA[ri] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
+            if constexpr (N == 4) {
+                // First orthogonal pair of receptors
+                this->rcpt[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
+                this->rcpt[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
+                // First orthogonal pair of ligands
+                this->lgnd[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0]));
+                this->lgnd[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
+
+                // Second orthogonal pair in opposite sense
+                this->rcpt[ri][2] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_x-this->posn[ri][0]));
+                this->rcpt[ri][3] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_y-this->posn[ri][1]));
+
+                this->lgnd[ri][2] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_x-this->posn[ri][0]));
+                this->lgnd[ri][3] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_y-this->posn[ri][1]));
+
+            } else if constexpr (N == 2) {
+                // Just one orthogonal pair of receptors and ligands:
+                this->rcpt[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0]));
+                this->rcpt[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
+                this->lgnd[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0]));
+                this->lgnd[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
+            } // else error
         }
     }
 
-    //! Move a rectangular patch of tissue at indexed location original, of size
-    //! patchsize, and swap it with another region of the retina at newlocn.
-    void patchswap (morph::Vector<size_t,2> original,
-                    morph::Vector<size_t,2> patchsize,
-                    morph::Vector<size_t,2> newlocn)
+    //! Move a rectangular patch of tissue at indexed location locn1, of size
+    //! sz, and swap it with another region of the tissue at locn2.
+    void graftswap (morph::Vector<size_t,N> locn1,
+                    morph::Vector<size_t,N> sz,
+                    morph::Vector<size_t,N> locn2)
     {
-        // This is all about moving a section of interaction. Have to move row by row though.
-        morph::vVector<morph::Vector<T,2>> tmp_intrct; // Temporarily holds a section of interaction
-        morph::vVector<T> tmp_ephA;
+        // This is all about moving a section of rcpt. Have to move row by row though.
+        morph::vVector<morph::Vector<T,N>> tmp_rcpt; // Temporarily holds a section of receptors
 
-        size_t patchrowlen = patchsize[0];
-        size_t patchnumrows = patchsize[1];
+        tmp_rcpt.resize (sz[0]);
 
-        tmp_intrct.resize (patchrowlen);
-        tmp_ephA.resize (patchrowlen);
+        size_t idx1 = locn1[0] + this->w * locn1[1];
+        size_t idx2 = locn2[0] + this->w * locn2[1];
+        for (size_t i = 0; i < sz[1]; ++i) {
 
-        size_t orig_idx = original[0] + this->w * original[1];
-        size_t new_idx = newlocn[0] + this->w * newlocn[1];
-        for (size_t i = 0; i < patchnumrows; ++i) {
-
-            if (orig_idx + patchrowlen > this->interaction.size()
-                || new_idx + patchrowlen > this->interaction.size()) {
+            if (idx1 + sz[0] > this->rcpt.size()
+                || idx2 + sz[0] > this->rcpt.size()) {
                 throw std::runtime_error ("Can't make that patchswap");
             }
 
-            // Swap interaction parameters
-            auto oi = this->interaction.begin();
-            oi += orig_idx;
-            auto ni = this->interaction.begin();
-            ni += new_idx;
-            std::copy_n (ni, patchrowlen, tmp_intrct.begin());
-            std::copy_n (oi, patchrowlen, ni);
-            std::copy_n (tmp_intrct.begin(), patchrowlen, oi);
+            // Swap rcpt parameters
+            auto oi = this->rcpt.begin();
+            oi += idx1;
+            auto ni = this->rcpt.begin();
+            ni += idx2;
+            std::copy_n (ni, sz[0], tmp_rcpt.begin());
+            std::copy_n (oi, sz[0], ni);
+            std::copy_n (tmp_rcpt.begin(), sz[0], oi);
 
-            // Swap Ephrin A
-            auto oi2 = this->EphA.begin();
-            oi2 += orig_idx;
-            auto ni2 = this->EphA.begin();
-            ni2 += new_idx;
-            std::copy_n (ni2, patchrowlen, tmp_ephA.begin());
-            std::copy_n (oi2, patchrowlen, ni2);
-            std::copy_n (tmp_ephA.begin(), patchrowlen, oi2);
-
-            orig_idx += this->w;
-            new_idx += this->w;
+            idx1 += this->w;
+            idx2 += this->w;
         }
     }
 };
-
-#if 0 // In case I need to differentiate retina and tectum. Eph receptors?
-//! A retina, for visualisation and for simulated experimental manipulations. This class holds data
-template<typename T>
-struct retina : public guidingtissue<T>
-{
-};
-
-//! A tectum, for we will manipulate the tectum, too
-template<typename T>
-struct tectum : public guidingtissue<T>
-{
-};
-#endif
