@@ -268,8 +268,15 @@ int main (int argc, char **argv)
         std::cerr << "Failed to read config " << paramsfile << ". Exiting.\n";
         return 1;
     }
-    Agent1<float, 4> model (&conf);
-    model.run();
+
+    size_t num_guiders = conf.getInt("num_guiders", 4);
+    if (num_guiders == 4) {
+        Agent1<float, 4> model (&conf);
+        model.run();
+    } else if (num_guiders == 2) {
+        Agent1<float, 2> model (&conf);
+        model.run();
+    }
 
     return 0;
 }
