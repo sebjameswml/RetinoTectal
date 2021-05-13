@@ -54,33 +54,40 @@ struct guidingtissue : public tissue<T>
 
         T max_x = this->w * this->dx[0] + this->x0[0];
         T max_y = this->h * this->dx[1] + this->x0[1];
+        std::cout << "Max x position: " << max_x << " and max y position: " << max_y << std::endl;
 
         // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
             if constexpr (N == 4) {
                 // First orthogonal pair of receptors
-                this->rcpt[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0])); // R(x) = 0.26e^(2.3x) + 1.05,
-                this->rcpt[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
-                // First orthogonal pair of ligands
-                this->lgnd[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0]));
-                this->lgnd[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
+                this->rcpt[ri][0] = this->expression_function (this->posn[ri][0]);
+                this->rcpt[ri][1] = this->expression_function (this->posn[ri][1]);
+                // First orthogonal pair of ligands have same expression as receptors
+                this->lgnd[ri][0] = this->rcpt[ri][0];
+                this->lgnd[ri][1] = this->rcpt[ri][1];
 
                 // Second orthogonal pair in opposite sense
-                this->rcpt[ri][2] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_x-this->posn[ri][0]));
-                this->rcpt[ri][3] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_y-this->posn[ri][1]));
+                this->rcpt[ri][2] = this->expression_function (max_x-this->posn[ri][0]);
+                this->rcpt[ri][3] = this->expression_function (max_y-this->posn[ri][1]);
 
-                this->lgnd[ri][2] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_x-this->posn[ri][0]));
-                this->lgnd[ri][3] = T{1.05} + (T{0.26} * std::exp (T{2.3} * max_y-this->posn[ri][1]));
+                this->lgnd[ri][2] = this->rcpt[ri][2];
+                this->lgnd[ri][3] = this->rcpt[ri][3];
 
             } else if constexpr (N == 2) {
                 // Just one orthogonal pair of receptors and ligands:
-                this->rcpt[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0]));
-                this->rcpt[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
-                this->lgnd[ri][0] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][0]));
-                this->lgnd[ri][1] = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->posn[ri][1]));
+                this->rcpt[ri][0] = this->expression_function (this->posn[ri][0]);
+                this->rcpt[ri][1] = this->expression_function (this->posn[ri][1]);
+                this->lgnd[ri][0] = this->rcpt[ri][0];
+                this->lgnd[ri][1] = this->rcpt[ri][1];
             } // else error
         }
     }
+
+    T linear_gradient (const T& posn) const { return 1+posn; }
+    // R(x) = 0.26e^(2.3x) + 1.05,
+    T exponential_gradient (const T& posn) const { return T{1.05} + (T{0.26} * std::exp (T{2.3} * posn)); }
+
+    T expression_function (const T& posn) const { return this->linear_gradient (posn); }
 
     //! Move a rectangular patch of tissue at indexed location locn1, of size
     //! sz, and swap it with another region of the tissue at locn2.

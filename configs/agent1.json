@@ -1,4 +1,6 @@
 {
+    "retinal_graftswap" : true,
+    "tectal_graftswap" : false,
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
     "win_width" : 1920,

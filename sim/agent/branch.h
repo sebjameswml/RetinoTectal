@@ -104,10 +104,33 @@ struct branch
             B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
         }
 
-        // Paper equation 1
-        b += (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
+        constexpr bool try_limit = false;
+        if constexpr (try_limit) {
+            // Compute a 'speed limit' to slow movements down near to the edge of the tissue
+            // and avoid the rather annoying oscillations around the edge.
+            // Distance to the edge? Easy in a square. Find closest edge, find
+            // perp. distance to that edge. Do this using b. Will assume that tissue is in
+            // range 0 to 1. {t, b, r, l}
+            morph::Vector<T, 4> distances = {1-b[1], -b[1], 1-b[0], -b[0]};
+            T toedge = distances.shortest();
+            // Apply a slowdown based on distance toedge
+            T speedlimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
+            //std::cout << "To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
 
-        this->next = b;
+            // Main equation
+            morph::Vector<T, 2> db = (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
+            morph::Vector<T, 2> newb = b + db;
+            if (newb[0] < 0 || newb[0] > 1 || newb[1] < 0 || newb[1] > 1) {
+                // apply slowdown? No limit movement to being at the edge.
+                b += db*speedlimit;
+                this->next = b;
+            } else {
+                this->next = newb;
+            }
+        } else {
+            b += G * m[0] + C * m[1] + I * m[2] + B * m[3];
+            this->next = b;
+        }
     }
     // The location and all previous locations of this branch.
     //std::deque<morph::Vector<T, 2>> path;
