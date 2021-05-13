@@ -83,7 +83,8 @@ struct guidingtissue : public tissue<T>
         }
     }
 
-    T linear_gradient (const T& posn) const { return 1+posn; }
+    // R(x) = 1.31 + 2.3333x
+    T linear_gradient (const T& posn) const { return T{1.31} + T{2.3333} * posn; }
     // R(x) = 0.26e^(2.3x) + 1.05,
     T exponential_gradient (const T& posn) const { return T{1.05} + (T{0.26} * std::exp (T{2.3} * posn)); }
 
@@ -96,9 +97,7 @@ struct guidingtissue : public tissue<T>
                     morph::Vector<size_t,N> locn2)
     {
         // This is all about moving a section of rcpt. Have to move row by row though.
-        morph::vVector<morph::Vector<T,N>> tmp_rcpt; // Temporarily holds a section of receptors
-
-        tmp_rcpt.resize (sz[0]);
+        morph::vVector<morph::Vector<T,N>> graft (sz[0]);
 
         size_t idx1 = locn1[0] + this->w * locn1[1];
         size_t idx2 = locn2[0] + this->w * locn2[1];
@@ -109,14 +108,22 @@ struct guidingtissue : public tissue<T>
                 throw std::runtime_error ("Can't make that patchswap");
             }
 
-            // Swap rcpt parameters
+            // Swap rcpt and lgnd parameters
             auto oi = this->rcpt.begin();
             oi += idx1;
             auto ni = this->rcpt.begin();
             ni += idx2;
-            std::copy_n (ni, sz[0], tmp_rcpt.begin());
+            std::copy_n (ni, sz[0], graft.begin());
             std::copy_n (oi, sz[0], ni);
-            std::copy_n (tmp_rcpt.begin(), sz[0], oi);
+            std::copy_n (graft.begin(), sz[0], oi);
+
+            oi = this->lgnd.begin();
+            oi += idx1;
+            ni = this->lgnd.begin();
+            ni += idx2;
+            std::copy_n (ni, sz[0], graft.begin());
+            std::copy_n (oi, sz[0], ni);
+            std::copy_n (graft.begin(), sz[0], oi);
 
             idx1 += this->w;
             idx2 += this->w;
