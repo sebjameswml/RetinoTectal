@@ -13,18 +13,16 @@
 #include <vector>
 #include <array>
 
-#include <morph/CartGrid.h>
 #include <morph/Config.h>
 #include <morph/Random.h>
 #include <morph/Visual.h>
-#include <morph/CartGridVisual.h>
 
 #include "branchvisual.h"
 #include "branch.h"
 #include "netvisual.h"
 #include "net.h"
 #include "tissue.h"
-#include "retvisual.h"
+#include "tissuevisual.h"
 
 template<typename T, size_t N>
 struct Agent1
@@ -106,12 +104,14 @@ struct Agent1
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
 
-        this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+        this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
+                                               this->conf->getBool ("exp_expression", true));
         if (this->conf->getBool ("tectal_graftswap", false)) {
             this->tectum->graftswap ({4,4}, {4,4}, {12,12});
         }
 
-        this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f});
+        this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
+                                            this->conf->getBool ("exp_expression", true));
         if (this->conf->getBool ("retinal_graftswap", false)) {
             this->ret->graftswap ({4,4}, {4,4}, {12,12});
         }
@@ -169,19 +169,21 @@ struct Agent1
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Show a vis of the retina, to compare positions/colours
-        retvisual<float, N>* retv = new retvisual<float, N>(v->shaderprog, v->tshaderprog, ret, offset);
+        tissuevisual<float, N>* retv = new tissuevisual<float, N>(v->shaderprog, v->tshaderprog, ret, offset);
         retv->cm.setType (morph::ColourMapType::Duochrome);
         retv->cm.setHueRG();
-        retv->addLabel ("Retina", {0.0f, 1.1f, 0.0f});
+        retv->addLabel ("Retinal receptor expression", {0.0f, 1.1f, 0.0f});
         retv->finalize();
         v->addVisualModel (retv);
 
+        // Tectum
         morph::Vector<float> offset2 = offset;
         offset2[1] += 1.3f;
-        retvisual<float, N>* tecv = new retvisual<float, N>(v->shaderprog, v->tshaderprog, tectum, offset2);
+        tissuevisual<float, N>* tecv = new tissuevisual<float, N>(v->shaderprog, v->tshaderprog, tectum, offset2);
+        tecv->view = expression_view::ligand_grad;
         tecv->cm.setType (morph::ColourMapType::Duochrome);
         tecv->cm.setHueRG();
-        tecv->addLabel ("Tectum", {0.0f, 1.1f, 0.0f});
+        tecv->addLabel ("Tectum ligand gradient", {0.0f, 1.1f, 0.0f});
         tecv->finalize();
         v->addVisualModel (tecv);
 

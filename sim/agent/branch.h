@@ -21,17 +21,16 @@ struct branch
         // Current location is named b
         morph::Vector<T, 2> b = path.back();
 
-        // Chemoaffinity, graded by origin position (i.e termination zone) of each axon
-        // in the retina.
+        // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G;
         if constexpr (N==4) {
             // With 4 receptor/ligand pairs, the x component is zeroth minus the 2nd
-            G[0] = this->rcpt[0] * tissue->lgnd[aid][0] - this->rcpt[2] * tissue->lgnd[aid][2];
+            G[0] = this->rcpt[0] * tissue->lgnd_grad[aid][0] - this->rcpt[2] * tissue->lgnd_grad[aid][2];
             // and y component is the first minus the 3rd
-            G[1] = this->rcpt[1] * tissue->lgnd[aid][1] - this->rcpt[3] * tissue->lgnd[aid][3];
+            G[1] = this->rcpt[1] * tissue->lgnd_grad[aid][1] - this->rcpt[3] * tissue->lgnd_grad[aid][3];
         } else if constexpr (N==2) {
-            G[0] = this->rcpt[0] * tissue->lgnd[aid][0];
-            G[1] = this->rcpt[1] * tissue->lgnd[aid][1];
+            G[0] = this->rcpt[0] * tissue->lgnd_grad[aid][0];
+            G[1] = this->rcpt[1] * tissue->lgnd_grad[aid][1];
         }
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop

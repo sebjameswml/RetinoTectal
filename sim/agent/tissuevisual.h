@@ -17,12 +17,20 @@
 
 #include "tissue.h"
 
+enum class expression_view
+{
+    receptor_exp,
+    receptor_grad,
+    ligand_exp,
+    ligand_grad
+};
+
 template <class T, size_t N>
-class retvisual : public morph::VisualModel
+class tissuevisual : public morph::VisualModel
 {
 public:
     //! Single constructor for simplicity
-    retvisual(GLuint sp, GLuint tsp, const guidingtissue<T, N>* _r, const morph::Vector<float> _offset)
+    tissuevisual(GLuint sp, GLuint tsp, const guidingtissue<T, N>* _r, const morph::Vector<float> _offset)
     {
         this->shaderprog = sp;
         this->tshaderprog = tsp;
@@ -31,7 +39,7 @@ public:
         // Defaults for z and colourScale
         this->zScale.setParams (1, 0);
         this->colourScale.do_autoscale = true;
-        this->ret = _r;
+        this->gtissue = _r;
         // Note: VisualModel::finalize() should be called before rendering
     }
 
@@ -40,20 +48,39 @@ public:
     //! for each rectangle. Gives a smooth surface in which you can see the pixels.
     void initializeVertices()
     {
-        float dx = (float)this->ret->dx[0];
+        float dx = (float)this->gtissue->dx[0];
         float hx = 0.5f * dx;
-        float dy = (float)this->ret->dx[1];
+        float dy = (float)this->gtissue->dx[1];
         float vy = 0.5f * dy;
 
         unsigned int idx = 0;
 
         // Use the interaction parameter of the retina object to set the colours of the elements
-        this->dcolour.resize (this->ret->rcpt.size());
-        this->dcolour2.resize (this->ret->rcpt.size());
-        for (unsigned int i = 0; i < this->ret->rcpt.size(); ++i) {
-            this->dcolour[i] = this->ret->rcpt[i][0];
-            this->dcolour2[i] = this->ret->rcpt[i][1];
+        this->dcolour.resize (this->gtissue->rcpt.size());
+        this->dcolour2.resize (this->gtissue->rcpt.size());
+
+        if (this->view == expression_view::receptor_exp) {
+            for (unsigned int i = 0; i < this->gtissue->rcpt.size(); ++i) {
+                this->dcolour[i] = this->gtissue->rcpt[i][0];
+                this->dcolour2[i] = this->gtissue->rcpt[i][1];
+            }
+        } else if (this->view == expression_view::receptor_grad) {
+            for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->rcpt_grad[i][0];
+                this->dcolour2[i] = this->gtissue->rcpt_grad[i][1];
+            }
+        } else if (this->view == expression_view::ligand_exp) {
+            for (unsigned int i = 0; i < this->gtissue->lgnd.size(); ++i) {
+                this->dcolour[i] = this->gtissue->lgnd[i][0];
+                this->dcolour2[i] = this->gtissue->lgnd[i][1];
+            }
+        } else if (this->view == expression_view::ligand_grad) {
+            for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][0];
+                this->dcolour2[i] = this->gtissue->lgnd_grad[i][1];
+            }
         }
+
         this->colourScale.transform (this->dcolour, this->dcolour);
         this->colourScale.autoscaled = false;
         this->colourScale.transform (this->dcolour2, this->dcolour2);
@@ -61,24 +88,24 @@ public:
         // Loop and make rectangles out of 4 triangles. Could be 2, but I converted code from CartGrid.
         morph::Vector<float> vtx_0, vtx_1, vtx_2;
         float z = 0.0f;
-        for (unsigned int ri = 0; ri < this->ret->num(); ++ri) {
+        for (unsigned int ri = 0; ri < this->gtissue->num(); ++ri) {
 
             std::array<float, 3> clr = this->setColour (ri);
 
             // First push the 5 positions of the triangle vertices, starting with the centre. All at z=0
-            this->vertex_push (this->ret->posn[ri][0], this->ret->posn[ri][1], z, this->vertexPositions);
+            this->vertex_push (this->gtissue->posn[ri][0], this->gtissue->posn[ri][1], z, this->vertexPositions);
             // Use the centre position as the first location for finding the normal vector
-            vtx_0 = {{this->ret->posn[ri][0], this->ret->posn[ri][1], z}};
+            vtx_0 = {{this->gtissue->posn[ri][0], this->gtissue->posn[ri][1], z}};
             // NE vertex
-            this->vertex_push (this->ret->posn[ri][0]+hx, this->ret->posn[ri][1]+vy, z, this->vertexPositions);
-            vtx_1 = {{this->ret->posn[ri][0]+hx, this->ret->posn[ri][1]+vy, z}};
+            this->vertex_push (this->gtissue->posn[ri][0]+hx, this->gtissue->posn[ri][1]+vy, z, this->vertexPositions);
+            vtx_1 = {{this->gtissue->posn[ri][0]+hx, this->gtissue->posn[ri][1]+vy, z}};
             // SE vertex
-            this->vertex_push (this->ret->posn[ri][0]+hx, this->ret->posn[ri][1]-vy, z, this->vertexPositions);
-            vtx_2 = {{this->ret->posn[ri][0]+hx, this->ret->posn[ri][1]-vy, z}};
+            this->vertex_push (this->gtissue->posn[ri][0]+hx, this->gtissue->posn[ri][1]-vy, z, this->vertexPositions);
+            vtx_2 = {{this->gtissue->posn[ri][0]+hx, this->gtissue->posn[ri][1]-vy, z}};
             // SW vertex
-            this->vertex_push (this->ret->posn[ri][0]-hx, this->ret->posn[ri][1]-vy, z, this->vertexPositions);
+            this->vertex_push (this->gtissue->posn[ri][0]-hx, this->gtissue->posn[ri][1]-vy, z, this->vertexPositions);
             // NW vertex
-            this->vertex_push (this->ret->posn[ri][0]-hx, this->ret->posn[ri][1]+vy, z, this->vertexPositions);
+            this->vertex_push (this->gtissue->posn[ri][0]-hx, this->gtissue->posn[ri][1]+vy, z, this->vertexPositions);
 
             // From vtx_0,1,2 compute normal. This sets the correct normal, but note
             // that there is only one 'layer' of vertices; the back of the
@@ -128,6 +155,9 @@ public:
     morph::Scale<T, float> colourScale2;
     morph::Scale<T, float> zScale;
 
+    //! What to visualise - receptor expression, ligand expression or their gradient?
+    expression_view view = expression_view::receptor_exp;
+
 protected:
     //! An overridable function to set the colour of element index hi
     virtual std::array<float, 3> setColour (unsigned int hi)
@@ -141,8 +171,8 @@ protected:
         return clr;
     }
 
-    //! The retina data to visualize
-    const guidingtissue<T, N>* ret;
+    //! The data to visualize
+    const guidingtissue<T, N>* gtissue;
 
     //! Colour mapping
     std::vector<float> dcolour;
