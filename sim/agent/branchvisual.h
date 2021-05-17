@@ -47,20 +47,17 @@ public:
         if (this->axonview) { return this->initializeAxonview(); }
 
         VBOint idx = 0;
-        // For each branch, draw lines for the path history and a sphere for the current
-        // location, with a second colour for the rcpt expression.
+        // For each branch,simply draw a sphere for the current location, with a second
+        // colour for the rcpt expression.
         for (auto b : *this->branches) {
             // Colour comes from target location.
             // Prolly need receptor scaling here:
             std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
-            morph::Vector<float, 3> cur = { 0, 0, 0 };
-            // Finally, a sphere at the last location. Tune number of rings (second last
-            // arg) in sphere to change size of clr2 disc at top
-            morph::Vector<float, 2> bk = b.path.back();
-            cur[0] = bk[0];
-            cur[1] = bk[1];
+            // A sphere at the last location. Tune number of rings (second last arg) in
+            // sphere to change size of clr2 disc at top
+            morph::Vector<float, 3> cur = { b.current[0], b.current[1], 0 };
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
         }
     }
@@ -111,8 +108,8 @@ public:
                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
-            cur[0] = b.path.back()[0];
-            cur[1] = b.path.back()[1];
+            cur[0] = b.next[0]; // or path.back()?
+            cur[1] = b.next[1];
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
             morph::Vector<float, 3> last = { 0, 0, 0 };
             last[0] = meanpaths[b.aid].back()[0];

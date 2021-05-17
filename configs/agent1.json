@@ -11,7 +11,7 @@
     "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length.",
     "rgcside" : 20,
     "desc_bpa" : "Branches per axon",
-    "bpa" : 6,
+    "bpa" : 8,
     "desc_steps" : "How many simulation steps should be computed?",
     "steps" : 3000,
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",

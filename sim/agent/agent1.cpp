@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <set>
+#include <chrono>
 
 #include <morph/Config.h>
 #include <morph/Random.h>
@@ -34,12 +36,20 @@ struct Agent1
     }
     ~Agent1() { delete this->ret; }
 
+    static constexpr unsigned int showevery = 100;
     void run()
     {
+        std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
+
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
             this->step();
             this->vis(i);
-            if (i%100 == 0) { std::cout << "step " << i << "\n"; }
+            if (i%showevery == 0) {
+                std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
+                std::cout << "step " << i << ". Per step: "
+                          << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery << " ms\n";
+                laststep = std::chrono::steady_clock::now();
+            }
         }
         std::cout << "Done simulating\n";
         this->v->keepOpen();
@@ -53,7 +63,7 @@ struct Agent1
             glfwPollEvents();
         }
         this->bv->reinit();
-        //this->av->reinit();
+        this->av->reinit();
         this->cv->reinit();
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
@@ -86,10 +96,15 @@ struct Agent1
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
         }
-        // Once 'next' has been updated, add next to path:
+        // Once 'next' has been updated, add next to path and update current from next
         for (auto& b : this->branches) {
-            b.path.push_back (b.next);
-            if (b.path.size() > this->history) { b.pathfront++; }
+            b.current = b.next;
+            // Is this an axon to track?
+            if (this->seeaxons.count(b.aid)) {
+                // Crazy - I'm storing path of each branch in the axon!
+                //std::cout << "push back onto b.path for b.id: " << b.id << " for b.aid: " << b.aid << std::endl;
+                b.path.push_back (b.next);
+            }
         }
     }
 
@@ -144,8 +159,11 @@ struct Agent1
             morph::Vector<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
             morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
+            this->branches[i].current = initpos2;
             this->branches[i].path.clear();
-            this->branches[i].path.push_back (initpos2);
+            if (this->seeaxons.count(this->branches[i].aid)) {
+                this->branches[i].path.push_back (initpos2);
+            }
             this->branches[i].id = i;
         }
         // The min/max of EphA (rcpt[0]) is used below to set a morph::Scale in branchvisual
@@ -200,11 +218,7 @@ struct Agent1
         this->av = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches);
         this->av->axonview = true;
         this->av->bpa = this->bpa;
-        this->av->seeaxons.insert(21);
-        this->av->seeaxons.insert(38);
-        this->av->seeaxons.insert(189);
-        this->av->seeaxons.insert(378);
-        this->av->seeaxons.insert(361);
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
         this->av->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
         this->av->finalize();
         this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
@@ -222,6 +236,8 @@ struct Agent1
     std::vector<morph::Vector<float, 3>> rgcposcolourdata;
     std::vector<morph::Vector<float, 3>> coords;
 
+    // The axons to see - these will have their path information stored
+    std::set<size_t> seeaxons = {21, 38, 189, 378, 361};
     // Branches per axon
     unsigned int bpa = 8;
     // Number of RGCs on a side

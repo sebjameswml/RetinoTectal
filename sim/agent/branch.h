@@ -19,7 +19,7 @@ struct branch
                        const morph::Vector<T, 4>& m)
     {
         // Current location is named b
-        morph::Vector<T, 2> b = path.back();
+        morph::Vector<T, 2> b = this->current;
 
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G;
@@ -52,7 +52,7 @@ struct branch
             // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
             // sums these. However, that gives a competition term with a sign error. So
             // here, sum up the unit vectors kb.
-            morph::Vector<T, 2> kb = b - k.path.back();
+            morph::Vector<T, 2> kb = b - k.current;
             T d = kb.length();
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
             // Note, for now, just as in Simpson & Goodhill, just choose a single receptor for axon-axon interactions.
@@ -177,18 +177,15 @@ struct branch
             this->next = b;
         }
     }
-    // The location and all previous locations of this branch.
-    //std::deque<morph::Vector<T, 2>> path;
+    // The location and all previous locations of this branch (selected axons only).
     morph::vVector<morph::Vector<T, 2>> path;
-    // To allow use of vVector instead of deque, hold an iterator to the first member of
-    // path that's 'in history', allowing path to become arbitrarily large in long
-    // simulations (I accept the memory hit).
-    typename morph::vVector<morph::Vector<T, 2>>::iterator pathfront = path.begin();
 
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
-    // add this to path.
+    // place current into next and move on to next time step.
+    morph::Vector<T, 2> current;
     morph::Vector<T, 2> next;
+
     // Interaction parameters for this branch, taken from the soma in the source
     // tissue. This is the N receptor expressions at the growth cone.
     morph::Vector<T, N> rcpt;
