@@ -53,8 +53,7 @@ public:
         // For each branch,simply draw a sphere for the current location, with a second
         // colour for the rcpt expression.
         for (auto b : *this->branches) {
-            // Colour comes from target location.
-            // Prolly need receptor scaling here:
+            // Colour should come from original target location, rather than receptor value, to emphasise swaps in location.
             std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
