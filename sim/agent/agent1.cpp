@@ -37,13 +37,14 @@ struct Agent1
     ~Agent1() { delete this->ret; }
 
     static constexpr unsigned int showevery = 100;
+    static constexpr unsigned int visevery = 5;
     void run()
     {
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
 
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
             this->step();
-            this->vis(i);
+            if (i%visevery == 0) { this->vis(i); } // Visualize every 10 doubles time required for program
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
                 std::cout << "step " << i << ". Per step: "
@@ -52,6 +53,7 @@ struct Agent1
             }
         }
         std::cout << "Done simulating\n";
+        this->vis(this->conf->getUInt ("steps", 1000));
         this->v->keepOpen();
     }
 
@@ -96,20 +98,14 @@ struct Agent1
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
         }
+        // Record centroid history for the axons to be seen
         for (size_t ax = 0; ax < this->ax_centroids.p.size(); ++ax) {
-            if (this->seeaxons.count(ax)) {
-                this->ax_history[ax].push_back (ax_centroids.p[ax]);
-            }
+            if (this->seeaxons.count(ax)) { this->ax_history[ax].push_back (ax_centroids.p[ax]); }
         }
 
-        // Once 'next' has been updated, add next to path and update current from next
-        for (auto& b : this->branches) {
-            // Is this an axon to track?
-            b.current = b.next;
-        }
+        // Once 'next' has been updated for each branch, run through & copy it to 'current'
+        for (auto& b : this->branches) { b.current = b.next; }
     }
-    // Path history is a map indexed by axon id. 3D as it's used for vis.
-    std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
 
     void init()
     {
@@ -125,13 +121,13 @@ struct Agent1
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                this->conf->getBool ("exp_expression", true));
         if (this->conf->getBool ("tectal_graftswap", false)) {
-            this->tectum->graftswap ({2,4}, {16,4}, {2,12});
+            this->tectum->graftswap ({2,4}, {8,4}, {2,10});
         }
 
         this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                             this->conf->getBool ("exp_expression", true));
         if (this->conf->getBool ("retinal_graftswap", false)) {
-            this->ret->graftswap ({2,4}, {16,4}, {2,12});
+            this->ret->graftswap ({2,4}, {8,4}, {2,10});
         }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
@@ -260,6 +256,8 @@ struct Agent1
     std::vector<branch<T, N>> branches;
     // Centroid of the branches for each axon
     net<T> ax_centroids;
+    // Path history is a map indexed by axon id. 3D as it's used for vis.
+    std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
     // A visual environment
     morph::Visual* v;
     // Specialised visualization of agents as spheres with a little extra colour patch on top
