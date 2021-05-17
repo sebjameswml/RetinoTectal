@@ -1,4 +1,5 @@
 {
+    "num_guiders" : 4,
     "exp_expression" : true,
     "retinal_graftswap" : false,
     "tectal_graftswap" : false,
@@ -12,13 +13,13 @@
     "desc_bpa" : "Branches per axon",
     "bpa" : 6,
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 500,
+    "steps" : 3000,
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
-    "m1" : 0.002,
+    "m1" : 0.001,
     "desc_m2" : "Parameter governing strength of the axon-axon competition effect",
     "m2" : 0.3,
     "desc_m3" : "Parameter governing the strength of the axon-axon interactions (additional to competition and based on molecular labelling)",
-    "m3" : 0.0,
+    "m3" : 0.02,
     "desc_mborder" : "Strength of the border effect - a force perpendicular to the border, extending a distance r into the tissue",
     "mborder" : 0.02
 }

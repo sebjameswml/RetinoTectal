@@ -24,13 +24,20 @@ struct branch
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G;
         if constexpr (N==4) {
+            // First, find the ligand gradients close to the current location b.
+            morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
             // With 4 receptor/ligand pairs, the x component is zeroth minus the 2nd
-            G[0] = this->rcpt[0] * tissue->lgnd_grad[aid][0] - this->rcpt[2] * tissue->lgnd_grad[aid][2];
+            G[0] = this->rcpt[0] * lg[0] - this->rcpt[2] * lg[2];
             // and y component is the first minus the 3rd
-            G[1] = this->rcpt[1] * tissue->lgnd_grad[aid][1] - this->rcpt[3] * tissue->lgnd_grad[aid][3];
+            G[1] = this->rcpt[1] * lg[1] - this->rcpt[3] * lg[3];
+            //if (this->id == 1260) {
+            //    std::cout << "G[0] made up of " <<  this->rcpt[0] * lg[0] << " - " << this->rcpt[2] * lg[2] << " = " << G[0] << std::endl;
+            //    std::cout << "Ligand gradients at location " << b << " are (t,b,r,l) " << lg << std::endl;
+            //}
         } else if constexpr (N==2) {
-            G[0] = this->rcpt[0] * tissue->lgnd_grad[aid][0];
-            G[1] = this->rcpt[1] * tissue->lgnd_grad[aid][1];
+            morph::Vector<T, 2> lg = tissue->lgnd_grad_at (b);
+            G[0] = this->rcpt[0] * lg[0];
+            G[1] = this->rcpt[1] * lg[1];
         }
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
@@ -49,9 +56,19 @@ struct branch
             T d = kb.length();
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
             // Note, for now, just as in Simpson & Goodhill, just choose a single receptor for axon-axon interactions.
-            T Q = k.rcpt[0] / this->rcpt[0]; // forward signalling (used predominantly in paper)
+
+            T Q = T{0};
+            if constexpr (N == 4) {
+                Q = k.rcpt[0] / this->rcpt[0]
+                + k.rcpt[1] / this->rcpt[1]
+                + k.rcpt[2] / this->rcpt[2]
+                + k.rcpt[3] / this->rcpt[3]; // forward signalling (used predominantly in paper)
+            } else if constexpr (N == 2) {
+                Q = k.rcpt[0] / this->rcpt[0] + k.rcpt[1] / this->rcpt[1];
+            }
             //T Q = this->rcpt[0] / k.rcpt[0]; // reverse signalling
             //T Q = std::max(k.rcpt[0] / this->rcpt[0], this->rcpt[0] / k.rcpt[0]); // bi-dir signalling
+
             kb.renormalize(); // as in paper, vector bk is a unit vector
             I += Q > this->s ? kb * W : nullvec;
             C += kb * W;
@@ -111,21 +128,50 @@ struct branch
             // perp. distance to that edge. Do this using b. Will assume that tissue is in
             // range 0 to 1. {t, b, r, l}
             morph::Vector<T, 4> distances = {1-b[1], -b[1], 1-b[0], -b[0]};
-            T toedge = distances.shortest();
-            // Apply a slowdown based on distance toedge
-            T speedlimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
-            //std::cout << "To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
+            size_t nearedge = distances.argshortest();
 
-            // Main equation
             morph::Vector<T, 2> db = (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-            morph::Vector<T, 2> newb = b + db;
-            if (newb[0] < 0 || newb[0] > 1 || newb[1] < 0 || newb[1] > 1) {
-                // apply slowdown? No limit movement to being at the edge.
+
+            bool goingin = false;
+            switch (nearedge) {
+            case 0: // top
+            {
+                if (db[1] < 0) { goingin = true; }
+                break;
+            }
+            case 1: // bot
+            {
+                if (db[1] > 0) { goingin = true; }
+                break;
+            }
+            case 2: // r
+            {
+                if (db[0] < 0) { goingin = true; }
+                break;
+            }
+            case 3: // l
+            {
+                if (db[0] > 0) { goingin = true; }
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+
+            // If going inwards, then no slowdown, else slowdown
+            if (goingin) {
+                this->next = b + db;
+            } else {
+                // Apply a slowdown based on distance toedge
+                T toedge = distances.shortest();
+                T speedlimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
+                //std::cout << "Not going in. To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
                 b += db*speedlimit;
                 this->next = b;
-            } else {
-                this->next = newb;
             }
+
         } else {
             b += G * m[0] + C * m[1] + I * m[2] + B * m[3];
             this->next = b;

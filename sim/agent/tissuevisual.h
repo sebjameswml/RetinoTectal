@@ -78,6 +78,13 @@ public:
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
                 this->dcolour[i] = this->gtissue->lgnd_grad[i][0];
                 this->dcolour2[i] = this->gtissue->lgnd_grad[i][1];
+                if constexpr (false) {
+                    // An alternative to show that lgnd_grad_at returns the right thing:
+                    morph::Vector<T,N> lg = this->gtissue->lgnd_grad_at (this->gtissue->posn[i]);
+                    this->dcolour[i] = lg[0];
+                    this->dcolour2[i] = lg[1];
+                }
+
             }
         }
 

@@ -53,7 +53,7 @@ struct Agent1
             glfwPollEvents();
         }
         this->bv->reinit();
-        this->av->reinit();
+        //this->av->reinit();
         this->cv->reinit();
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
@@ -107,13 +107,13 @@ struct Agent1
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                this->conf->getBool ("exp_expression", true));
         if (this->conf->getBool ("tectal_graftswap", false)) {
-            this->tectum->graftswap ({4,4}, {4,4}, {12,12});
+            this->tectum->graftswap ({2,4}, {16,4}, {2,12});
         }
 
         this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                             this->conf->getBool ("exp_expression", true));
         if (this->conf->getBool ("retinal_graftswap", false)) {
-            this->ret->graftswap ({4,4}, {4,4}, {12,12});
+            this->ret->graftswap ({2,4}, {16,4}, {2,12});
         }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
