@@ -29,9 +29,12 @@ class BranchVisual : public morph::VisualModel
 {
 public:
     BranchVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset,
-                 std::vector<branch<Flt, N>>* _branches, bool _axonview = false)
+                 std::vector<branch<Flt, N>>* _branches,
+                 std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>* _ax_history,
+                 bool _axonview = false)
     {
         this->branches = _branches;
+        this->ax_history = _ax_history;
         this->axonview = _axonview;
         this->shaderprog = sp;
         this->tshaderprog = tsp;
@@ -66,37 +69,14 @@ public:
     {
         VBOint idx = 0;
 
-        std::map<int, morph::vVector<morph::Vector<Flt, 2>>> meanpaths;
-        std::map<int, std::array<float, 3>> mpcolours;
-
-        // Add up the path to get the mean path for the
-        // axon, to replicate the visualization in Simpson & Goodhill.
-        for (auto b : *this->branches) {
-
-            if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
-                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
-            mpcolours[b.aid] = clr;
-            if (meanpaths.count(b.aid)== 0) {
-                // b.path/b.bpa divides each Vector element of the vVector path by bpa (a scalar)
-                meanpaths[b.aid] = (b.path/static_cast<Flt>(this->bpa));
-            } else {
-                meanpaths[b.aid] += (b.path/static_cast<Flt>(this->bpa));
-            }
-        }
+        if (this->ax_history->empty()) { return; }
 
         // Now vis meanpaths
-        for (auto mp : meanpaths) {
-            std::array<float, 3> clr = mpcolours[mp.first];
-            morph::Vector<float, 3> last = { 0, 0, 0 };
-            morph::Vector<float, 3> cur = { 0, 0, 0 };
+        for (auto mp : *this->ax_history) {
+            std::array<float, 3> clr = {0.5f, 0.5f, 0.5f};
             for (unsigned int i = 1; i < mp.second.size(); ++i) {
                 // draw line from mp[i-1] to mp[i]
-                last[0] = mp.second[i-1][0];
-                last[1] = mp.second[i-1][1];
-                cur[0] = mp.second[i][0];
-                cur[1] = mp.second[i][1];
-                this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
+                this->computeFlatLineRnd (idx, mp.second[i-1], mp.second[i], this->uz, clr, this->linewidth, 0.0f, true, false);
             }
         }
 
@@ -111,10 +91,7 @@ public:
             cur[0] = b.next[0]; // or path.back()?
             cur[1] = b.next[1];
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
-            morph::Vector<float, 3> last = { 0, 0, 0 };
-            last[0] = meanpaths[b.aid].back()[0];
-            last[1] = meanpaths[b.aid].back()[1];
-            this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth/2.0f, 0.0f, true, false);
+            this->computeFlatLineRnd (idx, (*this->ax_history)[b.aid].back(), cur, this->uz, clr, this->linewidth/2.0f, 0.0f, true, false);
         }
     }
 
@@ -127,6 +104,8 @@ public:
 
     //! Pointer to a vector of branches to visualise
     std::vector<branch<Flt, N>>* branches = (std::vector<branch<Flt, N>>*)0;
+    //! Pointer to axon history, if required.
+    std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>* ax_history = (std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>*)0;
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;

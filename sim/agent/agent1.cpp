@@ -96,17 +96,20 @@ struct Agent1
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
         }
-        // Once 'next' has been updated, add next to path and update current from next
-        for (auto& b : this->branches) {
-            b.current = b.next;
-            // Is this an axon to track?
-            if (this->seeaxons.count(b.aid)) {
-                // Crazy - I'm storing path of each branch in the axon!
-                //std::cout << "push back onto b.path for b.id: " << b.id << " for b.aid: " << b.aid << std::endl;
-                b.path.push_back (b.next);
+        for (size_t ax = 0; ax < this->ax_centroids.p.size(); ++ax) {
+            if (this->seeaxons.count(ax)) {
+                this->ax_history[ax].push_back (ax_centroids.p[ax]);
             }
         }
+
+        // Once 'next' has been updated, add next to path and update current from next
+        for (auto& b : this->branches) {
+            // Is this an axon to track?
+            b.current = b.next;
+        }
     }
+    // Path history is a map indexed by axon id. 3D as it's used for vis.
+    std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
 
     void init()
     {
@@ -160,10 +163,6 @@ struct Agent1
             morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
             this->branches[i].current = initpos2;
-            this->branches[i].path.clear();
-            if (this->seeaxons.count(this->branches[i].aid)) {
-                this->branches[i].path.push_back (initpos2);
-            }
             this->branches[i].id = i;
         }
         // The min/max of EphA (rcpt[0]) is used below to set a morph::Scale in branchvisual
@@ -207,7 +206,7 @@ struct Agent1
 
         // Visualise the branches with a custom VisualModel
         offset[0] += 1.3f;
-        this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches);
+        this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
         this->bv->finalize();
         this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
@@ -215,7 +214,7 @@ struct Agent1
 
         // This one gives an 'axon view'
         offset[0] += 1.3f;
-        this->av = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches);
+        this->av = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->av->axonview = true;
         this->av->bpa = this->bpa;
         for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }

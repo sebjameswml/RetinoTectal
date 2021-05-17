@@ -178,7 +178,7 @@ struct branch
         }
     }
     // The location and all previous locations of this branch (selected axons only).
-    morph::vVector<morph::Vector<T, 2>> path;
+    //morph::vVector<morph::Vector<T, 2>> path;
 
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
