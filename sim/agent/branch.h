@@ -30,6 +30,10 @@ struct branch
             G[0] = this->rcpt[0] * lg[0] - this->rcpt[2] * lg[2];
             // and y component is the first minus the 3rd
             G[1] = this->rcpt[1] * lg[1] - this->rcpt[3] * lg[3];
+            //if (this->id == 1260) {
+            //    std::cout << "G[0] made up of " <<  this->rcpt[0] * lg[0] << " - " << this->rcpt[2] * lg[2] << " = " << G[0] << std::endl;
+            //    std::cout << "Ligand gradients at location " << b << " are (t,b,r,l) " << lg << std::endl;
+            //}
         } else if constexpr (N==2) {
             morph::Vector<T, 2> lg = tissue->lgnd_grad_at (b);
             G[0] = this->rcpt[0] * lg[0];
@@ -173,18 +177,13 @@ struct branch
             this->next = b;
         }
     }
-    // The location and all previous locations of this branch. Only populate for those
-    // axons we're going to view. Also, only add to this when the axon moves an
-    // appreciable distance, to keep it small. It can be dynamically managed in memory.
+    // The location and all previous locations of this branch.
+    //std::deque<morph::Vector<T, 2>> path;
     morph::vVector<morph::Vector<T, 2>> path;
     // To allow use of vVector instead of deque, hold an iterator to the first member of
     // path that's 'in history', allowing path to become arbitrarily large in long
     // simulations (I accept the memory hit).
-    //typename morph::vVector<morph::Vector<T, 2>>::iterator pathfront = path.begin();
-    size_t pathfront = 0;
-    // Pointer to path for current simulation step.
-    //typename morph::vVector<morph::Vector<T, 2>>::iterator pathcur = path.begin();
-    size_t pathcur = 0;
+    typename morph::vVector<morph::Vector<T, 2>>::iterator pathfront = path.begin();
 
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,

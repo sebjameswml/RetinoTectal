@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <chrono>
 
 #include <morph/Config.h>
 #include <morph/Random.h>
@@ -37,22 +36,10 @@ struct Agent1
 
     void run()
     {
-        this->mean_t1 = std::chrono::milliseconds::zero();
-        this->mean_t2 = std::chrono::milliseconds::zero();
-        std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
             this->step();
-            //this->vis(i);
-            if (i && i%100 == 0) {
-                std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
-                std::cout << "step " << i << ". Last 100 steps took "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(since).count() << " ms\n";
-                std::cout << "t1: " << std::chrono::duration_cast<std::chrono::milliseconds>(mean_t1).count()/100 << " ms. ";
-                std::cout << "t2: " << std::chrono::duration_cast<std::chrono::milliseconds>(mean_t2).count()/100 << " ms\n";
-                laststep = std::chrono::steady_clock::now();
-                this->mean_t1 = std::chrono::milliseconds::zero();
-                this->mean_t2 = std::chrono::milliseconds::zero();
-            }
+            this->vis(i);
+            if (i%100 == 0) { std::cout << "step " << i << "\n"; }
         }
         std::cout << "Done simulating\n";
         this->v->keepOpen();
@@ -80,8 +67,6 @@ struct Agent1
         }
     }
 
-    std::chrono::steady_clock::duration mean_t1 = std::chrono::milliseconds::zero();
-    std::chrono::steady_clock::duration mean_t2 = std::chrono::milliseconds::zero();
     void step()
     {
         // Compute the next position for each branch:
@@ -92,27 +77,20 @@ struct Agent1
             this->branches[i].compute_next (this->branches, this->tectum, this->m);
         }
 #else
-        std::chrono::steady_clock::time_point t1_0 = std::chrono::steady_clock::now();
 #pragma omp parallel for
         for (auto& b : this->branches) { b.compute_next (this->branches, this->tectum, this->m); }
 #endif
-        std::chrono::steady_clock::time_point t1_1 = std::chrono::steady_clock::now();
-        mean_t1 += (t1_1 - t1_0);
-
         // Update centroids
         for (unsigned int i = 0; i < this->ret->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
         }
-
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
-            b.path[b.pathcur++] = b.next;
-            if (this->curstep++ > this->history) { b.pathfront++; }
+            b.path.push_back (b.next);
+            if (b.path.size() > this->history) { b.pathfront++; }
         }
-        std::chrono::steady_clock::time_point t2_1 = std::chrono::steady_clock::now();
-        mean_t2 += (t2_1 - t1_1);
     }
 
     void init()
@@ -154,7 +132,6 @@ struct Agent1
         std::vector<T> rn_p = rng_p.get (this->ret->num() * 2 * bpa);
         T EphA_max = -1e9;
         T EphA_min = 1e9;
-        unsigned int simsteps = this->conf->getUInt ("steps", 1000);
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
@@ -276,8 +253,6 @@ struct Agent1
     BranchVisual<T, N>* av;
     // Centroid visual
     NetVisual<T>* cv;
-    // Current sim step
-    size_t curstep = 0;
 };
 
 int main (int argc, char **argv)

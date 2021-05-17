@@ -13,7 +13,7 @@
     "desc_bpa" : "Branches per axon",
     "bpa" : 6,
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 600,
+    "steps" : 3000,
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
     "m1" : 0.001,
     "desc_m2" : "Parameter governing strength of the axon-axon competition effect",

@@ -58,7 +58,7 @@ public:
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             // Finally, a sphere at the last location. Tune number of rings (second last
             // arg) in sphere to change size of clr2 disc at top
-            morph::Vector<float, 2> bk = b.path[b.pathcur];
+            morph::Vector<float, 2> bk = b.path.back();
             cur[0] = bk[0];
             cur[1] = bk[1];
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
@@ -80,7 +80,6 @@ public:
             std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             mpcolours[b.aid] = clr;
-            // THIS is dividing all of every path each time...
             if (meanpaths.count(b.aid)== 0) {
                 // b.path/b.bpa divides each Vector element of the vVector path by bpa (a scalar)
                 meanpaths[b.aid] = (b.path/static_cast<Flt>(this->bpa));
@@ -112,8 +111,8 @@ public:
                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
-            cur[0] = b.path[b.pathcur][0];
-            cur[1] = b.path[b.pathcur][1];
+            cur[0] = b.path.back()[0];
+            cur[1] = b.path.back()[1];
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
             morph::Vector<float, 3> last = { 0, 0, 0 };
             last[0] = meanpaths[b.aid].back()[0];
