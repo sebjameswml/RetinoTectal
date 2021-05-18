@@ -186,9 +186,13 @@ struct branch
     morph::Vector<T, 2> current;
     morph::Vector<T, 2> next;
 
+    // The 'target' location for the axon/branch. This is the origin location in the source tissue (retina)
+    morph::Vector<T, 2> target;
+
     // Interaction parameters for this branch, taken from the soma in the source
     // tissue. This is the N receptor expressions at the growth cone.
     morph::Vector<T, N> rcpt;
+
     // A sequence id
     int id = 0;
     // An id for the parent axon (there are many branches per axon)

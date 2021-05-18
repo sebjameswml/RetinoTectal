@@ -151,6 +151,7 @@ struct Agent1
             unsigned int ri = i/bpa; // retina index
             this->branches[i].aid = (int)ri; // axon index
             this->branches[i].rcpt = this->ret->rcpt[ri];
+            this->branches[i].target = this->ret->posn[ri];
             // Call the first interaction parameter 'EphA'
             EphA_max =  this->branches[i].rcpt[0] > EphA_max ? branches[i].rcpt[0] : EphA_max;
             EphA_min =  this->branches[i].rcpt[0] < EphA_min ? branches[i].rcpt[0] : EphA_min;
@@ -204,6 +205,7 @@ struct Agent1
         offset[0] += 1.3f;
         this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
+        this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->finalize();
         this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->bv);
@@ -215,6 +217,7 @@ struct Agent1
         this->av->bpa = this->bpa;
         for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
         this->av->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
+        this->av->target_scale.compute_autoscale (0, 1);
         this->av->finalize();
         this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->av);

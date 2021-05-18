@@ -42,8 +42,10 @@ public:
         this->viewmatrix.translate (this->mv_offset);
     }
 
-    // Receptor and ligand need to be scaled to 0/1 range
+    // Receptor and ligand need to be scaled
     morph::Scale<Flt, Flt> rcpt_scale;
+    // Target location will have a different scale
+    morph::Scale<Flt, Flt> target_scale;
 
     void initializeVertices()
     {
@@ -54,9 +56,10 @@ public:
         // colour for the rcpt expression.
         for (auto b : *this->branches) {
             // Colour should come from original target location, rather than receptor value, to emphasise swaps in location.
-            std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
-                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
-            std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
+            std::array<float, 3> clr = { this->target_scale.transform_one(b.target[0]),
+                                         this->target_scale.transform_one(b.target[1]), 0 };
+            std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]),
+                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             // A sphere at the last location. Tune number of rings (second last arg) in
             // sphere to change size of clr2 disc at top
             morph::Vector<float, 3> cur = { b.current[0], b.current[1], 0 };
