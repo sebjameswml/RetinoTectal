@@ -1,19 +1,32 @@
 {
     "num_guiders" : 4,
-    "exp_expression" : true,
-    "retinal_graftswap" : true,
+    "exp_expression" : false,
+
+    "graftswap_coords" : { "locn1" : [2,4], "locn2" : [2,10], "patchsize" : [4,4] },
+    "retinal_graftswap" : false,
     "tectal_graftswap" : false,
+
+    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
+    //"seeaxons" : [ 21, 38, 189, 378, 361 ],
+    "seeaxons" : [ 82, 145, 202, 265 ],
+
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
+
     "win_width" : 1920,
+
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
+
     "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length.",
     "rgcside" : 20,
+
     "desc_bpa" : "Branches per axon",
     "bpa" : 8,
+
     "desc_steps" : "How many simulation steps should be computed?",
     "steps" : 3000,
+
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
     "m1" : 0.001,
     "desc_m2" : "Parameter governing strength of the axon-axon competition effect",

@@ -149,9 +149,9 @@ struct guidingtissue : public tissue<T>
 
     //! Move a rectangular patch of tissue at indexed location x1, of size
     //! sz, and swap it with another region of the tissue at x2.
-    void graftswap (morph::Vector<size_t,N> x1,
-                    morph::Vector<size_t,N> sz,
-                    morph::Vector<size_t,N> x2)
+    void graftswap (morph::Vector<size_t,2> x1,
+                    morph::Vector<size_t,2> sz,
+                    morph::Vector<size_t,2> x2)
     {
         // This is all about moving a section of rcpt. Have to move row by row though.
         morph::vVector<morph::Vector<T,N>> graft (sz[0]);

@@ -120,14 +120,30 @@ struct Agent1
 
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                this->conf->getBool ("exp_expression", true));
-        if (this->conf->getBool ("tectal_graftswap", false)) {
-            this->tectum->graftswap ({2,4}, {8,4}, {2,10});
-        }
 
         this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                             this->conf->getBool ("exp_expression", true));
-        if (this->conf->getBool ("retinal_graftswap", false)) {
-            this->ret->graftswap ({2,4}, {8,4}, {2,10});
+
+        // Extract the graftswap coordinates from the config
+        Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
+        Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
+        Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
+        Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
+        if (l1.size() > 1 && l2.size() > 1 && ps.size() > 1) {
+
+            morph::Vector<size_t, 2> l1v = { l1[0].asUInt(), l1[1].asUInt() };
+            morph::Vector<size_t, 2> l2v = { l2[0].asUInt(), l2[1].asUInt() };
+            morph::Vector<size_t, 2> psv = { ps[0].asUInt(), ps[1].asUInt() };
+
+            std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
+
+            if (this->conf->getBool ("tectal_graftswap", false)) {
+                this->tectum->graftswap (l1v, psv, l2v);
+            }
+
+            if (this->conf->getBool ("retinal_graftswap", false)) {
+                this->ret->graftswap (l1v, psv, l2v);
+            }
         }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
@@ -164,6 +180,15 @@ struct Agent1
         }
         // The min/max of EphA (rcpt[0]) is used below to set a morph::Scale in branchvisual
         std::cout << "EphA range: " << EphA_min << " to " << EphA_max << std::endl;
+
+        // Which axons to see?
+        Json::Value seelist = this->conf->getArray ("seeaxons");
+        if (seelist.size() > 0) {
+            seeaxons.clear();
+            for (unsigned int i = 0; i < seelist.size(); ++i) {
+                seeaxons.insert (seelist[i].asUInt());
+            }
+        }
 
         // Parameters settable from json
         this->m[0] = this->conf->getDouble ("m1", 0.02);
