@@ -9,7 +9,7 @@
 #include <morph/VisualModel.h>
 #include <morph/ColourMap.h>
 #include <morph/Scale.h>
-//#include <morph/MathAlgo.h>
+#include <morph/MathAlgo.h>
 #include <morph/Vector.h>
 #include <iostream>
 #include <vector>
@@ -95,15 +95,23 @@ public:
             }
         }
 
+        std::pair<float,float> mm1 = morph::MathAlgo::maxmin (this->dcolour);
+        std::cout << "dcolour min/max: " << mm1.second << "/" << mm1.first << std::endl;
+        if (std::abs(mm1.second - mm1.first) < 0.00001) {
+            std::cout << "show range 0-1 (instead of auto-scale)\n";
+            this->colourScale.compute_autoscale (0,1);
+        }
         this->colourScale.transform (this->dcolour, this->dcolour);
-        //std::pair<float,float> mm1 = morph::MathAlgo::maxmin (this->dcolour);
-        //std::cout << "dcolour min/max: " << mm1.second << "/" << mm1.first << std::endl;
         //std::cout << "dcolour scale range_min/max: " << this->colourScale.range_min << "/" << this->colourScale.range_max << std::endl;
         this->colourScale.autoscaled = false;
 
+        std::pair<float,float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);
+        std::cout << "dcolour2 min/max: " << mm2.second << "/" << mm2.first << std::endl;
+        if (std::abs(mm2.second - mm2.first) < 0.00001) {
+            std::cout << "show range 0-1 (instead of auto-scale)\n";
+            this->colourScale.compute_autoscale (0,1);
+        }
         this->colourScale.transform (this->dcolour2, this->dcolour2);
-        //std::pair<float,float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);
-        //std::cout << "dcolour2 min/max: " << mm2.second << "/" << mm2.first << std::endl;
         //std::cout << "dcolour2 scale range_min/max: " << this->colourScale.range_min << "/" << this->colourScale.range_max << std::endl;
 
         // Loop and make rectangles out of 4 triangles. Could be 2, but I converted code from CartGrid.
