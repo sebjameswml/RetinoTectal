@@ -38,6 +38,14 @@ enum class expression_form
     log   // A logarithmic function
 };
 
+enum class ablate_region
+{
+    top_half,    // Remove the top part of the tissue (from y_max/2 to y_max)
+    bottom_half, // Remove the bottom part of the tissue (0 to y_max/2)
+    left_half,   // Remove the left half of the tissue (from 0 to x_max/2)
+    right_half   // Remove right half
+};
+
 //! Tissue which has guidance parameters in the form of a 2D vector which stands for the
 //! expression of 2 or possibly 4 receptor molecules. If positive/negative values are
 //! allowed, then it's 4.
@@ -247,6 +255,23 @@ struct guidingtissue : public tissue<T>
         morph::vVector<morph::Vector<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->lgnd_grad[idx];
+    }
+
+    //! Remove half of the tissue
+    void ablate (ablate_region region)
+    {
+        // write me...
+    }
+
+    //! Cut a patch of the tissue out and rotate it by a number of quarter_rotations
+    void graftrotate (morph::Vector<size_t,2> x1, morph::Vector<size_t,2> sz, size_t quarter_rotations)
+    {
+        // This is all about moving a section of rcpt. Have to move row by row though.
+        morph::vVector<morph::Vector<T,N>> graft (sz[0]);
+        size_t idx1 = x1[0] + this->w * x1[1];
+
+        // and write me...
+
     }
 
     //! Move a rectangular patch of tissue at indexed location x1, of size

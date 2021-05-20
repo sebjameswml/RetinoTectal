@@ -174,13 +174,8 @@ struct Agent1
 
             std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
 
-            if (this->conf->getBool ("tectal_graftswap", false)) {
-                this->tectum->graftswap (l1v, psv, l2v);
-            }
-
-            if (this->conf->getBool ("retinal_graftswap", false)) {
-                this->ret->graftswap (l1v, psv, l2v);
-            }
+            if (this->conf->getBool ("tectal_graftswap", false)) { this->tectum->graftswap (l1v, psv, l2v); }
+            if (this->conf->getBool ("retinal_graftswap", false)) { this->ret->graftswap (l1v, psv, l2v); }
         }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
