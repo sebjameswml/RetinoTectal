@@ -154,12 +154,12 @@ struct Agent1
         std::cout << "Grid element length " << gr << std::endl;
 
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                               (expression_form)this->conf->getUInt ("tectum_rcpt_form", 0),
-                                               (expression_form)this->conf->getUInt ("tectum_lgnd_form", 0));
+                                               (expression_form)this->conf->getUInt ("tectum_form", 0),
+                                               (expression_form)this->conf->getUInt ("tectum_form", 0));
 
         this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                            (expression_form)this->conf->getUInt ("retina_rcpt_form", 0),
-                                            (expression_form)this->conf->getUInt ("retina_lgnd_form", 0));
+                                            (expression_form)this->conf->getUInt ("retina_form", 0),
+                                            (expression_form)this->conf->getUInt ("retina_form", 0));
 
         // Extract the graftswap coordinates from the config
         Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
