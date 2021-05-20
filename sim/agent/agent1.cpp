@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <array>
 #include <set>
@@ -105,6 +106,36 @@ struct Agent1
 
         // Once 'next' has been updated for each branch, run through & copy it to 'current'
         for (auto& b : this->branches) { b.current = b.next; }
+    }
+
+    //! Create a tissue visual, to reduce boilerplate code in init()
+    tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
+                                                const std::string& tag,
+                                                expression_view exview, size_t pair_to_view)
+    {
+        tissuevisual<float, N>* tv = new tissuevisual<float, N>(v->shaderprog, v->tshaderprog, gtissue, offset);
+        tv->view = exview;
+        tv->pair_to_view = pair_to_view;
+        tv->cm.setType (morph::ColourMapType::Duochrome);
+        tv->cm.setHueRG(); // BG is nice
+        std::stringstream ss;
+        if (exview == expression_view::receptor_exp) {
+            ss << tag << " receptor expression " << (pair_to_view*2) << "/" << (1+pair_to_view*2);
+        } else if (exview == expression_view::receptor_grad_x) {
+            ss << tag << " receptor gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
+        } else if (exview == expression_view::receptor_grad_y) {
+            ss << tag << " receptor gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
+        } else if (exview == expression_view::ligand_exp) {
+            ss << tag << " ligand expression " << (pair_to_view*2) << "/" << (1+pair_to_view*2);
+        } else if (exview == expression_view::ligand_grad_x) {
+            ss << tag << " ligand gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
+        } else if (exview == expression_view::ligand_grad_y) {
+            ss << tag << " ligand gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
+        }
+        tv->addLabel (ss.str(), {0.0f, 1.1f, 0.0f});
+        tv->finalize();
+
+        return tv;
     }
 
     void init()
@@ -208,26 +239,48 @@ struct Agent1
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Show a vis of the retina, to compare positions/colours
-        tissuevisual<float, N>* retv = new tissuevisual<float, N>(v->shaderprog, v->tshaderprog, ret, offset);
-        retv->cm.setType (morph::ColourMapType::Duochrome);
-        retv->cm.setHueRG();
-        retv->addLabel ("Retinal receptor expression", {0.0f, 1.1f, 0.0f});
-        retv->finalize();
-        v->addVisualModel (retv);
-
-        // Tectum
         morph::Vector<float> offset2 = offset;
+        size_t show_pair = 0;
+
+        // Retina
         offset2[1] += 1.3f;
-        tissuevisual<float, N>* tecv = new tissuevisual<float, N>(v->shaderprog, v->tshaderprog, tectum, offset2);
-        tecv->view = expression_view::ligand_grad;
-        tecv->cm.setType (morph::ColourMapType::Duochrome);
-        tecv->cm.setHueRG();
-        tecv->addLabel ("Tectum ligand gradient", {0.0f, 1.1f, 0.0f});
-        tecv->finalize();
-        v->addVisualModel (tecv);
+        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
+        offset2[0] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+        offset2[1] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+        offset2[1] -= 1.3f;
+        // Tectum
+        offset2[0] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        offset2[0] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+        offset2[1] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+        offset2[1] -= 1.3f;
+
+        show_pair = 1;
+        offset2[0] = offset[0];
+        offset2[1] = offset[1] + 2.6f;
+        // Retina
+        offset2[1] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
+        offset2[0] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+        offset2[1] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+        offset2[1] -= 1.3f;
+        // Tectum
+        offset2[0] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        offset2[0] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+        offset2[1] += 1.3f;
+        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+        offset2[1] -= 1.3f;
+
 
         // Visualise the branches with a custom VisualModel
-        offset[0] += 1.3f;
         this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
         this->bv->target_scale.compute_autoscale (0, 1);
@@ -304,7 +357,7 @@ int main (int argc, char **argv)
         paramsfile = std::string(argv[1]);
     } else {
         // Create an empty/default json file
-        paramsfile = "./sg.json";
+        paramsfile = "./a1.json";
         morph::Tools::copyStringToFile ("{}\n", paramsfile);
     }
 

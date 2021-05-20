@@ -9,7 +9,7 @@
 #include <morph/VisualModel.h>
 #include <morph/ColourMap.h>
 #include <morph/Scale.h>
-#include <morph/MathAlgo.h>
+//#include <morph/MathAlgo.h>
 #include <morph/Vector.h>
 #include <iostream>
 #include <vector>
@@ -20,9 +20,11 @@
 enum class expression_view
 {
     receptor_exp,
-    receptor_grad,
+    receptor_grad_x,
+    receptor_grad_y,
     ligand_exp,
-    ligand_grad
+    ligand_grad_x,
+    ligand_grad_y
 };
 
 template <class T, size_t N>
@@ -60,37 +62,49 @@ public:
         this->dcolour2.resize (this->gtissue->rcpt.size());
 
         if (this->view == expression_view::receptor_exp) {
+            // NB: Only showing TWO of the four receptors here.
             for (unsigned int i = 0; i < this->gtissue->rcpt.size(); ++i) {
-                this->dcolour[i] = this->gtissue->rcpt[i][0];
-                this->dcolour2[i] = this->gtissue->rcpt[i][1];
+                this->dcolour[i] = this->gtissue->rcpt[i][this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->rcpt[i][this->pair_to_view+1];
             }
-        } else if (this->view == expression_view::receptor_grad) {
+        } else if (this->view == expression_view::receptor_grad_x) {
             for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
-                this->dcolour[i] = this->gtissue->rcpt_grad[i][0];
-                this->dcolour2[i] = this->gtissue->rcpt_grad[i][1];
+                this->dcolour[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view+2];
+            }
+        } else if (this->view == expression_view::receptor_grad_y) {
+            for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view+1];
+                this->dcolour2[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view+3];
             }
         } else if (this->view == expression_view::ligand_exp) {
             for (unsigned int i = 0; i < this->gtissue->lgnd.size(); ++i) {
-                this->dcolour[i] = this->gtissue->lgnd[i][0];
-                this->dcolour2[i] = this->gtissue->lgnd[i][1];
+                this->dcolour[i] = this->gtissue->lgnd[i][this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->lgnd[i][this->pair_to_view+1];
             }
-        } else if (this->view == expression_view::ligand_grad) {
+        } else if (this->view == expression_view::ligand_grad_x) {
+            // Show x component for 2 of 4 gradients
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
-                this->dcolour[i] = this->gtissue->lgnd_grad[i][0];
-                this->dcolour2[i] = this->gtissue->lgnd_grad[i][1];
-                if constexpr (false) {
-                    // An alternative to show that lgnd_grad_at returns the right thing:
-                    morph::Vector<T,N> lg = this->gtissue->lgnd_grad_at (this->gtissue->posn[i]);
-                    this->dcolour[i] = lg[0];
-                    this->dcolour2[i] = lg[1];
-                }
-
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+2];
+            }
+        } else if (this->view == expression_view::ligand_grad_y) {
+            for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+1];
+                this->dcolour2[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+3];
             }
         }
 
         this->colourScale.transform (this->dcolour, this->dcolour);
+        //std::pair<float,float> mm1 = morph::MathAlgo::maxmin (this->dcolour);
+        //std::cout << "dcolour min/max: " << mm1.second << "/" << mm1.first << std::endl;
+        //std::cout << "dcolour scale range_min/max: " << this->colourScale.range_min << "/" << this->colourScale.range_max << std::endl;
         this->colourScale.autoscaled = false;
+
         this->colourScale.transform (this->dcolour2, this->dcolour2);
+        //std::pair<float,float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);
+        //std::cout << "dcolour2 min/max: " << mm2.second << "/" << mm2.first << std::endl;
+        //std::cout << "dcolour2 scale range_min/max: " << this->colourScale.range_min << "/" << this->colourScale.range_max << std::endl;
 
         // Loop and make rectangles out of 4 triangles. Could be 2, but I converted code from CartGrid.
         morph::Vector<float> vtx_0, vtx_1, vtx_2;
@@ -164,6 +178,9 @@ public:
 
     //! What to visualise - receptor expression, ligand expression or their gradient?
     expression_view view = expression_view::receptor_exp;
+
+    //! 0 shows the first pair of gradients, 1 shows the second pair etc.
+    size_t pair_to_view = 0;
 
 protected:
     //! An overridable function to set the colour of element index hi

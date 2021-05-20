@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <stdexcept>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
 #include "tissue.h"
@@ -25,19 +26,15 @@ struct branch
         morph::Vector<T, 2> G;
         if constexpr (N==4) {
             // First, find the ligand gradients close to the current location b.
-            morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
-            // With 4 receptor/ligand pairs, the x component is zeroth minus the 2nd
-            G[0] = this->rcpt[0] * lg[0] - this->rcpt[2] * lg[2];
-            // and y component is the first minus the 3rd
-            G[1] = this->rcpt[1] * lg[1] - this->rcpt[3] * lg[3];
-            //if (this->id == 1260) {
-            //    std::cout << "G[0] made up of " <<  this->rcpt[0] * lg[0] << " - " << this->rcpt[2] * lg[2] << " = " << G[0] << std::endl;
-            //    std::cout << "Ligand gradients at location " << b << " are (t,b,r,l) " << lg << std::endl;
-            //}
+            morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
+            // y component with 4 receptors a 4 ligand gradients
+            G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2] + this->rcpt[2] * lg[4] + this->rcpt[3] * lg[6];
+            // y component
+            G[1] = this->rcpt[0] * lg[1] + this->rcpt[1] * lg[3] + this->rcpt[2] * lg[5] + this->rcpt[3] * lg[7];
         } else if constexpr (N==2) {
-            morph::Vector<T, 2> lg = tissue->lgnd_grad_at (b);
-            G[0] = this->rcpt[0] * lg[0];
-            G[1] = this->rcpt[1] * lg[1];
+            morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
+            G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2];
+            G[1] = this->rcpt[1] * lg[1] + this->rcpt[1] * lg[3];
         }
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
@@ -66,7 +63,7 @@ struct branch
             } else if constexpr (N == 2) {
                 Q = k.rcpt[0] / this->rcpt[0] + k.rcpt[1] / this->rcpt[1];
             }
-            //T Q = this->rcpt[0] / k.rcpt[0]; // reverse signalling
+            //T Q = this->rcpt[0] / k.rcpt[0] +... ; // reverse signalling
             //T Q = std::max(k.rcpt[0] / this->rcpt[0], this->rcpt[0] / k.rcpt[0]); // bi-dir signalling
 
             kb.renormalize(); // as in paper, vector bk is a unit vector
