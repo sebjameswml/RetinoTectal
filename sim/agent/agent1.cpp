@@ -39,6 +39,8 @@ struct Agent1
 
     static constexpr unsigned int showevery = 100;
     static constexpr unsigned int visevery = 5;
+
+    //! Run this model!
     void run()
     {
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
@@ -58,6 +60,7 @@ struct Agent1
         this->v->keepOpen();
     }
 
+    //! Update the visualization
     void vis (unsigned int stepnum)
     {
         if (this->goslow == true) {
@@ -80,6 +83,7 @@ struct Agent1
         }
     }
 
+    //! Perform one step of the simulation
     void step()
     {
         // Compute the next position for each branch:
@@ -307,10 +311,6 @@ struct Agent1
         this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->cv);
     }
-
-    std::vector<T> ephcolourdata;
-    std::vector<morph::Vector<float, 3>> rgcposcolourdata;
-    std::vector<morph::Vector<float, 3>> coords;
 
     // The axons to see - these will have their path information stored
     std::set<size_t> seeaxons = {21, 38, 189, 378, 361};
