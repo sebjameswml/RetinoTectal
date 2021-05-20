@@ -30,14 +30,24 @@ struct tissue
     }
 };
 
+enum class expression_form
+{
+    lin,  // A linear function
+    quad, // A quadratic function
+    exp,  // An exponential function
+    log   // A logarithmic function
+};
+
 //! Tissue which has guidance parameters in the form of a 2D vector which stands for the
 //! expression of 2 or possibly 4 receptor molecules. If positive/negative values are
 //! allowed, then it's 4.
 template<typename T, size_t N>
 struct guidingtissue : public tissue<T>
 {
-    // Set false to get linear receptor and ligand expression; set true to get exponential curves
-    bool exp_expression = true;
+    //! With what kind of function are receptors expressed?
+    expression_form rcpt_form = expression_form::lin;
+    //! With what kind of function are ligands expressed?
+    expression_form lgnd_form = expression_form::lin;
 
     //! A left-right interaction parameter and an up-down interaction parameter for each
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
@@ -51,13 +61,12 @@ struct guidingtissue : public tissue<T>
     morph::vVector<morph::Vector<T,N>> lgnd;
     morph::vVector<morph::Vector<T,2*N>> lgnd_grad;
 
-    static constexpr bool debug_gradf = true;
+    static constexpr bool debug_gradf = false;
 
-    // Rewrite to be the mean gradient to either side if possible.
+    //! Computes the gradient at an element from the expression in the neighbouring elements
     void spacegrad2D (morph::vVector<morph::Vector<T,N>>& f,
                       morph::vVector<morph::Vector<T,(2*N)>>& gradf)
     {
-        if constexpr (debug_gradf) { std::cout << "Main block\n"; }
         //#pragma omp parallel for schedule(static)
         for (size_t x = 0; x < this->w; ++x) {
             for (size_t y = 0; y < this->h; ++y) {
@@ -66,43 +75,41 @@ struct guidingtissue : public tissue<T>
 
                 if (x == 0) {
                     if (y == 0) {
-                        // Both on left and on bottom row.
+                        // Both on left col and on bottom row.
                         for (size_t n = 0; n < N; n++) {
                             gradf[i][2*n] = (f[i+1][n] - f[i][n]) / this->dx[0]; // x
                             gradf[i][2*n+1] = (f[i+this->w][n] - f[i][n]) / this->dx[1]; // y
                         }
-
                     } else if (y == this->h-1) {
-                        // On left and on top row
+                        // On left col and on top row
                         for (size_t n = 0; n < N; n++) {
                             gradf[i][2*n] = (f[i+1][n] - f[i][n]) / this->dx[0]; // x
                             gradf[i][2*n+1] = (f[i][n] - f[i-this->w][n]) / this->dx[1]; // y
                         }
-
                     } else {
-                        // Somewhere in middle of left row
+                        // Somewhere in middle of left col
                         for (size_t n = 0; n < N; n++) {
                             gradf[i][2*n] = (f[i+1][n] - f[i][n]) / this->dx[0]; // x
                             gradf[i][2*n+1] = (f[i+this->w][n] - f[i-this->w][n]) / (2*this->dx[1]); // y
                         }
-
                     }
+
                 } else if (x == this->w-1) {
                     if (y == 0) {
-                        // On right and on bottom row
+                        // On right col and on bottom row
                         for (size_t n = 0; n < N; n++) {
                             gradf[i][2*n] = (f[i][n] - f[i-1][n]) / this->dx[0]; // x
                             gradf[i][2*n+1] = (f[i+this->w][n] - f[i][n]) / this->dx[1]; // y
                         }
 
                     } else if (y == this->h-1) {
-                        // On right and on top row
+                        // On right col and on top row
                         for (size_t n = 0; n < N; n++) {
                             gradf[i][2*n] = (f[i][n] - f[i-1][n]) / this->dx[0]; // x
                             gradf[i][2*n+1] = (f[i][n] - f[i-this->w][n]) / this->dx[1]; // y
                         }
                     } else {
-                        // Somewhere in middle of right row
+                        // Somewhere in middle of right col
                         for (size_t n = 0; n < N; n++) {
                             gradf[i][2*n] = (f[i][n] - f[i-1][n]) / this->dx[0]; // x
                             gradf[i][2*n+1] = (f[i+this->w][n] - f[i-this->w][n]) / (2*this->dx[1]); // y
@@ -110,7 +117,7 @@ struct guidingtissue : public tissue<T>
                     }
 
                 } else {
-                    // Not on far left or far right row.
+                    // Not on far left or far right cols
                     if (y == 0) {
                         // Somewhere on bottom row
                         for (size_t n = 0; n < N; n++) {
@@ -149,12 +156,14 @@ struct guidingtissue : public tissue<T>
     }
 
     //! Init the wildtype tissue's receptors and ligands.
-    guidingtissue(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0, bool ee = true)
+    guidingtissue(size_t _w, size_t _h,
+                  morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
+                  expression_form _rcpt_form = expression_form::lin,
+                  expression_form _lgnd_form = expression_form::lin)
         : tissue<T> (_w, _h, _dx, _x0)
-        , exp_expression (ee)
+        , rcpt_form(_rcpt_form)
+        , lgnd_form(_lgnd_form)
     {
-        std::cout << "This guiding tissue has "
-                  << (this->exp_expression ? "exponential" : "linear") << " expression" << std::endl;
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
 
@@ -167,24 +176,24 @@ struct guidingtissue : public tissue<T>
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
             if constexpr (N == 4) {
                 // First orthogonal pair of receptors
-                this->rcpt[ri][0] = this->expression_function (this->posn[ri][0]);
-                this->rcpt[ri][1] = this->expression_function (this->posn[ri][1]);
-                // First orthogonal pair of ligands have same expression as receptors
-                this->lgnd[ri][0] = this->rcpt[ri][0];
-                this->lgnd[ri][1] = this->rcpt[ri][1];
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
+                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
+                // First orthogonal pair of ligands
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
+                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
 
                 // Second orthogonal pair in opposite sense
-                this->rcpt[ri][2] = this->expression_function (max_x-this->posn[ri][0]);
-                this->rcpt[ri][3] = this->expression_function (max_y-this->posn[ri][1]);
-                this->lgnd[ri][2] = this->rcpt[ri][2];
-                this->lgnd[ri][3] = this->rcpt[ri][3];
+                this->rcpt[ri][2] = this->rcpt_expression_function (max_x-this->posn[ri][0]);
+                this->rcpt[ri][3] = this->rcpt_expression_function (max_y-this->posn[ri][1]);
+                this->lgnd[ri][2] = this->lgnd_expression_function (max_x-this->posn[ri][0]);
+                this->lgnd[ri][3] = this->lgnd_expression_function (max_y-this->posn[ri][1]);
 
             } else if constexpr (N == 2) {
                 // Just one orthogonal pair of receptors and ligands:
-                this->rcpt[ri][0] = this->expression_function (this->posn[ri][0]);
-                this->rcpt[ri][1] = this->expression_function (this->posn[ri][1]);
-                this->lgnd[ri][0] = this->rcpt[ri][0];
-                this->lgnd[ri][1] = this->rcpt[ri][1];
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
+                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
+                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
             } // else error
         }
 
@@ -198,18 +207,35 @@ struct guidingtissue : public tissue<T>
         // tissue larger, or go with an algorithm based thing in branch.h
     }
 
-    // R(x) = 1.31 + 2.3333x gives a gradient of 2.3333
     T linear_expression (const T& x) const { return T{1.31} + T{2.3333} * x; }
+    T quadratic_expression (const T& x) const { return T{1.31} + T{2.3333} * x * x; }
     T exponential_expression (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{2.3} * x); }
+    T logarithmic_expression (const T& x) const { return T{2.32} + T{1.29} * std::log (T{2.3} * (x+T{0.2})); }
 
-    T expression_function (const T& x) const
+    T expression_function (const T& x, const expression_form& ef) const
     {
-        if (this->exp_expression) {
-            return this->exponential_expression (x);
-        } else {
-            return this->linear_expression (x);
+        T rtn = T{0};
+        switch (ef) {
+        case expression_form::lin:
+            rtn = this->linear_expression (x);
+            break;
+        case expression_form::quad:
+            rtn = this->quadratic_expression (x);
+            break;
+        case expression_form::exp:
+            rtn = this->exponential_expression (x);
+            break;
+        case expression_form::log:
+            rtn = this->logarithmic_expression (x);
+            break;
+        default:
+            break;
         }
+        return rtn;
     }
+
+    T rcpt_expression_function (const T& x) const { return this->expression_function (x, this->rcpt_form); }
+    T lgnd_expression_function (const T& x) const { return this->expression_function (x, this->lgnd_form); }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return
     //! this.  Note: Not a function (like linear_gradient()) but a lookup, because this
