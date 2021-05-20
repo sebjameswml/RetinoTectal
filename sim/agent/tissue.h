@@ -51,43 +51,91 @@ struct guidingtissue : public tissue<T>
     morph::vVector<morph::Vector<T,N>> lgnd;
     morph::vVector<morph::Vector<T,2*N>> lgnd_grad;
 
-    static constexpr bool debug_gradf = false;
+    static constexpr bool debug_gradf = true;
 
+    // Rewrite to be the mean gradient to either side if possible.
     void spacegrad2D (morph::vVector<morph::Vector<T,N>>& f,
-                      morph::vVector<morph::Vector<T, (2*N)>>& gradf)
+                      morph::vVector<morph::Vector<T,(2*N)>>& gradf)
     {
         if constexpr (debug_gradf) { std::cout << "Main block\n"; }
         //#pragma omp parallel for schedule(static)
-        for (size_t x = 0; x < this->w-1; ++x) {
-            for (size_t y = 0; y < this->h-1; ++y) {
+        for (size_t x = 0; x < this->w; ++x) {
+            for (size_t y = 0; y < this->h; ++y) {
+
                 size_t i = x + y*this->w;
-                for (size_t n = 0; n < N; n++) {
-                    size_t nn = 2*n;
-                    gradf[i][nn] = (f[i+1][n] - f[i][n]) / this->dx[0];
-                    gradf[i][nn+1] = (f[i+this->w][n] - f[i][n]) / this->dx[1];
+
+                if (x == 0) {
+                    if (y == 0) {
+                        // Both on left and on bottom row.
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i+1][n] - f[i][n]) / this->dx[0]; // x
+                            gradf[i][2*n+1] = (f[i+this->w][n] - f[i][n]) / this->dx[1]; // y
+                        }
+
+                    } else if (y == this->h-1) {
+                        // On left and on top row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i+1][n] - f[i][n]) / this->dx[0]; // x
+                            gradf[i][2*n+1] = (f[i][n] - f[i-this->w][n]) / this->dx[1]; // y
+                        }
+
+                    } else {
+                        // Somewhere in middle of left row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i+1][n] - f[i][n]) / this->dx[0]; // x
+                            gradf[i][2*n+1] = (f[i+this->w][n] - f[i-this->w][n]) / (2*this->dx[1]); // y
+                        }
+
+                    }
+                } else if (x == this->w-1) {
+                    if (y == 0) {
+                        // On right and on bottom row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i][n] - f[i-1][n]) / this->dx[0]; // x
+                            gradf[i][2*n+1] = (f[i+this->w][n] - f[i][n]) / this->dx[1]; // y
+                        }
+
+                    } else if (y == this->h-1) {
+                        // On right and on top row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i][n] - f[i-1][n]) / this->dx[0]; // x
+                            gradf[i][2*n+1] = (f[i][n] - f[i-this->w][n]) / this->dx[1]; // y
+                        }
+                    } else {
+                        // Somewhere in middle of right row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i][n] - f[i-1][n]) / this->dx[0]; // x
+                            gradf[i][2*n+1] = (f[i+this->w][n] - f[i-this->w][n]) / (2*this->dx[1]); // y
+                        }
+                    }
+
+                } else {
+                    // Not on far left or far right row.
+                    if (y == 0) {
+                        // Somewhere on bottom row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i+1][n] - f[i-1][n]) / (2*this->dx[0]); // x
+                            gradf[i][2*n+1] = (f[i+this->w][n] - f[i][n]) / this->dx[1]; // y
+                        }
+                    } else if (y == this->h-1) {
+                        // Somewhere on top row
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i+1][n] - f[i-1][n]) / (2*this->dx[0]); // x
+                            gradf[i][2*n+1] = (f[i][n] - f[i-this->w][n]) / this->dx[1]; // y
+                        }
+                    } else {
+                        // Somewhere in middle: we can assume that there are elements to l, r, u and d.
+                        for (size_t n = 0; n < N; n++) {
+                            gradf[i][2*n] = (f[i+1][n] - f[i-1][n]) / (2*this->dx[0]); // x
+                            gradf[i][2*n+1] = (f[i+this->w][n] - f[i-this->w][n]) / (2*this->dx[1]); // y
+                        }
+                    }
                 }
+
                 if constexpr (debug_gradf) {
                     std::cout << "("<<x<<","<<y<<") gradf=" << gradf[i] << std::endl;
                 }
             }
-        }
-        // Last row is set to same gradient as penultimate row
-        if constexpr (debug_gradf) { std::cout << "Last row\n"; }
-        for (size_t x = 0; x < this->w-1; ++x) {
-            size_t i = x + (this->h-1)*this->w;
-            if constexpr (debug_gradf) {
-                std::cout << "x=" << x << ", set gradf[" << i << "] to value in gradf[" << (i-this->w) << "]"<< std::endl;
-            }
-            gradf[i] = gradf[i-this->w];
-        }
-        // Last col
-        if constexpr (debug_gradf) { std::cout << "Last col\n"; }
-        for (size_t y = 0; y < this->h; ++y) {
-            size_t i = (this->w-1) + (y*this->w);
-            if constexpr (debug_gradf) {
-                std::cout << "y=" << y << ", set gradf[" << i << "] to value in gradf[" << (i-1) << "] = " << gradf[i-1] << std::endl;
-            }
-            gradf[i] = gradf[i-1];
         }
     }
 
