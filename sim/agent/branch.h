@@ -12,6 +12,18 @@
 template<typename T, size_t N>
 struct branch
 {
+    // Is branch k outside the region of the given tissue?
+    bool is_outside (const branch& k, const guidingtissue<T, N>* tissue)
+    {
+        if (k.current[0] < tissue->x_min()
+            || k.current[0] > tissue->x_max()
+            || k.current[1] > tissue->y_max()
+            || k.current[1] < tissue->y_min()) {
+            return true;
+        }
+        return false;
+    }
+
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m. Will also need location on target tissue,
     // to get its ephrin values.
@@ -46,6 +58,7 @@ struct branch
         T n_k = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
+            //if (this->is_outside (k, tissue)) { continue; } // Don't interact with the branches outside the tissue
             // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
             // sums these. However, that gives a competition term with a sign error. So
             // here, sum up the unit vectors kb.
@@ -85,35 +98,38 @@ struct branch
         // inside? Then, if outside, find out which edge it's nearest and apply that
         // force. Too complex. Instead, look at b's location. If x<0, then add component
         // to B[0]; if y<0 then add component to B[1], etc.
-        if (b[0] < T{0}) {
+        //std::cout << "tissue boundary: x: " << tissue->x_min() << " to " << tissue->x_max() << std::endl;
+        if (b[0] < tissue->x_min()) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[0] = T{1};
-        } else if (b[0] < r) {
+        } else if (b[0] < tissue->x_min()+r) {
             B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
-        } else if (b[0] > 1) {
+        } else if (b[0] > tissue->x_max()) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
+            //std::cout << "B neg max!\n";
             B[0] = T{-1};
-        } else if (b[0] > (1-r)) {
+        } else if (b[0] > (tissue->x_max()-r)) {
+            //std::cout << "B neg prop!\n";
             B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
         }
 
-        if (b[1] < T{0}) {
+        if (b[1] < tissue->y_min()) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[1] = T{1};
-        } else if (b[1] < r) {
+        } else if (b[1] < tissue->y_min()+r) {
             B[1] = T{1} - b[1]/r;
-        } else if (b[1] > 1) {
+        } else if (b[1] > tissue->y_max()) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[1] = T{-1};
-        } else if (b[1] > (1-r)) {
+        } else if (b[1] > (tissue->y_max()-r)) {
             B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
         }
 

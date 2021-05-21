@@ -161,7 +161,7 @@ struct Agent1
                                             (expression_form)this->conf->getUInt ("retina_form", 0),
                                             (expression_form)this->conf->getUInt ("retina_form", 0));
 
-        // Extract the graftswap coordinates from the config
+        // Perform graft swap?
         Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
         Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
         Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
@@ -178,7 +178,12 @@ struct Agent1
             if (this->conf->getBool ("retinal_graftswap", false)) { this->ret->graftswap (l1v, psv, l2v); }
         }
 
+        // Ablate tissue?
+        if (this->conf->getBool ("ablate_ret_right", false)) { this->ret->ablate_right_half(); }
+        if (this->conf->getBool ("ablate_tec_right", false)) { this->tectum->ablate_right_half(); }
+
         std::cout << "Retina has " << this->ret->num() << " cells\n";
+        std::cout << "Tectum has " << this->tectum->num() << " cells\n";
         this->branches.resize(this->ret->num() * bpa);
 
         std::cout << "Retina is " << this->ret->w << " wide and " << this->ret->h << " high\n";
@@ -203,7 +208,7 @@ struct Agent1
             // Call the first interaction parameter 'EphA'
             EphA_max =  this->branches[i].rcpt[0] > EphA_max ? branches[i].rcpt[0] : EphA_max;
             EphA_min =  this->branches[i].rcpt[0] < EphA_min ? branches[i].rcpt[0] : EphA_min;
-            // Set as in the S&G paper - starting at bottom in region x=(0,1), y=(-0.2,0)
+            // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
             morph::Vector<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
             morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);

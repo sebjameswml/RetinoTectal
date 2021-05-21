@@ -18,6 +18,11 @@ struct tissue
     //! Positions stored in raster fashion from bottom left
     morph::vVector<morph::Vector<T,2>> posn;
 
+    const T x_min() const { return this->posn[0][0]; }
+    const T x_max() const { return this->posn[this->posn.size()-1][0]; }
+    const T y_min() const { return this->posn[0][1]; }
+    const T y_max() const { return this->posn[this->posn.size()-1][1]; }
+
     tissue(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0)
         : w(_w), h(_h), dx(_dx), x0(_x0)
     {
@@ -260,7 +265,64 @@ struct guidingtissue : public tissue<T>
     //! Remove half of the tissue
     void ablate (ablate_region region)
     {
-        // write me...
+        switch (region) {
+        case ablate_region::top_half:
+            this->ablate_top_half();
+            break;
+        case ablate_region::bottom_half:
+            this->ablate_bottom_half();
+            break;
+        case ablate_region::left_half:
+            this->ablate_left_half();
+            break;
+        case ablate_region::right_half:
+        default:
+            this->ablate_right_half();
+            break;
+        }
+    }
+
+    void ablate_right_half()
+    {
+        size_t newsize = (this->w/2)*this->h;
+
+        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
+        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
+        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+
+        // Copy the left hand half to keep
+        size_t k = 0;
+        for (size_t i = 0; i < this->h; ++i) {
+            for (size_t j = 0; j < this->w/2; ++j) {
+                posn_new[k] = this->posn[i*this->w+j];
+                rcpt_new[k] = this->rcpt[i*this->w+j];
+                rcpt_grad_new[k] = this->rcpt_grad[i*this->w+j];
+                lgnd_new[k] = this->lgnd[i*this->w+j];
+                lgnd_grad_new[k] = this->lgnd_grad[i*this->w+j];
+                k++;
+            }
+        }
+        // Now switch the 'news' to olds and update this->w.
+        this->posn.swap(posn_new);
+        this->rcpt.swap(rcpt_new);
+        this->rcpt_grad.swap(rcpt_grad_new);
+        this->lgnd.swap(lgnd_new);
+        this->lgnd_grad.swap(lgnd_grad_new);
+        this->w = this->w/2;
+    }
+
+    void ablate_left_half()
+    {
+    }
+
+    void ablate_top_half()
+    {
+    }
+
+    void ablate_bottom_half()
+    {
     }
 
     //! Cut a patch of the tissue out and rotate it by a number of quarter_rotations
