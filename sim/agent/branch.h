@@ -24,6 +24,7 @@ struct branch
         return false;
     }
 
+    static constexpr bool biological_tectum = true;
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m. Will also need location on target tissue,
     // to get its ephrin values.
@@ -39,10 +40,24 @@ struct branch
         if constexpr (N==4) {
             // First, find the ligand gradients close to the current location b.
             morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
-            // y component with 4 receptors a 4 ligand gradients
-            G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2] + this->rcpt[2] * lg[4] + this->rcpt[3] * lg[6];
-            // y component
-            G[1] = this->rcpt[0] * lg[1] + this->rcpt[1] * lg[3] + this->rcpt[2] * lg[5] + this->rcpt[3] * lg[7];
+            // 4 receptors and 4 ligand gradients. The 4 receptors are in order: r, u, l, d
+            if constexpr (biological_tectum == false) {
+                // If no rotation of tectum wrt retina then:
+                // receptor 0 interacts primarily with ligand (0,1)
+                // receptor 1 interacts primarily with ligand (2,3)
+                // receptor 2 interacts primarily with ligand (4,5) // opposite to receptor 0
+                // receptor 3 interacts primarily with ligand (6,7) // opposite to receptor 1
+                G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2] + this->rcpt[2] * lg[4] + this->rcpt[3] * lg[6];
+                G[1] = this->rcpt[0] * lg[1] + this->rcpt[1] * lg[3] + this->rcpt[2] * lg[5] + this->rcpt[3] * lg[7];
+            } else {
+                // To achieve rotation of tectum wrt retina, as in biology then:
+                // receptor 0 interacts primarily with ligand (2,3)
+                // receptor 1 interacts primarily with ligand (0,1)
+                // receptor 2 interacts primarily with ligand (6,7) // opposite to receptor 0
+                // receptor 3 interacts primarily with ligand (4,5) // opposite to receptor 1
+                G[0] = this->rcpt[0] * lg[2] + this->rcpt[1] * lg[0] + this->rcpt[2] * lg[6] + this->rcpt[3] * lg[4];
+                G[1] = this->rcpt[0] * lg[3] + this->rcpt[1] * lg[1] + this->rcpt[2] * lg[7] + this->rcpt[3] * lg[5];
+            }
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
             G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2];

@@ -74,8 +74,59 @@ struct guidingtissue : public tissue<T>
     morph::vVector<morph::Vector<T,N>> lgnd;
     morph::vVector<morph::Vector<T,2*N>> lgnd_grad;
 
-    static constexpr bool debug_gradf = false;
+    //! Init the wildtype tissue's receptors and ligands.
+    guidingtissue(size_t _w, size_t _h,
+                  morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
+                  expression_form _rcpt_form = expression_form::lin,
+                  expression_form _lgnd_form = expression_form::lin)
+        : tissue<T> (_w, _h, _dx, _x0)
+        , rcpt_form(_rcpt_form)
+        , lgnd_form(_lgnd_form)
+    {
+        this->rcpt.resize (this->posn.size());
+        this->lgnd.resize (this->posn.size());
 
+        T max_x = this->w * this->dx[0] + this->x0[0];
+        T max_y = this->h * this->dx[1] + this->x0[1];
+        // A cout avoids some 'unused variable' compiler warnings:
+        std::cout << "Max x position: " << max_x << " and max y position: " << max_y << std::endl;
+
+        // Ligands and receptors are set up as a function of their cell's position in the tissue.
+        for (size_t ri = 0; ri < this->posn.size(); ++ri) {
+            if constexpr (N == 4) {
+                // First orthogonal pair of receptors
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
+                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
+                // First orthogonal pair of ligands
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
+                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
+
+                // Second orthogonal pair in opposite sense
+                this->rcpt[ri][2] = this->rcpt_expression_function (max_x-this->posn[ri][0]);
+                this->rcpt[ri][3] = this->rcpt_expression_function (max_y-this->posn[ri][1]);
+                this->lgnd[ri][2] = this->lgnd_expression_function (max_x-this->posn[ri][0]);
+                this->lgnd[ri][3] = this->lgnd_expression_function (max_y-this->posn[ri][1]);
+
+            } else if constexpr (N == 2) {
+                // Just one orthogonal pair of receptors and ligands:
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
+                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
+                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
+            } // else error
+        }
+
+        this->compute_gradients();
+
+        // Now build up the tissue's enclosing border - imagine a border of signalling
+        // molecules that push axons back into the region in which they're supposed to
+        // be moving. Or perhaps, I should have a branching scheme where the axons
+        // branch more in the middle of the tissue and less at the periphery?  Problem
+        // with this idea is that the tissue is only the square. So, either I make the
+        // tissue larger, or go with an algorithm based thing in branch.h
+    }
+
+    static constexpr bool debug_gradf = false;
     //! Computes the gradient at an element from the expression in the neighbouring elements
     void spacegrad2D (morph::vVector<morph::Vector<T,N>>& f,
                       morph::vVector<morph::Vector<T,(2*N)>>& gradf)
@@ -166,58 +217,6 @@ struct guidingtissue : public tissue<T>
         this->lgnd_grad.resize (this->lgnd.size());
         this->spacegrad2D (this->rcpt, this->rcpt_grad);
         this->spacegrad2D (this->lgnd, this->lgnd_grad);
-    }
-
-    //! Init the wildtype tissue's receptors and ligands.
-    guidingtissue(size_t _w, size_t _h,
-                  morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
-                  expression_form _rcpt_form = expression_form::lin,
-                  expression_form _lgnd_form = expression_form::lin)
-        : tissue<T> (_w, _h, _dx, _x0)
-        , rcpt_form(_rcpt_form)
-        , lgnd_form(_lgnd_form)
-    {
-        this->rcpt.resize (this->posn.size());
-        this->lgnd.resize (this->posn.size());
-
-        T max_x = this->w * this->dx[0] + this->x0[0];
-        T max_y = this->h * this->dx[1] + this->x0[1];
-        // A cout avoids some 'unused variable' compiler warnings:
-        std::cout << "Max x position: " << max_x << " and max y position: " << max_y << std::endl;
-
-        // Ligands and receptors are set up as a function of their cell's position in the tissue.
-        for (size_t ri = 0; ri < this->posn.size(); ++ri) {
-            if constexpr (N == 4) {
-                // First orthogonal pair of receptors
-                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
-                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
-                // First orthogonal pair of ligands
-                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
-
-                // Second orthogonal pair in opposite sense
-                this->rcpt[ri][2] = this->rcpt_expression_function (max_x-this->posn[ri][0]);
-                this->rcpt[ri][3] = this->rcpt_expression_function (max_y-this->posn[ri][1]);
-                this->lgnd[ri][2] = this->lgnd_expression_function (max_x-this->posn[ri][0]);
-                this->lgnd[ri][3] = this->lgnd_expression_function (max_y-this->posn[ri][1]);
-
-            } else if constexpr (N == 2) {
-                // Just one orthogonal pair of receptors and ligands:
-                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
-                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
-                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
-            } // else error
-        }
-
-        this->compute_gradients();
-
-        // Now build up the tissue's enclosing border - imagine a border of signalling
-        // molecules that push axons back into the region in which they're supposed to
-        // be moving. Or perhaps, I should have a branching scheme where the axons
-        // branch more in the middle of the tissue and less at the periphery?  Problem
-        // with this idea is that the tissue is only the square. So, either I make the
-        // tissue larger, or go with an algorithm based thing in branch.h
     }
 
     T linear_expression (const T& x) const { return T{1.31} + T{2.3333} * x; }
@@ -315,14 +314,110 @@ struct guidingtissue : public tissue<T>
 
     void ablate_left_half()
     {
+        size_t newsize = (this->w/2)*this->h;
+
+        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
+        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
+        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+
+        // Copy the right hand half to keep
+        size_t k = 0;
+        for (size_t i = 0; i < this->h; ++i) {
+            for (size_t j = this->w/2; j < this->w; ++j) {
+                posn_new[k] = this->posn[i*this->w+j];
+                rcpt_new[k] = this->rcpt[i*this->w+j];
+                rcpt_grad_new[k] = this->rcpt_grad[i*this->w+j];
+                lgnd_new[k] = this->lgnd[i*this->w+j];
+                lgnd_grad_new[k] = this->lgnd_grad[i*this->w+j];
+                k++;
+            }
+        }
+        // Now switch the 'news' to olds and update this->w.
+        this->posn.swap(posn_new);
+        this->rcpt.swap(rcpt_new);
+        this->rcpt_grad.swap(rcpt_grad_new);
+        this->lgnd.swap(lgnd_new);
+        this->lgnd_grad.swap(lgnd_grad_new);
+        this->w = this->w/2;
     }
 
     void ablate_top_half()
     {
+        size_t newsize = this->w*(this->h/2);
+
+        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
+        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
+        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+
+        // Copy the top half to keep
+        size_t k = 0;
+        for (size_t i = this->h/2; i < this->h; ++i) {
+            for (size_t j = 0; j < this->w; ++j) {
+                posn_new[k] = this->posn[i*this->w+j];
+                rcpt_new[k] = this->rcpt[i*this->w+j];
+                rcpt_grad_new[k] = this->rcpt_grad[i*this->w+j];
+                lgnd_new[k] = this->lgnd[i*this->w+j];
+                lgnd_grad_new[k] = this->lgnd_grad[i*this->w+j];
+                k++;
+            }
+        }
+        // Now switch the 'news' to olds and update this->w.
+        this->posn.swap(posn_new);
+        this->rcpt.swap(rcpt_new);
+        this->rcpt_grad.swap(rcpt_grad_new);
+        this->lgnd.swap(lgnd_new);
+        this->lgnd_grad.swap(lgnd_grad_new);
+        this->h = this->h/2;
     }
 
     void ablate_bottom_half()
     {
+        size_t newsize = this->w*(this->h/2);
+
+        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
+        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
+        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
+        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+
+        // Copy the bottom half to keep
+        size_t k = 0;
+        for (size_t i = 0; i < this->h/2; ++i) {
+            for (size_t j = 0; j < this->w; ++j) {
+                posn_new[k] = this->posn[i*this->w+j];
+                rcpt_new[k] = this->rcpt[i*this->w+j];
+                rcpt_grad_new[k] = this->rcpt_grad[i*this->w+j];
+                lgnd_new[k] = this->lgnd[i*this->w+j];
+                lgnd_grad_new[k] = this->lgnd_grad[i*this->w+j];
+                k++;
+            }
+        }
+        // Now switch the 'news' to olds and update this->w.
+        this->posn.swap(posn_new);
+        this->rcpt.swap(rcpt_new);
+        this->rcpt_grad.swap(rcpt_grad_new);
+        this->lgnd.swap(lgnd_new);
+        this->lgnd_grad.swap(lgnd_grad_new);
+        this->h = this->h/2;
+    }
+
+    // Receptor knockout should be easy, right?
+    void receptor_knockout (size_t idx)
+    {
+        if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
+        for (auto& r : this->rcpt) { r[idx] = T{0}; }
+        this->compute_gradients();
+    }
+
+    void ligand_knockout (size_t idx)
+    {
+        if (idx >= N) { throw std::runtime_error ("ligand index out of range"); }
+        for (auto& l : this->lgnd) { l[idx] = T{0}; }
+        this->compute_gradients();
     }
 
     //! Cut a patch of the tissue out and rotate it by a number of quarter_rotations
@@ -333,7 +428,6 @@ struct guidingtissue : public tissue<T>
         size_t idx1 = x1[0] + this->w * x1[1];
 
         // and write me...
-
     }
 
     //! Move a rectangular patch of tissue at indexed location x1, of size

@@ -180,7 +180,25 @@ struct Agent1
 
         // Ablate tissue?
         if (this->conf->getBool ("ablate_ret_right", false)) { this->ret->ablate_right_half(); }
+        if (this->conf->getBool ("ablate_ret_left", false)) { this->ret->ablate_left_half(); }
+        if (this->conf->getBool ("ablate_ret_top", false)) { this->ret->ablate_top_half(); }
+        if (this->conf->getBool ("ablate_ret_bot", false)) { this->ret->ablate_bottom_half(); }
+
         if (this->conf->getBool ("ablate_tec_right", false)) { this->tectum->ablate_right_half(); }
+        if (this->conf->getBool ("ablate_tec_left", false)) { this->tectum->ablate_left_half(); }
+        if (this->conf->getBool ("ablate_tec_top", false)) { this->tectum->ablate_top_half(); }
+        if (this->conf->getBool ("ablate_tec_bot", false)) { this->tectum->ablate_bottom_half(); }
+
+        // Knock out a retinal/tectal receptor/ligand?
+        int ko = this->conf->getInt ("knockout_ret_rcpt", -1);
+        if (ko > -1) { this->ret->receptor_knockout ((size_t)ko); }
+        ko = this->conf->getInt ("knockout_tec_rcpt", -1);
+        if (ko > -1) { this->tectum->receptor_knockout ((size_t)ko); }
+        ko = this->conf->getInt ("knockout_ret_lgnd", -1);
+        if (ko > -1) { this->ret->ligand_knockout ((size_t)ko); }
+        ko = this->conf->getInt ("knockout_tec_lgnd", -1);
+        if (ko > -1) { this->tectum->ligand_knockout ((size_t)ko); }
+
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
         std::cout << "Tectum has " << this->tectum->num() << " cells\n";
