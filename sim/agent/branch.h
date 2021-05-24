@@ -109,43 +109,60 @@ struct branch
         // Border effect. A force perpendicular to the boundary, falling off over the
         // distance r.
         morph::Vector<T, 2> B = {0, 0};
-        // Test b, to see if it's near the border. Use winding number to see if it's
-        // inside? Then, if outside, find out which edge it's nearest and apply that
-        // force. Too complex. Instead, look at b's location. If x<0, then add component
-        // to B[0]; if y<0 then add component to B[1], etc.
-        //std::cout << "tissue boundary: x: " << tissue->x_min() << " to " << tissue->x_max() << std::endl;
-        if (b[0] < tissue->x_min()) {
-            G = {0,0};
-            I = {0,0};
-            C = {0,0};
-            B[0] = T{1};
-        } else if (b[0] < tissue->x_min()+r) {
-            B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
-        } else if (b[0] > tissue->x_max()) {
-            G = {0,0};
-            I = {0,0};
-            C = {0,0};
-            //std::cout << "B neg max!\n";
-            B[0] = T{-1};
-        } else if (b[0] > (tissue->x_max()-r)) {
-            //std::cout << "B neg prop!\n";
-            B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
-        }
 
-        if (b[1] < tissue->y_min()) {
-            G = {0,0};
-            I = {0,0};
-            C = {0,0};
-            B[1] = T{1};
-        } else if (b[1] < tissue->y_min()+r) {
-            B[1] = T{1} - b[1]/r;
-        } else if (b[1] > tissue->y_max()) {
-            G = {0,0};
-            I = {0,0};
-            C = {0,0};
-            B[1] = T{-1};
-        } else if (b[1] > (tissue->y_max()-r)) {
-            B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
+        static constexpr bool original_border_effect = false;
+        if constexpr (original_border_effect == true) {
+            // Test b, to see if it's near the border. Use winding number to see if it's
+            // inside? Then, if outside, find out which edge it's nearest and apply that
+            // force. Too complex. Instead, look at b's location. If x<0, then add component
+            // to B[0]; if y<0 then add component to B[1], etc.
+            //std::cout << "tissue boundary: x: " << tissue->x_min() << " to " << tissue->x_max() << std::endl;
+            if (b[0] < tissue->x_min()) {
+                G = {0,0};
+                I = {0,0};
+                C = {0,0};
+                B[0] = T{1};
+            } else if (b[0] < tissue->x_min()+r) {
+                B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
+            } else if (b[0] > tissue->x_max()) {
+                G = {0,0};
+                I = {0,0};
+                C = {0,0};
+                //std::cout << "B neg max!\n";
+                B[0] = T{-1};
+            } else if (b[0] > (tissue->x_max()-r)) {
+                //std::cout << "B neg prop!\n";
+                B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
+            }
+
+            if (b[1] < tissue->y_min()) {
+                G = {0,0};
+                I = {0,0};
+                C = {0,0};
+                B[1] = T{1};
+            } else if (b[1] < tissue->y_min()+r) {
+                B[1] = T{1} - b[1]/r;
+            } else if (b[1] > tissue->y_max()) {
+                G = {0,0};
+                I = {0,0};
+                C = {0,0};
+                B[1] = T{-1};
+            } else if (b[1] > (tissue->y_max()-r)) {
+                B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
+            }
+        } else {
+            // Updated border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
+            if (b[0] < (tissue->x_min()+(2*r))) {
+                B[0] = (tissue->x_min()+(2*r)) - b[0];
+            } else if (b[0] > (tissue->x_max()-(2*r))) {
+                B[0] = -(b[0] - (tissue->x_max()-(2*r)));
+            }
+
+            if (b[1] < (tissue->y_min()+(2*r))) {
+                B[1] = (tissue->y_min()+(2*r)) - b[1];
+            } else if (b[1] > (tissue->y_max()-(2*r))) {
+                B[1] = -(b[1] - (tissue->y_max()-(2*r)));
+            }
         }
 
         constexpr bool try_limit = false;
@@ -159,7 +176,7 @@ struct branch
             size_t nearedge = distances.argshortest();
 
             morph::Vector<T, 2> db = (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-
+#if 0
             bool goingin = false;
             switch (nearedge) {
             case 0: // top
@@ -192,13 +209,16 @@ struct branch
             if (goingin) {
                 this->next = b + db;
             } else {
+#endif
                 // Apply a slowdown based on distance toedge
                 T toedge = distances.shortest();
                 T speedlimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
-                //std::cout << "Not going in. To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
+                std::cout << "To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
                 b += db*speedlimit;
                 this->next = b;
+#if 0
             }
+#endif
 
         } else {
             b += G * m[0] + C * m[1] + I * m[2] + B * m[3];
