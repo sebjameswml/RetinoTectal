@@ -43,12 +43,12 @@ enum class expression_form
     log   // A logarithmic function
 };
 
-enum class ablate_region
+enum class tissue_region
 {
-    top_half,    // Remove the top part of the tissue (from y_max/2 to y_max)
-    bottom_half, // Remove the bottom part of the tissue (0 to y_max/2)
-    left_half,   // Remove the left half of the tissue (from 0 to x_max/2)
-    right_half   // Remove right half
+    top_half,    // Refers to the top part of the tissue (from y_max/2 to y_max)
+    bottom_half, // The bottom part of the tissue (0 to y_max/2)
+    left_half,   // The left half of the tissue (from 0 to x_max/2)
+    right_half   // The right half
 };
 
 //! Tissue which has guidance parameters in the form of a 2D vector which stands for the
@@ -262,19 +262,19 @@ struct guidingtissue : public tissue<T>
     }
 
     //! Remove half of the tissue
-    void ablate (ablate_region region)
+    void ablate (tissue_region region)
     {
         switch (region) {
-        case ablate_region::top_half:
+        case tissue_region::top_half:
             this->ablate_top_half();
             break;
-        case ablate_region::bottom_half:
+        case tissue_region::bottom_half:
             this->ablate_bottom_half();
             break;
-        case ablate_region::left_half:
+        case tissue_region::left_half:
             this->ablate_left_half();
             break;
-        case ablate_region::right_half:
+        case tissue_region::right_half:
         default:
             this->ablate_right_half();
             break;
@@ -490,6 +490,57 @@ struct guidingtissue : public tissue<T>
 
             idx1 += this->w;
             idx2 += this->w;
+        }
+
+        this->compute_gradients();
+    }
+
+    //! Take tissue and mirror the receptor/ligand expressions from left to right (or
+    //! from right to left, top to bottom, etc)
+    void compound_tissue (tissue_region to_mirror = tissue_region::left_half)
+    {
+        switch (to_mirror) {
+        case tissue_region::right_half:
+            // Copy right to left, mirroring.
+            for (size_t j = 0; j < this->h; ++j) {
+                for (size_t i = 0; i < this->w/2; ++i) {
+                    this->rcpt[j*this->w + i] = this->rcpt[j*this->w + (this->w-i-1)];
+                    this->lgnd[j*this->w + i] = this->lgnd[j*this->w + (this->w-i-1)];
+                }
+            }
+            break;
+        case tissue_region::top_half:
+            // Copy top to bottom, mirroring.
+            for (size_t j = 0; j < this->h/2; ++j) {
+                for (size_t i = 0; i < this->w; ++i) {
+                    this->rcpt[this->w*j + i] = this->rcpt[this->w*this->h - (this->w*(j+1)) + i];
+                    this->lgnd[this->w*j + i] = this->lgnd[this->w*this->h - (this->w*(j+1)) + i];
+                }
+            }
+            break;
+        case tissue_region::bottom_half:
+            // Copy bottom to top, mirroring.
+            for (size_t j = 0; j < this->h/2; ++j) {
+                for (size_t i = 0; i < this->w; ++i) {
+                    this->rcpt[this->w*this->h - (this->w*(j+1)) + i] = this->rcpt[this->w*j + i];
+                    this->lgnd[this->w*this->h - (this->w*(j+1)) + i] = this->lgnd[this->w*j + i];
+                }
+            }
+            break;
+        case tissue_region::left_half:
+        default:
+            // Copy left to right, mirroring.
+            std::cout << "Copy left to right, from x=0 to x=" << this->w/2 << std::endl;
+            for (size_t j = 0; j < this->h; ++j) {
+                for (size_t i = 0; i < this->w/2; ++i) {
+                    std::cout << "i=" << i << ", j=" << j
+                              << ". Copying rcpt["<<(j*this->w + i)<<"] to rcpt["
+                              <<(j*this->w + (this->w-i-1))<<"]." << std::endl;
+                    this->rcpt[j*this->w + (this->w-i-1)] = this->rcpt[j*this->w + i];
+                    this->lgnd[j*this->w + (this->w-i-1)] = this->lgnd[j*this->w + i];
+                }
+            }
+            break;
         }
 
         this->compute_gradients();

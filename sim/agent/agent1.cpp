@@ -196,6 +196,9 @@ struct Agent1
             }
         }
 
+        // Compound retina?
+        if (this->conf->getBool ("compound_retina", false)) { this->ret->compound_tissue(tissue_region::left_half); }
+
         // Ablate tissue?
         if (this->conf->getBool ("ablate_ret_right", false)) { this->ret->ablate_right_half(); }
         if (this->conf->getBool ("ablate_ret_left", false)) { this->ret->ablate_left_half(); }
