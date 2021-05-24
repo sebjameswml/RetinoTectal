@@ -178,6 +178,24 @@ struct Agent1
             if (this->conf->getBool ("retinal_graftswap", false)) { this->ret->graftswap (l1v, psv, l2v); }
         }
 
+        // Graft and rotate?
+        if (l1.size() > 1 && ps.size() > 1) {
+            morph::Vector<size_t, 2> l1v = { l1[0].asUInt(), l1[1].asUInt() };
+            morph::Vector<size_t, 2> psv = { ps[0].asUInt(), ps[1].asUInt() };
+            if (this->conf->getUInt ("retinal_rotations", 0) > 0) {
+                if (psv[0] != psv[1]) {
+                    throw std::runtime_error ("patch size has to be square for rotations");
+                }
+                this->ret->graftrotate (l1v, psv[0], (size_t)this->conf->getUInt ("retinal_rotations", 0));
+            }
+            if (this->conf->getUInt ("tectal_rotations", 0) > 0) {
+                if (psv[0] != psv[1]) {
+                    throw std::runtime_error ("patch size has to be square for rotations");
+                }
+                this->tectum->graftrotate (l1v, psv[0], (size_t)this->conf->getUInt ("tectal_rotations", 0));
+            }
+        }
+
         // Ablate tissue?
         if (this->conf->getBool ("ablate_ret_right", false)) { this->ret->ablate_right_half(); }
         if (this->conf->getBool ("ablate_ret_left", false)) { this->ret->ablate_left_half(); }

@@ -420,14 +420,38 @@ struct guidingtissue : public tissue<T>
         this->compute_gradients();
     }
 
-    //! Cut a patch of the tissue out and rotate it by a number of quarter_rotations
-    void graftrotate (morph::Vector<size_t,2> x1, morph::Vector<size_t,2> sz, size_t quarter_rotations)
+    //! Cut a square patch (side legnth sz) of the tissue out and rotate it by a number of quarter_rotations
+    void graftrotate (morph::Vector<size_t,2> x1, size_t sz, size_t quarter_rotations)
     {
-        // This is all about moving a section of rcpt. Have to move row by row though.
-        morph::vVector<morph::Vector<T,N>> graft (sz[0]);
-        size_t idx1 = x1[0] + this->w * x1[1];
+        if (quarter_rotations%4 == 0) { return; }
 
-        // and write me...
+        // Potential for runtime crash here, so check x1 and sz.
+        if (x1[0] + sz > this->w || x1[1] + sz > this->h) {
+            throw std::runtime_error ("Patch for rotation is off the edge of the tissue");
+        }
+
+        morph::vVector<morph::Vector<T,N>> rcpt_graft (sz*sz);
+        morph::vVector<morph::Vector<T,N>> lgnd_graft (sz*sz);
+
+        for (size_t rot = 1; rot <= quarter_rotations; ++rot) {
+            // Copy the square
+            for (size_t j = 0; j < sz; ++j) { // y
+                for (size_t i = 0; i < sz; ++i) { // x
+                    rcpt_graft[i+sz*j] = this->rcpt[(j+x1[1])*this->w+(i+x1[0])];
+                    lgnd_graft[i+sz*j] = this->lgnd[(j+x1[1])*this->w+(i+x1[0])];
+                }
+            }
+            // Write back, rotating 90 clockwise once
+            for (size_t j = 0; j < sz; ++j) {
+                for (size_t i = 0; i < sz; ++i) {
+                    size_t ridx = (sz-1-j) + (i*sz);
+                    this->rcpt[(j+x1[1])*this->w+(i+x1[0])] = rcpt_graft[ridx];
+                    this->lgnd[(j+x1[1])*this->w+(i+x1[0])] = lgnd_graft[ridx];
+                }
+            }
+        }
+
+        this->compute_gradients();
     }
 
     //! Move a rectangular patch of tissue at indexed location x1, of size

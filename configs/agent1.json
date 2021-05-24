@@ -9,6 +9,9 @@
     "retinal_graftswap" : false,
     "tectal_graftswap" : false,
 
+    "retinal_rotations" : 0,
+    "tectal_rotations" : 0,
+
     "ablate_ret_right" : false,
     "ablate_tec_right" : false,
 
