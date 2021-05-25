@@ -6,6 +6,15 @@
 #include <morph/Vector.h>
 #include "tissue.h"
 
+// A choice of schemes to deal with axon branches that try to move outside the tissue domain
+enum class border_effect
+{
+    original, // The original scheme proposed by Simpson & Goodhill
+    gradients, // A scheme which acts like there are gradients pushing axon branchs back inside tissue
+    penned,     // Axon branches are 'penned in' - once inside the tissue, they can't move outside the tissue region
+    penned_pushed // Like 'penned in' but also pushed away from the border with 1/r component as in original
+};
+
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
 // termination zone, and the algorithm for computing the next position. Could derive
 // from an 'agent' base class. The branches express N Ephrin receptor types (EphA, EphB etc)
@@ -106,51 +115,51 @@ struct branch
             I = I/n_k;
         } // else C and I will be {0,0} still
 
-        // Border effect. A force perpendicular to the boundary, falling off over the
-        // distance r.
-        morph::Vector<T, 2> B = {0, 0};
+        // Collected non-border movement components
+        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];
 
-        static constexpr bool original_border_effect = false;
-        if constexpr (original_border_effect == true) {
-            // Test b, to see if it's near the border. Use winding number to see if it's
-            // inside? Then, if outside, find out which edge it's nearest and apply that
-            // force. Too complex. Instead, look at b's location. If x<0, then add component
-            // to B[0]; if y<0 then add component to B[1], etc.
-            //std::cout << "tissue boundary: x: " << tissue->x_min() << " to " << tissue->x_max() << std::endl;
+        // Border effect. A 'force' to move agents back inside the tissue boundary
+        morph::Vector<T, 2> B = {0,0};
+
+        // Two options for how movement is dealt with near the border. First is how to get axons back inside domain
+        border_effect be = border_effect::gradients;
+        // Second is an option to slow movement down near border to reduce the amplitude of the border dynamics
+        constexpr bool limit_movement_near_border = false;
+
+        if (be == border_effect::original) {
+            // A piecewise linear contribution to movement of agents lying outside the
+            // boundary towards the inside of the tissue boundary. Includes a movement
+            // away from the tissue edge up to an inner distance r from the inside
+            // boundary. Also zeros the other components I (G, I, C) that contribute to
+            // the agent's next position if agent is outside. This is the scheme used in
+            // the Simpson & Goodhill paper and leads to quite large oscillating
+            // dynamics around the tissue edge.
             if (b[0] < tissue->x_min()) {
-                G = {0,0};
-                I = {0,0};
-                C = {0,0};
+                nonB = {0,0};
                 B[0] = T{1};
             } else if (b[0] < tissue->x_min()+r) {
                 B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
             } else if (b[0] > tissue->x_max()) {
-                G = {0,0};
-                I = {0,0};
-                C = {0,0};
-                //std::cout << "B neg max!\n";
+                nonB = {0,0};
                 B[0] = T{-1};
             } else if (b[0] > (tissue->x_max()-r)) {
-                //std::cout << "B neg prop!\n";
                 B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
             }
 
             if (b[1] < tissue->y_min()) {
-                G = {0,0};
-                I = {0,0};
-                C = {0,0};
+                nonB = {0,0};
                 B[1] = T{1};
             } else if (b[1] < tissue->y_min()+r) {
                 B[1] = T{1} - b[1]/r;
             } else if (b[1] > tissue->y_max()) {
-                G = {0,0};
-                I = {0,0};
-                C = {0,0};
+                nonB = {0,0};
                 B[1] = T{-1};
             } else if (b[1] > (tissue->y_max()-r)) {
                 B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
             }
-        } else {
+
+        } else if (be == border_effect::gradients) {
+            //std::cout << "gradients\n";
             // Updated border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
             if (b[0] < (tissue->x_min()+(2*r))) {
                 B[0] = (tissue->x_min()+(2*r)) - b[0];
@@ -163,10 +172,71 @@ struct branch
             } else if (b[1] > (tissue->y_max()-(2*r))) {
                 B[1] = -(b[1] - (tissue->y_max()-(2*r)));
             }
+
+        } else if (be == border_effect::penned) {
+            //std::cout << "penned\n";
+            // Try looking at the next location and preventing the agent from moving
+            // outside the domain. Have to deal with incoming agents. Give each branch
+            // an 'inside' marker, which if true, says the axon has entered the domain
+            // and may never leave (mu-ha-ha)
+            if (this->entered == false) {
+                // Use the S-G scheme before branches have entered the domain
+                if (b[0] < tissue->x_min()) {
+                    nonB = {0,0};
+                    B[0] = T{1};
+                } else if (b[0] < tissue->x_min()+r) {
+                    B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
+                    this->entered = true;
+                } else if (b[0] > tissue->x_max()) {
+                    nonB = {0,0};
+                    B[0] = T{-1};
+                } else if (b[0] > (tissue->x_max()-r)) {
+                    B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
+                    this->entered = true;
+                } else {
+                    this->entered = true;
+                }
+
+                if (b[1] < tissue->y_min()) {
+                    nonB = {0,0};
+                    B[1] = T{1};
+                } else if (b[1] < tissue->y_min()+r) {
+                    B[1] = T{1} - b[1]/r;
+                    this->entered = true;
+                } else if (b[1] > tissue->y_max()) {
+                    nonB = {0,0};
+                    B[1] = T{-1};
+                } else if (b[1] > (tissue->y_max()-r)) {
+                    B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
+                    this->entered = true;
+                } else {
+                    this->entered = true;
+                }
+
+                //b += nonB + B * m[3];
+                //this->next = b;
+            } else {
+                // Border effect when near edge
+                if (b[0] < tissue->x_min()+r) {
+                    B[0] = T{1} * (T{1} - b[0]/r);
+                } else if (b[0] > (tissue->x_max()-r)) {
+                    B[0] = -(b[0] + r - T{1})/r;
+                }
+
+                if (b[1] < tissue->y_min()+r) {
+                    B[1] = T{1} - b[1]/r;
+                } else if (b[1] > (tissue->y_max()-r)) {
+                    B[1] = -(b[1] + r - T{1})/r;
+                }
+            }
         }
 
-        constexpr bool try_limit = false;
-        if constexpr (try_limit) {
+        // The change in b from the model and border effects:
+        morph::Vector<T, 2> db = (nonB + B * m[3]);
+
+        T speedlimit = T{1};
+        if constexpr (limit_movement_near_border) {
+            //std::cout << "speedlimit\n";
             // Compute a 'speed limit' to slow movements down near to the edge of the tissue
             // and avoid the rather annoying oscillations around the edge.
             // Distance to the edge? Easy in a square. Find closest edge, find
@@ -175,8 +245,6 @@ struct branch
             morph::Vector<T, 4> distances = {1-b[1], -b[1], 1-b[0], -b[0]};
             size_t nearedge = distances.argshortest();
 
-            morph::Vector<T, 2> db = (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-#if 0
             bool goingin = false;
             switch (nearedge) {
             case 0: // top
@@ -205,28 +273,32 @@ struct branch
             }
             }
 
-            // If going inwards, then no slowdown, else slowdown
-            if (goingin) {
-                this->next = b + db;
-            } else {
-#endif
+            if (!goingin) {
                 // Apply a slowdown based on distance toedge
                 T toedge = distances.shortest();
-                T speedlimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
-                std::cout << "To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
-                b += db*speedlimit;
-                this->next = b;
-#if 0
+                speedlimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
+                //std::cout << "To edge: " << toedge << " and speedlimit: " << speedlimit << std::endl;
             }
-#endif
+        }
 
-        } else {
-            b += G * m[0] + C * m[1] + I * m[2] + B * m[3];
-            this->next = b;
+        // Finally add b and db to get next (with speedlimit)
+        this->next = b + db*speedlimit;
+
+        // If we're penning the agent in, then check this->next and change as necessary
+        if (be == border_effect::penned && this->entered == true) {
+            // Prevent agents from moving outside; limit this->next
+            if (this->next[0] < tissue->x_min()) {
+                this->next[0] = tissue->x_min();
+            } else if (this->next[0] > tissue->x_max()) {
+                this->next[0] = tissue->x_max();
+            }
+            if (this->next[1] < tissue->y_min()) {
+                this->next[1] = tissue->y_min();
+            } else if (this->next[1] > tissue->y_max()) {
+                this->next[1] = tissue->y_max();
+            }
         }
     }
-    // The location and all previous locations of this branch (selected axons only).
-    //morph::vVector<morph::Vector<T, 2>> path;
 
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
@@ -240,6 +312,9 @@ struct branch
     // Interaction parameters for this branch, taken from the soma in the source
     // tissue. This is the N receptor expressions at the growth cone.
     morph::Vector<T, N> rcpt;
+
+    // By default, axons reckoned to be outside tissue
+    bool entered = false;
 
     // A sequence id
     int id = 0;

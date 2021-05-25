@@ -49,7 +49,10 @@ public:
             morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, 0.01f);
+            if ((c1-c2).length() < Flt{0.2}) {
+                // omit long lines for a bit more clarity
+                this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, 0.01f);
+            }
         }
     }
 
