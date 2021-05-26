@@ -23,6 +23,25 @@ struct tissue
     const T y_min() const { return this->posn[0][1]; }
     const T y_max() const { return this->posn[this->posn.size()-1][1]; }
 
+    // Find the coordinate closest to the indexed position xx, yy and return
+    morph::Vector<T,2> coord (size_t xx, size_t yy) const
+    {
+        morph::Vector<T,2> c = {0,0};
+
+        // The x/y position to find has to be constructed from the index args xx and yy
+        morph::Vector<T,2> xy = { x0[0] + xx * dx[0], x0[1] + yy * dx[1] };
+
+        // Now find the first posn in the tissue grid which is close to xy
+        for (auto p : this->posn) {
+            if ((xy-p).length() < dx.shortest()/T{2}) {
+                c = p;
+                break;
+            }
+        }
+
+        return c;
+    }
+
     tissue(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0)
         : w(_w), h(_h), dx(_dx), x0(_x0)
     {

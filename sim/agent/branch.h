@@ -313,7 +313,7 @@ struct branch
     // tissue. This is the N receptor expressions at the growth cone.
     morph::Vector<T, N> rcpt;
 
-    // By default, axons reckoned to be outside tissue
+    // By default, axons reckoned to be outside tissue. Can also be used to mean "active".
     bool entered = false;
 
     // A sequence id

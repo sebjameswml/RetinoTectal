@@ -45,7 +45,29 @@ struct Agent1
     {
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
 
+        typename std::vector<branch<T, N>>::iterator pending_br_it = this->pending_branches.begin();
+        typename morph::vVector<size_t>::iterator pb_sz_it = this->pb_sizes.begin();
+        // How often to introduce groups of axons? 0 means 'all at once'
+        unsigned int intro_every = this->conf->getUInt ("intro_every", 0);
+        if (intro_every == 0) {
+            this->branches.resize (this->pending_branches.size());
+            this->branches.swap (this->pending_branches);
+        }
+
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
+
+            if (intro_every > 0 && pb_sz_it != this->pb_sizes.end() && i%intro_every == 0) {
+                // Introduce some of pending_branches into branches
+                typename std::vector<branch<T, N>>::iterator brit = this->branches.end();
+                std::cout << "Adding " << (*pb_sz_it) << " to this->branches...\n";
+                this->branches.resize (this->branches.size() + *pb_sz_it);
+                brit = this->branches.end();
+                brit -= *pb_sz_it;
+                std::copy (pending_br_it, pending_br_it+*pb_sz_it, brit);
+                pending_br_it += *pb_sz_it;
+                pb_sz_it++;
+            }
+
             this->step();
             if (i%visevery == 0) { this->vis(i); } // Visualize every 10 doubles time required for program
             if (i%showevery == 0) {
@@ -223,39 +245,91 @@ struct Agent1
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
         std::cout << "Tectum has " << this->tectum->num() << " cells\n";
-        this->branches.resize(this->ret->num() * bpa);
+        this->pending_branches.resize(this->ret->num() * bpa);
 
         std::cout << "Retina is " << this->ret->w << " wide and " << this->ret->h << " high\n";
         this->ax_centroids.init (this->ret->w, this->ret->h);
-        // Axon initial positions x and y are uniformly randomly selected
+        // Axon initial positions x and y can be uniformly randomly selected.
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
+        // Or set from the ideal position plus a random perturbation
+        morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
         // A normally distributed perturbation is added for each branch. SD=0.1.
         morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
         // Generate random number sequences all at once
         std::vector<T> rn_x = rng_x.get (this->ret->num());
         std::vector<T> rn_y = rng_y.get (this->ret->num());
         std::vector<T> rn_p = rng_p.get (this->ret->num() * 2 * bpa);
-        T EphA_max = -1e9;
-        T EphA_min = 1e9;
-        for (unsigned int i = 0; i < this->branches.size(); ++i) {
+        std::vector<T> rn_p0 = rng_p0.get (this->ret->num() * 2 * bpa);
+        T rcpt_max = -1e9;
+        T rcpt_min = 1e9;
+        bool totally_random = this->conf->getBool ("totally_random_init", false);
+        for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
-            this->branches[i].aid = (int)ri; // axon index
-            this->branches[i].rcpt = this->ret->rcpt[ri];
-            this->branches[i].target = this->ret->posn[ri];
+            this->pending_branches[i].aid = (int)ri; // axon index
+            this->pending_branches[i].rcpt = this->ret->rcpt[ri];
+            this->pending_branches[i].target = this->ret->posn[ri];
             // Call the first interaction parameter 'EphA'
-            EphA_max =  this->branches[i].rcpt[0] > EphA_max ? branches[i].rcpt[0] : EphA_max;
-            EphA_min =  this->branches[i].rcpt[0] < EphA_min ? branches[i].rcpt[0] : EphA_min;
+            rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
+            rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
+
             // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
-            morph::Vector<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
-            morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
+            morph::Vector<T, 3> initpos;
+            if (totally_random == true) {
+                initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+            } else {
+                morph::Vector<T, 2> init_offset = { T{0}, T{-0.5} };
+                morph::Vector<T, 2> init_mult = { T{1}, T{0.2} };
+                initpos.set_from ((this->pending_branches[i].target*init_mult) + init_offset);
+                initpos[0] += rn_p0[2*i];
+                initpos[1] += rn_p0[2*i+1];
+            }
+
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
-            this->branches[i].current = initpos2;
-            this->branches[i].id = i;
+            this->pending_branches[i].current = initpos.less_one_dim();
+            this->pending_branches[i].id = i;
         }
-        // The min/max of EphA (rcpt[0]) is used below to set a morph::Scale in branchvisual
-        std::cout << "EphA range: " << EphA_min << " to " << EphA_max << std::endl;
+
+        // Now arrange the order of the pending branches, so that the first ones in the
+        // list are those closest to the centre of the retina. That means extracting the
+        // branches by retina index or, more easily, by .target
+        std::vector<branch<T, N>> pending_branches_reordered;
+        std::vector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
+        for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
+        std::vector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
+        for (size_t i = 0; i < 4; ++i) {
+            // copy elements from pending_branches in a square from
+            // (w/2-x_breaks[i],h/2-y_breaks[i]) to (w/2+x_breaks[i],h/2+y_breaks[i])
+            // into pending_branches_reordered.
+            for (size_t yy = this->ret->h/2-y_breaks[i]; yy < this->ret->h/2+y_breaks[i]; ++yy) {
+                for (size_t xx = this->ret->w/2-x_breaks[i]; xx < this->ret->w/2+x_breaks[i]; ++xx) {
+                    // Try to find branches with target xx,yy
+                    morph::Vector<T,2> coord = this->ret->coord (xx, yy);
+                    // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
+                    typename std::vector<branch<T, N>>::iterator it = this->pending_branches.begin();
+                    while (it != this->pending_branches.end()) {
+                        if ((it->target - coord).length() < 0.00001) {
+                            pending_branches_reordered.push_back (*it);
+                            it = this->pending_branches.erase (it);
+                        } else {
+                            ++it;
+                        }
+                    }
+                }
+            }
+            if (this->pb_sizes.empty()) {
+                this->pb_sizes.push_back (pending_branches_reordered.size());
+            } else {
+                this->pb_sizes.push_back (pending_branches_reordered.size() - this->pb_sizes.sum());
+            }
+        }
+
+        this->pending_branches.resize (pending_branches_reordered.size());
+        this->pending_branches.swap (pending_branches_reordered);
+
+        // The min/max of rcpt[0] is used below to set a morph::Scale in branchvisual
+        std::cout << "Receptor expression range: " << rcpt_min << " to " << rcpt_max << std::endl;
 
         // Which axons to see?
         Json::Value seelist = this->conf->getArray ("seeaxons");
@@ -327,7 +401,7 @@ struct Agent1
 
         // Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
+        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->finalize();
         this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
@@ -339,7 +413,7 @@ struct Agent1
         this->av->axonview = true;
         this->av->bpa = this->bpa;
         for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (EphA_min, EphA_max);
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->av->target_scale.compute_autoscale (0, 1);
         this->av->finalize();
         this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
@@ -376,6 +450,10 @@ struct Agent1
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T, N>> branches;
+    // Branches are initialised in pending_branches, and introduced into branches in groups
+    std::vector<branch<T, N>> pending_branches;
+    // If pending_branches contains 'groups' of axons to introduce, then the sizes of each group are given in this container
+    morph::vVector<size_t> pb_sizes;
     // Centroid of the branches for each axon
     net<T> ax_centroids;
     // Path history is a map indexed by axon id. 3D as it's used for vis.

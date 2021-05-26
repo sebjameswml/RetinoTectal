@@ -1,6 +1,12 @@
 {
     "num_guiders" : 4,
 
+    "desc_totally_random_init" : "If true, then distribute inital positions uniformly randomly within the field at the bottom of the tectum. If false, bias the initial position according to expected target.",
+    "totally_random_init" : true,
+
+    "desc_intro_every" : "If 0, then introduce all branches at the start of the run. If >0, then this is the number of sim steps to wait before introducing a group of the axons",
+    "intro_every" : 0,
+
     "desc_form" : "0: linear  1: quadratic  2: exponential  3: logarithmic",
     "retina_form" : 2,
     "tectum_form" : 3,
@@ -51,7 +57,7 @@
     "bpa" : 4,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 6000,
+    "steps" : 3000,
 
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
     "m1" : 0.001,
