@@ -1,0 +1,41 @@
+{
+    "desc_thickness" : "Brain slice thickness. Doesn't matter here.",
+
+    "thickness" : 0.05,
+
+    "desc_pixels_per_mm" : "The bar is 0.2 mm (200 um). It's about 80 pixels long (it's a bit blurry) So that's 400 pixels per mm",
+
+    "pixels_per_mm" : 400,
+
+    "desc_bg_blur" : "bg_blur_screen_proportion is multiplied by the width of the image in pixels to get a sigma for the Gaussian which is used to blur the image to subtract the background.",
+
+    "bg_blur_screen_proportion" : 0.1667,
+
+    "desc_bg_blur_subtraction_offset" : "signal_img = 255 - (original_img + (bg_blur_subtraction_offset - blurred_bg)). Thus, possible range for bg_blur_subtraction_offset is 0 to 255.",
+
+    "bg_blur_subtraction_offset" : 180,
+
+    "desc_save_per_pixel_data" : "If true, then save out the signal values and coordinates of every individual pixel in each box and freehand loop. Can lead to very large data files.",
+    "save_per_pixel_data" : true,
+
+    "desc_save_auto_align_data" : "Default is true. If false, then don't write coordinates in the autoaligned frame of reference into the HDF5 data file.",
+    "save_auto_align_data" : true,
+
+    "desc_save_landmark_align_data" : "Default is true. If false, then don't write coordinates in the landmark aligned frame of reference into the HDF5 data file.",
+    "save_landmark_align_data" : true,
+
+    "desc_rotate_landmark_one" : "If true, and there are >1 landmark per slice, apply the 'rotate slices about landmark 1' alignment procedure anyway. This rotational alignment is applied by default if there is ONLY 1 landmark per slice.",
+    "rotate_landmark_one" : true,
+
+    "desc_rotate_align_landmarks" : "If true, then in 'rotate about landmark 1 mode' align the other landmarks, instead of the curves.",
+    "rotate_align_landmarks" : false,
+
+    "desc_map_align_angle" : "The angle, around the origin, at which to draw a line through the brain to use as the centre line for unwrapping the slice ribbons to make a 2D map. Try pi radians, if the middles of your curves are at the top of the screen in stalefish",
+    "map_align_angle" : 3.14159267,
+
+    "desc_slices" : "The brain slices in the y-z plane, where y points to the anterior, z points dorsally (and so x is the lateral dimension).",
+
+    "slices": [
+        { "filename" : "Fig4B_Braisted_1997.png", "x" : 0  }
+    ]
+}
