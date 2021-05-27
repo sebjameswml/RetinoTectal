@@ -74,6 +74,7 @@ struct Agent1
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
                 std::cout << "step " << i << ". Per step: "
                           << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery << " ms\n";
+                std::cout << "SOS of axon centroids: " << this->ax_centroids.sos() << std::endl;
                 laststep = std::chrono::steady_clock::now();
             }
         }
@@ -287,6 +288,7 @@ struct Agent1
             }
 
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
+            this->ax_centroids.targ[ri].set_from (this->ret->posn[ri]);
             this->pending_branches[i].current = initpos.less_one_dim();
             this->pending_branches[i].id = i;
         }

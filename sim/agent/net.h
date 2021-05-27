@@ -15,6 +15,7 @@ struct net
     void init (size_t w, size_t h)
     {
         this->p.resize(w*h);
+        this->targ.resize(w*h);
         this->clr.resize(w*h);
         // Set up colours. Hack. Hardcoded.
         size_t i = 0;
@@ -36,12 +37,17 @@ struct net
                 this->c.insert (morph::Vector<size_t, 2>({x+y*w, 1+x+y*w}));
             }
         }
-
     }
+
+    //! Return sum of squared distances between p and targ
+    T sos() { return (p-targ).sos()[0]; }
+
     //! Positions of the vertices of the net
-    std::vector<morph::Vector<T, 3>> p;
+    morph::vVector<morph::Vector<T, 3>> p;
     //! Colours of the vertices of the net
     std::vector<std::array<float, 3>> clr;
     //! Connections of the net. The indices into p that are the ends of line segments
     std::set<morph::Vector<size_t, 2>> c;
+    //! Target positions of the net, to allow the net to be used to provide a SOS metric for how close the pattern is to ideal
+    morph::vVector<morph::Vector<T, 3>> targ;
 };
