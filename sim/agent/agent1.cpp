@@ -19,6 +19,7 @@
 #include <morph/Config.h>
 #include <morph/Random.h>
 #include <morph/Visual.h>
+#include <morph/GraphVisual.h>
 
 #include "branchvisual.h"
 #include "branch.h"
@@ -94,6 +95,7 @@ struct Agent1
         this->bv->reinit();
         this->av->reinit();
         this->cv->reinit();
+        this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
@@ -288,7 +290,13 @@ struct Agent1
             }
 
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
-            this->ax_centroids.targ[ri].set_from (this->ret->posn[ri]);
+
+            // Fixme: The target for axon centroids is the retinal position
+            // *transformed*. That means mirroring about the line y=x
+            morph::Vector<T,2> tpos = this->ret->posn[ri];
+            tpos.rotate();
+            this->ax_centroids.targ[ri].set_from (tpos);
+
             this->pending_branches[i].current = initpos.less_one_dim();
             this->pending_branches[i].id = i;
         }
@@ -413,7 +421,6 @@ struct Agent1
         offset[0] += 1.3f;
         this->av = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->av->axonview = true;
-        this->av->bpa = this->bpa;
         for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
         this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->av->target_scale.compute_autoscale (0, 1);
@@ -427,6 +434,19 @@ struct Agent1
         this->cv->finalize();
         this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->cv);
+
+        // A graph of the SOS diffs between axon position centroids and target positions from retina
+        offset[0] += 1.5f;
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
+        this->gv->twodimensional = false;
+        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                             0, this->conf->getFloat("graph_ymax", 200.0f));
+        this->gv->policy = morph::stylepolicy::lines;
+        this->gv->ylabel = "SOS";
+        this->gv->xlabel = "Sim time";
+        this->gv->prepdata ("SOS");
+        this->gv->finalize();
+        v->addVisualModel (this->gv);
     }
 
     // The axons to see - these will have their path information stored
@@ -449,7 +469,7 @@ struct Agent1
     // Parameters vecto (See Table 2 in the paper)
     morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
-    morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
+    morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME bit of a hack, this.
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T, N>> branches;
     // Branches are initialised in pending_branches, and introduced into branches in groups
@@ -468,6 +488,8 @@ struct Agent1
     BranchVisual<T, N>* av;
     // Centroid visual
     NetVisual<T>* cv;
+    // A graph for the SOS metric
+    morph::GraphVisual<T>* gv;
 };
 
 int main (int argc, char **argv)

@@ -42,6 +42,9 @@ public:
         // Spheres at the net vertices
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
             this->computeSphere (idx, this->locations->p[i], this->locations->clr[i], this->radiusFixed, 14, 12);
+
+            this->computeSphere (idx, this->locations->targ[i]+morph::Vector<float,3>({0,0,0.1}),
+                                 std::array<float,3>({0,0,0}), this->locations->clr[i], this->radiusFixed/2, 14, 12);
         }
         // Connections
         for (auto c : this->locations->c) {

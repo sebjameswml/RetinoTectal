@@ -120,6 +120,4 @@ public:
     unsigned int histlen = 20;
     //! Identities of axons to show in the axon view
     std::set<int> seeaxons;
-    //! Branches per axon. Required for the 'single axon view' mode
-    unsigned int bpa = 8;
 };

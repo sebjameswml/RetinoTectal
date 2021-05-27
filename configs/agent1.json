@@ -62,7 +62,7 @@
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
     "m1" : 0.001,
     "desc_m2" : "Parameter governing strength of the axon-axon competition effect",
-    "m2" : 0.1,
+    "m2" : 0.2,
     "desc_m3" : "Parameter governing the strength of the axon-axon interactions (additional to competition and based on molecular labelling)",
     "m3" : 0.0,
     "desc_mborder" : "Strength of the border effect - a force perpendicular to the border, extending a distance r into the tissue",
