@@ -11,12 +11,12 @@
     "retina_form" : 2,
     "tectum_form" : 3,
 
-    "graftswap_coords" : { "locn1" : [2,4], "locn2" : [2,10], "patchsize" : [6,6] },
+    "graftswap_coords" : { "locn1" : [2,4], "locn2" : [2,10], "patchsize" : [10,10] },
     "retinal_graftswap" : false,
     "tectal_graftswap" : false,
 
     "retinal_rotations" : 0,
-    "tectal_rotations" : 0,
+    "tectal_rotations" : 2,
 
     "compound_retina" : false,
 
@@ -45,7 +45,10 @@
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
 
-    "win_width" : 1920,
+    "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
+    "lighting" : true,
+
+    "win_width" : 3200,
 
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
@@ -54,10 +57,10 @@
     "rgcside" : 20,
 
     "desc_bpa" : "Branches per axon",
-    "bpa" : 4,
+    "bpa" : 8,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 3000,
+    "steps" : 1000,
 
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
     "m1" : 0.001,

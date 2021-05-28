@@ -167,16 +167,16 @@ struct Agent1
         return tv;
     }
 
+    //! Simulation init
     void init()
     {
-        // Simulation init
+        /*
+         * Create tectum and retina tissue objects
+         */
+
         this->rgcside = this->conf->getUInt ("rgcside", this->rgcside);
-        this->bpa = this->conf->getUInt ("bpa", 8);
-        this->goslow = this->conf->getBool ("goslow", false);
-        // gr is grid element length
         T gr_denom = rgcside-1;
-        T gr = T{1}/gr_denom;
-        std::cout << "Grid element length " << gr << std::endl;
+        T gr = T{1}/gr_denom; // gr is grid element length
 
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                (expression_form)this->conf->getUInt ("tectum_form", 0),
@@ -186,76 +186,152 @@ struct Agent1
                                             (expression_form)this->conf->getUInt ("retina_form", 0),
                                             (expression_form)this->conf->getUInt ("retina_form", 0));
 
-        // Perform graft swap?
+        /*
+         * Apply any manipulations to retina or tectum
+         */
+
+        // Use a variable to prevent multiple manipulations from being applied. May
+        // need to tweak this to allow selected combinations of manipulations.
+        bool manipulated = false;
+
+        // Graft swap manipulation
         Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
         Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
         Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
         Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
-        if (l1.size() > 1 && l2.size() > 1 && ps.size() > 1) {
-
-            morph::Vector<size_t, 2> l1v = { l1[0].asUInt(), l1[1].asUInt() };
-            morph::Vector<size_t, 2> l2v = { l2[0].asUInt(), l2[1].asUInt() };
-            morph::Vector<size_t, 2> psv = { ps[0].asUInt(), ps[1].asUInt() };
-
-            std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
-
-            if (this->conf->getBool ("tectal_graftswap", false)) { this->tectum->graftswap (l1v, psv, l2v); }
-            if (this->conf->getBool ("retinal_graftswap", false)) { this->ret->graftswap (l1v, psv, l2v); }
+        if (l1.size() < 2 || l2.size() < 2 || ps.size() < 2) {
+            throw std::runtime_error ("Bad values for locn1, locn2 or patchsize.");
         }
 
-        // Graft and rotate?
+        morph::Vector<size_t, 2> l1v = { l1[0].asUInt(), l1[1].asUInt() };
+        morph::Vector<size_t, 2> l2v = { l2[0].asUInt(), l2[1].asUInt() };
+        morph::Vector<size_t, 2> psv = { ps[0].asUInt(), ps[1].asUInt() };
+        std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
+
+        if (this->conf->getBool ("tectal_graftswap", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->graftswap (l1v, psv, l2v);
+            manipulated = true;
+        }
+        if (this->conf->getBool ("retinal_graftswap", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->graftswap (l1v, psv, l2v);
+            manipulated = true;
+        }
+
+        // Graft and rotate manipulation
         if (l1.size() > 1 && ps.size() > 1) {
-            morph::Vector<size_t, 2> l1v = { l1[0].asUInt(), l1[1].asUInt() };
-            morph::Vector<size_t, 2> psv = { ps[0].asUInt(), ps[1].asUInt() };
+            l1v = { l1[0].asUInt(), l1[1].asUInt() };
+            psv = { ps[0].asUInt(), ps[1].asUInt() };
             if (this->conf->getUInt ("retinal_rotations", 0) > 0) {
                 if (psv[0] != psv[1]) {
                     throw std::runtime_error ("patch size has to be square for rotations");
                 }
                 this->ret->graftrotate (l1v, psv[0], (size_t)this->conf->getUInt ("retinal_rotations", 0));
+                manipulated = true;
             }
             if (this->conf->getUInt ("tectal_rotations", 0) > 0) {
                 if (psv[0] != psv[1]) {
                     throw std::runtime_error ("patch size has to be square for rotations");
                 }
                 this->tectum->graftrotate (l1v, psv[0], (size_t)this->conf->getUInt ("tectal_rotations", 0));
+                manipulated = true;
             }
         }
 
-        // Compound retina?
-        if (this->conf->getBool ("compound_retina", false)) { this->ret->compound_tissue(tissue_region::left_half); }
+        // Compound retina manipulation
+        if (this->conf->getBool ("compound_retina", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->compound_tissue(tissue_region::left_half);
+            manipulated = true;
+        }
 
-        // Ablate tissue?
-        if (this->conf->getBool ("ablate_ret_right", false)) { this->ret->ablate_right_half(); }
-        if (this->conf->getBool ("ablate_ret_left", false)) { this->ret->ablate_left_half(); }
-        if (this->conf->getBool ("ablate_ret_top", false)) { this->ret->ablate_top_half(); }
-        if (this->conf->getBool ("ablate_ret_bot", false)) { this->ret->ablate_bottom_half(); }
+        // Various tissue ablation manipulations
+        if (this->conf->getBool ("ablate_ret_right", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ablate_right_half();
+            manipulated = true;
+        }
+        if (this->conf->getBool ("ablate_ret_left", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ablate_left_half();
+            manipulated = true;
+        }
+        if (this->conf->getBool ("ablate_ret_top", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ablate_top_half();
+            manipulated = true;
+        }
+        if (this->conf->getBool ("ablate_ret_bot", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ablate_bottom_half();
+            manipulated = true;
+        }
 
-        if (this->conf->getBool ("ablate_tec_right", false)) { this->tectum->ablate_right_half(); }
-        if (this->conf->getBool ("ablate_tec_left", false)) { this->tectum->ablate_left_half(); }
-        if (this->conf->getBool ("ablate_tec_top", false)) { this->tectum->ablate_top_half(); }
-        if (this->conf->getBool ("ablate_tec_bot", false)) { this->tectum->ablate_bottom_half(); }
+        if (this->conf->getBool ("ablate_tec_right", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ablate_right_half();
+            manipulated = true;
+        }
+        if (this->conf->getBool ("ablate_tec_left", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ablate_left_half();
+            manipulated = true;
+        }
+        if (this->conf->getBool ("ablate_tec_top", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ablate_top_half();
+            manipulated = true;
+        }
+        if (this->conf->getBool ("ablate_tec_bot", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ablate_bottom_half();
+            manipulated = true;
+        }
 
-        // Knock out a retinal/tectal receptor/ligand?
+        // retinal/tectal receptor/ligand knockout manipulations
         int ko = this->conf->getInt ("knockout_ret_rcpt", -1);
-        if (ko > -1) { this->ret->receptor_knockout ((size_t)ko); }
+        if (ko > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->receptor_knockout ((size_t)ko);
+            manipulated = true;
+        }
         ko = this->conf->getInt ("knockout_tec_rcpt", -1);
-        if (ko > -1) { this->tectum->receptor_knockout ((size_t)ko); }
+        if (ko > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->receptor_knockout ((size_t)ko);
+            manipulated = true;
+        }
         ko = this->conf->getInt ("knockout_ret_lgnd", -1);
-        if (ko > -1) { this->ret->ligand_knockout ((size_t)ko); }
+        if (ko > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ligand_knockout ((size_t)ko);
+            manipulated = true;
+        }
         ko = this->conf->getInt ("knockout_tec_lgnd", -1);
-        if (ko > -1) { this->tectum->ligand_knockout ((size_t)ko); }
-
+        if (ko > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ligand_knockout ((size_t)ko);
+            manipulated = true;
+        }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
         std::cout << "Tectum has " << this->tectum->num() << " cells\n";
+        std::cout << "Retina is " << this->ret->w << " wide and " << this->ret->h << " high\n";
+
+        /*
+         * Set up the axon branches (Agent1::pending_branches, which will be copied into
+         * Agent1::branches) and the ax_centroids net object used for visualisation/analysis.
+         */
+
+        this->bpa = this->conf->getUInt ("bpa", 8);
         this->pending_branches.resize(this->ret->num() * bpa);
 
-        std::cout << "Retina is " << this->ret->w << " wide and " << this->ret->h << " high\n";
         this->ax_centroids.init (this->ret->w, this->ret->h);
-        // Axon initial positions x and y can be uniformly randomly selected.
+        // Axon initial positions x and y can be uniformly randomly selected...
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
-        // Or set from the ideal position plus a random perturbation
+        // ...or set from the ideal position plus a random perturbation
         morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
         // A normally distributed perturbation is added for each branch. SD=0.1.
         morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
@@ -267,6 +343,8 @@ struct Agent1
         T rcpt_max = -1e9;
         T rcpt_min = 1e9;
         bool totally_random = this->conf->getBool ("totally_random_init", false);
+
+        // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
@@ -291,8 +369,10 @@ struct Agent1
 
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
 
-            // Fixme: The target for axon centroids is the retinal position
-            // *transformed*. That means mirroring about the line y=x
+            // The target for axon centroids is the retinal position *transformed*. That
+            // means mirroring about the line y=x. ALSO, if experimental manipulations
+            // have been made, then the target positions will need to be modified
+            // accordingly.
             morph::Vector<T,2> tpos = this->ret->posn[ri];
             tpos.rotate();
             this->ax_centroids.targ[ri].set_from (tpos);
@@ -301,9 +381,12 @@ struct Agent1
             this->pending_branches[i].id = i;
         }
 
-        // Now arrange the order of the pending branches, so that the first ones in the
-        // list are those closest to the centre of the retina. That means extracting the
-        // branches by retina index or, more easily, by .target
+        /*
+         * Now arrange the order of the pending branches, so that the first ones in the
+         * list are those closest to the centre of the retina. That means extracting the
+         * branches by retina index or, more easily, by .target
+         */
+
         std::vector<branch<T, N>> pending_branches_reordered;
         std::vector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
         for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
@@ -338,6 +421,33 @@ struct Agent1
         this->pending_branches.resize (pending_branches_reordered.size());
         this->pending_branches.swap (pending_branches_reordered);
 
+        /*
+         * After initialising the ax_centroid targets from the retinal locations, we
+         * have to modify ax_centroid's targ attribute if any of the experimental
+         * manipulations have been applied.
+         */
+
+        // Have we had a graft swap?
+        if (this->conf->getBool ("tectal_graftswap", false)) {
+            // WRITEME
+            //this->ax_centroids.targ_graftswap (l1v, psv, l2v);
+        }
+
+        if (this->conf->getBool ("retinal_graftswap", false)) {
+            std::cout << "WARNING: graph swap applied to retina, but axon centroids net not updated with a prediction\n";
+        }
+
+        // Has tectum been rotated? If so, then modify the projected target - a
+        // patch at l1v of size psv is rotated.
+        unsigned int rots = 0;
+        if ((rots = this->conf->getUInt ("tectal_rotations", 0)) > 0) {
+            this->ax_centroids.targ_graftrotate (l1v, psv[0], rots);
+        }
+
+        /*
+         * Now initialise the Visualisation code
+         */
+
         // The min/max of rcpt[0] is used below to set a morph::Scale in branchvisual
         std::cout << "Receptor expression range: " << rcpt_min << " to " << rcpt_max << std::endl;
 
@@ -356,13 +466,13 @@ struct Agent1
         this->m[2] = this->conf->getDouble ("m3", 0.15);
         this->m[3] = this->conf->getDouble ("mborder", 0.1);
 
-        // Visualization init
+        // morph::Visual init
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
         unsigned int wh = static_cast<unsigned int>(0.5625f * (float)ww);
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
         this->v = new morph::Visual (ww, wh, "Seb's agent based retinotectal model");
         this->v->backgroundWhite();
-        this->v->lightingEffects();
+        if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
 
         // Offset for visuals
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
@@ -408,7 +518,6 @@ struct Agent1
         v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
         offset2[1] -= 1.3f;
 
-
         // Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
@@ -447,6 +556,9 @@ struct Agent1
         this->gv->prepdata ("SOS");
         this->gv->finalize();
         v->addVisualModel (this->gv);
+
+        // Finally, set any addition parameters that will be needed with calling Agent1::run
+        this->goslow = this->conf->getBool ("goslow", false);
     }
 
     // The axons to see - these will have their path information stored

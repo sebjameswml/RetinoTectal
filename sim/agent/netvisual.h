@@ -42,9 +42,9 @@ public:
         // Spheres at the net vertices
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
             this->computeSphere (idx, this->locations->p[i], this->locations->clr[i], this->radiusFixed, 14, 12);
-
-            this->computeSphere (idx, this->locations->targ[i]+morph::Vector<float,3>({0,0,0.1}),
-                                 std::array<float,3>({0,0,0}), this->locations->clr[i], this->radiusFixed/2, 14, 12);
+            // another sphere to show the expected target position
+            this->computeSphere (idx, this->locations->targ[i]+morph::Vector<float,3>({0,0,-0.02}),
+                                 this->locations->clr[i], this->locations->clr[i], this->radiusFixed/2, 4, 4);
         }
         // Connections
         for (auto c : this->locations->c) {
@@ -54,7 +54,7 @@ public:
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             if ((c1-c2).length() < Flt{0.2}) {
                 // omit long lines for a bit more clarity
-                this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, 0.01f);
+                this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
             }
         }
     }
@@ -69,7 +69,7 @@ public:
     //! Pointer to a vector of locations to visualise
     net<Flt>* locations = (net<Flt>*)0;
     Flt radiusFixed = 0.01;
-    Flt linewidth = 0.008;
+    Flt linewidth = 0.004;
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
 };
