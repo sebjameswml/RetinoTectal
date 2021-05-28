@@ -8,7 +8,7 @@
 #include <morph/Vector.h>
 
 template<typename T>
-struct net // : public tissue?
+struct net
 {
     size_t w = 0;
     size_t h = 0;
@@ -55,6 +55,14 @@ struct net // : public tissue?
     std::set<morph::Vector<size_t, 2>> c;
     //! Target positions of the net, to allow the net to be used to provide a SOS metric for how close the pattern is to ideal
     morph::vVector<morph::Vector<T, 3>> targ;
+};
+
+// A retinal ganglion cell net specialised to know about graft rotations/swaps etc
+template<typename T>
+struct rgcnet : public net<T>
+{
+    // Set true if the x/y coordinates in targ have been mirrrored
+    bool mirrored = false;
 
     //! Apply a graft rotation to the targs
     void targ_graftrotate (morph::Vector<size_t,2> x1, size_t sz, size_t quarter_rotations)
@@ -85,4 +93,63 @@ struct net // : public tissue?
         }
     }
 
+    // Tell this function if the target positions have been transformed with respect to
+    // their location in the array, because it needs to know.
+    void targ_graftswap (morph::Vector<size_t,2> x1,
+                         morph::Vector<size_t,2> sz,
+                         morph::Vector<size_t,2> x2)
+    {
+        // I copied this from tissue, which does the swap by index and so I need to
+        // cover two situations; one where I swap row by row, and one where, if
+        // mirrored, I swap col by col.
+        if (mirrored == true) {
+            // move transformed section of targ row by row.
+            morph::vVector<morph::Vector<T,3>> graft (sz[1]);
+
+            size_t idx1 = x1[1] + this->w * x1[0];
+            size_t idx2 = x2[1] + this->w * x2[0];
+            for (size_t i = 0; i < sz[0]; ++i) {
+
+                if (idx1 + sz[1] > this->targ.size() || idx2 + sz[1] > this->targ.size()) {
+                    std::cout << "Can't make that patchswap\n";
+                    throw std::runtime_error ("Can't make that patchswap");
+                }
+
+                auto oi = this->targ.begin();
+                oi += idx1;
+                auto ni = this->targ.begin();
+                ni += idx2;
+                std::copy_n (ni, sz[1], graft.begin());
+                std::copy_n (oi, sz[1], ni);
+                std::copy_n (graft.begin(), sz[1], oi);
+
+                idx1 += this->w;
+                idx2 += this->w;
+            }
+
+        } else {
+            // move section of targ row by row
+            morph::vVector<morph::Vector<T,3>> graft (sz[0]);
+
+            size_t idx1 = x1[0] + this->w * x1[1];
+            size_t idx2 = x2[0] + this->w * x2[1];
+            for (size_t i = 0; i < sz[1]; ++i) {
+
+                if (idx1 + sz[0] > this->targ.size() || idx2 + sz[0] > this->targ.size()) {
+                    throw std::runtime_error ("Can't make that patchswap");
+                }
+
+                auto oi = this->targ.begin();
+                oi += idx1;
+                auto ni = this->targ.begin();
+                ni += idx2;
+                std::copy_n (ni, sz[0], graft.begin());
+                std::copy_n (oi, sz[0], ni);
+                std::copy_n (graft.begin(), sz[0], oi);
+
+                idx1 += this->w;
+                idx2 += this->w;
+            }
+        }
+    }
 };

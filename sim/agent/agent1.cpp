@@ -369,13 +369,15 @@ struct Agent1
 
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
 
-            // The target for axon centroids is the retinal position *transformed*. That
-            // means mirroring about the line y=x. ALSO, if experimental manipulations
-            // have been made, then the target positions will need to be modified
-            // accordingly.
+            // The target for axon centroids is defined by their origin location on the
+            // retina. However, their target on the tectum is the retinal position
+            // *transformed*. That means mirroring the retinal origins about the line
+            // y=x. ALSO, if experimental manipulations have been made, then the target
+            // positions will need to be modified accordingly.
             morph::Vector<T,2> tpos = this->ret->posn[ri];
-            tpos.rotate();
+            tpos.rotate(); // Achieves swapping of x and y coordinates
             this->ax_centroids.targ[ri].set_from (tpos);
+            this->ax_centroids.mirrored = true;
 
             this->pending_branches[i].current = initpos.less_one_dim();
             this->pending_branches[i].id = i;
@@ -429,8 +431,8 @@ struct Agent1
 
         // Have we had a graft swap?
         if (this->conf->getBool ("tectal_graftswap", false)) {
-            // WRITEME
-            //this->ax_centroids.targ_graftswap (l1v, psv, l2v);
+            std::cout << "tectal_graftswap..." << std::endl;
+            this->ax_centroids.targ_graftswap (l1v, psv, l2v);
         }
 
         if (this->conf->getBool ("retinal_graftswap", false)) {
@@ -443,6 +445,7 @@ struct Agent1
         if ((rots = this->conf->getUInt ("tectal_rotations", 0)) > 0) {
             this->ax_centroids.targ_graftrotate (l1v, psv[0], rots);
         }
+
 
         /*
          * Now initialise the Visualisation code
@@ -540,9 +543,19 @@ struct Agent1
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
         this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->cv);
+
+        // Another NetVisual view showing the target locations
+        offset[1] -= 1.3f;
+        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->tcv->viewmode = netvisual_viewmode::target;
+        this->tcv->finalize();
+        this->tcv->addLabel ("experiment predicts", {0.0f, 1.1f, 0.0f});
+        v->addVisualModel (this->tcv);
+        offset[1] += 1.3f;
 
         // A graph of the SOS diffs between axon position centroids and target positions from retina
         offset[0] += 1.5f;
@@ -589,7 +602,7 @@ struct Agent1
     // If pending_branches contains 'groups' of axons to introduce, then the sizes of each group are given in this container
     morph::vVector<size_t> pb_sizes;
     // Centroid of the branches for each axon
-    net<T> ax_centroids;
+    rgcnet<T> ax_centroids;
     // Path history is a map indexed by axon id. 3D as it's used for vis.
     std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
     // A visual environment
@@ -600,6 +613,8 @@ struct Agent1
     BranchVisual<T, N>* av;
     // Centroid visual
     NetVisual<T>* cv;
+    // Centroid visual for targets
+    NetVisual<T>* tcv;
     // A graph for the SOS metric
     morph::GraphVisual<T>* gv;
 };
