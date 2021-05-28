@@ -1,0 +1,50 @@
+{
+    "num_guiders" : 4,
+
+    "desc_totally_random_init" : "If true, then distribute inital positions uniformly randomly within the field at the bottom of the tectum. If false, bias the initial position according to expected target.",
+    "totally_random_init" : true,
+
+    "desc_intro_every" : "If 0, then introduce all branches at the start of the run. If >0, then this is the number of sim steps to wait before introducing a group of the axons",
+    "intro_every" : 0,
+
+    "desc_form" : "0: linear  1: quadratic  2: exponential  3: logarithmic",
+    "retina_form" : 2,
+    "tectum_form" : 3,
+
+    "graftswap_coords" : { "locn1" : [2,4], "locn2" : [10,10], "patchsize" : [4,4] },
+
+    "ablate_tec_top" : true,
+
+    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
+    "seeaxons" : [ 21, 38, 189, 378, 361 ],
+    //"seeaxons" : [ 82, 145, 202, 265 ],
+
+    "desc_movie" : "If true, then save images to make a movie",
+    "movie" : false,
+
+    "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
+    "lighting" : true,
+
+    "win_width" : 1920,
+
+    "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
+    "goslow" : false,
+
+    "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length.",
+    "rgcside" : 20,
+
+    "desc_bpa" : "Branches per axon",
+    "bpa" : 8,
+
+    "desc_steps" : "How many simulation steps should be computed?",
+    "steps" : 1000,
+
+    "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
+    "m1" : 0.001,
+    "desc_m2" : "Parameter governing strength of the axon-axon competition effect",
+    "m2" : 0.2,
+    "desc_m3" : "Parameter governing the strength of the axon-axon interactions (additional to competition and based on molecular labelling)",
+    "m3" : 0.0,
+    "desc_mborder" : "Strength of the border effect - a force perpendicular to the border, extending a distance r into the tissue",
+    "mborder" : 0.5
+}

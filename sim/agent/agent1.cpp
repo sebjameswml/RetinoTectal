@@ -283,7 +283,7 @@ struct Agent1
             if (manipulated && !this->conf->getBool ("ablate_ret_left", false)) {
                 throw std::runtime_error ("Code is only tested for one manipulation at a time!");
             }
-            this->tectum->ablate_top_half();
+            this->tectum->ablate_top_half(); // FIXME: seems to ablate the bottom half?!
             manipulated = true;
         }
         if (this->conf->getBool ("ablate_tec_bot", false)) {
@@ -391,41 +391,46 @@ struct Agent1
          * list are those closest to the centre of the retina. That means extracting the
          * branches by retina index or, more easily, by .target
          */
+        // If retina has been ablated, then have to change xbreaks and y breaks
+        if (this->conf->getBool ("ablate_ret_left", false) || this->conf->getBool ("ablate_tec_top", false)) {
+            // Don't change pending branches at all
+        } else {
+            std::vector<branch<T, N>> pending_branches_reordered;
+            morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
+            size_t xstart = this->ret->w/2;
 
-        std::vector<branch<T, N>> pending_branches_reordered;
-        std::vector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
-        for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
-        std::vector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
-        for (size_t i = 0; i < 4; ++i) {
-            // copy elements from pending_branches in a square from
-            // (w/2-x_breaks[i],h/2-y_breaks[i]) to (w/2+x_breaks[i],h/2+y_breaks[i])
-            // into pending_branches_reordered.
-            for (size_t yy = this->ret->h/2-y_breaks[i]; yy < this->ret->h/2+y_breaks[i]; ++yy) {
-                for (size_t xx = this->ret->w/2-x_breaks[i]; xx < this->ret->w/2+x_breaks[i]; ++xx) {
-                    // Try to find branches with target xx,yy
-                    morph::Vector<T,2> coord = this->ret->coord (xx, yy);
-                    // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
-                    typename std::vector<branch<T, N>>::iterator it = this->pending_branches.begin();
-                    while (it != this->pending_branches.end()) {
-                        if ((it->target - coord).length() < 0.00001) {
-                            pending_branches_reordered.push_back (*it);
-                            it = this->pending_branches.erase (it);
-                        } else {
-                            ++it;
+            for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
+            morph::vVector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
+            for (size_t i = 0; i < 4; ++i) {
+                // copy elements from pending_branches in a square from
+                // (w/2-x_breaks[i],h/2-y_breaks[i]) to (w/2+x_breaks[i],h/2+y_breaks[i])
+                // into pending_branches_reordered.
+                for (size_t yy = this->ret->h/2-y_breaks[i]; yy < this->ret->h/2+y_breaks[i]; ++yy) {
+                    for (size_t xx = xstart-x_breaks[i]; xx < xstart+x_breaks[i]; ++xx) {
+                        // Try to find branches with target xx,yy
+                        morph::Vector<T,2> coord = this->ret->coord (xx, yy);
+                        // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
+                        typename std::vector<branch<T, N>>::iterator it = this->pending_branches.begin();
+                        while (it != this->pending_branches.end()) {
+                            if ((it->target - coord).length() < 0.00001) {
+                                pending_branches_reordered.push_back (*it);
+                                it = this->pending_branches.erase (it);
+                            } else {
+                                ++it;
+                            }
                         }
                     }
                 }
+                if (this->pb_sizes.empty()) {
+                    this->pb_sizes.push_back (pending_branches_reordered.size());
+                } else {
+                    this->pb_sizes.push_back (pending_branches_reordered.size() - this->pb_sizes.sum());
+                }
             }
-            if (this->pb_sizes.empty()) {
-                this->pb_sizes.push_back (pending_branches_reordered.size());
-            } else {
-                this->pb_sizes.push_back (pending_branches_reordered.size() - this->pb_sizes.sum());
-            }
+
+            this->pending_branches.resize (pending_branches_reordered.size());
+            this->pending_branches.swap (pending_branches_reordered);
         }
-
-        this->pending_branches.resize (pending_branches_reordered.size());
-        this->pending_branches.swap (pending_branches_reordered);
-
         /*
          * After initialising the ax_centroid targets from the retinal locations, we
          * have to modify ax_centroid's targ attribute if any of the experimental
@@ -459,11 +464,11 @@ struct Agent1
 
         if (this->conf->getBool ("ablate_ret_left", false)) {
             // expected layout has half as many locations, but they're stretched out into the full area?
-            std::cout << "Implement me!\n";
+            this->ax_centroids.targ_expand_topdown();
         }
 
         if (this->conf->getBool ("ablate_tec_top", false)) {
-            std::cout << "Implement me!\n";
+            this->ax_centroids.targ_squish_bottomup();
         }
 
 

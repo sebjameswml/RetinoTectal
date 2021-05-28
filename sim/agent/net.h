@@ -64,6 +64,12 @@ struct rgcnet : public net<T>
     // Set true if the x/y coordinates in targ have been mirrrored
     bool mirrored = false;
 
+    //! Expand the top half down across the full tissue area
+    void targ_expand_topdown() { for (auto& t : this->targ) { t[1] = t[1] * T{2} - T{1}; } }
+
+    //! Tectum has reduced in size so squish the targs up
+    void targ_squish_bottomup() { for (auto& t : this->targ) { t[1] = t[1] * T{0.5} + T{0.5}; } }
+
     //! Apply a graft rotation to the targs
     void targ_graftrotate (morph::Vector<size_t,2> x1, size_t sz, size_t quarter_rotations)
     {
