@@ -12,31 +12,8 @@
     "tectum_form" : 3,
 
     "graftswap_coords" : { "locn1" : [2,4], "locn2" : [10,10], "patchsize" : [4,4] },
-    "retinal_graftswap" : false,
-    "tectal_graftswap" : false,
-
-    "retinal_rotations" : 0,
-    "tectal_rotations" : 0,
-
-    "compound_retina" : false,
-
-    "ablate_ret_right" : false,
-    "ablate_tec_right" : false,
 
     "ablate_ret_left" : true,
-    "ablate_tec_left" : false,
-
-    "ablate_ret_top" : false,
-    "ablate_tec_top" : false,
-
-    "ablate_ret_bot" : false,
-    "ablate_tec_bot" : false,
-
-    "desc_knockout" : "If -1, then no knockout. If 0-3 then knockout retinal or tectal receptor or ligand with this index",
-    "knockout_ret_rcpt" : -1,
-    "knockout_ret_lgnd" : -1,
-    "knockout_tec_rcpt" : -1,
-    "knockout_tec_lgnd" : -1,
 
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 21, 38, 189, 378, 361 ],

@@ -279,7 +279,10 @@ struct Agent1
             manipulated = true;
         }
         if (this->conf->getBool ("ablate_tec_top", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            // Note: we ARE allowed to have ablate_tec_top along with ablate_ret_left (the 'mismatch' manipulation)
+            if (manipulated && !this->conf->getBool ("ablate_ret_left", false)) {
+                throw std::runtime_error ("Code is only tested for one manipulation at a time!");
+            }
             this->tectum->ablate_top_half();
             manipulated = true;
         }
@@ -436,7 +439,7 @@ struct Agent1
         }
 
         if (this->conf->getBool ("retinal_graftswap", false)) {
-            std::cout << "WARNING: graph swap applied to retina, but axon centroids net not updated with a prediction\n";
+            std::cout << "WARNING: graft swap applied to retina, but axon centroids net was not updated with a prediction\n";
         }
 
         // Has tectum been rotated? If so, then modify the projected target - a
@@ -444,6 +447,23 @@ struct Agent1
         unsigned int rots = 0;
         if ((rots = this->conf->getUInt ("tectal_rotations", 0)) > 0) {
             this->ax_centroids.targ_graftrotate (l1v, psv[0], rots);
+        }
+
+        if ((rots = this->conf->getUInt ("retinal_rotations", 0)) > 0) {
+            std::cout << "WARNING: graft rotation applied to retina, but axon centroids net was not updated with a prediction\n";
+        }
+
+        if (this->conf->getBool ("compound_retina", false)) {
+            std::cout << "Implement me!\n";
+        }
+
+        if (this->conf->getBool ("ablate_ret_left", false)) {
+            // expected layout has half as many locations, but they're stretched out into the full area?
+            std::cout << "Implement me!\n";
+        }
+
+        if (this->conf->getBool ("ablate_tec_top", false)) {
+            std::cout << "Implement me!\n";
         }
 
 
