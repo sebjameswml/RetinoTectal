@@ -72,7 +72,7 @@ public:
             morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            if ((c1-c2).length() < Flt{0.2}) {
+            if ((c1-c2).length() < maxlen) {
                 // omit long lines for a bit more clarity
                 this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
             }
@@ -83,7 +83,6 @@ public:
     void initv_target()
     {
         VBOint idx = 0;
-
 
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
             this->computeTube (idx,
@@ -116,6 +115,8 @@ public:
     net<Flt>* locations = (net<Flt>*)0;
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.004;
+    //! The maximum length of a line betwen two vertices for it to be visualised
+    Flt maxlen = 1e9;
     morph::Vector<float,3> puckthick = { 0, 0, 0.002 };
     // What to show
     netvisual_viewmode viewmode = netvisual_viewmode::actual;

@@ -31,9 +31,10 @@
 template<typename T, size_t N>
 struct Agent1
 {
-    Agent1 (morph::Config* cfg)
+    Agent1 (morph::Config* cfg, morph::Config* mcfg)
     {
         this->conf = cfg;
+        this->mconf = mcfg;
         this->init();
     }
     ~Agent1() { delete this->ret; }
@@ -49,7 +50,7 @@ struct Agent1
         typename std::vector<branch<T, N>>::iterator pending_br_it = this->pending_branches.begin();
         typename morph::vVector<size_t>::iterator pb_sz_it = this->pb_sizes.begin();
         // How often to introduce groups of axons? 0 means 'all at once'
-        unsigned int intro_every = this->conf->getUInt ("intro_every", 0);
+        unsigned int intro_every = this->mconf->getUInt ("intro_every", 0);
         if (intro_every == 0) {
             this->branches.resize (this->pending_branches.size());
             this->branches.swap (this->pending_branches);
@@ -174,17 +175,17 @@ struct Agent1
          * Create tectum and retina tissue objects
          */
 
-        this->rgcside = this->conf->getUInt ("rgcside", this->rgcside);
+        this->rgcside = this->mconf->getUInt ("rgcside", this->rgcside);
         T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom; // gr is grid element length
 
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                               (expression_form)this->conf->getUInt ("tectum_form", 0),
-                                               (expression_form)this->conf->getUInt ("tectum_form", 0));
+                                               (expression_form)this->mconf->getUInt ("tectum_form", 0),
+                                               (expression_form)this->mconf->getUInt ("tectum_form", 0));
 
         this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                            (expression_form)this->conf->getUInt ("retina_form", 0),
-                                            (expression_form)this->conf->getUInt ("retina_form", 0));
+                                            (expression_form)this->mconf->getUInt ("retina_form", 0),
+                                            (expression_form)this->mconf->getUInt ("retina_form", 0));
 
         /*
          * Apply any manipulations to retina or tectum
@@ -196,10 +197,14 @@ struct Agent1
 
         // Graft swap manipulation
         Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
+        std::cout << gs_coords << std::endl;
         Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
         Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
         Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
         if (l1.size() < 2 || l2.size() < 2 || ps.size() < 2) {
+            std::cout << "l1.size(): " << l1.size() << ", l2.size(): " << l2.size()
+                      << ", ps.size(): " << ps.size() << std::endl;
+            std::cout << l1 << std::endl;
             throw std::runtime_error ("Bad values for locn1, locn2 or patchsize.");
         }
 
@@ -327,7 +332,7 @@ struct Agent1
          * Agent1::branches) and the ax_centroids net object used for visualisation/analysis.
          */
 
-        this->bpa = this->conf->getUInt ("bpa", 8);
+        this->bpa = this->mconf->getUInt ("bpa", 8);
         this->pending_branches.resize(this->ret->num() * bpa);
 
         this->ax_centroids.init (this->ret->w, this->ret->h);
@@ -345,7 +350,7 @@ struct Agent1
         std::vector<T> rn_p0 = rng_p0.get (this->ret->num() * 2 * bpa);
         T rcpt_max = -1e9;
         T rcpt_min = 1e9;
-        bool totally_random = this->conf->getBool ("totally_random_init", false);
+        bool totally_random = this->mconf->getBool ("totally_random_init", false);
 
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
@@ -489,10 +494,10 @@ struct Agent1
         }
 
         // Parameters settable from json
-        this->m[0] = this->conf->getDouble ("m1", 0.02);
-        this->m[1] = this->conf->getDouble ("m2", 0.2);
-        this->m[2] = this->conf->getDouble ("m3", 0.15);
-        this->m[3] = this->conf->getDouble ("mborder", 0.1);
+        this->m[0] = this->mconf->getDouble ("m1", 0.02);
+        this->m[1] = this->mconf->getDouble ("m2", 0.2);
+        this->m[2] = this->mconf->getDouble ("m3", 0.15);
+        this->m[3] = this->mconf->getDouble ("mborder", 0.1);
 
         // morph::Visual init
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
@@ -568,6 +573,7 @@ struct Agent1
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
         this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
         this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
@@ -578,7 +584,7 @@ struct Agent1
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::target;
         this->tcv->finalize();
-        this->tcv->addLabel ("experiment predicts", {0.0f, 1.1f, 0.0f});
+        this->tcv->addLabel ("experiment suggests", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->tcv);
         offset[1] += 1.3f;
 
@@ -610,8 +616,10 @@ struct Agent1
     // How many steps to store history. Note, we might choose not to show all of these
     // in a visualisation?
     static constexpr size_t history = 2000;
-    // Access to a parameter configuration object
+    // Access to a parameter configuration object for experiment settings
     morph::Config* conf;
+    // A model parameter config object - experiment with splitting the config up
+    morph::Config* mconf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
     guidingtissue<T, N>* ret;
     // Same sized tectum tissue
@@ -648,26 +656,37 @@ int main (int argc, char **argv)
 {
     // Set up config object
     std::string paramsfile;
-    if (argc >= 2) {
-        paramsfile = std::string(argv[1]);
+    std::string paramsfile_mdl;
+
+    if (argc >= 3) {
+        paramsfile_mdl = std::string(argv[1]);
+        paramsfile = std::string(argv[2]);
     } else {
         // Create an empty/default json file
         paramsfile = "./a1.json";
         morph::Tools::copyStringToFile ("{}\n", paramsfile);
+        paramsfile_mdl = "./a2.json";
+        morph::Tools::copyStringToFile ("{}\n", paramsfile_mdl);
     }
 
+    std::cout << "Opening params config files " << paramsfile << " and model config " << paramsfile_mdl << std::endl;
     morph::Config conf(paramsfile);
+    morph::Config mconf(paramsfile_mdl);
     if (!conf.ready) {
-        std::cerr << "Failed to read config " << paramsfile << ". Exiting.\n";
+        std::cerr << "Failed to read sim/expt config " << paramsfile << ". Exiting.\n";
+        return 1;
+    }
+    if (!mconf.ready) {
+        std::cerr << "Failed to read model config " << paramsfile_mdl << ". Exiting.\n";
         return 1;
     }
 
-    size_t num_guiders = conf.getInt("num_guiders", 4);
+    size_t num_guiders = mconf.getInt("num_guiders", 4);
     if (num_guiders == 4) {
-        Agent1<float, 4> model (&conf);
+        Agent1<float, 4> model (&conf, &mconf);
         model.run();
     } else if (num_guiders == 2) {
-        Agent1<float, 2> model (&conf);
+        Agent1<float, 2> model (&conf, &mconf);
         model.run();
     }
 
