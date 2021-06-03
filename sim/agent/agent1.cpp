@@ -86,6 +86,7 @@ struct Agent1
     }
 
     //! Update the visualization
+    unsigned int framenum = 0;
     void vis (unsigned int stepnum)
     {
         if (this->goslow == true) {
@@ -103,7 +104,7 @@ struct Agent1
             frame << "log/agent/";
             frame.width(4);
             frame.fill('0');
-            frame << stepnum;
+            frame << framenum++;
             frame << ".png";
             this->v->saveImage(frame.str());
         }
@@ -197,14 +198,14 @@ struct Agent1
 
         // Graft swap manipulation
         Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
-        std::cout << gs_coords << std::endl;
+        //std::cout << gs_coords << std::endl;
         Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
         Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
         Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
         if (l1.size() < 2 || l2.size() < 2 || ps.size() < 2) {
-            std::cout << "l1.size(): " << l1.size() << ", l2.size(): " << l2.size()
-                      << ", ps.size(): " << ps.size() << std::endl;
-            std::cout << l1 << std::endl;
+            //std::cout << "l1.size(): " << l1.size() << ", l2.size(): " << l2.size()
+            //          << ", ps.size(): " << ps.size() << std::endl;
+            //std::cout << l1 << std::endl;
             throw std::runtime_error ("Bad values for locn1, locn2 or patchsize.");
         }
 
@@ -320,6 +321,60 @@ struct Agent1
         if (ko > -1) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             this->tectum->ligand_knockout ((size_t)ko);
+            manipulated = true;
+        }
+
+        // Knockin will increase expression for half of all cells. There's code in tissue.h to make this randomised or regular
+        T affected = T{0.5};
+        T amount = T{1};
+        int ki = this->conf->getInt ("knockin_ret_rcpt", -1);
+        if (ki > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->receptor_knockin ((size_t)ki, affected, amount);
+            manipulated = true;
+        }
+        ki = this->conf->getInt ("knockin_tec_rcpt", -1);
+        if (ki > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->receptor_knockin ((size_t)ki, affected, amount);
+            manipulated = true;
+        }
+        ki = this->conf->getInt ("knockin_ret_lgnd", -1);
+        if (ki > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ligand_knockin ((size_t)ki, affected, amount);
+            manipulated = true;
+        }
+        ki = this->conf->getInt ("knockin_tec_lgnd", -1);
+        if (ki > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ligand_knockin ((size_t)ki, affected, amount);
+            manipulated = true;
+        }
+
+        int kd = this->conf->getInt ("knockdown_ret_rcpt", -1);
+        amount = 0.1;
+        if (kd > -1) {
+            if (manipulated && (this->conf->getInt ("knockin_ret_rcpt", -1) == -1) ) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->receptor_knockdown ((size_t)kd, amount);
+            manipulated = true;
+        }
+        kd = this->conf->getInt ("knockdown_tec_rcpt", -1);
+        if (kd > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->receptor_knockdown ((size_t)kd, amount);
+            manipulated = true;
+        }
+        kd = this->conf->getInt ("knockdown_ret_lgnd", -1);
+        if (kd > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->ret->ligand_knockdown ((size_t)kd, amount);
+            manipulated = true;
+        }
+        kd = this->conf->getInt ("knockdown_tec_lgnd", -1);
+        if (kd > -1) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            this->tectum->ligand_knockdown ((size_t)kd, amount);
             manipulated = true;
         }
 
@@ -679,6 +734,10 @@ int main (int argc, char **argv)
     if (!mconf.ready) {
         std::cerr << "Failed to read model config " << paramsfile_mdl << ". Exiting.\n";
         return 1;
+    }
+
+    if (conf.getBool ("movie", false) == true) {
+        morph::Tools::createDirIf ("./log/agent");
     }
 
     size_t num_guiders = mconf.getInt("num_guiders", 4);

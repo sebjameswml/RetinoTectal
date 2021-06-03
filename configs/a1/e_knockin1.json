@@ -1,0 +1,34 @@
+{
+    "file" : "Tectum ablation experiment",
+
+    "graftswap_coords" : { "locn1" : [2,4], "locn2" : [10,10], "patchsize" : [4,4] },
+
+    "desc_knockout" : "If -1, then no knockout. If 0-3 then knockout retinal or tectal receptor or ligand with this index",
+    "knockout_ret_rcpt" : -1,
+    "knockout_ret_lgnd" : -1,
+    "knockout_tec_rcpt" : -1,
+    "knockout_tec_lgnd" : -1,
+
+    "desc_knockin" : "See S&G and Brown et al. Increase expression in half of cells.",
+    "knockin_ret_rcpt" : 0,
+    "knockin_ret_lgnd" : -1,
+    "knockin_tec_rcpt" : -1,
+    "knockin_tec_lgnd" : -1,
+
+    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
+    "seeaxons" : [ 21, 38, 189, 378, 361 ],
+
+    "desc_movie" : "If true, then save images to make a movie",
+    "movie" : false,
+
+    "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
+    "lighting" : true,
+
+    "win_width" : 1920,
+
+    "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
+    "goslow" : false,
+
+    "desc_steps" : "How many simulation steps should be computed?",
+    "steps" : 1000
+}

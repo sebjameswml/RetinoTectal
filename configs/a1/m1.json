@@ -11,13 +11,13 @@
 
     "desc_form" : "0: linear  1: quadratic  2: exponential  3: logarithmic",
     "retina_form" : 2,
-    "tectum_form" : 3,
+    "tectum_form" : 2,
 
     "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length.",
-    "rgcside" : 30,
+    "rgcside" : 20,
 
     "desc_bpa" : "Branches per axon",
-    "bpa" : 8,
+    "bpa" : 6,
 
     "desc_m1" : "Parameter governing the strength of the chemoaffinity effect 0.03",
     "m1" : 0.001,

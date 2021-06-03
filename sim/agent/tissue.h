@@ -2,6 +2,7 @@
 
 #include <morph/vVector.h>
 #include <morph/Vector.h>
+#include <morph/Random.h>
 #include <algorithm>
 
 //! Some 2D brain tissue, arranged as a Cartesian grid of neurons of width w and height h.
@@ -436,6 +437,63 @@ struct guidingtissue : public tissue<T>
     {
         if (idx >= N) { throw std::runtime_error ("ligand index out of range"); }
         for (auto& l : this->lgnd) { l[idx] = T{0}; }
+        this->compute_gradients();
+    }
+
+    void receptor_knockdown (size_t idx, T amount)
+    {
+        if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
+        for (auto& r : this->rcpt) { r[idx] -= amount; }
+        this->compute_gradients();
+    }
+
+    void ligand_knockdown (size_t idx, T amount)
+    {
+        if (idx >= N) { throw std::runtime_error ("ligand index out of range"); }
+        for (auto& l : this->lgnd) { l[idx] -= amount; }
+        this->compute_gradients();
+    }
+
+    // For receptor index idx, knock-in affected proportion (range [0,1]) of cells,
+    // adding amount as a constant increase in receptor expression
+    static constexpr bool random_knockin = false;
+    void receptor_knockin (size_t idx, T affected, T amount)
+    {
+        if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
+        if (affected < T{0} || affected > T{1}) { throw std::runtime_error ("'affected' proportion out of range"); }
+        if constexpr (random_knockin == true) {
+            morph::RandUniform<T> rng(0,1);
+            std::vector<T> rns = rng.get(this->rcpt.size());
+            size_t ri = 0;
+            for (auto& r : this->rcpt) {
+                if (rns[ri++] < affected) { r[idx] += amount; }
+            }
+        } else {
+            size_t ri = 0;
+            for (auto& r : this->rcpt) {
+                if (ri++%2 == 0) { r[idx] += amount; }
+            }
+        }
+        this->compute_gradients();
+    }
+
+    void ligand_knockin (size_t idx, T affected, T amount)
+    {
+        if (idx >= N) { throw std::runtime_error ("ligand index out of range"); }
+        if (affected < T{0} || affected > T{1}) { throw std::runtime_error ("'affected' proportion out of range"); }
+        if constexpr (random_knockin == true) {
+            morph::RandUniform<T> rng(0,1);
+            std::vector<T> rns = rng.get(this->lgnd.size());
+            size_t ri = 0;
+            for (auto& l : this->lgnd) {
+                if (rns[ri++] < affected) { l[idx] += amount; }
+            }
+        } else {
+            size_t ri = 0;
+            for (auto& l : this->lgnd) {
+                if (ri++%2 == 0) { l[idx] += amount; }
+            }
+        }
         this->compute_gradients();
     }
 

@@ -89,8 +89,6 @@ struct branch
             morph::Vector<T, 2> kb = b - k.current;
             T d = kb.length();
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
-            // Note, for now, just as in Simpson & Goodhill, just choose a single receptor for axon-axon interactions.
-
             T Q = T{0};
             if constexpr (N == 4) {
                 Q = k.rcpt[0] / this->rcpt[0]
@@ -100,13 +98,16 @@ struct branch
             } else if constexpr (N == 2) {
                 Q = k.rcpt[0] / this->rcpt[0] + k.rcpt[1] / this->rcpt[1];
             }
+            Q /= N; // to average the effect of each receptor type
+
             //T Q = this->rcpt[0] / k.rcpt[0] +... ; // reverse signalling
             //T Q = std::max(k.rcpt[0] / this->rcpt[0], this->rcpt[0] / k.rcpt[0]); // bi-dir signalling
 
             kb.renormalize(); // as in paper, vector bk is a unit vector
             I += Q > this->s ? kb * W : nullvec;
             C += kb * W;
-            if (W > T{0}) { n_k += T{1}; }
+            //if (W > T{0}) { n_k += T{1}; }
+            n_k += W > T{0} ? T{1} : T{0};
         }
 
         // Do the 1/|B_b| multiplication
