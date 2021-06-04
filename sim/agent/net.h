@@ -193,4 +193,25 @@ struct rgcnet : public net<T>
         }
     }
 
+    void targ_reber()
+    {
+        morph::Vector<T,3> fac2y = {1, 2, 1};
+        morph::Vector<T,3> offshalfy = {0, 0.5, 0};
+
+        // Reber expt: knockdown one EphR, selectively knockin another. Both are equivalent to our rcpt[0].
+
+        // Bottom half has locations stretched up
+        for (size_t j = 0; j < this->h/2; ++j) {
+            for (size_t i = 0; i < this->w; ++i) {
+                this->targ[j+this->w*i] *= fac2y;
+            }
+        }
+        // Top part is shifted/stretched down
+        for (size_t j = this->h/2; j < this->h; ++j) {
+            for (size_t i = 0; i < this->w; ++i) {
+                this->targ[j+this->w*i] -= offshalfy;
+                this->targ[j+this->w*i] *= fac2y;
+            }
+        }
+    }
 };

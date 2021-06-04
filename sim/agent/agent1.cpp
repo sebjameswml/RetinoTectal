@@ -279,85 +279,14 @@ struct Agent1
             manipulated = true;
         }
 
-        // retinal/tectal receptor/ligand knockout manipulations
-        int ko = this->conf->getInt ("knockout_ret_rcpt", -1);
-        if (ko > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->receptor_knockout ((size_t)ko);
-            manipulated = true;
-        }
-        ko = this->conf->getInt ("knockout_tec_rcpt", -1);
-        if (ko > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->receptor_knockout ((size_t)ko);
-            manipulated = true;
-        }
-        ko = this->conf->getInt ("knockout_ret_lgnd", -1);
-        if (ko > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->ligand_knockout ((size_t)ko);
-            manipulated = true;
-        }
-        ko = this->conf->getInt ("knockout_tec_lgnd", -1);
-        if (ko > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->ligand_knockout ((size_t)ko);
-            manipulated = true;
-        }
-
         // Knockin will increase expression for half of all cells. There's code in tissue.h to make this randomised or regular
         T affected = T{0.5};
         T amount = T{1};
-        int ki = this->conf->getInt ("knockin_ret_rcpt", -1);
-        if (ki > -1) {
+        if (this->conf->getBool ("reber", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->receptor_knockin ((size_t)ki, affected, amount);
-            manipulated = true;
-        }
-        ki = this->conf->getInt ("knockin_tec_rcpt", -1);
-        if (ki > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->receptor_knockin ((size_t)ki, affected, amount);
-            manipulated = true;
-        }
-        ki = this->conf->getInt ("knockin_ret_lgnd", -1);
-        if (ki > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->ligand_knockin ((size_t)ki, affected, amount);
-            manipulated = true;
-        }
-        ki = this->conf->getInt ("knockin_tec_lgnd", -1);
-        if (ki > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->ligand_knockin ((size_t)ki, affected, amount);
-            manipulated = true;
-        }
-
-        int kd = this->conf->getInt ("knockdown_ret_rcpt", -1);
-        amount = 0.1;
-        if (kd > -1) {
-            if (manipulated && (this->conf->getInt ("knockin_ret_rcpt", -1) == -1) ) {
-                throw std::runtime_error ("Code is only tested for one manipulation at a time!");
-            }
-            this->ret->receptor_knockdown ((size_t)kd, amount);
-            manipulated = true;
-        }
-        kd = this->conf->getInt ("knockdown_tec_rcpt", -1);
-        if (kd > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->receptor_knockdown ((size_t)kd, amount);
-            manipulated = true;
-        }
-        kd = this->conf->getInt ("knockdown_ret_lgnd", -1);
-        if (kd > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->ligand_knockdown ((size_t)kd, amount);
-            manipulated = true;
-        }
-        kd = this->conf->getInt ("knockdown_tec_lgnd", -1);
-        if (kd > -1) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->ligand_knockdown ((size_t)kd, amount);
+            // Knockin/knockdown receptor 0:
+            this->ret->receptor_knockin (0, affected, amount);
+            this->ret->receptor_knockdown (0, amount);
             manipulated = true;
         }
 
@@ -526,6 +455,9 @@ struct Agent1
             this->ax_centroids.targ_compound_tissue();
         }
 
+        if (this->conf->getBool ("reber", false)) {
+            this->ax_centroids.targ_reber();
+        }
         if (this->conf->getBool ("ablate_ret_left", false)) {
             // expected layout has half as many locations, but they're stretched out into the full area?
             this->ax_centroids.targ_expand_topdown();

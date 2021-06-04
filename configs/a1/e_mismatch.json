@@ -2,6 +2,7 @@
     "file" : "Tectum ablation experiment",
 
     "ablate_ret_left" : true,
+    "ablate_tec_top" : true,
 
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 21, 38, 189, 378, 361 ],

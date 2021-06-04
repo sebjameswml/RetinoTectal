@@ -1,10 +1,10 @@
 {
-    "file" : "Tectum ablation experiment",
-
-    "ablate_ret_left" : true,
+    "file" : "Single axon experiment (Gosse)",
 
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
-    "seeaxons" : [ 21, 38, 189, 378, 361 ],
+    "seeaxons" : [ 0 ],
+
+    "singleaxon" : 1,
 
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
