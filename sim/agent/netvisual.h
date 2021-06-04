@@ -116,6 +116,8 @@ public:
         VBOint idx = 0;
 
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
+
+            // The puck for the target position
             this->computeTube (idx,
                                this->locations->targ[i]+puckthick,
                                this->locations->targ[i]-puckthick,
@@ -123,12 +125,14 @@ public:
                                this->locations->clr[i], this->locations->clr[i],
                                this->radiusFixed, 16);
 
+            // A line (cyl. tube) from target to actual position
             this->computeTube (idx,
                                this->locations->targ[i],
                                this->locations->p[i]+actualpuckoffs,
                                this->locations->clr[i], this->locations->clr[i],
                                this->puckthick[2], 8);
 
+            // A slightly smaller puck for actual position
             this->computeTube (idx,
                                this->locations->p[i]+actualpuckoffs+puckthick,
                                this->locations->p[i]+actualpuckoffs-puckthick,
@@ -142,9 +146,7 @@ public:
             morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            //if ((c1-c2).length() < Flt{0.2}) {
             this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
-            //}
         }
     }
 
