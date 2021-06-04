@@ -89,6 +89,7 @@ struct Agent1
     unsigned int framenum = 0;
     void vis (unsigned int stepnum)
     {
+        // crash with e_single occurs at either of these glfw calls
         if (this->goslow == true) {
             glfwWaitEventsTimeout (0.1); // to add artificial slowing
         } else {
@@ -97,6 +98,7 @@ struct Agent1
         this->bv->reinit();
         this->av->reinit();
         this->cv->reinit();
+        this->tcv->reinit();
         this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
@@ -210,11 +212,7 @@ struct Agent1
              || this->conf->getBool ("retinal_graftswap", false)
              || (this->conf->getUInt ("retinal_rotations", 0) > 0)
              || (this->conf->getUInt ("tectal_rotations", 0) > 0) )
-            &&
-            (l1.size() < 2 || l2.size() < 2 || ps.size() < 2)) {
-            //std::cout << "l1.size(): " << l1.size() << ", l2.size(): " << l2.size()
-            //          << ", ps.size(): " << ps.size() << std::endl;
-            //std::cout << l1 << std::endl;
+            && (l1.size() < 2 || l2.size() < 2 || ps.size() < 2)) {
             throw std::runtime_error ("Bad values for locn1, locn2 or patchsize.");
         }
 
@@ -266,36 +264,10 @@ struct Agent1
             manipulated = true;
         }
 
-        // Various tissue ablation manipulations
-        if (this->conf->getBool ("ablate_ret_right", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->ablate_right_half();
-            manipulated = true;
-        }
+        // Various tissue ablation manipulations are possible, we only ablate ret left or tec top.
         if (this->conf->getBool ("ablate_ret_left", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             this->ret->ablate_left_half();
-            manipulated = true;
-        }
-        if (this->conf->getBool ("ablate_ret_top", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->ablate_top_half();
-            manipulated = true;
-        }
-        if (this->conf->getBool ("ablate_ret_bot", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->ret->ablate_bottom_half();
-            manipulated = true;
-        }
-
-        if (this->conf->getBool ("ablate_tec_right", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->ablate_right_half();
-            manipulated = true;
-        }
-        if (this->conf->getBool ("ablate_tec_left", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->ablate_left_half();
             manipulated = true;
         }
         if (this->conf->getBool ("ablate_tec_top", false)) {
@@ -304,11 +276,6 @@ struct Agent1
                 throw std::runtime_error ("Code is only tested for one manipulation at a time!");
             }
             this->tectum->ablate_top_half(); // FIXME: seems to ablate the bottom half?!
-            manipulated = true;
-        }
-        if (this->conf->getBool ("ablate_tec_bot", false)) {
-            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
-            this->tectum->ablate_bottom_half();
             manipulated = true;
         }
 
@@ -369,7 +336,9 @@ struct Agent1
         int kd = this->conf->getInt ("knockdown_ret_rcpt", -1);
         amount = 0.1;
         if (kd > -1) {
-            if (manipulated && (this->conf->getInt ("knockin_ret_rcpt", -1) == -1) ) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            if (manipulated && (this->conf->getInt ("knockin_ret_rcpt", -1) == -1) ) {
+                throw std::runtime_error ("Code is only tested for one manipulation at a time!");
+            }
             this->ret->receptor_knockdown ((size_t)kd, amount);
             manipulated = true;
         }
@@ -402,9 +371,20 @@ struct Agent1
          */
 
         this->bpa = this->mconf->getUInt ("bpa", 8);
-        this->pending_branches.resize(this->ret->num() * bpa);
 
-        this->ax_centroids.init (this->ret->w, this->ret->h);
+        size_t num_branches = this->ret->num() * this->bpa;
+
+        // Can override num branches for single/sparse experiments
+        if (conf->getBool ("singleaxon", false)) { num_branches = this->bpa; }
+
+        this->pending_branches.resize(num_branches);
+
+        if (conf->getBool ("singleaxon", false)) {
+            this->ax_centroids.init (1, 1);
+        } else {
+            this->ax_centroids.init (this->ret->w, this->ret->h);
+        }
+
         // Axon initial positions x and y can be uniformly randomly selected...
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
@@ -413,10 +393,11 @@ struct Agent1
         // A normally distributed perturbation is added for each branch. SD=0.1.
         morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
         // Generate random number sequences all at once
-        std::vector<T> rn_x = rng_x.get (this->ret->num());
-        std::vector<T> rn_y = rng_y.get (this->ret->num());
-        std::vector<T> rn_p = rng_p.get (this->ret->num() * 2 * bpa);
-        std::vector<T> rn_p0 = rng_p0.get (this->ret->num() * 2 * bpa);
+        size_t axc_sz = this->ax_centroids.p.size();
+        std::vector<T> rn_x = rng_x.get (axc_sz); // ax_centroids size?
+        std::vector<T> rn_y = rng_y.get (axc_sz);
+        std::vector<T> rn_p = rng_p.get (axc_sz * 2 * this->bpa);
+        std::vector<T> rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
         T rcpt_max = -1e9;
         T rcpt_min = 1e9;
         bool totally_random = this->mconf->getBool ("totally_random_init", true);
@@ -505,10 +486,18 @@ struct Agent1
             this->pending_branches.resize (pending_branches_reordered.size());
             this->pending_branches.swap (pending_branches_reordered);
         }
+
         /*
+         * Setting upthe 'experiment suggests' information
+         *
+         * This requires some manual setup in the code below - the organisation of the
+         * tissue after a manipulation is based on an interpretation of the various
+         * papers in the literature.
+         *
          * After initialising the ax_centroid targets from the retinal locations, we
-         * have to modify ax_centroid's targ attribute if any of the experimental
-         * manipulations have been applied.
+         * have to modify ax_centroid's targ attribute, which gives the 'experiment
+         * suggests' arrangement, if any of the experimental manipulations have been
+         * applied.
          */
 
         // Have we had a graft swap?
@@ -533,7 +522,8 @@ struct Agent1
         }
 
         if (this->conf->getBool ("compound_retina", false)) {
-            std::cout << "Implement me!\n";
+            // copy tissue::compound_tissue
+            this->ax_centroids.targ_compound_tissue();
         }
 
         if (this->conf->getBool ("ablate_ret_left", false)) {
@@ -651,7 +641,7 @@ struct Agent1
         // Another NetVisual view showing the target locations
         offset[1] -= 1.3f;
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-        this->tcv->viewmode = netvisual_viewmode::target;
+        this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
         this->tcv->addLabel ("experiment suggests", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->tcv);

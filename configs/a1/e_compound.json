@@ -4,6 +4,8 @@
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 21, 38, 189, 378, 361 ],
 
+    "compound_retina" : true,
+
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
 

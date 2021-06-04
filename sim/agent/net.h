@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <morph/Vector.h>
+#include "tissue.h"
 
 template<typename T>
 struct net
@@ -158,4 +159,38 @@ struct rgcnet : public net<T>
             }
         }
     }
+
+    // NOT the same as tissue::compound tissue. For the *targets* we expect two overlaid nets.
+    void targ_compound_tissue (tissue_region retina_mirrored = tissue_region::left_half)
+    {
+        morph::Vector<T,3> fac2y = {1, 2, 1};
+        morph::Vector<T,3> facm2y = {1, -2, 1};
+        morph::Vector<T,3> offstwoy = {0, 2, 0};
+        switch (retina_mirrored) {
+        case tissue_region::right_half:
+        case tissue_region::top_half:
+        case tissue_region::bottom_half:
+            std::cout << "implement\n";
+            break;
+        case tissue_region::left_half:
+        default:
+            // Retina left was copied to right. So See overlay on the y axis of targ
+
+            // Bottom half has locations stretched up
+            for (size_t j = 0; j < this->h/2; ++j) {
+                for (size_t i = 0; i < this->w; ++i) {
+                    this->targ[j+this->w*i] *= fac2y;
+                }
+            }
+            // Top part is folded over and stretched out!
+            for (size_t j = this->h/2; j < this->h; ++j) {
+                for (size_t i = 0; i < this->w; ++i) {
+                    this->targ[j+this->w*i] = offstwoy + (this->targ[j+this->w*i] * facm2y);
+                    //this->targ[j+this->w*i] = oney - this->targ[j+this->w*i];
+                }
+            }
+            break;
+        }
+    }
+
 };

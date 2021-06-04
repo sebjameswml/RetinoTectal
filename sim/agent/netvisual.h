@@ -26,7 +26,8 @@
 enum class netvisual_viewmode
 {
     actual, // Show a visualisation of actual locations and relations
-    target // Show a visualisation of target locations and relations
+    target, // Show a visualisation of target locations and relations
+    targetplus // Show target locations (with relationship net), and actual locations and lines connecting
 };
 
 template <typename Flt>
@@ -46,8 +47,12 @@ public:
     {
         if (this->viewmode == netvisual_viewmode::target) {
             this->initv_target();
-        } else {
+        } else if (this->viewmode == netvisual_viewmode::targetplus) {
+            this->initv_target2();
+        } else if (this->viewmode == netvisual_viewmode::actual) {
             this->initv_actual();
+        } else {
+            throw std::runtime_error ("Unknown netvisual_viewmode");
         }
     }
 
@@ -104,6 +109,45 @@ public:
         }
     }
 
+    //! Draw where the net vertices are EXPECTED (according to their targ attribute) AND
+    //! where the centroid is using an arrow for the difference
+    void initv_target2()
+    {
+        VBOint idx = 0;
+
+        for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
+            this->computeTube (idx,
+                               this->locations->targ[i]+puckthick,
+                               this->locations->targ[i]-puckthick,
+                               morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                               this->locations->clr[i], this->locations->clr[i],
+                               this->radiusFixed, 16);
+
+            this->computeTube (idx,
+                               this->locations->targ[i],
+                               this->locations->p[i]+actualpuckoffs,
+                               this->locations->clr[i], this->locations->clr[i],
+                               this->puckthick[2], 8);
+
+            this->computeTube (idx,
+                               this->locations->p[i]+actualpuckoffs+puckthick,
+                               this->locations->p[i]+actualpuckoffs-puckthick,
+                               morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                               this->locations->clr[i], this->locations->clr[i],
+                               this->radiusFixed*0.667, 16);
+        }
+        // Connections
+        for (auto c : this->locations->c) {
+            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]];
+            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]];
+            std::array<float, 3> clr1 = this->locations->clr[c[0]];
+            std::array<float, 3> clr2 = this->locations->clr[c[1]];
+            //if ((c1-c2).length() < Flt{0.2}) {
+            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
+            //}
+        }
+    }
+
     //! Set this->radiusFixed, then re-compute vertices.
     void setRadius (float fr)
     {
@@ -118,6 +162,8 @@ public:
     //! The maximum length of a line betwen two vertices for it to be visualised
     Flt maxlen = 1e9;
     morph::Vector<float,3> puckthick = { 0, 0, 0.002 };
+    // An offset to the puck for the actual position
+    morph::Vector<float,3> actualpuckoffs = { 0, 0, 0.01 };
     // What to show
     netvisual_viewmode viewmode = netvisual_viewmode::actual;
     //! A normal vector, fixed as pointing up
