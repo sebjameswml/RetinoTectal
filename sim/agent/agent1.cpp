@@ -181,12 +181,12 @@ struct Agent1
         T gr = T{1}/gr_denom; // gr is grid element length
 
         this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                               (expression_form)this->mconf->getUInt ("tectum_form", 0),
-                                               (expression_form)this->mconf->getUInt ("tectum_form", 0));
+                                               (expression_form)this->mconf->getUInt ("tectum_form", 3),
+                                               (expression_form)this->mconf->getUInt ("tectum_form", 3));
 
         this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                            (expression_form)this->mconf->getUInt ("retina_form", 0),
-                                            (expression_form)this->mconf->getUInt ("retina_form", 0));
+                                            (expression_form)this->mconf->getUInt ("retina_form", 2),
+                                            (expression_form)this->mconf->getUInt ("retina_form", 2));
 
         /*
          * Apply any manipulations to retina or tectum
@@ -202,17 +202,31 @@ struct Agent1
         Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
         Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
         Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
-        if (l1.size() < 2 || l2.size() < 2 || ps.size() < 2) {
+        morph::Vector<size_t, 2> l1v;
+        morph::Vector<size_t, 2> l2v;
+        morph::Vector<size_t, 2> psv;
+        // now, those are only used for rotation and graftswap, so only error on that combination
+        if ((this->conf->getBool ("tectal_graftswap", false)
+             || this->conf->getBool ("retinal_graftswap", false)
+             || (this->conf->getUInt ("retinal_rotations", 0) > 0)
+             || (this->conf->getUInt ("tectal_rotations", 0) > 0) )
+            &&
+            (l1.size() < 2 || l2.size() < 2 || ps.size() < 2)) {
             //std::cout << "l1.size(): " << l1.size() << ", l2.size(): " << l2.size()
             //          << ", ps.size(): " << ps.size() << std::endl;
             //std::cout << l1 << std::endl;
             throw std::runtime_error ("Bad values for locn1, locn2 or patchsize.");
         }
 
-        morph::Vector<size_t, 2> l1v = { l1[0].asUInt(), l1[1].asUInt() };
-        morph::Vector<size_t, 2> l2v = { l2[0].asUInt(), l2[1].asUInt() };
-        morph::Vector<size_t, 2> psv = { ps[0].asUInt(), ps[1].asUInt() };
-        std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
+        if (this->conf->getBool ("tectal_graftswap", false)
+            || this->conf->getBool ("retinal_graftswap", false)
+            || (this->conf->getUInt ("retinal_rotations", 0) > 0)
+            || (this->conf->getUInt ("tectal_rotations", 0) > 0) ) {
+            l1v = { l1[0].asUInt(), l1[1].asUInt() };
+            l2v = { l2[0].asUInt(), l2[1].asUInt() };
+            psv = { ps[0].asUInt(), ps[1].asUInt() };
+            std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
+        }
 
         if (this->conf->getBool ("tectal_graftswap", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
@@ -405,7 +419,7 @@ struct Agent1
         std::vector<T> rn_p0 = rng_p0.get (this->ret->num() * 2 * bpa);
         T rcpt_max = -1e9;
         T rcpt_min = 1e9;
-        bool totally_random = this->mconf->getBool ("totally_random_init", false);
+        bool totally_random = this->mconf->getBool ("totally_random_init", true);
 
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
@@ -549,10 +563,10 @@ struct Agent1
         }
 
         // Parameters settable from json
-        this->m[0] = this->mconf->getDouble ("m1", 0.02);
+        this->m[0] = this->mconf->getDouble ("m1", 0.001);
         this->m[1] = this->mconf->getDouble ("m2", 0.2);
-        this->m[2] = this->mconf->getDouble ("m3", 0.15);
-        this->m[3] = this->mconf->getDouble ("mborder", 0.1);
+        this->m[2] = this->mconf->getDouble ("m3", 0.0);
+        this->m[3] = this->mconf->getDouble ("mborder", 0.5);
 
         // morph::Visual init
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
@@ -665,7 +679,7 @@ struct Agent1
     // Branches per axon
     unsigned int bpa = 8;
     // Number of RGCs on a side
-    unsigned int rgcside = 21;
+    unsigned int rgcside = 20;
     // If true, then slow things down a bit in the visualization
     bool goslow = false;
     // How many steps to store history. Note, we might choose not to show all of these
@@ -709,45 +723,66 @@ struct Agent1
 
 int main (int argc, char **argv)
 {
-    // Set up config object
-    std::string paramsfile;
-    std::string paramsfile_mdl;
+    // Set up config objects
+    std::string paramsfile("");
+    std::string paramsfile_mdl("");
 
     if (argc >= 3) {
+        // If given two arguments, then the first is the model config and the second is the expt/sim config
         paramsfile_mdl = std::string(argv[1]);
         paramsfile = std::string(argv[2]);
+    } else if (argc == 2) {
+        // With one argument, we use the same file for both model and expt/sim config
+        paramsfile = std::string(argv[1]);
     } else {
-        // Create an empty/default json file
+        // Create an empty/default json file to run the sim with default values
         paramsfile = "./a1.json";
         morph::Tools::copyStringToFile ("{}\n", paramsfile);
-        paramsfile_mdl = "./a2.json";
-        morph::Tools::copyStringToFile ("{}\n", paramsfile_mdl);
     }
 
+    morph::Config* conf = (morph::Config*)0;
+    morph::Config* mconf = (morph::Config*)0;
+
+    bool need_exit = false;
     std::cout << "Opening params config files " << paramsfile << " and model config " << paramsfile_mdl << std::endl;
-    morph::Config conf(paramsfile);
-    morph::Config mconf(paramsfile_mdl);
-    if (!conf.ready) {
-        std::cerr << "Failed to read sim/expt config " << paramsfile << ". Exiting.\n";
-        return 1;
+    conf = new morph::Config(paramsfile);
+    if (argc < 3) {
+        mconf = conf; // with < two arguments, we use one file for both configs
+    } else {
+        mconf = new morph::Config(paramsfile_mdl);
     }
-    if (!mconf.ready) {
+
+    if (!conf->ready) {
+        std::cerr << "Failed to read sim/expt config " << paramsfile << ". Exiting.\n";
+        need_exit = true;
+    }
+    if (argc > 2 && !mconf->ready) {
         std::cerr << "Failed to read model config " << paramsfile_mdl << ". Exiting.\n";
+        need_exit = true;
+    }
+
+    if (need_exit) {
+        delete conf;
+        if (argc > 2) { delete mconf; }
         return 1;
     }
 
-    if (conf.getBool ("movie", false) == true) {
+    if (conf->getBool ("movie", false) == true) {
         morph::Tools::createDirIf ("./log/agent");
     }
 
-    size_t num_guiders = mconf.getInt("num_guiders", 4);
+    size_t num_guiders = mconf->getInt("num_guiders", 4);
     if (num_guiders == 4) {
-        Agent1<float, 4> model (&conf, &mconf);
+        Agent1<float, 4> model (conf, mconf);
         model.run();
     } else if (num_guiders == 2) {
-        Agent1<float, 2> model (&conf, &mconf);
+        Agent1<float, 2> model (conf, mconf);
         model.run();
     }
 
+    //std::cout << "conf:\n" << conf->str() << std::endl;
+
+    delete conf;
+    if (argc > 2) { delete mconf; }
     return 0;
 }
