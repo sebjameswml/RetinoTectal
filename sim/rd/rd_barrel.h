@@ -627,7 +627,7 @@ public:
         this->sum_a_init = this->sum_a;
 
         // Set up the Gaussian kernel for smoothing ahat
-        if constexpr (this->smooth_ahat == true || smooth_divahat == true) {
+        if constexpr (smooth_ahat == true || smooth_divahat == true) {
             Flt ahat_sigma = this->hextohex_d * Flt{1};
             this->ahat_kernel = new morph::HexGrid (this->hextohex_d, ahat_sigma*Flt{7}, 0, morph::HexDomainShape::Boundary);
             this->ahat_kernel->setCircularBoundary (Flt{3}*ahat_sigma);

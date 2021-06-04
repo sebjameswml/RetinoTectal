@@ -20,12 +20,12 @@ public:
     }
     ~RD_RetTec() {}
 
-    virtual void allocate()
+    virtual void allocate() override
     {
         RD_Barrel<Flt>::allocate();
     }
 
-    virtual void init()
+    virtual void init() override
     {
         std::cout << "RD_RetTec init()" << std::endl;
         // Set up alpha, beta, epsilon (before RD_Barrel::init)
