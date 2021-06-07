@@ -127,7 +127,7 @@ struct Agent1
         for (auto& b : this->branches) { b.compute_next (this->branches, this->tectum, this->m); }
 #endif
         // Update centroids
-        for (unsigned int i = 0; i < this->ret->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
+        for (unsigned int i = 0; i < this->branches.size()/8; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
@@ -336,8 +336,13 @@ struct Agent1
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].aid = (int)ri; // axon index
-            this->pending_branches[i].rcpt = this->ret->rcpt[ri];
-            this->pending_branches[i].target = this->ret->posn[ri];
+            if (conf->getBool ("singleaxon", false)) {
+                this->pending_branches[i].rcpt = this->ret->rcpt[210];
+                this->pending_branches[i].target = this->ret->posn[210];
+            } else {
+                this->pending_branches[i].rcpt = this->ret->rcpt[ri];
+                this->pending_branches[i].target = this->ret->posn[ri];
+            }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
             rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
