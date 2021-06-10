@@ -171,6 +171,8 @@ struct Agent1
         return tv;
     }
 
+    static constexpr size_t singleaxon_idx = 210;
+
     //! Simulation init
     void init()
     {
@@ -337,8 +339,8 @@ struct Agent1
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
-                this->pending_branches[i].rcpt = this->ret->rcpt[210];
-                this->pending_branches[i].target = this->ret->posn[210];
+                this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
+                this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
@@ -463,6 +465,14 @@ struct Agent1
         if (this->conf->getBool ("reber", false)) {
             this->ax_centroids.targ_reber();
         }
+
+        if (conf->getBool ("singleaxon", false)) {
+            // Now put the selected axon's expected final location in.
+            if (!ax_centroids.targ.empty()) {
+                ax_centroids.targ[0] = this->ret->posn[singleaxon_idx].plus_one_dim();
+            }
+        }
+
         if (this->conf->getBool ("ablate_ret_left", false)) {
             // expected layout has half as many locations, but they're stretched out into the full area?
             this->ax_centroids.targ_expand_topdown();
@@ -471,7 +481,6 @@ struct Agent1
         if (this->conf->getBool ("ablate_tec_top", false)) {
             this->ax_centroids.targ_squish_bottomup();
         }
-
 
         /*
          * Now initialise the Visualisation code

@@ -6,6 +6,8 @@
 
     "singleaxon" : 1,
 
+    "graph_ymax" : 0.5,
+
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
 
