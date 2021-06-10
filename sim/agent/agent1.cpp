@@ -90,10 +90,12 @@ struct Agent1
 #endif
     }
 
+    //! Save any relevant results of the simulation to an HdfData object.
     void save (const std::string& outfile)
     {
         morph::HdfData d(outfile, morph::FileAccess::TruncateWrite);
         d.add_val ("/sos", this->ax_centroids.sos());
+        d.add_val ("/steps", this->conf->getUInt ("steps", 1000));
     }
 
 #ifdef VISUALISE
