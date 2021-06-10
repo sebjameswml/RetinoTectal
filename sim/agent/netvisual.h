@@ -82,6 +82,8 @@ public:
                 this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
             }
         }
+
+        this->drawBoundary (idx);
     }
 
     //! Draw where the net vertices are EXPECTED (according to their targ attribute)
@@ -107,6 +109,8 @@ public:
             this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
             //}
         }
+
+        this->drawBoundary (idx);
     }
 
     //! Draw where the net vertices are EXPECTED (according to their targ attribute) AND
@@ -148,6 +152,27 @@ public:
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
         }
+
+        // Finally, draw a square around the domain
+        this->drawBoundary (idx);
+    }
+
+    void drawBoundary (VBOint& idx)
+    {
+        std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
+        float w = 1, h = 1;
+        if (this->locations->p.size() > 1) {
+            w = (this->locations->domain_w-1) * this->locations->dx[0];
+            h = (this->locations->domain_h-1) * this->locations->dx[1];
+        }
+        this->computeLine (idx, morph::Vector<Flt, 3>({0, 0, 0}), morph::Vector<Flt, 3>({w, 0, 0}),
+                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
+        this->computeLine (idx, morph::Vector<Flt, 3>({w, 0, 0}), morph::Vector<Flt, 3>({w, h, 0}),
+                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
+        this->computeLine (idx, morph::Vector<Flt, 3>({w, h, 0}), morph::Vector<Flt, 3>({0, h, 0}),
+                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
+        this->computeLine (idx, morph::Vector<Flt, 3>({0, h, 0}), morph::Vector<Flt, 3>({0, 0, 0}),
+                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
     }
 
     //! Set this->radiusFixed, then re-compute vertices.

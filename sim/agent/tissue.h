@@ -373,9 +373,9 @@ struct guidingtissue : public tissue<T>
         morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
         morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
 
-        // Copy the top half to keep
+        // Copy the bottom half to keep
         size_t k = 0;
-        for (size_t i = this->h/2; i < this->h; ++i) {
+        for (size_t i = 0; i < this->h/2; ++i) {
             for (size_t j = 0; j < this->w; ++j) {
                 posn_new[k] = this->posn[i*this->w+j];
                 rcpt_new[k] = this->rcpt[i*this->w+j];
@@ -385,6 +385,7 @@ struct guidingtissue : public tissue<T>
                 k++;
             }
         }
+
         // Now switch the 'news' to olds and update this->w.
         this->posn.swap(posn_new);
         this->rcpt.swap(rcpt_new);
@@ -404,9 +405,9 @@ struct guidingtissue : public tissue<T>
         morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
         morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
 
-        // Copy the bottom half to keep
+        // Copy the top half to keep
         size_t k = 0;
-        for (size_t i = 0; i < this->h/2; ++i) {
+        for (size_t i = this->h/2; i < this->h; ++i) {
             for (size_t j = 0; j < this->w; ++j) {
                 posn_new[k] = this->posn[i*this->w+j];
                 rcpt_new[k] = this->rcpt[i*this->w+j];
@@ -416,6 +417,7 @@ struct guidingtissue : public tissue<T>
                 k++;
             }
         }
+
         // Now switch the 'news' to olds and update this->w.
         this->posn.swap(posn_new);
         this->rcpt.swap(rcpt_new);

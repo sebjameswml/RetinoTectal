@@ -277,7 +277,7 @@ struct Agent1
             if (manipulated && !this->conf->getBool ("ablate_ret_left", false)) {
                 throw std::runtime_error ("Code is only tested for one manipulation at a time!");
             }
-            this->tectum->ablate_top_half(); // FIXME: seems to ablate the bottom half?!
+            this->tectum->ablate_top_half();
             manipulated = true;
         }
 
@@ -313,7 +313,13 @@ struct Agent1
         if (conf->getBool ("singleaxon", false)) {
             this->ax_centroids.init (1, 1);
         } else {
+            // Although the axons arrange themselves on the tectum, use retina w/h to
+            // initialise as it is the NUMBER of axons on the retina which counts.
             this->ax_centroids.init (this->ret->w, this->ret->h);
+            // To help visualization
+            this->ax_centroids.domain_w = this->tectum->w;
+            this->ax_centroids.domain_h = this->tectum->h;
+            this->ax_centroids.dx = this->tectum->dx;
         }
 
         // Axon initial positions x and y can be uniformly randomly selected...
@@ -479,7 +485,7 @@ struct Agent1
         }
 
         if (this->conf->getBool ("ablate_tec_top", false)) {
-            this->ax_centroids.targ_squish_bottomup();
+            this->ax_centroids.targ_squish_topdown();
         }
 
         /*

@@ -14,6 +14,12 @@ struct net
     size_t w = 0;
     size_t h = 0;
 
+    // To aid with visualisation, store the distance for each unit step in the grid
+    size_t domain_w = 0;
+    size_t domain_h = 0;
+    morph::Vector<float, 2> dx = {1,1};
+    morph::Vector<float, 2> domain_offs = {0,0};
+
     //! Initialize a rectangular net of width w and height h. Note that this resizes p
     //! and arranges c, but does not fill p with positions.
     void init (size_t _w, size_t _h)
@@ -70,6 +76,9 @@ struct rgcnet : public net<T>
 
     //! Tectum has reduced in size so squish the targs up
     void targ_squish_bottomup() { for (auto& t : this->targ) { t[1] = t[1] * T{0.5} + T{0.5}; } }
+
+    //! Tectum has reduced in size so squish the targs down
+    void targ_squish_topdown() { for (auto& t : this->targ) { t[1] = t[1] * T{0.5}; } }
 
     //! Apply a graft rotation to the targs
     void targ_graftrotate (morph::Vector<size_t,2> x1, size_t sz, size_t quarter_rotations)
