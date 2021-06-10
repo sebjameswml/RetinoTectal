@@ -1,4 +1,5 @@
 {
+    "id" : "retablate",
     "file" : "Tectum ablation experiment",
 
     "ablate_ret_left" : true,

@@ -1,4 +1,5 @@
 {
+    "id" : "tecablate",
     "file" : "Tectum ablation experiment",
 
     "ablate_tec_top" : true,

@@ -1,5 +1,6 @@
 {
-    "file" : "An exponential-logarithmic model",
+    "id" : "explog",
+    "desc" : "An exponential-logarithmic model",
 
     "num_guiders" : 4,
     "totally_random_init" : true,

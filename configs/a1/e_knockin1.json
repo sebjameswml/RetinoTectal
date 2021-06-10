@@ -1,4 +1,5 @@
 {
+    "id" : "knockin1",
     "file" : "Knockin one receptor",
 
     "graftswap_coords" : { "locn1" : [2,4], "locn2" : [10,10], "patchsize" : [4,4] },

@@ -20,6 +20,7 @@
 #include <morph/Random.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
+#include <morph/HdfData.h>
 
 #include "branchvisual.h"
 #include "branch.h"
@@ -71,7 +72,9 @@ struct Agent1
             }
 
             this->step();
+#ifdef VISUALISE
             if (i%visevery == 0) { this->vis(i); } // Visualize every 10 doubles time required for program
+#endif
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
                 std::cout << "step " << i << ". Per step: "
@@ -81,10 +84,19 @@ struct Agent1
             }
         }
         std::cout << "Done simulating\n";
+#ifdef VISUALISE
         this->vis(this->conf->getUInt ("steps", 1000));
         this->v->keepOpen();
+#endif
     }
 
+    void save (const std::string& outfile)
+    {
+        morph::HdfData d(outfile, morph::FileAccess::TruncateWrite);
+        d.add_val ("/sos", this->ax_centroids.sos());
+    }
+
+#ifdef VISUALISE
     //! Update the visualization
     unsigned int framenum = 0;
     void vis (unsigned int stepnum)
@@ -111,6 +123,7 @@ struct Agent1
             this->v->saveImage(frame.str());
         }
     }
+#endif
 
     //! Perform one step of the simulation
     void step()
@@ -141,6 +154,7 @@ struct Agent1
         for (auto& b : this->branches) { b.current = b.next; }
     }
 
+#ifdef VISUALISE
     //! Create a tissue visual, to reduce boilerplate code in init()
     tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
@@ -170,6 +184,7 @@ struct Agent1
 
         return tv;
     }
+#endif
 
     static constexpr size_t singleaxon_idx = 210;
 
@@ -510,6 +525,7 @@ struct Agent1
         this->m[2] = this->mconf->getDouble ("m3", 0.0);
         this->m[3] = this->mconf->getDouble ("mborder", 0.5);
 
+#ifdef VISUALISE
         // morph::Visual init
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
         unsigned int wh = static_cast<unsigned int>(0.5625f * (float)ww);
@@ -614,6 +630,7 @@ struct Agent1
 
         // Finally, set any addition parameters that will be needed with calling Agent1::run
         this->goslow = this->conf->getBool ("goslow", false);
+#endif
     }
 
     // The axons to see - these will have their path information stored
@@ -709,17 +726,20 @@ int main (int argc, char **argv)
         return 1;
     }
 
-    if (conf->getBool ("movie", false) == true) {
-        morph::Tools::createDirIf ("./log/agent");
-    }
+    morph::Tools::createDirIf ("./log/agent");
+
+    std::string outfile = std::string("./log/agent/") + mconf->getString("id", "unknown")
+    + std::string("_") + conf->getString("id", "unknown") + std::string(".h5");
 
     size_t num_guiders = mconf->getInt("num_guiders", 4);
     if (num_guiders == 4) {
         Agent1<float, 4> model (conf, mconf);
         model.run();
+        model.save (outfile);
     } else if (num_guiders == 2) {
         Agent1<float, 2> model (conf, mconf);
         model.run();
+        model.save (outfile);
     }
 
     //std::cout << "conf:\n" << conf->str() << std::endl;

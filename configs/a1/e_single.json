@@ -1,4 +1,5 @@
 {
+    "id" : "single",
     "file" : "Single axon experiment (Gosse)",
 
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",

@@ -1,4 +1,5 @@
 {
+    "id" : "quadlog",
     "file" : "A quadratic-logarithmic model",
 
     "num_guiders" : 4,
