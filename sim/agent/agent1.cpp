@@ -687,11 +687,34 @@ int main (int argc, char **argv)
     // Set up config objects
     std::string paramsfile("");
     std::string paramsfile_mdl("");
+    // The 'model id' and 'expt id' are derived from their JSON files' *names*
+    std::string m_id("");
+    std::string e_id("");
 
     if (argc >= 3) {
         // If given two arguments, then the first is the model config and the second is the expt/sim config
         paramsfile_mdl = std::string(argv[1]);
+        std::string fname = paramsfile_mdl; // e.g.: m_el.json
+        morph::Tools::stripUnixPath (fname);
+        // Find the thing between "m_" and ".json"
+        std::vector<std::string> one = morph::Tools::stringToVector (fname, ".json");
+        if (!one.empty()) {
+            std::vector<std::string> two = morph::Tools::stringToVector (one[0], "m_");
+            // two should have size 2, with the first entry an empty string
+            if (two.size() > 1) { m_id = two[1]; }
+            one.clear();
+        }
+
         paramsfile = std::string(argv[2]);
+        fname = paramsfile; // e.g.: e_wt.json
+        morph::Tools::stripUnixPath (fname);
+        // Find the thing between "m_" and ".json"
+        one = morph::Tools::stringToVector (fname, ".json");
+        if (!one.empty()) {
+            std::vector<std::string> two = morph::Tools::stringToVector (one[0], "e_");
+            if (two.size() > 1) { e_id = two[1]; }
+        }
+
     } else if (argc == 2) {
         // With one argument, we use the same file for both model and expt/sim config
         paramsfile = std::string(argv[1]);
@@ -730,8 +753,8 @@ int main (int argc, char **argv)
 
     morph::Tools::createDirIf ("./log/agent");
 
-    std::string outfile = std::string("./log/agent/") + mconf->getString("id", "unknown")
-    + std::string("_") + conf->getString("id", "unknown") + std::string(".h5");
+    std::string outfile = std::string("./log/agent/") + m_id
+    + std::string("_") + e_id + std::string(".h5");
 
     size_t num_guiders = mconf->getInt("num_guiders", 4);
     if (num_guiders == 4) {
