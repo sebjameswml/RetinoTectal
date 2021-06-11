@@ -52,7 +52,11 @@ struct net
     }
 
     //! Return sum of squared distances between p and targ
-    T sos() { return (p-targ).sos()[0]; }
+    T sos() { return ((p-targ).sos()[0]); }
+    //! Return RMS error of each agent from its target
+    T rms() {
+        return std::sqrt(((p-targ).sos()[0]) / this->targ.size());
+    }
 
     //! Positions of the vertices of the net
     morph::vVector<morph::Vector<T, 3>> p;
