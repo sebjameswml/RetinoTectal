@@ -18,16 +18,22 @@
 
 #include <morph/Config.h>
 #include <morph/Random.h>
-#include <morph/Visual.h>
-#include <morph/GraphVisual.h>
 #include <morph/HdfData.h>
 
-#include "branchvisual.h"
+#ifdef VISUALISE
+# include <morph/Visual.h>
+# include <morph/GraphVisual.h>
+#endif
+
 #include "branch.h"
-#include "netvisual.h"
 #include "net.h"
 #include "tissue.h"
-#include "tissuevisual.h"
+
+#ifdef VISUALISE
+# include "branchvisual.h"
+# include "netvisual.h"
+# include "tissuevisual.h"
+#endif
 
 template<typename T, size_t N>
 struct Agent1
@@ -79,7 +85,7 @@ struct Agent1
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
                 std::cout << "step " << i << ". Per step: "
                           << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery << " ms\n";
-                std::cout << "SOS of axon centroids: " << this->ax_centroids.sos() << std::endl;
+                std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
                 laststep = std::chrono::steady_clock::now();
             }
         }
@@ -95,6 +101,7 @@ struct Agent1
     {
         morph::HdfData d(outfile, morph::FileAccess::TruncateWrite);
         d.add_val ("/sos", this->ax_centroids.sos());
+        d.add_val ("/rms", this->ax_centroids.rms());
         d.add_val ("/steps", this->conf->getUInt ("steps", 1000));
     }
 
@@ -668,6 +675,7 @@ struct Agent1
     rgcnet<T> ax_centroids;
     // Path history is a map indexed by axon id. 3D as it's used for vis.
     std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
+#ifdef VISUALISE
     // A visual environment
     morph::Visual* v;
     // Specialised visualization of agents as spheres with a little extra colour patch on top
@@ -680,6 +688,7 @@ struct Agent1
     NetVisual<T>* tcv;
     // A graph for the SOS metric
     morph::GraphVisual<T>* gv;
+#endif
 };
 
 int main (int argc, char **argv)
