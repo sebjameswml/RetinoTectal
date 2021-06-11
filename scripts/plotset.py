@@ -47,6 +47,7 @@ for mi in range(0,len(models)):
     for ei in range(0,len(expts)):
         ax.text (ei-0.25,mi,'{0:.3f}'.format(r[mi][ei]), fontsize=12)
 
+# Sums for each model:
 rs = np.sum(r, axis=1)
 print ('rs: {0}'.format (rs))
 
