@@ -1,7 +1,5 @@
 import numpy as np
-
-import sebcolour
-C = sebcolour.Colour
+from sebcolour import Colour as C
 
 # Set plotting font defaults
 import matplotlib
@@ -48,10 +46,7 @@ with h5py.File (filename, 'r') as f:
     ax1.set_xticklabels(['Ant.','Post.'])
     ax1.set_xlabel ('Collicular A-P axis')
     ax1.set_ylabel ('Normalised expression')
-
     ax1.legend()
 
-
-    #pl.tight_layout()
     pl.savefig('feldheim_genetic_2000_Fig4.svg', transparent=True)
     pl.show()
