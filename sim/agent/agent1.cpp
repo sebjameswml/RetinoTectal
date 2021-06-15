@@ -63,6 +63,18 @@ struct Agent1
             this->branches.swap (this->pending_branches);
         }
 
+        // Are we running the random 'model'?
+        if (this->mconf->getString ("model", "axgrad") == "random") {
+            std::cout << "branches.size(): " << this->branches.size() << std::endl;
+            this->steprandom();
+            std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
+#ifdef VISUALISE
+            this->vis(1);
+            this->v->keepOpen();
+#endif
+            return;
+        }
+
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
 
             if (intro_every > 0 && pb_sz_it != this->pb_sizes.end() && i%intro_every == 0) {
@@ -134,6 +146,30 @@ struct Agent1
     }
 #endif
 
+    //! One step of the simulation in which branches postitions are randomly set
+    void steprandom()
+    {
+        morph::RandUniform<T, std::mt19937> rng(T{0}, T{1.0});
+#if 1
+        // Randomise axon growth cones uniformly.
+        for (auto& b : this->branches) {
+            b.next = {rng.get(), rng.get()};
+            b.current = b.next;
+        }
+        // Update centroids, which should end up as a Poisson distribution
+        for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
+        for (auto& b : this->branches) {
+            this->ax_centroids.p[b.aid][0] += b.current[0] / static_cast<T>(this->bpa);
+            this->ax_centroids.p[b.aid][1] += b.current[1] / static_cast<T>(this->bpa);
+        }
+#else
+        // Only update centroids of ax_centroids
+        for (unsigned int i = 0; i < this->ax_centroids.p.size(); ++i) {
+            this->ax_centroids.p[i] = {rng.get(), rng.get(), rng.get()};
+        }
+#endif
+   }
+
     //! Perform one step of the simulation
     void step()
     {
@@ -149,7 +185,7 @@ struct Agent1
         for (auto& b : this->branches) { b.compute_next (this->branches, this->tectum, this->m); }
 #endif
         // Update centroids
-        for (unsigned int i = 0; i < this->branches.size()/8; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
+        for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
             this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
             this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
@@ -417,6 +453,7 @@ struct Agent1
             // Don't change pending branches at all
         } else {
             std::vector<branch<T, N>> pending_branches_reordered;
+            // FIXME. Should this be 8 or bpa?
             morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
             size_t xstart = this->ret->w/2;
 
@@ -539,8 +576,11 @@ struct Agent1
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
         unsigned int wh = static_cast<unsigned int>(0.5625f * (float)ww);
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
-        this->v = new morph::Visual (ww, wh, "Seb's agent based retinotectal model");
+        this->v = new morph::Visual (ww, ww, "Seb's agent based retinotectal model");
         this->v->backgroundWhite();
+        this->v->ptype = morph::perspective_type::orthographic;
+        this->v->ortho_bl = {-2,-2};
+        this->v->ortho_tr = {2,2};
         if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
 
         // Offset for visuals

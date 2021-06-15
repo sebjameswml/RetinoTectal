@@ -1,11 +1,17 @@
 #!/usr/bin/python
 
+import sys
 import json
 import subprocess
 
+# Get a json file from cmd, if possible, falling back to runset.json if not
+jsonfile = 'runset.json'
+if len(sys.argv) > 1:
+    jsonfile = sys.argv[1]
+
 # Run a set of sims with models and expts specified in json
-jf = open('runset.json')
-data = json.load(jf)
+jfh = open(jsonfile)
+data = json.load(jfh)
 
 for m in data['models']:
     for e in data['expts']:

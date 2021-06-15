@@ -1,0 +1,9 @@
+{
+    "desc" : "A random model - agent positions should be randomly selected",
+
+    "model" : "random",
+
+    "rgcside" : 20,
+
+    "desc_bpa" : "Branches per axon",            "bpa" : 8
+}
