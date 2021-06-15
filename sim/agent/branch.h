@@ -19,19 +19,71 @@ enum class border_effect
 // termination zone, and the algorithm for computing the next position. Could derive
 // from an 'agent' base class. The branches express N Ephrin receptor types (EphA, EphB etc)
 template<typename T, size_t N>
-struct branch
+struct branch_base
 {
+#if 0
     // Is branch k outside the region of the given tissue?
-    bool is_outside (const branch& k, const guidingtissue<T, N>* tissue)
+    bool is_outside (const branch_base* k, const guidingtissue<T, N>* tissue)
     {
-        if (k.current[0] < tissue->x_min()
-            || k.current[0] > tissue->x_max()
-            || k.current[1] > tissue->y_max()
-            || k.current[1] < tissue->y_min()) {
+        if (k->current[0] < tissue->x_min()
+            || k->current[0] > tissue->x_max()
+            || k->current[1] > tissue->y_max()
+            || k->current[1] < tissue->y_min()) {
             return true;
         }
         return false;
     }
+#endif
+
+    // Place the next computed location for path in 'next' so that while computing, we
+    // don't modify the numbers we're working from. After looping through all branches,
+    // place current into next and move on to next time step.
+    morph::Vector<T, 2> current;
+    morph::Vector<T, 2> next;
+
+    // The 'target' location for the axon/branch. This is the origin location in the source tissue (retina)
+    morph::Vector<T, 2> target;
+
+    // Interaction parameters for this branch, taken from the soma in the source
+    // tissue. This is the N receptor expressions at the growth cone.
+    morph::Vector<T, N> rcpt;
+    // Ligands on the RGCs may interact with receptors in the tectal tissue
+    morph::Vector<T, N> lgnd;
+
+    // By default, axons reckoned to be outside tissue. Can also be used to mean "active".
+    bool entered = false;
+
+    // A sequence id
+    int id = 0;
+    // An id for the parent axon (there are many branches per axon)
+    int aid = 0; // this is id/bpa (computed with integer division)
+};
+
+// A branch model inspired by Gebhardt et al 2012 (Balancing of ephrin/Eph forward and
+// reverse signalling as the driving force of adaptive topographic mapping)
+template<typename T, size_t N>
+struct branch_geb : public branch_base<T,N>
+{
+    void compute_next (const std::vector<branch_geb<T, N>>& branches,
+                       const guidingtissue<T, N>* tissue,
+                       const morph::Vector<T, 4>& m)
+    {
+        // WRITEME
+        for (auto k : branches) {
+            if (k.id == this->id) { continue; }
+        }
+    }
+};
+
+// The branch which does chemoaffinity+comp+(forward)interaction
+template<typename T, size_t N>
+struct branch : public branch_base<T,N>
+{
+    // Distance parameter r is used as 2r
+    static constexpr T two_r = T{0.1};
+    static constexpr T r = T{0.05};
+    // Signalling ratio parameter
+    static constexpr T s = T{1.1};
 
     static constexpr bool biological_tectum = true;
     // Compute the next position for this branch, using information from all other
@@ -300,30 +352,4 @@ struct branch
             }
         }
     }
-
-    // Place the next computed location for path in 'next' so that while computing, we
-    // don't modify the numbers we're working from. After looping through all branches,
-    // place current into next and move on to next time step.
-    morph::Vector<T, 2> current;
-    morph::Vector<T, 2> next;
-
-    // The 'target' location for the axon/branch. This is the origin location in the source tissue (retina)
-    morph::Vector<T, 2> target;
-
-    // Interaction parameters for this branch, taken from the soma in the source
-    // tissue. This is the N receptor expressions at the growth cone.
-    morph::Vector<T, N> rcpt;
-
-    // By default, axons reckoned to be outside tissue. Can also be used to mean "active".
-    bool entered = false;
-
-    // A sequence id
-    int id = 0;
-    // An id for the parent axon (there are many branches per axon)
-    int aid = 0; // this is id/bpa (computed with integer division)
-    // Distance parameter r is used as 2r
-    static constexpr T two_r = T{0.1};
-    static constexpr T r = T{0.05};
-    // Signalling ratio parameter
-    static constexpr T s = T{1.1};
 };
