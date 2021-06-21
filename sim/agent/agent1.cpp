@@ -35,7 +35,7 @@
 # include "tissuevisual.h"
 #endif
 
-template<typename T, size_t N>
+template<typename T, size_t N, typename B=branch<T, N>>
 struct Agent1
 {
     Agent1 (morph::Config* cfg, morph::Config* mcfg)
@@ -54,7 +54,7 @@ struct Agent1
     {
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
 
-        typename std::vector<branch<T, N>>::iterator pending_br_it = this->pending_branches.begin();
+        typename std::vector<B>::iterator pending_br_it = this->pending_branches.begin();
         typename morph::vVector<size_t>::iterator pb_sz_it = this->pb_sizes.begin();
         // How often to introduce groups of axons? 0 means 'all at once'
         unsigned int intro_every = this->mconf->getUInt ("intro_every", 0);
@@ -79,7 +79,7 @@ struct Agent1
 
             if (intro_every > 0 && pb_sz_it != this->pb_sizes.end() && i%intro_every == 0) {
                 // Introduce some of pending_branches into branches
-                typename std::vector<branch<T, N>>::iterator brit = this->branches.end();
+                typename std::vector<B>::iterator brit = this->branches.end();
                 std::cout << "Adding " << (*pb_sz_it) << " to this->branches...\n";
                 this->branches.resize (this->branches.size() + *pb_sz_it);
                 brit = this->branches.end();
@@ -232,6 +232,8 @@ struct Agent1
 #endif
 
     static constexpr size_t singleaxon_idx = 210;
+    // Set true to use orthographic projection
+    static constexpr bool use_ortho = false;
 
     //! Simulation init
     void init()
@@ -398,6 +400,7 @@ struct Agent1
         T rcpt_max = -1e9;
         T rcpt_min = 1e9;
         bool totally_random = this->mconf->getBool ("totally_random_init", true);
+        std::string branch_model = this->mconf->getString ("branch_model", "james_agent");
 
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
@@ -406,9 +409,11 @@ struct Agent1
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
+                this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
+                this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
             }
             // Call the first interaction parameter 'EphA'
@@ -418,7 +423,14 @@ struct Agent1
             // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
             morph::Vector<T, 3> initpos;
             if (totally_random == true) {
-                initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+                if (branch_model == "gebhardt") {
+                    // In Gebhardt model, arrange randomly along x axis
+                    initpos = { rn_x[ri] + rn_p[2*i], 0, 0 };
+                    initpos[0] = initpos[0] > 1 ? 1 : initpos[0];
+                    initpos[0] = initpos[0] < 0 ? 0 : initpos[0];
+                } else {
+                    initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+                }
             } else {
                 morph::Vector<T, 2> init_offset = { T{0}, T{-0.5} };
                 morph::Vector<T, 2> init_mult = { T{1}, T{0.2} };
@@ -452,7 +464,7 @@ struct Agent1
         if (this->conf->getBool ("ablate_ret_left", false) || this->conf->getBool ("ablate_tec_top", false)) {
             // Don't change pending branches at all
         } else {
-            std::vector<branch<T, N>> pending_branches_reordered;
+            std::vector<B> pending_branches_reordered;
             // FIXME. Should this be 8 or bpa?
             morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
             size_t xstart = this->ret->w/2;
@@ -468,7 +480,7 @@ struct Agent1
                         // Try to find branches with target xx,yy
                         morph::Vector<T,2> coord = this->ret->coord (xx, yy);
                         // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
-                        typename std::vector<branch<T, N>>::iterator it = this->pending_branches.begin();
+                        typename std::vector<B>::iterator it = this->pending_branches.begin();
                         while (it != this->pending_branches.end()) {
                             if ((it->target - coord).length() < 0.00001) {
                                 pending_branches_reordered.push_back (*it);
@@ -578,9 +590,11 @@ struct Agent1
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
         this->v = new morph::Visual (ww, ww, "Seb's agent based retinotectal model");
         this->v->backgroundWhite();
-        this->v->ptype = morph::perspective_type::orthographic;
-        this->v->ortho_bl = {-2,-2};
-        this->v->ortho_tr = {2,2};
+        if constexpr (use_ortho) {
+            this->v->ptype = morph::perspective_type::orthographic;
+            this->v->ortho_bl = {-2,-2};
+            this->v->ortho_tr = {2,2};
+        }
         if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
 
         // Offset for visuals
@@ -628,7 +642,7 @@ struct Agent1
         offset2[1] -= 1.3f;
 
         // Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->finalize();
@@ -637,7 +651,7 @@ struct Agent1
 
         // This one gives an 'axon view'
         offset[0] += 1.3f;
-        this->av = new BranchVisual<T, N> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
         this->av->axonview = true;
         for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
         this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
@@ -706,9 +720,9 @@ struct Agent1
     // The centre coordinate
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME bit of a hack, this.
     // (rgcside^2 * bpa) branches, as per the paper
-    std::vector<branch<T, N>> branches;
+    std::vector<B> branches;
     // Branches are initialised in pending_branches, and introduced into branches in groups
-    std::vector<branch<T, N>> pending_branches;
+    std::vector<B> pending_branches;
     // If pending_branches contains 'groups' of axons to introduce, then the sizes of each group are given in this container
     morph::vVector<size_t> pb_sizes;
     // Centroid of the branches for each axon
@@ -719,9 +733,9 @@ struct Agent1
     // A visual environment
     morph::Visual* v;
     // Specialised visualization of agents as spheres with a little extra colour patch on top
-    BranchVisual<T, N>* bv;
+    BranchVisual<T, N, B>* bv;
     // Another visualization to show axon paths with only a few axons
-    BranchVisual<T, N>* av;
+    BranchVisual<T, N, B>* av;
     // Centroid visual
     NetVisual<T>* cv;
     // Centroid visual for targets
@@ -805,13 +819,21 @@ int main (int argc, char **argv)
     std::string outfile = std::string("./log/agent/") + m_id
     + std::string("_") + e_id + std::string(".h5");
 
+    std::string branch_model = mconf->getString ("branch_model", "james_agent");
+
     size_t num_guiders = mconf->getInt("num_guiders", 4);
     if (num_guiders == 4) {
-        Agent1<float, 4> model (conf, mconf);
-        model.run();
-        model.save (outfile);
+        if (branch_model == "gebhardt") {
+            Agent1<float, 4, branch_geb<float, 4>> model (conf, mconf);
+            model.run();
+            model.save (outfile);
+        } else {
+            Agent1<float, 4, branch<float, 4>> model (conf, mconf);
+            model.run();
+            model.save (outfile);
+        }
     } else if (num_guiders == 2) {
-        Agent1<float, 2> model (conf, mconf);
+        Agent1<float, 2, branch<float, 2>> model (conf, mconf);
         model.run();
         model.save (outfile);
     }

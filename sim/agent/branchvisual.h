@@ -24,12 +24,12 @@
 
 #include "branch.h"
 
-template <typename Flt, size_t N>
+template <typename Flt, size_t N, typename B=branch<Flt, N>>
 class BranchVisual : public morph::VisualModel
 {
 public:
     BranchVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset,
-                 std::vector<branch<Flt, N>>* _branches,
+                 std::vector<B>* _branches,
                  std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>* _ax_history,
                  bool _axonview = false)
     {
@@ -105,7 +105,7 @@ public:
     }
 
     //! Pointer to a vector of branches to visualise
-    std::vector<branch<Flt, N>>* branches = (std::vector<branch<Flt, N>>*)0;
+    std::vector<B>* branches = (std::vector<B>*)0;
     //! Pointer to axon history, if required.
     std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>* ax_history = (std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>*)0;
     //! Container for axon centroids. Compute here or only vis here?

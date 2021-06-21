@@ -1,5 +1,5 @@
 import numpy as np
-from sebcolour import Colour as C
+from ephcolour import ephcol as C
 
 # Set plotting font defaults
 import matplotlib
@@ -38,8 +38,8 @@ with h5py.File (filename, 'r') as f:
 
     ax1 = fig.add_subplot (1,1,1)
 
-    ax1.plot (ephrinB1_means, color=C.cornflowerblue, label='ephrinB1', linewidth=3)
-    ax1.plot (ephrinB2_means, color=C.deeppink3, label='ephrinB2', linewidth=3)
+    ax1.plot (ephrinB1_means, color=C.ephrinB1, label='ephrinB1', linewidth=3)
+    ax1.plot (ephrinB2_means, color=C.ephrinB2, label='ephrinB2', linewidth=3)
 
     ax1.set_xticks([0,200])
     ax1.set_xticklabels(['Dors.','Vent.'])

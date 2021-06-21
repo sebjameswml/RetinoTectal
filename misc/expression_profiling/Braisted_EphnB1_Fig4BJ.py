@@ -1,5 +1,5 @@
 import numpy as np
-from sebcolour import Colour as C
+from ephcolour import ephcol as C
 
 # Set plotting font defaults
 import matplotlib
@@ -14,7 +14,7 @@ import pylab as pl
 pl.rcParams['svg.fonttype'] = 'none'
 
 # Control overall figure size here
-fig = pl.figure(figsize=(8,10))
+fig = pl.figure(figsize=(16,10))
 
 # Graphing code goes here.
 import h5py
@@ -30,8 +30,8 @@ with h5py.File (filename, 'r') as f:
     key = '{0}/signal/postproc/boxes/means_autoscaled'.format(frame)
     ephrinB1_means = np.array(f[key])
 
-    ax1 = fig.add_subplot (2,1,1)
-    ax1.plot (ephrinB1_means, color=C.cornflowerblue, label='ephrinB1', linewidth=3)
+    ax1 = fig.add_subplot (1,2,1)
+    ax1.plot (ephrinB1_means, color=C.ephrinB1, label='ephrinB1', linewidth=3)
 
     ax1.set_xticks([0,200])
     ax1.set_xticklabels(['Dors.','Vent.'])
@@ -47,8 +47,8 @@ with h5py.File (filename2, 'r') as f:
     key = '{0}/signal/postproc/boxes/means_autoscaled'.format(frame)
     ephrinB1_means = np.array(f[key])
 
-    ax2 = fig.add_subplot (2,1,2)
-    ax2.plot (ephrinB1_means, color=C.cornflowerblue, label='ephrinB1', linewidth=3)
+    ax2 = fig.add_subplot (1,2,2)
+    ax2.plot (ephrinB1_means, color=C.ephrinB1, label='ephrinB1', linewidth=3)
 
     ax2.set_xticks([0,200])
     ax2.set_xticklabels(['Ant.','Post.'])
