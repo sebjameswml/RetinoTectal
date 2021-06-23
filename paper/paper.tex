@@ -210,8 +210,8 @@ is formed on the retinal surface. It has been discovered that the topography
 of the retina is preserved within brain regions that process this information
 such that cells which are adjacent within the retina primarily excite cells
 adjacent in the tectum. This indicates that during development there must
-exist a mechanism which ensures the correct wiring of the axons which leave
-the retina and connect to cells in the tectum.
+exist a mechanism which ensures the correct arrangement of the axons which
+leave the retina and connect to cells in the tectum.
 
 One reason for the success of the study of the retinotectal projection is its
 capacity to be experimentally manipulated. In some non-mammalian species, both
@@ -256,11 +256,12 @@ modelling papers.
 Mini-review here, which contrasts some of the modelling papers. The upshot is
 that a central problem with models is not how the axons know how to get closer
 to their destination, but how they know they have \emph{arrived} at their true
-destination.
+destination. Also make the point that many of the models are phenomenological
+in nature and do not elucidate the mechanisms behind the arrangement.
 
 In a recent paper, we proposed a self-organising mechanism, based on
 morphogenetic signalling gradients, which can arrange
-axons growing from the thalamus into the somatosensory cortex into the well
+axons growing from the thalamus to the somatosensory cortex into the well
 known murine barrel cortex pattern~\cite{james_modelling_2020}. In
 characterising that system, we explored the effect of various types of
 noise. We found that the mechanism was robust to noise in the expression of
@@ -276,7 +277,27 @@ competition mechanism counteracts the drive of axons along the ephrin
 gradient. Will we need the axon-axon interaction mechanism based on
 non-same-Eph repulsion?
 
+Another approach: We present a model of gradient-following based on graded
+interactions between the growth cones of retinal ganglion cell axons and the
+tectal surface. We show that a combination of exponentially graded expression
+in the retina and logarithmically graded expression on the tectum permits a
+purely local model to reproduce the majority of reported phenomena associated
+with retinotectal organisation.
+
 \section{Model}
+
+Our model consists of agents, representing axonal growth cones, originating
+from a square retina and moving upon a square tectum. Each agent carries a set
+of 4 receptors and 4 ligands which are expressed at differing levels depending
+upon the soma's location on the retina. The expression levels of the receptors
+and ligands form gradients across the retinal surface. Receptors are arranged
+in orthogonal pairs with $r_0$ being orthogonal to $r_1$ and $r_2$, whose
+gradient is opposite to $r_0$ is orthogonal to $r_3$. Ligands are also
+arranged in orthogonal pairs, with...
+%
+Similarly, the tectum expresses the same sets of
+receptors and ligands, also in orthogonal pairs of gadients, though not
+necessarily with the same expression function.
 
 \section{Results}
 
