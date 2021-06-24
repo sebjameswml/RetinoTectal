@@ -134,6 +134,7 @@ struct Agent1
         this->tcv->reinit();
         this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         this->v->render();
+        this->tvv->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
             frame << "log/agent/";
@@ -585,15 +586,19 @@ struct Agent1
 
 #ifdef VISUALISE
         // morph::Visual init
+        const float widthtoheight = 0.5625f;
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
-        unsigned int wh = static_cast<unsigned int>(0.5625f * (float)ww);
+        unsigned int wh = static_cast<unsigned int>(widthtoheight * (float)ww);
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
-        this->v = new morph::Visual (ww, ww, "Seb's agent based retinotectal model");
-        this->v->backgroundWhite();
+        this->v = new morph::Visual (ww, ww, "Agent based retinotectal model");
+        this->tvv = new morph::Visual (ww, ww, "Retinal and Tectal expression");
         if constexpr (use_ortho) {
             this->v->ptype = morph::perspective_type::orthographic;
-            this->v->ortho_bl = {-2,-2};
-            this->v->ortho_tr = {2,2};
+            this->v->ortho_bl = {-2,-2*widthtoheight};
+            this->v->ortho_tr = {2,2*widthtoheight};
+            this->tvv->ptype = morph::perspective_type::orthographic;
+            this->tvv->ortho_bl = {-2,-2*widthtoheight};
+            this->tvv->ortho_tr = {2,2*widthtoheight};
         }
         if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
 
@@ -604,21 +609,24 @@ struct Agent1
         morph::Vector<float> offset2 = offset;
         size_t show_pair = 0;
 
+        // Adding to the Tissue Visual first
+        this->tvv->setCurrent();
+
         // Retina
         offset2[1] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
         offset2[0] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
         offset2[1] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
         offset2[1] -= 1.3f;
         // Tectum
         offset2[0] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
         offset2[0] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
         offset2[1] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
         offset2[1] -= 1.3f;
 
         show_pair = 1;
@@ -626,20 +634,23 @@ struct Agent1
         offset2[1] = offset[1] + 2.6f;
         // Retina
         offset2[1] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
         offset2[0] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
         offset2[1] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
         offset2[1] -= 1.3f;
         // Tectum
         offset2[0] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
         offset2[0] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
         offset2[1] += 1.3f;
-        v->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
         offset2[1] -= 1.3f;
+
+        // Adding to the Main Visual second
+        this->v->setCurrent();
 
         // Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
@@ -730,8 +741,10 @@ struct Agent1
     // Path history is a map indexed by axon id. 3D as it's used for vis.
     std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
 #ifdef VISUALISE
-    // A visual environment
+    // A visual environment for the sim
     morph::Visual* v;
+    // A visual environment specifically for the tissue visualisation
+    morph::Visual* tvv;
     // Specialised visualization of agents as spheres with a little extra colour patch on top
     BranchVisual<T, N, B>* bv;
     // Another visualization to show axon paths with only a few axons
