@@ -1,10 +1,10 @@
 #pragma once
 
+#include "branch_base.h"
+
 #include <vector>
-#include <stdexcept>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
-#include <morph/MathConst.h>
 #include "tissue.h"
 
 // A choice of schemes to deal with axon branches that try to move outside the tissue domain
@@ -14,210 +14,6 @@ enum class border_effect
     gradients, // A scheme which acts like there are gradients pushing axon branchs back inside tissue
     penned,     // Axon branches are 'penned in' - once inside the tissue, they can't move outside the tissue region
     penned_pushed // Like 'penned in' but also pushed away from the border with 1/r component as in original
-};
-
-// A retinotectal axon branch class. Holds current and historical positions, a preferred
-// termination zone, and the algorithm for computing the next position. Could derive
-// from an 'agent' base class. The branches express N Ephrin receptor types (EphA, EphB etc)
-template<typename T, size_t N>
-struct branch_base
-{
-#if 0
-    // Is branch k outside the region of the given tissue?
-    bool is_outside (const branch_base* k, const guidingtissue<T, N>* tissue)
-    {
-        if (k->current[0] < tissue->x_min()
-            || k->current[0] > tissue->x_max()
-            || k->current[1] > tissue->y_max()
-            || k->current[1] < tissue->y_min()) {
-            return true;
-        }
-        return false;
-    }
-#endif
-
-    // Place the next computed location for path in 'next' so that while computing, we
-    // don't modify the numbers we're working from. After looping through all branches,
-    // place current into next and move on to next time step.
-    morph::Vector<T, 2> current;
-    morph::Vector<T, 2> next;
-
-    // The 'target' location for the axon/branch. This is the origin location in the source tissue (retina)
-    morph::Vector<T, 2> target;
-
-    // Interaction parameters for this branch, taken from the soma in the source
-    // tissue. This is the N receptor expressions at the growth cone.
-    morph::Vector<T, N> rcpt;
-    // Ligands on the RGCs may interact with receptors in the tectal tissue
-    morph::Vector<T, N> lgnd;
-
-    // By default, axons reckoned to be outside tissue. Can also be used to mean "active".
-    bool entered = false;
-
-    // A sequence id
-    int id = 0;
-    // An id for the parent axon (there are many branches per axon)
-    int aid = 0; // this is id/bpa (computed with integer division)
-};
-
-// A branch model inspired by Gebhardt et al 2012 (Balancing of ephrin/Eph forward and
-// reverse signalling as the driving force of adaptive topographic mapping)
-template<typename T, size_t N>
-struct branch_geb : public branch_base<T,N>
-{
-    // The cone radius, hard coded
-    static constexpr T r = T{0.05};
-
-    // For random angle choice
-    morph::RandUniform<T> rng;
-
-    // To achieve rotation of tectum wrt retina, as in biology then, if N==4:
-    // receptor 0 interacts primarily with ligand 1
-    // receptor 1 interacts primarily with ligand 0
-    // receptor 2 interacts primarily with ligand 3 // opposite to receptor 0
-    // receptor 3 interacts primarily with ligand 2 // opposite to receptor 1
-    void compute_next (const std::vector<branch_geb<T, N>>& branches,
-                       const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 4>& m)
-    {
-        // Sums
-        morph::Vector<T, N> LFRT; // reverse fibre-target signal (for N receptors, N ligands)
-        morph::Vector<T, N> LFRF; // reverse cis (fibre-self) signal
-        morph::Vector<T, N> LFRf; // reverse fibre - other fibres signal
-
-        morph::Vector<T, N> RFLT; // forward fibre-target signal
-        morph::Vector<T, N> RFLF; // forward cis (fibre-self) signal
-        morph::Vector<T, N> RFLf; // forward fibre - other fibres signal
-
-        // Will need to run through other branches to determine the R_f/L_f
-        morph::vVector<morph::Vector<T, N>> Rf(tissue->posn.size());
-        morph::vVector<morph::Vector<T, N>> Lf(tissue->posn.size());
-        for (auto k : branches) {
-            if (k.id == this->id) { continue; }
-            // From location of k (k.current) figure out an idx on the target tissue and
-            // add to Rf[idx] and Lf[idx].
-            size_t idx = std::numeric_limits<size_t>::max();
-            T dist = T{1e9};
-            for (size_t i = 0; i < tissue->posn.size(); ++i) {
-                if ((tissue->posn[i] - k.current).length() < dist) {
-                    dist = (tissue->posn[i] - k.current).length();
-                    idx = i;
-                }
-            }
-            //std::cout << "Current location " << k.current << " adds to field index " << idx << std::endl;
-            Rf[idx] += k.rcpt;
-            Lf[idx] += k.lgnd;
-        }
-
-        // Branch has this->rcpt and this->lgnd corresponding to Gebhardt's R_F and L_F
-        // Tissue has rcpt and lgnd corresponding to Gebhardt's R_T and L_T
-        // Will need to compute R_f L_f accordint to Gebhardt's recipe.
-
-        // First, consider own location, this->current. Consider own radius. Run through
-        // tissue locations summing up R/L_F and R/L_T interactions at each that lies
-        // under the cone.
-
-        // Use this->current and a range of adjacent locations on a circle to determine next location.
-        morph::vVector<morph::Vector<T,2>> candposns;
-        candposns.push_back (this->current);
-        // Choose a random direction to move a distance r (2r?) and evaluate that (G' in Gebhardt et al)
-        T angle = this->rng.get() * T{morph::TWO_PI_D};
-        morph::Vector<T,2> randvec = { this->r * std::sin(angle), this->r * std::cos(angle) };
-        candposns.push_back (this->current+randvec);
-
-        //std::cout << "Current and candidate positions: " << candposns[0] << ", " << candposns[1] << std::endl;
-
-        // Candidate probabilities
-        morph::vVector<T> pdG (2, T{0});;
-
-        for (size_t j = 0; j<candposns.size(); ++j) {
-
-            // Zero the sums
-            LFRT.zero();
-            LFRF.zero();
-            LFRf.zero();
-
-            RFLT.zero();
-            RFLF.zero();
-            RFLf.zero();
-
-            const T a = T{100};
-            for (unsigned int i = 0; i < tissue->posn.size(); ++i) {
-                morph::Vector<T,2> pvec = tissue->posn[i] - candposns[j];
-                T Gaussian = std::exp (-(a*(pvec[0]*pvec[0]) + a*(pvec[1]*pvec[1])));
-                //std::cout << "Gaussian = " << Gaussian << std::endl;
-                //if (pvec.length() <= this->r) { // Actually, in the Gebhardt work, r is defined by the Gaussian getting to 0.01
-                if (Gaussian >= T{0.01}) {
-                    // then posn[i] is under our cone!
-                    morph::Vector<T, N> LgndGauss = this->lgnd * Gaussian;
-                    morph::Vector<T, N> RcptGauss = this->rcpt * Gaussian;
-
-                    // My scheme is that receptor 0 interacts with ligand 1 etc. to achieve
-                    // rotation of tectum wrt retina.
-                    morph::Vector<T, N> LgndGaussR = LgndGauss;
-                    morph::Vector<T, N> RcptGaussR = RcptGauss;
-                    morph::Vector<T, N> tissueRcptR = tissue->rcpt[i];
-                    morph::Vector<T, N> tissueLgndR = tissue->lgnd[i];
-                    morph::Vector<T, N> RfR = Rf[i];
-                    morph::Vector<T, N> LfR = Lf[i];
-                    LgndGaussR.rotate_pairs();
-                    RcptGaussR.rotate_pairs();
-                    tissueRcptR.rotate_pairs();
-                    tissueLgndR.rotate_pairs();
-                    RfR.rotate_pairs();
-                    LfR.rotate_pairs();
-
-                    // Reverse signalling
-                    //std::cout << "Fibre lgnd * Gaussian: " << LgndGauss << std::endl;
-                    LFRT += (LgndGauss * tissueRcptR); // operator* will give element-wise multiplication
-                    LFRF += (LgndGauss * RcptGaussR);
-                    LFRf += (LgndGauss * RfR);
-                    // Forward signalling
-                    //std::cout << "Fibre receptor * Gaussian: " << RcptGauss << std::endl;
-                    RFLT += (RcptGauss * tissueLgndR);
-                    RFLF += (RcptGauss * LgndGaussR);
-                    RFLf += (RcptGauss * LfR);
-                }
-            }
-
-            // Now calculate the 'potential for moving', G resulting from each receptor-ligand pair.
-#if 0
-            std::cout << "LFRT: " << LFRT
-                      << ", LFRF: " << LFRF
-                      << ", LFRf: " << LFRf
-                      << ", RFLT: " << RFLT
-                      << ", RFLF: " << RFLF
-                      << ", RFLf: " << RFLf << std::endl;
-#endif
-            morph::Vector<T, N> G_num = LFRT + LFRF + LFRf;
-            morph::Vector<T, N> G_denom = RFLT + RFLF + RFLf;
-            morph::Vector<T, N> G;
-            if (G_denom.sum()) {
-                G = (G_num / G_denom);
-            } else {
-                G.zero();
-            }
-
-            // Final number is abs(log(G.sum())). This is G_{F,i} from paper
-            T GFi = std::abs(std::log(G.sum()));
-            std::cout << "G: " << G << ", abs(log(G.sum()): " << GFi << std::endl;
-            T sigma = 0.12;
-            // Store candidate G as probability density:
-            pdG[j] = (T{1}/(sigma*T{morph::TWO_PI_D})) * std::exp ( - GFi * GFi / (2*sigma*sigma));
-            std::cout << "pdG[candidate] = " << pdG[j] <<std::endl;
-        }
-
-        // Now, probabilistically determine what this->next will be. Can I do this
-        // continuously? No, not without significant computation.  In Gebhardt, they
-        // look at the 9 adjacent squares and compute G for each, then choose one
-        // probabilistically, weighted by G. I'll do the same.
-
-        // pdG[0] is the current location's potential probability density (pd(G))
-        // pdG[1] is the candidate location's potential
-        T p_change = pdG[1] / pdG.sum();
-        T rn = this->rng.get();
-        this->next = rn < p_change ? candposns[1] : this->current;
-    }
 };
 
 // The branch which does chemoaffinity+comp+(forward)interaction
@@ -249,20 +45,19 @@ struct branch : public branch_base<T,N>
             // 4 receptors and 4 ligand gradients. The 4 receptors are in order: r, u, l, d
             if constexpr (biological_tectum == false) {
                 // If no rotation of tectum wrt retina then:
-                // receptor 0 interacts primarily with ligand gradients (0,1)
-                // receptor 1 interacts primarily with ligand gradients (2,3)
-                // receptor 2 interacts primarily with ligand gradients (4,5) // opposite to receptor 0
-                // receptor 3 interacts primarily with ligand gradients (6,7) // opposite to receptor 1
+                // let receptor 0 interact primarily with ligand gradients (0,1)
+                // let receptor 1 interact primarily with ligand gradients (2,3)
+                // let receptor 2 interact primarily with ligand gradients (4,5) // opposite to receptor 0
+                // let receptor 3 interact primarily with ligand gradients (6,7) // opposite to receptor 1
                 G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2] + this->rcpt[2] * lg[4] + this->rcpt[3] * lg[6];
                 G[1] = this->rcpt[0] * lg[1] + this->rcpt[1] * lg[3] + this->rcpt[2] * lg[5] + this->rcpt[3] * lg[7];
             } else {
-                // To achieve rotation of tectum wrt retina, as in biology then:
-                // receptor 0 interacts primarily with ligand gradients (2,3)
-                // receptor 1 interacts primarily with ligand gradients (0,1)
-                // receptor 2 interacts primarily with ligand gradients (6,7) // opposite to receptor 0
-                // receptor 3 interacts primarily with ligand gradients (4,5) // opposite to receptor 1
-                G[0] = this->rcpt[0] * lg[2] + this->rcpt[1] * lg[0] + this->rcpt[2] * lg[6] + this->rcpt[3] * lg[4];
-                G[1] = this->rcpt[0] * lg[3] + this->rcpt[1] * lg[1] + this->rcpt[2] * lg[7] + this->rcpt[3] * lg[5];
+                // let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
+                // let receptor 1 interact primarily with ligand 2 [gradients (4,5)]
+                // let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
+                // let receptor 3 interact primarily with ligand 0 [gradients (0,1)] // opposite to receptor 1
+                G[0] = this->rcpt[0] * lg[6] + this->rcpt[1] * lg[4] + this->rcpt[2] * lg[2] + this->rcpt[3] * lg[0];
+                G[1] = this->rcpt[0] * lg[7] + this->rcpt[1] * lg[5] + this->rcpt[2] * lg[3] + this->rcpt[3] * lg[1];
             }
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);

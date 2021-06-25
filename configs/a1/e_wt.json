@@ -18,5 +18,5 @@
     "goslow" : false,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 5000
+    "steps" : 1500
 }

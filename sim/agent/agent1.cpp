@@ -26,6 +26,7 @@
 #endif
 
 #include "branch.h"
+#include "branch_geb.h"
 #include "net.h"
 #include "tissue.h"
 

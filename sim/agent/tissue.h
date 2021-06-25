@@ -117,15 +117,15 @@ struct guidingtissue : public tissue<T>
                 // First orthogonal pair of receptors
                 this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
                 this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
-                // First orthogonal pair of ligands
-                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
+                // First orthogonal pair of ligands - note that these oppose the receptors in their gradient
+                this->lgnd[ri][0] = this->lgnd_expression_function (max_x-this->posn[ri][0]);
+                this->lgnd[ri][1] = this->lgnd_expression_function (max_y-this->posn[ri][1]);
 
                 // Second orthogonal pair in opposite sense
                 this->rcpt[ri][2] = this->rcpt_expression_function (max_x-this->posn[ri][0]);
                 this->rcpt[ri][3] = this->rcpt_expression_function (max_y-this->posn[ri][1]);
-                this->lgnd[ri][2] = this->lgnd_expression_function (max_x-this->posn[ri][0]);
-                this->lgnd[ri][3] = this->lgnd_expression_function (max_y-this->posn[ri][1]);
+                this->lgnd[ri][2] = this->lgnd_expression_function (this->posn[ri][0]);
+                this->lgnd[ri][3] = this->lgnd_expression_function (this->posn[ri][1]);
 
             } else if constexpr (N == 2) {
                 // Just one orthogonal pair of receptors and ligands:
@@ -146,8 +146,20 @@ struct guidingtissue : public tissue<T>
         // tissue larger, or go with an algorithm based thing in branch.h
     }
 
+    //! Do you want to debug spacegrad2D?
     static constexpr bool debug_gradf = false;
-    //! Computes the gradient at an element from the expression in the neighbouring elements
+    /*!
+     * Computes the gradient at an element from the expression in the neighbouring elements
+     *
+     * \param f Variable vector (vVector) containing Vectors which encode N scalar fields.
+     *
+     * \param gradf Output. Each Vector in gradf has twice as many fields as the Vectors
+     * in f. The gradients are:
+     *
+     *  gradf[0]: f[0] x gradient          gradf[1]: f[0] y gradient
+     *  gradf[2]: f[1] x gradient          gradf[3]: f[1] y gradient
+     *  ... etc
+     */
     void spacegrad2D (morph::vVector<morph::Vector<T,N>>& f,
                       morph::vVector<morph::Vector<T,(2*N)>>& gradf)
     {
