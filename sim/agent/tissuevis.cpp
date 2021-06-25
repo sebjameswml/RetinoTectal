@@ -1,11 +1,5 @@
 /*
- * Retinotectal model resembling one presented by Hugh Simpson and Geoffrey
- * Goodhill in "A simple model can unify a broad range of phenomena in retinotectal map
- * development", Biol Cybern (2011) 104:9-29
- *
- * I'm bringing the idea of variable interaction with signalling gradients and
- * competition to try to get rid of the non-biological part of Simpson & Goodhill's
- * work.
+ * Just visualise the tissue of agent1.cpp (without running the model)
  */
 
 #include <string>
@@ -94,17 +88,14 @@ int main (int argc, char **argv)
     if (num_guiders == 4) {
         if (branch_model == "gebhardt") {
             Agent1<float, 4, branch_geb<float, 4>> model (conf, mconf);
-            model.run();
-            model.save (outfile);
+            model.showtissue();
         } else {
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
-            model.run();
-            model.save (outfile);
+            model.showtissue();
         }
     } else if (num_guiders == 2) {
         Agent1<float, 2, branch<float, 2>> model (conf, mconf);
-        model.run();
-        model.save (outfile);
+        model.showtissue();
     }
 
     //std::cout << "conf:\n" << conf->str() << std::endl;
