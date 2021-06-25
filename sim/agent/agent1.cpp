@@ -207,7 +207,7 @@ struct Agent1
                                                 const std::string& tag,
                                                 expression_view exview, size_t pair_to_view)
     {
-        tissuevisual<float, N>* tv = new tissuevisual<float, N>(v->shaderprog, v->tshaderprog, gtissue, offset);
+        tissuevisual<float, N>* tv = new tissuevisual<float, N>(this->tvv->shaderprog, this->tvv->tshaderprog, gtissue, offset);
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         tv->cm.setType (morph::ColourMapType::Duochrome);
