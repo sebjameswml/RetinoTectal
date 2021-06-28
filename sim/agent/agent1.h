@@ -239,15 +239,15 @@ struct Agent1
         if (exview == expression_view::receptor_exp) {
             ss << tag << " receptor expression " << (pair_to_view*2) << "/" << (1+pair_to_view*2);
         } else if (exview == expression_view::receptor_grad_x) {
-            ss << tag << " receptor gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
+            ss << tag << " receptor gradient "   << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
         } else if (exview == expression_view::receptor_grad_y) {
-            ss << tag << " receptor gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
+            ss << tag << " receptor gradient "   << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
         } else if (exview == expression_view::ligand_exp) {
-            ss << tag << " ligand expression " << (pair_to_view*2) << "/" << (1+pair_to_view*2);
+            ss << tag << " ligand expression "   << (pair_to_view*2) << "/" << (1+pair_to_view*2);
         } else if (exview == expression_view::ligand_grad_x) {
-            ss << tag << " ligand gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
+            ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
         } else if (exview == expression_view::ligand_grad_y) {
-            ss << tag << " ligand gradient " << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
+            ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
         }
         tv->addLabel (ss.str(), {0.0f, 1.1f, 0.0f});
         tv->finalize();
@@ -259,6 +259,7 @@ struct Agent1
     static constexpr size_t singleaxon_idx = 210;
     // Set true to use orthographic projection
     static constexpr bool use_ortho = false;
+    static constexpr bool use_ortho_tvv = false;
 
     //! Simulation init
     void init()
@@ -470,7 +471,9 @@ struct Agent1
             // y=x. ALSO, if experimental manipulations have been made, then the target
             // positions will need to be modified accordingly.
             morph::Vector<T,2> tpos = this->ret->posn[ri];
+#if 0
             tpos.rotate(); // Achieves swapping of x and y coordinates
+#endif
             this->ax_centroids.targ[ri].set_from (tpos);
             this->ax_centroids.mirrored = true;
 
@@ -526,7 +529,7 @@ struct Agent1
         }
 
         /*
-         * Setting upthe 'experiment suggests' information
+         * Setting up the 'experiment suggests' information
          *
          * This requires some manual setup in the code below - the organisation of the
          * tissue after a manipulation is based on an interpretation of the various
@@ -615,64 +618,74 @@ struct Agent1
     void tvisinit()
     {
 #ifdef VISUALISE
-        const unsigned int ww = this->conf->getUInt ("win_width", 1200);
+        const unsigned int ww = this->conf->getUInt ("win_width", 2000);
         this->tvv = new morph::Visual (ww, ww, "Retinal and Tectal expression");
-        if constexpr (use_ortho) {
+        if constexpr (use_ortho_tvv) {
+            float orthoside = 2.5;
             this->tvv->ptype = morph::perspective_type::orthographic;
-            this->tvv->ortho_bl = {-2,-2*widthtoheight};
-            this->tvv->ortho_tr = {2,2*widthtoheight};
+            this->tvv->ortho_bl = {-orthoside,-orthoside};
+            this->tvv->ortho_tr = {orthoside,orthoside};
         }
 
         this->tvv->setCurrent();
 
-        morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
+        morph::Vector<float> offset = { -1.5f, -2.5f, 0.0f };
         morph::Vector<float> offset2 = offset;
-        size_t show_pair = 0;
+        size_t show_pair = 0; // 0 means show gradients for receptor/ligands 0 and 1.
+
+        float sqside = 1.3f;
 
         // Retina
-        offset2[1] += 1.3f;
+        offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair));
 #ifdef SHOW_RET_GRADS
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
-        offset2[1] += 1.3f;
+        offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
-        offset2[1] -= 1.3f;
+        offset2[1] -= sqside;
 #endif
         // Tectum
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair));
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
-        offset2[0] += 1.3f;
+        // Tectal gradients for 0/1
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
-        offset2[1] += 1.3f;
+        offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
-        offset2[1] -= 1.3f;
+        offset2[1] -= sqside;
 
-        show_pair = 1;
+        show_pair = 1; // 1 means show for 2 and 3.
         offset2[0] = offset[0];
-        offset2[1] = offset[1] + 2.6f;
+        offset2[1] = offset[1] + sqside;
         // Retina
-        offset2[1] += 1.3f;
+        offset2[1] += sqside;
+        // true means cyan-magenta
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, true));
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, true));
 #ifdef SHOW_RET_GRADS
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
-        offset2[1] += 1.3f;
+        offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
-        offset2[1] -= 1.3f;
+        offset2[1] -= sqside;
 #endif
         // Tectum
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, true));
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, true));
-        offset2[0] += 1.3f;
+        offset2[0] += sqside;
+        offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
-        offset2[1] += 1.3f;
+        offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
-        offset2[1] -= 1.3f;
+        offset2[1] -= sqside;
 #endif
     }
 

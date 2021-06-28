@@ -27,6 +27,15 @@ enum class expression_view
     ligand_grad_y
 };
 
+/*!
+ * A tissuevisual provides a view of a guidingtissue region along with a view of the
+ * expression of 2 of ligands or receptors or of the x or y gradient of 2 receptors or
+ * ligands.
+ *
+ * tparam T: Data type for processing. Usually float unless double seems necessary.
+ *
+ * tparam N: There are N receptors and N ligands in the guidingtissue.
+ */
 template <class T, size_t N>
 class tissuevisual : public morph::VisualModel
 {
@@ -62,36 +71,37 @@ public:
         this->dcolour2.resize (this->gtissue->rcpt.size());
 
         if (this->view == expression_view::receptor_exp) {
-            // NB: Only showing TWO of the four receptors here.
             for (unsigned int i = 0; i < this->gtissue->rcpt.size(); ++i) {
-                this->dcolour[i] = this->gtissue->rcpt[i][this->pair_to_view];
-                this->dcolour2[i] = this->gtissue->rcpt[i][this->pair_to_view+1];
-            }
-        } else if (this->view == expression_view::receptor_grad_x) {
-            for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
-                this->dcolour[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view];
-                this->dcolour2[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view+2];
-            }
-        } else if (this->view == expression_view::receptor_grad_y) {
-            for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
-                this->dcolour[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view+1];
-                this->dcolour2[i] = this->gtissue->rcpt_grad[i][2*this->pair_to_view+3];
+                this->dcolour[i] = this->gtissue->rcpt[i][2*this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->rcpt[i][2*this->pair_to_view+1];
             }
         } else if (this->view == expression_view::ligand_exp) {
             for (unsigned int i = 0; i < this->gtissue->lgnd.size(); ++i) {
-                this->dcolour[i] = this->gtissue->lgnd[i][this->pair_to_view];
-                this->dcolour2[i] = this->gtissue->lgnd[i][this->pair_to_view+1];
+                this->dcolour[i] = this->gtissue->lgnd[i][2*this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->lgnd[i][2*this->pair_to_view+1];
+            }
+        } else if (this->view == expression_view::receptor_grad_x) {
+            for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->rcpt_grad[i][4*this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->rcpt_grad[i][4*this->pair_to_view+2];
+            }
+        } else if (this->view == expression_view::receptor_grad_y) {
+            for (unsigned int i = 0; i < this->gtissue->rcpt_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->rcpt_grad[i][4*this->pair_to_view+1];
+                this->dcolour2[i] = this->gtissue->rcpt_grad[i][4*this->pair_to_view+3];
             }
         } else if (this->view == expression_view::ligand_grad_x) {
-            // Show x component for 2 of 4 gradients
+            //std::cout << "Looking at pair_to_view: '"<<pair_to_view<<"', lgnd_grad_x[i][" << (4*this->pair_to_view) << " and " << (4*this->pair_to_view+2) << "]" << std::endl;
+
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
-                this->dcolour[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view];
-                this->dcolour2[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+2];
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view];
+                this->dcolour2[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+2];
             }
         } else if (this->view == expression_view::ligand_grad_y) {
+            //std::cout << "Looking at pair_to_view: '"<<pair_to_view<<"', lgnd_grad_y[i][" << (4*this->pair_to_view+1) << " and " << (4*this->pair_to_view+3) << "]" << std::endl;
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
-                this->dcolour[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+1];
-                this->dcolour2[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+3];
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+1];
+                this->dcolour2[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+3];
             }
         }
 
@@ -187,7 +197,7 @@ public:
     //! What to visualise - receptor expression, ligand expression or their gradient?
     expression_view view = expression_view::receptor_exp;
 
-    //! 0 shows the first pair of gradients, 1 shows the second pair etc.
+    //! 0 shows the first pair of receptor/ligands (0/1), 1 shows the second pair (2/3) etc.
     size_t pair_to_view = 0;
 
 protected:

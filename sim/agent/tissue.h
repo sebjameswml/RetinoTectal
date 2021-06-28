@@ -71,9 +71,15 @@ enum class tissue_region
     right_half   // The right half
 };
 
-//! Tissue which has guidance parameters in the form of a 2D vector which stands for the
-//! expression of 2 or possibly 4 receptor molecules. If positive/negative values are
-//! allowed, then it's 4.
+/*!
+ * Tissue which has guidance parameters in the form of a 2D vector which stands for the
+ * expression of 2 or possibly 4 receptor molecules. If positive/negative values are
+ * allowed, then it's 4.
+ *
+ * tparam T: Data type for processing. Usually float unless double seems necessary.
+ *
+ * tparam N: There are N receptors and N ligands in the guidingtissue.
+ */
 template<typename T, size_t N>
 struct guidingtissue : public tissue<T>
 {
@@ -124,6 +130,7 @@ struct guidingtissue : public tissue<T>
                 // Second orthogonal pair in opposite sense
                 this->rcpt[ri][2] = this->rcpt_expression_function (max_x-this->posn[ri][0]);
                 this->rcpt[ri][3] = this->rcpt_expression_function (max_y-this->posn[ri][1]);
+
                 this->lgnd[ri][2] = this->lgnd_expression_function (this->posn[ri][0]);
                 this->lgnd[ri][3] = this->lgnd_expression_function (this->posn[ri][1]);
 

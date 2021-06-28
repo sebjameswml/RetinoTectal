@@ -16,7 +16,15 @@ enum class border_effect
     penned_pushed // Like 'penned in' but also pushed away from the border with 1/r component as in original
 };
 
-// The branch which does chemoaffinity+comp+(forward)interaction
+// The branch which does chemoaffinity + comp + axon-axon interaction
+//
+// For receptor/ligand interactions we define:
+//
+// let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
+// let receptor 1 interact primarily with ligand 2 [gradients (4,5)]
+// let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
+// let receptor 3 interact primarily with ligand 0 [gradients (0,1)] // opposite to receptor 1
+//
 template<typename T, size_t N>
 struct branch : public branch_base<T,N>
 {
@@ -26,7 +34,6 @@ struct branch : public branch_base<T,N>
     // Signalling ratio parameter
     static constexpr T s = T{1.1};
 
-    static constexpr bool biological_tectum = true;
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m. Will also need location on target tissue,
     // to get its ephrin values.
@@ -43,22 +50,13 @@ struct branch : public branch_base<T,N>
             // First, find the ligand gradients close to the current location b.
             morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
             // 4 receptors and 4 ligand gradients. The 4 receptors are in order: r, u, l, d
-            if constexpr (biological_tectum == false) {
-                // If no rotation of tectum wrt retina then:
-                // let receptor 0 interact primarily with ligand gradients (0,1)
-                // let receptor 1 interact primarily with ligand gradients (2,3)
-                // let receptor 2 interact primarily with ligand gradients (4,5) // opposite to receptor 0
-                // let receptor 3 interact primarily with ligand gradients (6,7) // opposite to receptor 1
-                G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2] + this->rcpt[2] * lg[4] + this->rcpt[3] * lg[6];
-                G[1] = this->rcpt[0] * lg[1] + this->rcpt[1] * lg[3] + this->rcpt[2] * lg[5] + this->rcpt[3] * lg[7];
-            } else {
-                // let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
-                // let receptor 1 interact primarily with ligand 2 [gradients (4,5)]
-                // let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
-                // let receptor 3 interact primarily with ligand 0 [gradients (0,1)] // opposite to receptor 1
-                G[0] = this->rcpt[0] * lg[6] + this->rcpt[1] * lg[4] + this->rcpt[2] * lg[2] + this->rcpt[3] * lg[0];
-                G[1] = this->rcpt[0] * lg[7] + this->rcpt[1] * lg[5] + this->rcpt[2] * lg[3] + this->rcpt[3] * lg[1];
-            }
+            // let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
+            // let receptor 1 interact primarily with ligand 2 [gradients (4,5)]
+            // let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
+            // let receptor 3 interact primarily with ligand 0 [gradients (0,1)] // opposite to receptor 1
+            G[0] = this->rcpt[0] * -lg[6] + this->rcpt[1] * -lg[4] + this->rcpt[2] * -lg[2] + this->rcpt[3] * -lg[0];
+            G[1] = this->rcpt[0] * -lg[7] + this->rcpt[1] * -lg[5] + this->rcpt[2] * -lg[3] + this->rcpt[3] * -lg[1];
+
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
             G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2];
@@ -69,7 +67,9 @@ struct branch : public branch_base<T,N>
         // over the other branches
         morph::Vector<T, 2> C = {0, 0};
         morph::Vector<T, 2> I = {0, 0};
+#ifndef CONE_RECEPTORS_AND_LIGANDS_INTERACT
         morph::Vector<T, 2> nullvec = {0, 0}; // null vector
+#endif
         // Other branches are called k, making a set B_b, with a number of members that I call n_k
         T n_k = T{0};
         for (auto k : branches) {
@@ -83,21 +83,33 @@ struct branch : public branch_base<T,N>
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
             T Q = T{0};
             if constexpr (N == 4) {
-                Q = k.rcpt[0] / this->rcpt[0]
-                + k.rcpt[1] / this->rcpt[1]
-                + k.rcpt[2] / this->rcpt[2]
-                + k.rcpt[3] / this->rcpt[3]; // forward signalling (used predominantly in paper)
+#ifdef CONE_RECEPTORS_AND_LIGANDS_INTERACT
+                // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
+                Q = k.lgnd[3] * this->rcpt[0]
+                + k.lgnd[2] * this->rcpt[1]
+                + k.lgnd[1] * this->rcpt[2]
+                + k.lgnd[0] * this->rcpt[3];
+#else // CONE RECEPTORS and RECEPTORS interact
+                Q = k.lgnd[3] / this->rcpt[0]
+                + k.lgnd[2] / this->rcpt[1]
+                + k.lgnd[1] / this->rcpt[2]
+                + k.lgnd[0] / this->rcpt[3];
+#endif
             } else if constexpr (N == 2) {
-                Q = k.rcpt[0] / this->rcpt[0] + k.rcpt[1] / this->rcpt[1];
+                throw std::runtime_error ("branch::compute_next: Writeme for N=2");
             }
             Q /= N; // to average the effect of each receptor type
-
-            //T Q = this->rcpt[0] / k.rcpt[0] +... ; // reverse signalling
-            //T Q = std::max(k.rcpt[0] / this->rcpt[0], this->rcpt[0] / k.rcpt[0]); // bi-dir signalling
+            //if (W>0) {
+            //    std::cout << "Q[id=" << this->id << "] = " << Q << " and W = "  << W << std::endl;
+            //}
 
             kb.renormalize(); // as in paper, vector bk is a unit vector
+#ifdef CONE_RECEPTORS_AND_LIGANDS_INTERACT
+            I += kb * Q * W; // receptor based signal-induced repulsion
+#else
             I += Q > this->s ? kb * W : nullvec;
-            C += kb * W;
+#endif
+            C += kb * W; // Generic, distance based competition
             //if (W > T{0}) { n_k += T{1}; }
             n_k += W > T{0} ? T{1} : T{0};
         }
