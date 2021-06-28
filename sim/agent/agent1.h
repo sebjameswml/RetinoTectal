@@ -57,10 +57,12 @@ struct Agent1
     //! Just show the tissue. Don't use at same time as run()
     void showtissue()
     {
- #ifdef VISUALISE
+#ifdef VISUALISE
         this->tvisinit();
         this->tvv->render();
         this->tvv->keepOpen();
+#else
+        throw std::runtime_error ("showtissue() only works if VISUALISE was defined during compilation.");
 #endif
     }
 
@@ -222,13 +224,17 @@ struct Agent1
     //! Create a tissue visual, to reduce boilerplate code in init()
     tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
-                                                expression_view exview, size_t pair_to_view)
+                                                expression_view exview, size_t pair_to_view, bool alt_cmap=false)
     {
         tissuevisual<float, N>* tv = new tissuevisual<float, N>(this->tvv->shaderprog, this->tvv->tshaderprog, gtissue, offset);
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         tv->cm.setType (morph::ColourMapType::Duochrome);
-        tv->cm.setHueRG(); // BG is nice
+        if (alt_cmap == true) {
+            tv->cm.setHueCM();
+        } else {
+            tv->cm.setHueRG();
+        }
         std::stringstream ss;
         if (exview == expression_view::receptor_exp) {
             ss << tag << " receptor expression " << (pair_to_view*2) << "/" << (1+pair_to_view*2);
@@ -610,7 +616,6 @@ struct Agent1
     {
 #ifdef VISUALISE
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
-        //unsigned int wh = static_cast<unsigned int>(widthtoheight * (float)ww);
         this->tvv = new morph::Visual (ww, ww, "Retinal and Tectal expression");
         if constexpr (use_ortho) {
             this->tvv->ptype = morph::perspective_type::orthographic;
@@ -618,7 +623,6 @@ struct Agent1
             this->tvv->ortho_tr = {2,2*widthtoheight};
         }
 
-        // Adding to the Tissue Visual first
         this->tvv->setCurrent();
 
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
@@ -629,10 +633,14 @@ struct Agent1
         offset2[1] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
         offset2[0] += 1.3f;
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair));
+#ifdef SHOW_RET_GRADS
+        offset2[0] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
         offset2[1] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
         offset2[1] -= 1.3f;
+#endif
         // Tectum
         offset2[0] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
@@ -647,15 +655,19 @@ struct Agent1
         offset2[1] = offset[1] + 2.6f;
         // Retina
         offset2[1] += 1.3f;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, true));
+        offset2[0] += 1.3f;
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, true));
+#ifdef SHOW_RET_GRADS
         offset2[0] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
         offset2[1] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
         offset2[1] -= 1.3f;
+#endif
         // Tectum
         offset2[0] += 1.3f;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, true));
         offset2[0] += 1.3f;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
         offset2[1] += 1.3f;
