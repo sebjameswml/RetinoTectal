@@ -1,0 +1,18 @@
+(Working abstract)
+
+Modelling the Retinotectal projection - can competition provide a
+stopping mechanism?
+
+In the classic Chemospecificity theory, the retinotectal axon
+projection is thought to use pairs of orthogonal signalling gradients
+in the retina to specify the eventual location of synapses made on the
+surface of the tectum. Similar orthogonal gradients in the tectum
+provide a coordinate system which allows the axons to match their
+prespecified destination with an actual location on the
+tectum. Although the Ephrins have been shown to provide the guidance
+which sends axons towards their destination, no mechanism has yet been
+discovered which actually halts the axonal growth cones in the correct
+location. In this work, we seek to demonstrate that the competition
+mechanism which we have shown is sufficient to form the murine barrel
+pattern is also a candidate mechanism for the arrangement for the
+more continuous retinotectal system.
