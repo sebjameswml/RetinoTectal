@@ -221,6 +221,23 @@ struct Agent1
     }
 
 #ifdef VISUALISE
+    //! Add a suitable set of orientation labels to a square-map visual
+    void addOrientationLabels (morph::VisualModel* vm, const std::string& tag)
+    {
+        // Tag tells us which of the orientation labels to draw
+        if (tag == "Tectal") { // Caudal, Rostral, Medial, Lateral
+            vm->addLabel (std::string("C"), {0.5f, 1.05f, 0.0f});
+            vm->addLabel (std::string("R"), {0.5f, -0.1f, 0.0f});
+            vm->addLabel (std::string("M"), {-0.1f, 0.5f, 0.0f});
+            vm->addLabel (std::string("L"), {1.04f, 0.5f, 0.0f});
+        } else { // Retina: Dorsal, Ventral, Temporal, Nasal
+            vm->addLabel (std::string("D"), {0.5f, 1.05f, 0.0f});
+            vm->addLabel (std::string("V"), {0.5f, -0.1f, 0.0f});
+            vm->addLabel (std::string("T"), {-0.08f, 0.5f, 0.0f});
+            vm->addLabel (std::string("N"), {1.05f, 0.5f, 0.0f});
+        }
+    }
+
     //! Create a tissue visual, to reduce boilerplate code in init()
     tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
@@ -249,7 +266,10 @@ struct Agent1
         } else if (exview == expression_view::ligand_grad_y) {
             ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
         }
-        tv->addLabel (ss.str(), {0.0f, 1.1f, 0.0f});
+        tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f});
+
+        this->addOrientationLabels (tv, tag);
+
         tv->finalize();
 
         return tv;
@@ -470,9 +490,13 @@ struct Agent1
             // *transformed*. That means mirroring the retinal origins about the line
             // y=x. ALSO, if experimental manipulations have been made, then the target
             // positions will need to be modified accordingly.
+#if 0 // raw
             morph::Vector<T,2> tpos = this->ret->posn[ri];
-#if 0
-            tpos.rotate(); // Achieves swapping of x and y coordinates
+#else
+            // To convert from retinal position to tectal position, x'=y and y'=1-x.
+            morph::Vector<T,2> tpos = {0,0};
+            tpos[0] = this->ret->posn[ri][1];
+            tpos[1] = T{1}-this->ret->posn[ri][0];
 #endif
             this->ax_centroids.targ[ri].set_from (tpos);
             this->ax_centroids.mirrored = true;
@@ -633,7 +657,7 @@ struct Agent1
         morph::Vector<float> offset2 = offset;
         size_t show_pair = 0; // 0 means show gradients for receptor/ligands 0 and 1.
 
-        float sqside = 1.3f;
+        float sqside = 1.4f;
 
         // Retina
         offset2[1] += sqside;
@@ -696,12 +720,13 @@ struct Agent1
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
         unsigned int wh = static_cast<unsigned int>(widthtoheight * (float)ww);
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
-        this->v = new morph::Visual (ww, ww, "Agent based retinotectal model");
+        this->v = new morph::Visual (ww, wh, "Agent based retinotectal model");
         if constexpr (use_ortho) {
             this->v->ptype = morph::perspective_type::orthographic;
             this->v->ortho_bl = {-2,-2*widthtoheight};
             this->v->ortho_tr = {2,2*widthtoheight};
         }
+
         if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
 
         // Offset for visuals
@@ -716,6 +741,7 @@ struct Agent1
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->finalize();
         this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->bv, std::string("Tectal"));
         v->addVisualModel (this->bv);
 
         // This one gives an 'axon view'
@@ -736,6 +762,7 @@ struct Agent1
         this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
         this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
         // Another NetVisual view showing the target locations

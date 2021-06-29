@@ -21,9 +21,9 @@ enum class border_effect
 // For receptor/ligand interactions we define:
 //
 // let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
-// let receptor 1 interact primarily with ligand 2 [gradients (4,5)]
+// let receptor 1 interact primarily with ligand 0 [gradients (0,1)]
 // let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
-// let receptor 3 interact primarily with ligand 0 [gradients (0,1)] // opposite to receptor 1
+// let receptor 3 interact primarily with ligand 2 [gradients (4,5)] // opposite to receptor 1
 //
 template<typename T, size_t N>
 struct branch : public branch_base<T,N>
@@ -51,11 +51,11 @@ struct branch : public branch_base<T,N>
             morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
             // 4 receptors and 4 ligand gradients. The 4 receptors are in order: r, u, l, d
             // let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
-            // let receptor 1 interact primarily with ligand 2 [gradients (4,5)]
+            // let receptor 1 interact primarily with ligand 0 [gradients (0,1)]
             // let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
-            // let receptor 3 interact primarily with ligand 0 [gradients (0,1)] // opposite to receptor 1
-            G[0] = this->rcpt[0] * -lg[6] + this->rcpt[1] * -lg[4] + this->rcpt[2] * -lg[2] + this->rcpt[3] * -lg[0];
-            G[1] = this->rcpt[0] * -lg[7] + this->rcpt[1] * -lg[5] + this->rcpt[2] * -lg[3] + this->rcpt[3] * -lg[1];
+            // let receptor 3 interact primarily with ligand 2 [gradients (4,5)] // opposite to receptor 1
+            G[0] = this->rcpt[0] * -lg[6] + this->rcpt[1] * -lg[0] + this->rcpt[2] * -lg[2] + this->rcpt[3] * -lg[4];
+            G[1] = this->rcpt[0] * -lg[7] + this->rcpt[1] * -lg[1] + this->rcpt[2] * -lg[3] + this->rcpt[3] * -lg[5];
 
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
