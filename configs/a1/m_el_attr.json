@@ -1,6 +1,6 @@
 {
     "id" : "explog",
-    "desc" : "An exponential-logarithmic model with repulsive (EphA5/ephrin-A5-like) forward interactions",
+    "desc" : "An exponential-logarithmic model with ATTRACTIVE forward interactions for all receptor/ligand pairs",
 
     "num_guiders" : 4,
     "totally_random_init" : true,
@@ -14,10 +14,10 @@
 
     "desc_directions" : "1 means increasing - getting more expressed with increasing x/y, -1 means decreasing",
     "ret_receptor_directions"    : [ 1, 1,-1,-1],
-    "tectum_ligand_directions"   : [-1, 1, 1,-1],
+    "tectum_ligand_directions"   : [ 1,-1,-1, 1],
 
     "desc_interaction" : "retina forward interaction gives the behaviour of retinal receptor expressing projections when the receptors are activated. May be attraction (1) or repulsion (-1)",
-    "ret_forward_interactions" : [-1,-1,-1,-1],
+    "ret_forward_interactions" : [1,1,1,1],
 
     "desc_non_functional_directions" : "These two direction sets matter for visualisation but aren't currently used by the model",
     "ret_ligand_directions"      : [-1,-1, 1, 1],
