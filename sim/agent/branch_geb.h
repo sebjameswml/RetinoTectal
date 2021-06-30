@@ -26,6 +26,7 @@ struct branch_geb : public branch_base<T,N>
     // receptor 2 interacts primarily with ligand 3 // opposite to receptor 0
     // receptor 3 interacts primarily with ligand 2 // opposite to receptor 1
     void compute_next (const std::vector<branch_geb<T, N>>& branches,
+                       const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
                        const morph::Vector<T, 4>& m)
     {

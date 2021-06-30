@@ -19,11 +19,7 @@ enum class border_effect
 // The branch which does chemoaffinity + comp + axon-axon interaction
 //
 // For receptor/ligand interactions we define:
-//
-// let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
-// let receptor 1 interact primarily with ligand 0 [gradients (0,1)]
-// let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
-// let receptor 3 interact primarily with ligand 2 [gradients (4,5)] // opposite to receptor 1
+// [see compute_next()]
 //
 template<typename T, size_t N>
 struct branch : public branch_base<T,N>
@@ -38,6 +34,7 @@ struct branch : public branch_base<T,N>
     // branches and the parameters vector, m. Will also need location on target tissue,
     // to get its ephrin values.
     void compute_next (const std::vector<branch<T, N>>& branches,
+                       const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
                        const morph::Vector<T, 4>& m)
     {
@@ -49,18 +46,26 @@ struct branch : public branch_base<T,N>
         if constexpr (N==4) {
             // First, find the ligand gradients close to the current location b.
             morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
-            // 4 receptors and 4 ligand gradients. The 4 receptors are in order: r, u, l, d
-            // let receptor 0 interact primarily with ligand 3 [gradients (6,7)]
+            // 4 receptors and 4 ligand gradients.
+            // let receptor 0 interact primarily with ligand 1 [gradients (2,3)]
             // let receptor 1 interact primarily with ligand 0 [gradients (0,1)]
-            // let receptor 2 interact primarily with ligand 1 [gradients (2,3)] // opposite to receptor 0
+            // let receptor 2 interact primarily with ligand 3 [gradients (6,7)] // opposite to receptor 0
             // let receptor 3 interact primarily with ligand 2 [gradients (4,5)] // opposite to receptor 1
-            G[0] = this->rcpt[0] * -lg[6] + this->rcpt[1] * -lg[0] + this->rcpt[2] * -lg[2] + this->rcpt[3] * -lg[4];
-            G[1] = this->rcpt[0] * -lg[7] + this->rcpt[1] * -lg[1] + this->rcpt[2] * -lg[3] + this->rcpt[3] * -lg[5];
+            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[2] : lg[2])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[0] : lg[0])
+            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[6] : lg[6])
+            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[4] : lg[4]);
 
+            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[3] : lg[3])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[1] : lg[1])
+            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[7] : lg[7])
+            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[5] : lg[5]);
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
-            G[0] = this->rcpt[0] * lg[0] + this->rcpt[1] * lg[2];
-            G[1] = this->rcpt[1] * lg[1] + this->rcpt[1] * lg[3];
+            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[2] : lg[2])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[0] : lg[0]);
+            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[3] : lg[3])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[1] : lg[1]);
         }
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop

@@ -63,12 +63,28 @@ enum class expression_form
     log   // A logarithmic function
 };
 
+// Which sense is an expression pattern becoming stronger?
+enum class expression_direction
+{
+    increasing, // More expression as x or y increases
+    decreasing  // Less expression as x or y increases
+};
+
 enum class tissue_region
 {
     top_half,    // Refers to the top part of the tissue (from y_max/2 to y_max)
     bottom_half, // The bottom part of the tissue (0 to y_max/2)
     left_half,   // The left half of the tissue (from 0 to x_max/2)
     right_half   // The right half
+};
+
+// What interaction does a forward signal transmit when ligand binds to receptor?  This
+// is either attraction - the branch climbs the ligand gradient - or repulsion - the
+// branch descends the ligand gradient.
+enum class interaction
+{
+    attraction,
+    repulsion
 };
 
 /*!
@@ -87,6 +103,15 @@ struct guidingtissue : public tissue<T>
     expression_form rcpt_form = expression_form::lin;
     //! With what kind of function are ligands expressed?
     expression_form lgnd_form = expression_form::lin;
+    //! Directions of receptor expression gradients
+    morph::Vector<expression_direction, N> rcpt_dirns;
+    //! Directions of ligand expression gradients
+    morph::Vector<expression_direction, N> lgnd_dirns;
+
+    // Forward signalling interactions when receptors in this tissue are activated
+    morph::Vector<interaction, N> forward_interactions;
+    // Reverse signalling interactions when ligands in this tissue are activated
+    morph::Vector<interaction, N> reverse_interactions;
 
     //! A left-right interaction parameter and an up-down interaction parameter for each
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
@@ -103,12 +128,32 @@ struct guidingtissue : public tissue<T>
     //! Init the wildtype tissue's receptors and ligands.
     guidingtissue(size_t _w, size_t _h,
                   morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
-                  expression_form _rcpt_form = expression_form::lin,
-                  expression_form _lgnd_form = expression_form::lin)
+                  expression_form _rcpt_form,
+                  expression_form _lgnd_form,
+                  morph::Vector<expression_direction, N> _rcpt_dirn,
+                  morph::Vector<expression_direction, N> _lgnd_dirn,
+                  morph::Vector<interaction, N> _for_int,
+                  morph::Vector<interaction, N> _rev_int)
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
+        , rcpt_dirns(_rcpt_dirn)
+        , lgnd_dirns(_lgnd_dirn)
+        , forward_interactions(_for_int)
+        , reverse_interactions(_rev_int)
     {
+#if 0 // Now passed in
+        if constexpr (N == 4) {
+            this->forward_interactions = { interaction::repulsion,    // rcpt[0]---- Must be same
+                                           interaction::attraction,   // rcpt[1]-|------ Must be same
+                                           interaction::repulsion,    // rcpt[2]--  |
+                                           interaction::attraction }; // rcpt[3]-----
+        } else if constexpr (N == 2) {
+            this->forward_interactions = { interaction::repulsion, interaction::repulsion };
+        } else {
+            []<bool flag = false>() { static_assert(flag, "no match"); }();
+        }
+#endif
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
 
@@ -119,28 +164,36 @@ struct guidingtissue : public tissue<T>
 
         // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
+            T xin = T{0};
+            T yin = T{0};
+            if constexpr (N == 4 || N == 2) {
+                // First orthogonal pair of receptors.
+                xin = (this->rcpt_dirns[0] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
+                this->rcpt[ri][0] = this->rcpt_expression_function (xin);
+                yin = (this->rcpt_dirns[1] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
+                this->rcpt[ri][1] = this->rcpt_expression_function (yin);
+                // First orthogonal pair of ligands
+                xin = (this->lgnd_dirns[0] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
+                this->lgnd[ri][0] = this->lgnd_expression_function (xin);
+                yin = (this->lgnd_dirns[1] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
+                this->lgnd[ri][1] = this->lgnd_expression_function (yin);
+            } else {
+                // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
+                []<bool flag = false>() { static_assert(flag, "no match"); }();
+            }
             if constexpr (N == 4) {
-                // First orthogonal pair of receptors
-                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
-                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
-                // First orthogonal pair of ligands - note that these oppose the receptors in their gradient
-                this->lgnd[ri][0] = this->lgnd_expression_function (max_x-this->posn[ri][0]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (max_y-this->posn[ri][1]);
+                // Add a second orthogonal pair for N==4
+                xin = (this->rcpt_dirns[2] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
+                this->rcpt[ri][2] = this->rcpt_expression_function (xin);
+                yin = (this->rcpt_dirns[3] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
+                this->rcpt[ri][3] = this->rcpt_expression_function (yin);
 
-                // Second orthogonal pair in opposite sense
-                this->rcpt[ri][2] = this->rcpt_expression_function (max_x-this->posn[ri][0]);
-                this->rcpt[ri][3] = this->rcpt_expression_function (max_y-this->posn[ri][1]);
-
-                this->lgnd[ri][2] = this->lgnd_expression_function (this->posn[ri][0]);
-                this->lgnd[ri][3] = this->lgnd_expression_function (this->posn[ri][1]);
-
-            } else if constexpr (N == 2) {
-                // Just one orthogonal pair of receptors and ligands:
-                this->rcpt[ri][0] = this->rcpt_expression_function (this->posn[ri][0]);
-                this->rcpt[ri][1] = this->rcpt_expression_function (this->posn[ri][1]);
-                this->lgnd[ri][0] = this->lgnd_expression_function (this->posn[ri][0]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (this->posn[ri][1]);
-            } // else error
+                // Second orthogonal pair of ligands
+                xin = (this->lgnd_dirns[2] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
+                this->lgnd[ri][2] = this->lgnd_expression_function (xin);
+                yin = (this->lgnd_dirns[3] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
+                this->lgnd[ri][3] = this->lgnd_expression_function (yin);
+            }
         }
 
         this->compute_gradients();
