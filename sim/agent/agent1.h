@@ -281,6 +281,42 @@ struct Agent1
     static constexpr bool use_ortho = false;
     static constexpr bool use_ortho_tvv = false;
 
+    morph::Vector<expression_direction, N> get_directions (const std::string& dirns_tag)
+    {
+        morph::Vector<expression_direction, N> dirns;
+        Json::Value arr = this->mconf->getArray (dirns_tag);
+        if (arr.size() > 0) {
+            for (unsigned int i = 0; i < arr.size(); ++i) {
+                dirns[i] = arr[i].asInt() > 0 ? expression_direction::increasing : expression_direction::decreasing;
+            }
+        }
+        return dirns;
+    }
+
+    morph::Vector<interaction, N> get_interactions (const std::string& interactions_tag)
+    {
+        morph::Vector<interaction, N> interactions;
+        Json::Value arr = this->mconf->getArray (interactions_tag);
+        if (arr.size() > 0) {
+            for (unsigned int i = 0; i < arr.size(); ++i) {
+                interactions[i] = arr[i].asInt() > 0 ? interaction::attraction : interaction::repulsion;
+            }
+        }
+        return interactions;
+    }
+
+    morph::Vector<expression_form, N> get_forms (const std::string& tag)
+    {
+        morph::Vector<expression_form, N> function_forms;
+        Json::Value arr = this->mconf->getArray (tag);
+        if (arr.size() > 0) {
+            for (unsigned int i = 0; i < arr.size(); ++i) {
+                function_forms[i] = (expression_form)arr[i].asUInt();
+            }
+        }
+        return function_forms;
+    }
+
     //! Simulation init
     void init()
     {
@@ -292,105 +328,39 @@ struct Agent1
         T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom; // gr is grid element length
 
-        if constexpr (N==4) {
+        // Get tissue parameters - expression directions, forms, interactions - from JSON
+        morph::Vector<expression_form, N> ret_receptor_forms = this->get_forms ("ret_receptor_forms");
+        morph::Vector<expression_form, N> ret_ligand_forms = this->get_forms ("ret_ligand_forms");
+        morph::Vector<expression_direction, N> ret_receptor_directions = this->get_directions ("ret_receptor_directions");
+        morph::Vector<expression_direction, N> ret_ligand_directions = this->get_directions ("ret_ligand_directions");
+        morph::Vector<interaction, N> ret_forward_interactions = this->get_interactions ("ret_forward_interactions");
+        // Set reverse interactions same as forward for now:
+        morph::Vector<interaction, N> ret_reverse_interactions = this->get_interactions ("ret_forward_interactions");
 
+        morph::Vector<expression_form, N> tectum_receptor_forms = this->get_forms ("tectum_receptor_forms");
+        morph::Vector<expression_form, N> tectum_ligand_forms = this->get_forms ("tectum_ligand_forms");
+        morph::Vector<expression_direction, N> tectum_receptor_directions =  this->get_directions ("tectum_receptor_directions");
+        morph::Vector<expression_direction, N> tectum_ligand_directions =  this->get_directions ("tectum_ligand_directions");
+        // Tectum interactions don't matter - they don't have an effect, nor are they visualised.
+        morph::Vector<interaction, N> tectum_forward_interactions = this->get_interactions ("tectum_forward_interactions");
+        morph::Vector<interaction, N> tectum_reverse_interactions = this->get_interactions ("tectum_forward_interactions");
+
+        if constexpr (N==4 || N==2) {
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                                (expression_form)this->mconf->getUInt ("retina_form", 2),
-                                                (expression_form)this->mconf->getUInt ("retina_form", 2),
-                                                morph::Vector<expression_direction, N>({ // receptor directions
-                                                        expression_direction::increasing,
-                                                        expression_direction::increasing,
-                                                        expression_direction::decreasing,
-                                                        expression_direction::decreasing
-                                                    }),
-                                                morph::Vector<expression_direction, N>({ // ligand directions DON'T CARE FOR RET
-                                                        expression_direction::increasing,
-                                                        expression_direction::increasing,
-                                                        expression_direction::decreasing,
-                                                        expression_direction::decreasing
-                                                    }),
-                                                morph::Vector<interaction, N>({ // forward interaction
-                                                        interaction::repulsion,
-                                                        interaction::repulsion,
-                                                        interaction::repulsion,
-                                                        interaction::repulsion
-                                                    }),
-                                                morph::Vector<interaction, N>({ // reverse interaction DON'T CARE
-                                                        interaction::repulsion,
-                                                        interaction::repulsion,
-                                                        interaction::repulsion,
-                                                        interaction::repulsion
-                                                    }));
+                                                ret_receptor_forms,
+                                                ret_ligand_forms,
+                                                ret_receptor_directions,
+                                                ret_ligand_directions,
+                                                ret_forward_interactions,
+                                                ret_reverse_interactions);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                                   (expression_form)this->mconf->getUInt ("tectum_form", 3),
-                                                   (expression_form)this->mconf->getUInt ("tectum_form", 3),
-                                                   morph::Vector<expression_direction, N>({ // receptor directions DON'T CARE FOR TECTUM
-                                                           expression_direction::increasing,
-                                                           expression_direction::increasing,
-                                                           expression_direction::decreasing,
-                                                           expression_direction::decreasing
-                                                       }),
-                                                   morph::Vector<expression_direction, N>({ // ligand directions
-                                                           expression_direction::decreasing,
-                                                           expression_direction::increasing,
-                                                           expression_direction::increasing,
-                                                           expression_direction::decreasing
-                                                       }),
-                                                   morph::Vector<interaction, N>({ // forward interaction DON'T CARE FOR TECTUM
-                                                           interaction::repulsion,
-                                                           interaction::repulsion,
-                                                           interaction::repulsion,
-                                                           interaction::repulsion
-                                                       }),
-                                                   morph::Vector<interaction, N>({ // reverse interaction DON'T CARE
-                                                           interaction::repulsion,
-                                                           interaction::repulsion,
-                                                           interaction::repulsion,
-                                                           interaction::repulsion
-                                                       }));
-
-        } else if constexpr (N==2) {
-
-            this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                                (expression_form)this->mconf->getUInt ("retina_form", 2),
-                                                (expression_form)this->mconf->getUInt ("retina_form", 2),
-                                                morph::Vector<expression_direction, N>({ // receptor directions
-                                                        expression_direction::increasing,
-                                                        expression_direction::decreasing
-                                                    }),
-                                                morph::Vector<expression_direction, N>({ // ligand directions
-                                                        expression_direction::increasing,
-                                                        expression_direction::decreasing
-                                                    }),
-                                                morph::Vector<interaction, N>({ // forward interaction
-                                                        interaction::repulsion,
-                                                        interaction::repulsion
-                                                    }),
-                                                morph::Vector<interaction, N>({ // reverse interaction
-                                                        interaction::repulsion,
-                                                        interaction::repulsion
-                                                    }));
-
-            this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
-                                                   (expression_form)this->mconf->getUInt ("tectum_form", 3),
-                                                   (expression_form)this->mconf->getUInt ("tectum_form", 3),
-                                                   morph::Vector<expression_direction, N>({ // receptor directions
-                                                           expression_direction::increasing,
-                                                           expression_direction::decreasing
-                                                       }),
-                                                   morph::Vector<expression_direction, N>({ // ligand directions
-                                                           expression_direction::increasing,
-                                                           expression_direction::decreasing
-                                                       }),
-                                                   morph::Vector<interaction, N>({ // forward interaction
-                                                           interaction::repulsion,
-                                                           interaction::repulsion
-                                                       }),
-                                                   morph::Vector<interaction, N>({ // reverse interaction
-                                                           interaction::repulsion,
-                                                           interaction::repulsion
-                                                       }));
+                                                   tectum_receptor_forms,
+                                                   tectum_ligand_forms,
+                                                   tectum_receptor_directions,
+                                                   tectum_ligand_directions,
+                                                   tectum_forward_interactions,
+                                                   tectum_reverse_interactions);
         } else {
             // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
             []<bool flag = false>() { static_assert(flag, "N must be 2 or 4"); }();

@@ -100,9 +100,9 @@ template<typename T, size_t N>
 struct guidingtissue : public tissue<T>
 {
     //! With what kind of function are receptors expressed?
-    expression_form rcpt_form = expression_form::lin;
+    morph::Vector<expression_form, N> rcpt_form;
     //! With what kind of function are ligands expressed?
-    expression_form lgnd_form = expression_form::lin;
+    morph::Vector<expression_form, N> lgnd_form;
     //! Directions of receptor expression gradients
     morph::Vector<expression_direction, N> rcpt_dirns;
     //! Directions of ligand expression gradients
@@ -128,8 +128,8 @@ struct guidingtissue : public tissue<T>
     //! Init the wildtype tissue's receptors and ligands.
     guidingtissue(size_t _w, size_t _h,
                   morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
-                  expression_form _rcpt_form,
-                  expression_form _lgnd_form,
+                  morph::Vector<expression_form, N> _rcpt_form,
+                  morph::Vector<expression_form, N> _lgnd_form,
                   morph::Vector<expression_direction, N> _rcpt_dirn,
                   morph::Vector<expression_direction, N> _lgnd_dirn,
                   morph::Vector<interaction, N> _for_int,
@@ -142,18 +142,6 @@ struct guidingtissue : public tissue<T>
         , forward_interactions(_for_int)
         , reverse_interactions(_rev_int)
     {
-#if 0 // Now passed in
-        if constexpr (N == 4) {
-            this->forward_interactions = { interaction::repulsion,    // rcpt[0]---- Must be same
-                                           interaction::attraction,   // rcpt[1]-|------ Must be same
-                                           interaction::repulsion,    // rcpt[2]--  |
-                                           interaction::attraction }; // rcpt[3]-----
-        } else if constexpr (N == 2) {
-            this->forward_interactions = { interaction::repulsion, interaction::repulsion };
-        } else {
-            []<bool flag = false>() { static_assert(flag, "no match"); }();
-        }
-#endif
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
 
@@ -169,14 +157,14 @@ struct guidingtissue : public tissue<T>
             if constexpr (N == 4 || N == 2) {
                 // First orthogonal pair of receptors.
                 xin = (this->rcpt_dirns[0] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->rcpt[ri][0] = this->rcpt_expression_function (xin);
+                this->rcpt[ri][0] = this->rcpt_expression_function (xin, 0);
                 yin = (this->rcpt_dirns[1] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->rcpt[ri][1] = this->rcpt_expression_function (yin);
+                this->rcpt[ri][1] = this->rcpt_expression_function (yin, 1);
                 // First orthogonal pair of ligands
                 xin = (this->lgnd_dirns[0] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->lgnd[ri][0] = this->lgnd_expression_function (xin);
+                this->lgnd[ri][0] = this->lgnd_expression_function (xin, 0);
                 yin = (this->lgnd_dirns[1] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (yin);
+                this->lgnd[ri][1] = this->lgnd_expression_function (yin, 1);
             } else {
                 // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
                 []<bool flag = false>() { static_assert(flag, "no match"); }();
@@ -184,15 +172,15 @@ struct guidingtissue : public tissue<T>
             if constexpr (N == 4) {
                 // Add a second orthogonal pair for N==4
                 xin = (this->rcpt_dirns[2] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->rcpt[ri][2] = this->rcpt_expression_function (xin);
+                this->rcpt[ri][2] = this->rcpt_expression_function (xin, 2);
                 yin = (this->rcpt_dirns[3] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->rcpt[ri][3] = this->rcpt_expression_function (yin);
+                this->rcpt[ri][3] = this->rcpt_expression_function (yin, 3);
 
                 // Second orthogonal pair of ligands
                 xin = (this->lgnd_dirns[2] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->lgnd[ri][2] = this->lgnd_expression_function (xin);
+                this->lgnd[ri][2] = this->lgnd_expression_function (xin, 2);
                 yin = (this->lgnd_dirns[3] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->lgnd[ri][3] = this->lgnd_expression_function (yin);
+                this->lgnd[ri][3] = this->lgnd_expression_function (yin, 3);
             }
         }
 
@@ -338,8 +326,8 @@ struct guidingtissue : public tissue<T>
         return rtn;
     }
 
-    T rcpt_expression_function (const T& x) const { return this->expression_function (x, this->rcpt_form); }
-    T lgnd_expression_function (const T& x) const { return this->expression_function (x, this->lgnd_form); }
+    T rcpt_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->rcpt_form[i]); }
+    T lgnd_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->lgnd_form[i]); }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return
     //! this.  Note: Not a function (like linear_gradient()) but a lookup, because this
