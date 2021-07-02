@@ -54,9 +54,7 @@ struct net
     //! Return sum of squared distances between p and targ
     T sos() { return ((p-targ).sos()[0]); }
     //! Return RMS error of each agent from its target
-    T rms() {
-        return std::sqrt(((p-targ).sos()[0]) / this->targ.size());
-    }
+    T rms() { return std::sqrt(((p-targ).sos()[0]) / this->targ.size()); }
 
     //! Positions of the vertices of the net
     morph::vVector<morph::Vector<T, 3>> p;
@@ -213,16 +211,16 @@ struct rgcnet : public net<T>
 
         // Reber expt: knockdown one EphR, selectively knockin another. Both are equivalent to our rcpt[0].
 
-        // Bottom half has locations stretched up
+        // Bottom half has locations stretched down
         for (size_t j = 0; j < this->h/2; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
+                this->targ[j+this->w*i] -= offshalfy;
                 this->targ[j+this->w*i] *= fac2y;
             }
         }
-        // Top part is shifted/stretched down
+        // Top part is shifted/stretched up
         for (size_t j = this->h/2; j < this->h; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
-                this->targ[j+this->w*i] -= offshalfy;
                 this->targ[j+this->w*i] *= fac2y;
             }
         }
