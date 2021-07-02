@@ -54,17 +54,15 @@ struct Agent1
     static constexpr unsigned int showevery = 100;
     static constexpr unsigned int visevery = 5;
 
+#ifdef VISUALISE
     //! Just show the tissue. Don't use at same time as run()
     void showtissue()
     {
-#ifdef VISUALISE
         this->tvisinit();
         this->tvv->render();
         this->tvv->keepOpen();
-#else
-        throw std::runtime_error ("showtissue() only works if VISUALISE was defined during compilation.");
-#endif
     }
+#endif
 
     //! Run this model!
     void run()
@@ -154,7 +152,6 @@ struct Agent1
         this->tcv->reinit();
         this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         this->v->render();
-        //this->tvv->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
             frame << "log/agent/";
@@ -363,7 +360,7 @@ struct Agent1
                                                    tectum_reverse_interactions);
         } else {
             // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
-            []<bool flag = false>() { static_assert(flag, "N must be 2 or 4"); }();
+            []<bool flag = false>() { static_assert (flag, "N must be 2 or 4"); }();
         }
 
         /*
@@ -553,17 +550,15 @@ struct Agent1
 
             // The target for axon centroids is defined by their origin location on the
             // retina. However, their target on the tectum is the retinal position
-            // *transformed*. That means mirroring the retinal origins about the line
-            // y=x. ALSO, if experimental manipulations have been made, then the target
-            // positions will need to be modified accordingly.
-#if 0 // raw
-            morph::Vector<T,2> tpos = this->ret->posn[ri];
-#else
+            // *transformed*. That means rotating the retinal positions by 90 degrees
+            // clockwise. ALSO, if experimental manipulations have been made, then the
+            // target positions will need to be modified accordingly.
+
             // To convert from retinal position to tectal position, x'=y and y'=1-x.
             morph::Vector<T,2> tpos = {0,0};
             tpos[0] = this->ret->posn[ri][1];
-            tpos[1] = T{1}-this->ret->posn[ri][0];
-#endif
+            tpos[1] = T{1} - this->ret->posn[ri][0];
+
             this->ax_centroids.targ[ri].set_from (tpos);
             this->ax_centroids.mirrored = true;
 
@@ -649,7 +644,7 @@ struct Agent1
         }
 
         if ((rots = this->conf->getUInt ("retinal_rotations", 0)) > 0) {
-            std::cout << "WARNING: graft rotation applied to retina, but axon centroids net was not updated with a prediction\n";
+            throw std::runtime_error("WARNING: graft rotation applied to retina, but axon centroids net was not updated with a prediction");
         }
 
         if (this->conf->getBool ("compound_retina", false)) {
@@ -890,7 +885,7 @@ struct Agent1
     std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
     // Receptor max and min - used across init() and visinit()
     T rcpt_max = -1e9;
-        T rcpt_min = 1e9;
+    T rcpt_min = 1e9;
 
 #ifdef VISUALISE
     // A visual environment for the sim
