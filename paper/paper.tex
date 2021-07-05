@@ -223,13 +223,13 @@ mid-twentieth century, leading to Sperry's 1963 summary of
 the \emph{chemoaffinity theory}~\cite{sperry_chemoaffinity_1963} which
 proposes the existence of morphogenetic gradients that guide axons to their
 destination. The chemoaffinity theory was given robust support by the
-discovery of the ephrin ligands and their receptors~\cite{first_ephrin_paper}
+discovery of the ephrin ligands and their receptors~\cite{cheng_complementary_1995,drescher_vitro_1995}
 which have been shown to form into graded expression fields in the
-retina~\cite{ephrin_retina}, tectum~\cite{ephrin_tectum} as well as in other
+retina~\cite{braisted_graded_1997}, tectum~\cite{braisted_graded_1997,feldheim_genetic_2000} as well as in other
 sensory systems, such as the somatosensory
-system~\cite{vanderhaegen_as_in_elife_paper}. The Ephrin ligands have a clear
-effect on axonal outgrowth, as shown in in-vitro~\cite{one} and
-in-vivo~\cite{another} studies.
+system~\cite{vanderhaeghen_mapping_2000}. The Ephrin ligands have a clear
+effect on axonal outgrowth, as shown in in-vitro~\cite{cheng_complementary_1995,drescher_vitro_1995,hansen_retinal_2004} and
+in-vivo~\cite{rodger_transient_2000,mann_topographic_2002,hindges_ephb_2002} studies.
 %
 % A-P:
 %
@@ -288,24 +288,78 @@ retinotectal organisation.
 
 \section{Model}
 
-Our model consists of agents, representing axonal growth cones, originating
-from a square retina and moving upon a square tectum. Each agent carries a set
-of 4 receptors, $r$, and 4 ligands, $l$, which it expresses at differing
-levels depending upon the soma's origin on the retina. The expression levels
-of the receptors and ligands form gradients across the retinal
-surface. Receptors are arranged in orthogonal pairs with the gradient of $r_0$
-being orthogonal to that of $r_1$. $r_2$, whose gradient is opposite to $r_0$
-is orthogonal to $r_3$. Ligands are also arranged in orthogonal pairs, with
-$l_0$ opposing $r_0$ (as $r_0$ increases, $l_0$ decreases) and $l_1$
-orthogonal to $l_0$ and opposing $r_1$. While we do not explicitly name $r_0$,
-$r_1$, etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes
-EphA, EphB and Ryk~\cite{schmitt_wntryk_2006} receptors and that $l$ includes
-the ephrin-A, ephrin-B and Wnt3~\cite{schmitt_wntryk_2006} ligands.
+\subsection{Receptor and ligand expression}
+
+Our model was inspired by the agent-based model of \cite{simpson_simple_2011}
+and, in common with that work, consists of agents representing axonal growth
+cones, originating from a square retina and moving upon a square tectum. In
+our model, each retinal ganglion cell projects $n=8$ growth cone agents which
+carry a set of 4 receptors, $r$, and 4 ligands, $l$, expressed at levels
+determined by the cell's location on the retina. The expression levels of the
+receptors and ligands vary with respect to the cell's position on the retinal
+surface. Each receptor or ligand varies with respect only to one dimension.
+Receptor expression gradients are arranged in orthogonal pairs with the
+gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose gradient is
+opposite to $r_0$, is orthogonal to $r_3$. Ligands are also arranged in
+orthogonal pairs, with $l_0$ opposing $r_0$ (as $r_0$ increases, $l_0$
+decreases) and $l_1$ orthogonal to $l_0$ and opposing $r_1$.
+
+Because there is evidence that EphA and EphB receptors are expressed in
+exponentially increasing
+patterns \cite{reber_relative_2004,feldheim_genetic_2000,brown_topographic_2000,koulakov_stochastic_2004},
+we use an exponential form for retinal receptor expressions, in common with
+other modelling
+studies~\cite{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
 %
 The tectum expresses the same sets of receptors and ligands, also in
-orthogonal pairs of gradients, though not necessarily with the same expression
-function. Figure~\ref{f:1} shows colour maps of receptor and ligand
-expression, in this case experssion maps are linear.
+orthogonal pairs of gradients. In this work, we did not consider the effect of
+reverse signalling from tectal receptors to RGC ligands so we only modelled
+tectal ligand expression. Although
+several studies model tectal ligand expression with exponential functions~\cite{koulakov_stochastic_2004}, the
+experimental evidence for ligand expression is more ambiguous (Supp. Fig
+X). Correspondingly, we leave open the possibility that ligand expression may
+be best modelled by exponential, linear or logarithmic functions.
+
+While we do not
+explicitly name $r_0$, $r_1$, etc.~as \emph{EphA}, \emph{EphB}, the suggestion
+is that $r$ includes EphA, EphB and Ryk~\cite{schmitt_wntryk_2006} receptors
+and that $l$ includes the ephrin-A, ephrin-B and
+Wnt3~\cite{schmitt_wntryk_2006} ligands.
+
+Figure~\ref{f:1} shows colour maps of receptor and ligand
+expression, in this case tectal ligand expression maps are linear.
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/expressions_fig.png}
+\caption{Retinal and tectal gene expression.
+%
+\textbf{A} Retinal receptor expression. Four receptors are expressed and
+displayed here in two dual-colour maps. $r_0$ and $r_1$ are red and
+green;$r_2$ and $r_3$ are cyan and magenta. $r_0$ increases as an
+exponential function of $x$; $r_1$ increases with an exponential function of
+$y$. $r_2$ and $r_3$ have the opposite sense. The expression is modelled with
+exponential functions because there is ample evidence that shows that retinal
+receptor expressions follow this form.
+%
+\textbf{B} Retinal ligand expression. May not be included.
+%
+\textbf{C} Tectal receptor expression. May not be included.
+%
+\textbf{D} Tectal ligand expression. $l_0$ and $l_1$ are red and green; $l_2$
+and $l_3$ are cyan and magenta. These expressions are shown in a linear form,
+as there is less evidence to determine whether tectal ligand expression is
+exponential, linear or logarithmic in form.
+}
+\label{f:1}
+\end{figure}
+
+\subsection{Signalling}
+
+This is where I really want to say ``the only interactions in the model are
+via forward (ligand-activates-receptor) and reverse
+(receptor-activates-ligand) signalling''.
+
+% Hill Equation! https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)
 
 Interactions in the model are by receptor-ligand interactions only. Forward
 interactions are those in which the ligand activates the receptor, delivering
@@ -320,7 +374,7 @@ membrane-bound ligand is activated~\cite{wu_role_2019}.
 % BIBLIOGRAPHY
 %
 \selectlanguage{English}
-\bibliographystyle{abbrvnotitle}
+\bibliographystyle{apalike}
 \bibliography{RetinoTectal}
 
 \end{document}
