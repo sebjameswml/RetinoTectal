@@ -710,7 +710,7 @@ struct Agent1
 
         if (this->conf->getBool ("ablate_ret_left", false)) {
             // expected layout has half as many locations, but they're stretched out into the full area?
-            this->ax_centroids.targ_expand_bottomup();
+            this->ax_centroids.targ_expand_topdown();
         }
 
         if (this->conf->getBool ("ablate_tec_top", false)) {

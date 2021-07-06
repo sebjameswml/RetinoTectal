@@ -215,13 +215,13 @@ struct rgcnet : public net<T>
         // Bottom half has locations stretched down
         for (size_t j = 0; j < this->h/2; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
-                this->targ[j+this->w*i] -= offshalfy;
                 this->targ[j+this->w*i] *= fac2y;
             }
         }
         // Top part is shifted/stretched up
         for (size_t j = this->h/2; j < this->h; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
+                this->targ[j+this->w*i] -= offshalfy;
                 this->targ[j+this->w*i] *= fac2y;
             }
         }
