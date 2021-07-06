@@ -850,9 +850,9 @@ struct Agent1
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         v->addVisualModel (this->bv);
 
-        offset[1] -= 1.5f;
+        offset[1] -= 1.4f;
         v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
-        offset[1] += 1.5f;
+        offset[1] += 1.4f;
 
         // This one gives an 'axon view'
         offset[0] += 1.3f;
@@ -876,13 +876,13 @@ struct Agent1
         v->addVisualModel (this->cv);
 
         // Another NetVisual view showing the target locations
-        offset[1] -= 1.3f;
+        offset[1] -= 1.4f;
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
         this->tcv->addLabel ("experiment suggests", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->tcv);
-        offset[1] += 1.3f;
+        offset[1] += 1.4f;
 
         // A graph of the SOS diffs between axon position centroids and target positions from retina
         offset[0] += 1.5f;
