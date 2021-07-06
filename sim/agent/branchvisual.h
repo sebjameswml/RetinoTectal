@@ -57,9 +57,9 @@ public:
         for (auto b : *this->branches) {
             // Colour should come from original target location, rather than receptor value, to emphasise swaps in location.
             std::array<float, 3> clr = { this->target_scale.transform_one(b.target[0]),
-                                         this->target_scale.transform_one(b.target[1]), 0 };
-            std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]),
-                                          this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
+                                         this->target_scale.transform_one(b.target[1]), 0 }; // position colour
+            std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0,
+                                          this->rcpt_scale.transform_one(b.rcpt[1]) }; // rcpt expr colour
             // A sphere at the last location. Tune number of rings (second last arg) in
             // sphere to change size of clr2 disc at top
             morph::Vector<float, 3> cur = { b.current[0], b.current[1], 0 };
@@ -87,8 +87,9 @@ public:
         for (auto b : *this->branches) {
             if (!this->seeaxons.count(b.aid)) { continue; }
             std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
-                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
-            std::array<float, 3> clr2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[0]) };
+                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 }; // position colour
+            std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0,
+                                          this->rcpt_scale.transform_one(b.rcpt[1]) }; // rcpt expr colour
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             cur[0] = b.next[0]; // or path.back()?
             cur[1] = b.next[1];

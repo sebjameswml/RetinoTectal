@@ -238,7 +238,7 @@ struct Agent1
     //! Create a tissue visual, to reduce boilerplate code in init()
     tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
-                                                expression_view exview, size_t pair_to_view, bool alt_cmap=false)
+                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
         return this->createTissueVisual (this->tvv->shaderprog, this->tvv->tshaderprog,
                                          offset, gtissue, tag, exview, pair_to_view, alt_cmap);
@@ -248,16 +248,18 @@ struct Agent1
     tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
                                                 morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
-                                                expression_view exview, size_t pair_to_view, bool alt_cmap=false)
+                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
         tissuevisual<float, N>* tv = new tissuevisual<float, N>(shad_prog, tshad_prog, gtissue, offset);
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         tv->cm.setType (morph::ColourMapType::Duochrome);
-        if (alt_cmap == true) {
+        if (alt_cmap == 1) {
             tv->cm.setHueCM();
+        } else if (alt_cmap == 2) {
+            tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
         } else {
-            tv->cm.setHueRG();
+            tv->cm.setHueRB();
         }
         std::stringstream ss;
         if (exview == expression_view::receptor_exp) {
@@ -793,9 +795,9 @@ struct Agent1
         // Retina
         offset2[1] += sqside;
         // true means cyan-magenta
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, true));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1));
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, true));
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1));
 #ifdef SHOW_RET_GRADS
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
@@ -805,9 +807,9 @@ struct Agent1
 #endif
         // Tectum
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, true));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, true));
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
         offset2[0] += sqside;
         offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
@@ -849,7 +851,7 @@ struct Agent1
         v->addVisualModel (this->bv);
 
         offset[1] -= 1.5f;
-        v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0));
+        v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
         offset[1] += 1.5f;
 
         // This one gives an 'axon view'
