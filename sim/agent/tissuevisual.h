@@ -24,7 +24,8 @@ enum class expression_view
     receptor_grad_y,
     ligand_exp,
     ligand_grad_x,
-    ligand_grad_y
+    ligand_grad_y,
+    cell_positions
 };
 
 /*!
@@ -91,17 +92,19 @@ public:
                 this->dcolour2[i] = this->gtissue->rcpt_grad[i][4*this->pair_to_view+3];
             }
         } else if (this->view == expression_view::ligand_grad_x) {
-            //std::cout << "Looking at pair_to_view: '"<<pair_to_view<<"', lgnd_grad_x[i][" << (4*this->pair_to_view) << " and " << (4*this->pair_to_view+2) << "]" << std::endl;
-
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
                 this->dcolour[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view];
                 this->dcolour2[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+2];
             }
         } else if (this->view == expression_view::ligand_grad_y) {
-            //std::cout << "Looking at pair_to_view: '"<<pair_to_view<<"', lgnd_grad_y[i][" << (4*this->pair_to_view+1) << " and " << (4*this->pair_to_view+3) << "]" << std::endl;
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
                 this->dcolour[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+1];
                 this->dcolour2[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+3];
+            }
+        } else if (this->view == expression_view::cell_positions) {
+           for (unsigned int i = 0; i < this->gtissue->posn.size(); ++i) {
+                this->dcolour[i] = this->gtissue->posn[i][0];
+                this->dcolour2[i] = this->gtissue->posn[i][1];
             }
         }
 
@@ -112,7 +115,6 @@ public:
             this->colourScale.compute_autoscale (0,1);
         }
         this->colourScale.transform (this->dcolour, this->dcolour);
-        //std::cout << "dcolour scale range_min/max: " << this->colourScale.range_min << "/" << this->colourScale.range_max << std::endl;
         this->colourScale.autoscaled = false;
 
         std::pair<float,float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);

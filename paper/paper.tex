@@ -172,17 +172,24 @@
 
 % Define title, empty date and authors
 \title {
-  Competition can provide a stopping mechanism for the retinotectal
-  projection \\
-  or \\
-  Competition provides a stopping mechanism for the chemoaffinity
+  Competition can account for stopping in a gradient-following model
+  of the retinotectal projection \\
+  \emph{or} \\
+  Competition provides stopping for the chemoaffinity
   theory which is robust to noise \\
-  or \\
+  \emph{or} \\
   Self-organisation of topographically ordered axon connections can take place
-  in a noisy environment if axons compete
+  in a noisy environment if axons compete \\
+  Time to stop; modelling chemoaffinity with competition \\
 }
 \date{} % No date please
 \author{\Authors}
+
+% Simplified chemoaffinity explains retinotectal mapping via local axon-axon
+% interactions
+%
+% Focus on the chemoaffinity idea for this model. Show that local interactions
+% can provide an account for growth cones finding their targets.
 
 %% END OF PREAMBLE
 
@@ -290,6 +297,11 @@ There have been many approaches to modelling the organisation of the
 retino-tectal projection. Many of these models are wholly or partially
 phenomenological.
 
+Model which carefully deals with receptor
+binding: \cite{naoki_revisiting_2017}.
+
+Gradient based models: \cite{nakomoto_topographically_1996}
+
 \section{Model}
 
 Our model was inspired by the agent-based model of \cite{simpson_simple_2011}
@@ -379,7 +391,7 @@ if the interaction is \emph{repulsive}.
 
 This is where I really want to say ``the only interactions in the model are
 via forward (ligand-activates-receptor) and reverse
-(receptor-activates-ligand) signalling''. Somehthing like:
+(receptor-activates-ligand) signalling''. Something like:
 
 Interactions in the model are by receptor-ligand interactions only. Forward
 interactions are those in which the ligand activates the receptor, delivering
@@ -391,6 +403,7 @@ membrane-bound ligand is activated~\cite{wu_role_2019}.
 \section{Discussion}
 
 % Discuss the Hill Equation! https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)
+% This relates to the work \cite{naoki_revisiting_2017}
 
 %
 % BIBLIOGRAPHY

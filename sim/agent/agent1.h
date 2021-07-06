@@ -240,7 +240,17 @@ struct Agent1
                                                 const std::string& tag,
                                                 expression_view exview, size_t pair_to_view, bool alt_cmap=false)
     {
-        tissuevisual<float, N>* tv = new tissuevisual<float, N>(this->tvv->shaderprog, this->tvv->tshaderprog, gtissue, offset);
+        return this->createTissueVisual (this->tvv->shaderprog, this->tvv->tshaderprog,
+                                         offset, gtissue, tag, exview, pair_to_view, alt_cmap);
+    }
+
+    //! Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
+    tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
+                                                morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
+                                                const std::string& tag,
+                                                expression_view exview, size_t pair_to_view, bool alt_cmap=false)
+    {
+        tissuevisual<float, N>* tv = new tissuevisual<float, N>(shad_prog, tshad_prog, gtissue, offset);
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         tv->cm.setType (morph::ColourMapType::Duochrome);
@@ -262,6 +272,8 @@ struct Agent1
             ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
         } else if (exview == expression_view::ligand_grad_y) {
             ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
+        } else if (exview == expression_view::cell_positions) {
+            ss << tag << " cell positions";
         }
         tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f});
 
@@ -580,16 +592,15 @@ struct Agent1
 
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
 
-            // The target for axon centroids is defined by their origin location on the
-            // retina. However, their target on the tectum is the retinal position
-            // *transformed*. That means rotating the retinal positions by 90 degrees
-            // clockwise. ALSO, if experimental manipulations have been made, then the
-            // target positions will need to be modified accordingly.
+            // "experiment suggests": The target for axon centroids is defined by their
+            // origin location on the retina. However, their target on the tectum is the
+            // retinal position *transformed*. ALSO, if experimental manipulations have
+            // been made, then the target positions will need to be modified
+            // accordingly.
 
-            // To convert from retinal position to tectal position, x'=y and y'=1-x.
-            morph::Vector<T,2> tpos = {0,0};
-            tpos[0] = this->ret->posn[ri][1];
-            tpos[1] = T{1} - this->ret->posn[ri][0];
+            // To convert from retinal position to tectal position, x'=y and y'=x.
+            morph::Vector<T,2> tpos = this->ret->posn[ri];
+            tpos.rotate();
 
             this->ax_centroids.targ[ri].set_from (tpos);
             this->ax_centroids.mirrored = true;
@@ -836,6 +847,10 @@ struct Agent1
         this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         v->addVisualModel (this->bv);
+
+        offset[1] -= 1.5f;
+        v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0));
+        offset[1] += 1.5f;
 
         // This one gives an 'axon view'
         offset[0] += 1.3f;

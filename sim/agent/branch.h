@@ -47,25 +47,25 @@ struct branch : public branch_base<T,N>
             // First, find the ligand gradients close to the current location b.
             morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
             // 4 receptors and 4 ligand gradients.
-            // let receptor 0 interact primarily with ligand 1 [gradients (2,3)]
-            // let receptor 1 interact primarily with ligand 0 [gradients (0,1)]
-            // let receptor 2 interact primarily with ligand 3 [gradients (6,7)] // opposite to receptor 0
-            // let receptor 3 interact primarily with ligand 2 [gradients (4,5)] // opposite to receptor 1
-            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[2] : lg[2])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[0] : lg[0])
-            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[6] : lg[6])
-            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[4] : lg[4]);
+            // let receptor 0 interact primarily with ligand 0 [gradients (0,1)]
+            // let receptor 1 interact primarily with ligand 1 [gradients (2,3)]
+            // let receptor 2 interact primarily with ligand 2 [gradients (4,5)]
+            // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
+            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
+            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
+            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
-            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[3] : lg[3])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[1] : lg[1])
-            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[7] : lg[7])
-            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[5] : lg[5]);
+            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
+            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
+            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
-            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[2] : lg[2])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[0] : lg[0]);
-            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[3] : lg[3])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[1] : lg[1]);
+            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2]);
+            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1])
+            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3]);
         }
 
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
