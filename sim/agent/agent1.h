@@ -281,11 +281,29 @@ struct Agent1
     morph::Vector<expression_direction, N> get_directions (const std::string& dirns_tag)
     {
         morph::Vector<expression_direction, N> dirns;
+        for (auto& dd : dirns) { dd = expression_direction::x_increasing; }
         Json::Value arr = this->mconf->getArray (dirns_tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
-                dirns[i] = arr[i].asInt() > 0 ? expression_direction::increasing : expression_direction::decreasing;
+                std::string d = arr[i].asString();
+                if (d == "+x" || d == "x") {
+                    dirns[i] = expression_direction::x_increasing;
+                } else if (d == "-x") {
+                    dirns[i] = expression_direction::x_decreasing;
+                } else if (d == "+y" || d == "y") {
+                    dirns[i] = expression_direction::y_increasing;
+                } else if (d == "-y") {
+                    dirns[i] = expression_direction::y_decreasing;
+                } else {
+                    std::stringstream ee;
+                    ee << "Invalid entry in _directions: '" << d << "' should be +x, +y, -x or -y.";
+                    throw std::runtime_error (ee.str());
+                }
             }
+        } else {
+            std::stringstream ee;
+            ee << "Need to set content of JSON parameter " << dirns_tag;
+            throw std::runtime_error (ee.str());
         }
         return dirns;
     }
@@ -293,11 +311,16 @@ struct Agent1
     morph::Vector<interaction, N> get_interactions (const std::string& interactions_tag)
     {
         morph::Vector<interaction, N> interactions;
+        for (auto& ii : interactions) { ii = interaction::repulsion; }
         Json::Value arr = this->mconf->getArray (interactions_tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
                 interactions[i] = arr[i].asInt() > 0 ? interaction::attraction : interaction::repulsion;
             }
+        } else {
+            std::stringstream ee;
+            ee << "Need to set content of JSON parameter " << interactions_tag;
+            throw std::runtime_error (ee.str());
         }
         return interactions;
     }
@@ -305,11 +328,16 @@ struct Agent1
     morph::Vector<expression_form, N> get_forms (const std::string& tag)
     {
         morph::Vector<expression_form, N> function_forms;
+        for (auto& ff : function_forms) { ff = expression_form::lin; }
         Json::Value arr = this->mconf->getArray (tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
                 function_forms[i] = (expression_form)arr[i].asUInt();
             }
+        } else {
+            std::stringstream ee;
+            ee << "Need to set content of JSON parameter " << tag;
+            throw std::runtime_error (ee.str());
         }
         return function_forms;
     }
@@ -338,9 +366,13 @@ struct Agent1
         morph::Vector<expression_form, N> tectum_ligand_forms = this->get_forms ("tectum_ligand_forms");
         morph::Vector<expression_direction, N> tectum_receptor_directions =  this->get_directions ("tectum_receptor_directions");
         morph::Vector<expression_direction, N> tectum_ligand_directions =  this->get_directions ("tectum_ligand_directions");
-        // Tectum interactions don't matter - they don't have an effect, nor are they visualised.
-        morph::Vector<interaction, N> tectum_forward_interactions = this->get_interactions ("tectum_forward_interactions");
-        morph::Vector<interaction, N> tectum_reverse_interactions = this->get_interactions ("tectum_forward_interactions");
+
+        // Tectum interactions don't matter - they don't have an effect, nor are they
+        // visualised, but a value is needed for guidingtissue constructor.
+        morph::Vector<interaction, N> tectum_forward_interactions;
+        for (auto& ii : tectum_forward_interactions) { ii = interaction::repulsion; }
+        morph::Vector<interaction, N> tectum_reverse_interactions;
+        for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
         if constexpr (N==4 || N==2) {
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},

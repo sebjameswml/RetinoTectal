@@ -66,8 +66,10 @@ enum class expression_form
 // Which sense is an expression pattern becoming stronger?
 enum class expression_direction
 {
-    increasing, // More expression as x or y increases
-    decreasing  // Less expression as x or y increases
+    x_increasing, // More expression as x increases
+    x_decreasing, // Less expression as x increases
+    y_increasing, // More expression as y increases
+    y_decreasing  // Less expression as y increases
 };
 
 enum class tissue_region
@@ -125,6 +127,44 @@ struct guidingtissue : public tissue<T>
     morph::vVector<morph::Vector<T,N>> lgnd;
     morph::vVector<morph::Vector<T,2*N>> lgnd_grad;
 
+    //! Get the relevant axis position (or its inverse) for the position index pi and
+    //! the given expression direction, so that an expression value can be computed.
+    T get_pos (expression_direction dirn, size_t pi)
+    {
+        T _in = T{0};
+        T max_x = this->w * this->dx[0] + this->x0[0];
+        T max_y = this->h * this->dx[1] + this->x0[1];
+
+        switch (dirn) {
+        case expression_direction::x_increasing:
+        {
+            _in = this->posn[pi][0];
+            break;
+        }
+        case expression_direction::x_decreasing:
+        {
+            _in = max_x-this->posn[pi][0];
+            break;
+        }
+        case expression_direction::y_increasing:
+        {
+            _in = this->posn[pi][1];
+            break;
+        }
+        case expression_direction::y_decreasing:
+        {
+            _in = max_y-this->posn[pi][1];
+            break;
+        }
+        default:
+        {
+            throw std::runtime_error ("unknown expression_direction");
+        }
+        }
+
+        return _in;
+    }
+
     //! Init the wildtype tissue's receptors and ligands.
     guidingtissue(size_t _w, size_t _h,
                   morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
@@ -145,42 +185,32 @@ struct guidingtissue : public tissue<T>
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
 
-        T max_x = this->w * this->dx[0] + this->x0[0];
-        T max_y = this->h * this->dx[1] + this->x0[1];
-        // A cout avoids some 'unused variable' compiler warnings:
-        std::cout << "Max x position: " << max_x << " and max y position: " << max_y << std::endl;
-
         // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
-            T xin = T{0};
-            T yin = T{0};
             if constexpr (N == 4 || N == 2) {
                 // First orthogonal pair of receptors.
-                xin = (this->rcpt_dirns[0] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->rcpt[ri][0] = this->rcpt_expression_function (xin, 0);
-                yin = (this->rcpt_dirns[1] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->rcpt[ri][1] = this->rcpt_expression_function (yin, 1);
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[0], ri), 0);
+                this->rcpt[ri][1] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[1], ri), 1);
+                if (ri == 10) {
+                    T thepos = this->get_pos (this->rcpt_dirns[0], ri);
+                    std::cout << "this->rcpt_dirns[0] = " << (int)this->rcpt_dirns[0] << " and this->get_pos (this->rcpt_dirns[0], ri) = " << thepos << std::endl;
+                    std::cout << "rcpt_expression_function ("<<thepos<<",0) returns " << this->rcpt_expression_function (thepos,0) << std::endl;
+                    std::cout << "rcpt["<<ri<<"][0]: " << this->rcpt[ri][0] << " and [1]: " << this->rcpt[ri][1] << std::endl;
+                }
                 // First orthogonal pair of ligands
-                xin = (this->lgnd_dirns[0] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->lgnd[ri][0] = this->lgnd_expression_function (xin, 0);
-                yin = (this->lgnd_dirns[1] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->lgnd[ri][1] = this->lgnd_expression_function (yin, 1);
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[0], ri), 0);
+                this->lgnd[ri][1] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[1], ri), 1);
             } else {
                 // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
                 []<bool flag = false>() { static_assert(flag, "no match"); }();
             }
             if constexpr (N == 4) {
                 // Add a second orthogonal pair for N==4
-                xin = (this->rcpt_dirns[2] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->rcpt[ri][2] = this->rcpt_expression_function (xin, 2);
-                yin = (this->rcpt_dirns[3] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->rcpt[ri][3] = this->rcpt_expression_function (yin, 3);
-
+                this->rcpt[ri][2] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[2], ri), 2);
+                this->rcpt[ri][3] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[3], ri), 3);
                 // Second orthogonal pair of ligands
-                xin = (this->lgnd_dirns[2] == expression_direction::increasing) ? this->posn[ri][0] : (max_x-this->posn[ri][0]);
-                this->lgnd[ri][2] = this->lgnd_expression_function (xin, 2);
-                yin = (this->lgnd_dirns[3] == expression_direction::increasing) ? this->posn[ri][1] : (max_y-this->posn[ri][1]);
-                this->lgnd[ri][3] = this->lgnd_expression_function (yin, 3);
+                this->lgnd[ri][2] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[2], ri), 2);
+                this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3);
             }
         }
 
