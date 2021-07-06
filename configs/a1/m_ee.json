@@ -15,7 +15,7 @@
     "tectum_receptor_forms" : [2,2,2,2],
 
     "desc_directions" : "+x: increases with increasing x, etc",
-    "ret_receptor_directions"    : ["+x", "+y", "-x", "-y"],
+    "ret_receptor_directions"    : ["-x", "-y", "+x", "+y"],
     "tectum_ligand_directions"   : ["+y", "+x", "-y", "-x"],
 
     "desc_interaction" : "retina forward interaction gives the behaviour of retinal receptor expressing projections when the receptors are activated. May be attraction (1) or repulsion (-1)",
