@@ -28,7 +28,8 @@ struct branch_geb : public branch_base<T,N>
     void compute_next (const std::vector<branch_geb<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 4>& m)
+                       const morph::Vector<T, 4>& m,
+                       const morph::Vector<T, 2*N>& rns)
     {
         // Sums
         morph::Vector<T, N> LFRT; // reverse fibre-target signal (for N receptors, N ligands)

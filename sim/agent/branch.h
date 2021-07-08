@@ -5,6 +5,7 @@
 #include <vector>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
+#include <morph/Random.h>
 #include "tissue.h"
 
 // A choice of schemes to deal with axon branches that try to move outside the tissue domain
@@ -33,10 +34,12 @@ struct branch : public branch_base<T,N>
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m. Will also need location on target tissue,
     // to get its ephrin values.
+    // rns are a set of random numbers to multiply the ligand gradient with.
     void compute_next (const std::vector<branch<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 4>& m)
+                       const morph::Vector<T, 4>& m,
+                       const morph::Vector<T, 2*N>& rns)
     {
         // Current location is named b
         morph::Vector<T, 2> b = this->current;
@@ -45,7 +48,11 @@ struct branch : public branch_base<T,N>
         morph::Vector<T, 2> G;
         if constexpr (N==4) {
             // First, find the ligand gradients close to the current location b.
-            morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b);
+            morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b) * rns;
+            // Adding noise could be as simple as multiplying by a Vector of numbers
+            // drawn from a Gaussian distribution with mean 1. But need to think
+            // carefully and be prepared to justify it with reference to the Mortimer paper.
+
             // 4 receptors and 4 ligand gradients.
             // let receptor 0 interact primarily with ligand 0 [gradients (0,1)]
             // let receptor 1 interact primarily with ligand 1 [gradients (2,3)]

@@ -70,6 +70,8 @@ struct Agent1
 #ifdef VISUALISE
         this->visinit();
 #endif
+        this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
+
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
 
         typename std::vector<B>::iterator pending_br_it = this->pending_branches.begin();
@@ -186,7 +188,10 @@ struct Agent1
             this->ax_centroids.p[i] = {rng.get(), rng.get(), rng.get()};
         }
 #endif
-   }
+    }
+
+    //! RNG for adding noise to gradient sampling
+    morph::RandNormal<T, std::mt19937>* gradient_rng;
 
     //! Perform one step of the simulation
     void step()
@@ -196,11 +201,17 @@ struct Agent1
         // Mac compiler didn't like omp parallel for in front of a for(auto...
 #pragma omp parallel for
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
-            this->branches[i].compute_next (this->branches, this->ret, this->tectum, this->m);
+            morph::Vector<T, 2*N> rns;
+            this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
+            this->branches[i].compute_next (this->branches, this->ret, this->tectum, this->m, rns);
         }
 #else
 #pragma omp parallel for
-        for (auto& b : this->branches) { b.compute_next (this->branches, this->ret, this->tectum, this->m); }
+        for (auto& b : this->branches) {
+            morph::Vector<T, 2*N> rns;
+            this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
+            b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
+        }
 #endif
         // Update centroids
         for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
