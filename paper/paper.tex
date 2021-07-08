@@ -18,6 +18,9 @@
 \defaultfontfeatures{Scale=MatchLowercase,Mapping=tex-text}
 \setmainfont{Times New Roman}
 
+% Nice citations
+\usepackage{natbib}
+
 % Set margins
 \usepackage[margin=2.5cm]{geometry}
 
@@ -87,7 +90,6 @@
 \newcommand{\mb}[1]{\mathbf{#1}} % this won't work?
 % Emphasis and bold.
 \newcommand{\e}{\emph}
-\newcommand{\mycite}[1]{\cite{#1}}
 \newcommand{\code}[1]{\textsf{#1}}
 \newcommand{\dvrg}{\nabla\vcdot\nabla}
 %% END aliases
@@ -227,16 +229,16 @@ reorganised in-vivo, after which axons regrow to restore the order and
 function of the system for the individual animal. This manipulability was
 exploited in influential work by R. W. Sperry and co-workers during the
 mid-twentieth century, leading to Sperry's 1963 summary of
-the \emph{chemoaffinity theory}~\cite{sperry_chemoaffinity_1963} which
+the \emph{chemoaffinity theory} \citep{sperry_chemoaffinity_1963} which
 proposes the existence of morphogenetic gradients that guide axons to their
 destination. The chemoaffinity theory was given robust support by the
-discovery of the ephrin ligands and their receptors~\cite{cheng_complementary_1995,drescher_vitro_1995}
+discovery of the ephrin ligands and their receptors \citep{cheng_complementary_1995,drescher_vitro_1995}
 which have been shown to form into graded expression fields in the
-retina~\cite{braisted_graded_1997}, tectum~\cite{braisted_graded_1997,feldheim_genetic_2000} as well as in other
+retina \citep{braisted_graded_1997}, tectum \citep{braisted_graded_1997,feldheim_genetic_2000} as well as in other
 sensory systems, such as the somatosensory
-system~\cite{vanderhaeghen_mapping_2000}. The Ephrin ligands have a clear
-effect on axonal outgrowth, as shown in in-vitro~\cite{cheng_complementary_1995,drescher_vitro_1995,hansen_retinal_2004} and
-in-vivo~\cite{frisen_ephrin-a5_1998,rodger_transient_2000,mann_topographic_2002,hindges_ephb_2002} studies.
+system \citep{vanderhaeghen_mapping_2000}. The Ephrin ligands have a clear
+effect on axonal outgrowth, as shown in in-vitro \citep{cheng_complementary_1995,drescher_vitro_1995,hansen_retinal_2004} and
+in-vivo \citep{frisen_ephrin-a5_1998,rodger_transient_2000,mann_topographic_2002,hindges_ephb_2002} studies.
 %
 % A-P:
 %
@@ -269,14 +271,14 @@ in nature and do not elucidate the mechanisms behind the arrangement.
 In a recent paper, we proposed a self-organising mechanism, based on
 morphogenetic signalling gradients, which can arrange
 axons growing from the thalamus to the somatosensory cortex into the well
-known murine barrel cortex pattern~\cite{james_modelling_2020}. In
+known murine barrel cortex pattern~\citep{james_modelling_2020}. In
 characterising that system, we explored the effect of various types of
 noise. We found that the mechanism was robust to noise in the expression of
 the signalling molecules over a wide range of amplitudes and length-scales,
 and that noise in the interaction parameters, which are obtained by sampling
 the signalling molecules in the source tissue (the thalamic barreloid field)
 could cause topological defects. The question of noise in axon guidance has
-been explored by Goodhill~\cite{goodhill_can_2016}.
+been explored by \citet{goodhill_can_2016}.
 
 \textbf{New introduction:} Simpson and Goodhill presented a model in which the
 chemoaffinity mechanism is non-biological. We offer a model in which a
@@ -287,7 +289,7 @@ non-same-Eph repulsion?
 \textbf{Another approach:} We present a model of gradient-following based on graded
 interactions between the growth cones of retinal ganglion cell axons and the
 tectal surface. We show that a combination of exponentially graded expression
-in the retina~\cite{reber_relative_2004} and exponentially (for repulsively
+in the retina \citep{reber_relative_2004} and exponentially (for repulsively
 interacting receptor ligand pairs) \emph{or} logarithmically (for attractively
 interacting receptor/ligands) graded expression on the tectum permits a purely
 local model to reproduce the majority of reported phenomena associated with
@@ -297,10 +299,10 @@ There have been many approaches to modelling the organisation of the
 retino-tectal projection. Many of these models are wholly or partially
 phenomenological.
 
-Model which carefully deals with receptor
-binding: \cite{naoki_revisiting_2017}.
+A model which carefully deals with receptor
+binding is given by \citet{naoki_revisiting_2017} \citep[see also][]{mortimer_bayesian_2009}.
 
-Gradient based models: \cite{nakomoto_topographically_1996}
+Gradient based models: \citet{nakomoto_topographically_1996}
 
 \section{Model}
 
@@ -389,6 +391,18 @@ cone to climb the gradient of ligand expression, in which case the interaction
 is \emph{attractive} or the cone may descend the gradient of ligand expression
 if the interaction is \emph{repulsive}.
 
+Based on a Michaelis-Menten model applied to
+receptor-binding, \citet{mortimer_bayesian_2009} give an expression for the
+probability of an individual receptor being bound as a function of the ligand
+expression, $\gamma$, and the ligand gradient, $\mu$;
+\begin{equation}
+P(b=1|\gamma,\mu) = \frac{\gamma(1 + \mu r)}{1 + \gamma(1 + \mu r)},
+\end{equation}
+where $r$ is the distance of the receptor from the centre of a 1D growth
+cone. To determine the sampled direction signal (for one dimension), we assume
+evenly spaced receptors and sample from a uniform distribution for each
+location across the growth cone.
+
 This is where I really want to say ``the only interactions in the model are
 via forward (ligand-activates-receptor) and reverse
 (receptor-activates-ligand) signalling''. Something like:
@@ -396,7 +410,7 @@ via forward (ligand-activates-receptor) and reverse
 Interactions in the model are by receptor-ligand interactions only. Forward
 interactions are those in which the ligand activates the receptor, delivering
 a signal into the receptor-expressing cell. Reverse signals occur when a
-membrane-bound ligand is activated~\cite{wu_role_2019}.
+membrane-bound ligand is activated~\citep{wu_role_2019}.
 
 \section{Results}
 
