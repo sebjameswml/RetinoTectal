@@ -5,7 +5,6 @@
 #include <vector>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
-#include <morph/Random.h>
 #include "tissue.h"
 
 // A choice of schemes to deal with axon branches that try to move outside the tissue domain
@@ -31,6 +30,15 @@ struct branch : public branch_base<T,N>
     // Signalling ratio parameter
     static constexpr T s = T{1.1};
 
+    // Estimate the ligand gradient, given the true ligand gradient
+    virtual morph::Vector<T, 2*N> estimate_ligand_gradient(morph::Vector<T,2*N>& true_lgnd_grad,
+                                                           morph::Vector<T,N>& true_lgnd_exp)
+    {
+        // This is the non-stochastic implementation
+        morph::Vector<T, 2*N> lg = true_lgnd_grad;
+        return lg;
+    }
+
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m. Will also need location on target tissue,
     // to get its ephrin values.
@@ -47,11 +55,12 @@ struct branch : public branch_base<T,N>
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G;
         if constexpr (N==4) {
-            // First, find the ligand gradients close to the current location b.
-            morph::Vector<T, 8> lg = tissue->lgnd_grad_at (b) * rns;
-            // Adding noise could be as simple as multiplying by a Vector of numbers
-            // drawn from a Gaussian distribution with mean 1. But need to think
-            // carefully and be prepared to justify it with reference to the Mortimer paper.
+            // First, find the ligand gradients close to the current location b.  Adding
+            // noise could be as simple as multiplying by a Vector of numbers drawn from
+            // a Gaussian distribution with mean 1. But need to think carefully and be
+            // prepared to justify it with reference to the Mortimer paper. Updated: I
+            // have a possibly better way to do this. See branch_stochastic.h.
+            morph::Vector<T, 8> lg = this->estimate_ligand_gradient (tissue->lgnd_grad_at (b), tissue->lgnd_at (b));
 
             // 4 receptors and 4 ligand gradients.
             // let receptor 0 interact primarily with ligand 0 [gradients (0,1)]
@@ -315,5 +324,39 @@ struct branch : public branch_base<T,N>
                 this->next[1] = tissue->y_max();
             }
         }
+    }
+};
+
+// \tparam T floating point type for the numbers
+// \tparam N number of receptor-ligand pairs in the system
+// \tparam R The number of locations at which to sample the ligand gradient.
+template<typename T, size_t N, size_t R>
+struct branch_stochastic : public branch<T,N>
+{
+    // Params for the receptor binding model
+    static constexpr T gc_width = T{1e-5}; // 10 um
+
+    // Estimate the ligand gradient, given the true ligand gradient
+    virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& mu,
+                                                            morph::Vector<T,N>& gamma)
+    {
+        // Choose a set of R locations across the growth cone.
+        morph::Vector<T, R> r;
+        morph::Vector<T, R> c;
+        morph::Vector<T, R> p;
+        morph::Vector<T, 2*N> lg; // rtn container
+
+        for (size_t i = 0; i < N; ++i) { // For each receptor-ligand pairing
+            for (size_t d = 0; d < 2; ++d) { // For each dimension
+                for (size_t ir = 0; ir < R; ++ir) {
+                    r[ir] = gc_width/T{R} * ir - gc_width*T{0.5}/T{R};
+                    c[ir] = gamma[i](1 + mu[2*i+d] * r[ir]);
+                    p[ir] = c[ir] / (T{1} + c[ir]);
+                    lg[2*i+d] = sample_with_p[ir];
+                }
+            }
+        }
+
+        return lg;
     }
 };

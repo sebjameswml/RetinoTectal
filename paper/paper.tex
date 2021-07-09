@@ -389,28 +389,35 @@ In this model, the signal transmitted when a ligand binds to a receptor on a
 growth cone can lead to one of two effects; the signal may induce the growth
 cone to climb the gradient of ligand expression, in which case the interaction
 is \emph{attractive} or the cone may descend the gradient of ligand expression
-if the interaction is \emph{repulsive}.
+if the interaction is \emph{repulsive}. To determine the strength of the
+effect we could assume a purely linear receptor binding model, and set the
+movement of the growth cone to be $\sum_i \pm r_i \times \grad l_i$. While
+this approach works, it does not allow us to investigate the effect of
+receptor binding noise (\textbf{FIXME}: Be sure to have included a discussion
+on the three types of noise as described by Goodhill, 2016 in the
+introduction) on the ability of the system to generate topographic order.
 
-Based on a Michaelis-Menten model applied to
-receptor-binding, \citet{mortimer_bayesian_2009} give an expression for the
+Instead, we treat the receptor binding at the growth cone with greater
+care. Based on a Michaelis-Menten model applied to
+receptor binding, \citet{mortimer_bayesian_2009} give an expression for the
 probability of an individual receptor being bound as a function of the ligand
 expression, $\gamma$, and the ligand gradient, $\mu$;
 \begin{equation}
 P(b=1|\gamma,\mu) = \frac{\gamma(1 + \mu r)}{1 + \gamma(1 + \mu r)},
 \end{equation}
 where $r$ is the distance of the receptor from the centre of a 1D growth
-cone. To determine the sampled direction signal (for one dimension), we assume
+cone. To determine the growth cone's estimate of the gradient, we assume
 evenly spaced receptors and sample from a uniform distribution for each
-location across the growth cone.
+location across the growth cone. Activated receptors contribute
 
-This is where I really want to say ``the only interactions in the model are
-via forward (ligand-activates-receptor) and reverse
-(receptor-activates-ligand) signalling''. Something like:
+%This is where I really want to say ``the only interactions in the model are
+%via forward (ligand-activates-receptor) and reverse
+%(receptor-activates-ligand) signalling''. Something like:
 
-Interactions in the model are by receptor-ligand interactions only. Forward
-interactions are those in which the ligand activates the receptor, delivering
-a signal into the receptor-expressing cell. Reverse signals occur when a
-membrane-bound ligand is activated~\citep{wu_role_2019}.
+%Interactions in the model are by receptor-ligand interactions only. Forward
+%interactions are those in which the ligand activates the receptor, delivering
+%a signal into the receptor-expressing cell. Reverse signals occur when a
+%membrane-bound ligand is activated~\citep{wu_role_2019}.
 
 \section{Results}
 
