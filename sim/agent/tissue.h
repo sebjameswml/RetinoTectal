@@ -371,6 +371,13 @@ struct guidingtissue : public tissue<T>
         return this->lgnd_grad[idx];
     }
 
+    morph::Vector<T,N> lgnd_at (const morph::Vector<T,2>& x) const
+    {
+        morph::vVector<morph::Vector<T,2>> p = this->posn - x;
+        size_t idx = p.argshortest();
+        return this->lgnd[idx];
+    }
+
     //! Remove half of the tissue
     void ablate (tissue_region region)
     {
