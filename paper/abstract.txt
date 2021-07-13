@@ -23,3 +23,7 @@ wildtype and experimentally manipulated systems.
 We find no need in such a model for axon-axon interactions. We
 predict the form of tectal gradients based on the attractive or
 repulsive nature of the interaction.
+
+In a gradient followng model of the retinotectal system, local
+interactions can account for wildtype behaviour and experimental
+manipulations

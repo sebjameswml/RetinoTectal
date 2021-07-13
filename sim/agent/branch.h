@@ -290,6 +290,7 @@ struct branch : public branch_base<T,N>
         return slimit;
     }
 
+    // One of the border effect options is to pen the cones in.
     static constexpr bool apply_pen_in_effect = false;
     void pen_in (const guidingtissue<T, N>* tissue)
     {
@@ -369,7 +370,7 @@ template<typename T, size_t N, size_t R>
 struct branch_stochastic : public branch<T,N>
 {
     // Params for the receptor binding model
-    static constexpr T gc_width = T{1e-5}; // growth cone width. 10 um
+    static constexpr T gc_width = T{1}; // growth cone width. 10 um is 1e-5 and is a realistic value
 
     // Estimate the ligand gradient, given the true ligand gradient and receptor noise
     virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& mu,
@@ -385,7 +386,7 @@ struct branch_stochastic : public branch<T,N>
         morph::RandUniform<T, std::mt19937> rng;
         morph::Vector<T, R> rns;
 
-        static constexpr bool debug_stochastic = true;
+        static constexpr bool debug_stochastic = false;
 
         for (size_t i = 0; i < N; ++i) { // For each receptor-ligand pairing
             for (size_t d = 0; d < 2; ++d) { // For each dimension
@@ -452,7 +453,7 @@ struct branch_stochastic : public branch<T,N>
         T n_k = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            n_k += this->compute_for_branch ((&k), C, I);
+            n_k += this->compute_for_branch (source_tissue, &k, C, I);
         }
 
         // Do the 1/|B_b| multiplication

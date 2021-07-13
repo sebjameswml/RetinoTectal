@@ -96,10 +96,12 @@ int main (int argc, char **argv)
             Agent1<float, 4, branch_geb<float, 4>> model (conf, mconf);
             model.run();
             model.save (outfile);
+        } else if (branch_model == "stochastic") {
+            Agent1<float, 4, branch_stochastic<float, 4, 10>> model (conf, mconf);
+            model.run();
+            model.save (outfile);
         } else {
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
-            // This is the stochastic model:
-            // Agent1<float, 4, branch_stochastic<float, 4, 10>> model (conf, mconf);
             model.run();
             model.save (outfile);
         }
