@@ -83,7 +83,7 @@ struct branch : public branch_base<T,N>
     }
 
     // A subroutine of compute_next
-    T compute_for_branch (branch_base<T, N>* kp, morph::Vector<T, 2>& C, morph::Vector<T, 2>& I)
+    T compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp, morph::Vector<T, 2>& C, morph::Vector<T, 2>& I)
     {
 #ifndef CONE_RECEPTORS_AND_LIGANDS_INTERACT
         morph::Vector<T, 2> nullvec = {0, 0}; // null vector
@@ -96,36 +96,28 @@ struct branch : public branch_base<T,N>
         T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
         T Q = T{0};
         if constexpr (N == 4) {
-#ifdef CONE_RECEPTORS_AND_LIGANDS_INTERACT
             // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
-            Q = kp->lgnd[3] * this->rcpt[0]
-            + kp->lgnd[2] * this->rcpt[1]
-            + kp->lgnd[1] * this->rcpt[2]
-            + kp->lgnd[0] * this->rcpt[3];
-#else // CONE RECEPTORS and RECEPTORS interact
-            Q = kp->lgnd[3] / this->rcpt[0]
-            + kp->lgnd[2] / this->rcpt[1]
-            + kp->lgnd[1] / this->rcpt[2]
-            + kp->lgnd[0] / this->rcpt[3];
-#endif
+            Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
         } else if constexpr (N == 2) {
-            throw std::runtime_error ("branch::compute_next: Writeme for N=2");
+            Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
         }
         Q /= N; // to average the effect of each receptor type
-        //if (W>0) {
-        //    std::cout << "Q[id=" << this->id << "] = " << Q << " and W = "  << W << std::endl;
-        //}
 
         kb.renormalize(); // as in paper, vector bk is a unit vector
 #ifdef CONE_RECEPTORS_AND_LIGANDS_INTERACT
-        I += kb * Q * W; // receptor based signal-induced repulsion
+        I += kb * Q * W; // receptor based signal-induced repulsion (or attaction, depending...)
 #else
-        I += Q > this->s ? kb * W : nullvec;
+        I += Q > this->s ? kb * W : nullvec; // S-G like repulsive interaction
+        I += Q < -this->s ? -kb * W : nullvec; // S-G like attractive interaction
 #endif
         C += kb * W; // Generic, distance based competition
         //if (W > T{0}) { n_k += T{1}; }
 
-        // In client code, should we add to n_k or not
+        // In client code, should we add to n_k or not?
         return (W > T{0} ? T{1} : T{0});
     }
 
@@ -338,7 +330,7 @@ struct branch : public branch_base<T,N>
         T n_k = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            n_k += this->compute_for_branch ((&k), C, I);
+            n_k += this->compute_for_branch (source_tissue, (&k), C, I);
         }
 
         // Do the 1/|B_b| multiplication
