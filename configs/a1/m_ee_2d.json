@@ -1,36 +1,33 @@
 {
     "id" : "expexp",
-    "file" : "An exponential-exponential model for using with Gebhardt model",
+    "file" : "An exponential-exponential model with all repulsive interactions, but only 2 guiding molecules",
 
-    "desc_branch_model" : "Which overall type of model to implement: gebhardt or default is my model (james_agent)",
-    "branch_model" : "gebhardt",
-
-    "num_guiders" : 4,
+    "num_guiders" : 2,
     "totally_random_init" : true,
     "intro_every" : 0,
 
     "desc_arrays" : "Each array has num_guiders entries, in pairs. the order is [ x1, y1, x2, y2, etc ] where x1 means the 1st receptor/ligand that varies in the x direction",
     "desc_forms" : "0: linear  1: quadratic  2: exponential  3: logarithmic",
-    "ret_receptor_forms"    : [2,2,2,2],
-    "tectum_ligand_forms"   : [2,2,2,2],
+    "ret_receptor_forms"    : [2,2],
+    "tectum_ligand_forms"   : [2,2],
     "desc_unused_arrays" : "The forms for retinal ligands/tectal receptors are just used when setting up guidingtissue objects",
-    "ret_ligand_forms"      : [2,2,2,2],
-    "tectum_receptor_forms" : [2,2,2,2],
+    "ret_ligand_forms"      : [2,2],
+    "tectum_receptor_forms" : [2,2],
 
     "desc_directions" : "+x: increases with increasing x, etc",
-    "ret_receptor_directions"    : ["-x", "-y", "+x", "+y"],
-    "tectum_ligand_directions"   : ["+y", "+x", "-y", "-x"],
+    "ret_receptor_directions"    : ["-x", "-y"],
+    "tectum_ligand_directions"   : ["-y", "-x"],
 
     "desc_interaction" : "retina forward interaction gives the behaviour of retinal receptor expressing projections when the receptors are activated. May be attraction (1) or repulsion (-1)",
-    "ret_forward_interactions" : [-1,-1,-1,-1],
+    "ret_forward_interactions" : [-1,-1],
 
     "desc_non_functional_directions" : "These two direction sets matter for visualisation but aren't currently used by the model",
-    "ret_ligand_directions"      : ["-x", "-y", "x", "y"],
-    "tectum_receptor_directions" : ["x", "+y", "-x", "-y"],
+    "ret_ligand_directions"      : ["-x", "-y"],
+    "tectum_receptor_directions" : ["-x", "-y"],
 
     "rgcside" : 20,
 
-    "desc_bpa" : "Branches per axon",            "bpa" : 1,
+    "desc_bpa" : "Branches per axon",            "bpa" : 8,
 
     "desc_m1" : "chemoaffinity",                 "m1" : 0.001,
     "desc_m2" : "axon-axon competition",         "m2" : 0.2,

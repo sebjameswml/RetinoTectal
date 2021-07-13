@@ -298,6 +298,7 @@ struct branch : public branch_base<T,N>
         return slimit;
     }
 
+    static constexpr bool apply_pen_in_effect = false;
     void pen_in (const guidingtissue<T, N>* tissue)
     {
         // Prevent agents from moving outside; limit this->next
@@ -362,7 +363,9 @@ struct branch : public branch_base<T,N>
         this->next = b + db /* * this->speedlimit(db) */;
 
         // If we're penning the agent in, then check this->next and change as necessary
-        if (be == border_effect::penned && this->entered == true) { this->pen_in (tissue); }
+        if constexpr (apply_pen_in_effect == true) {
+            if (be == border_effect::penned && this->entered == true) { this->pen_in (tissue); }
+        }
     }
 };
 

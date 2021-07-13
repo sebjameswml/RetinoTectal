@@ -206,7 +206,7 @@ struct Agent1
             this->branches[i].compute_next (this->branches, this->ret, this->tectum, this->m, rns);
         }
 #else
-//#pragma omp parallel for
+#pragma omp parallel for
         for (auto& b : this->branches) {
             morph::Vector<T, 2*N> rns;
             this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?

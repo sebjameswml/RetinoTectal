@@ -1,7 +1,6 @@
 (Working abstract)
 
-Modelling the Retinotectal projection - can competition provide a
-stopping mechanism?
+Modelling the Retinotectal projection - does competition stop axons?
 
 In the classic Chemospecificity theory, the retinotectal axon
 projection is thought to use pairs of orthogonal signalling gradients
@@ -16,3 +15,11 @@ location. In this work, we seek to demonstrate that the competition
 mechanism which we have shown is sufficient to form the murine barrel
 pattern is also a candidate mechanism for the arrangement for the
 more continuous retinotectal system.
+
+In a gradient following model, opposing signalling gradients and
+competition are sufficient to reproduce retinotectal organisation in
+wildtype and experimentally manipulated systems.
+
+We find no need in such a model for axon-axon interactions. We
+predict the form of tectal gradients based on the attractive or
+repulsive nature of the interaction.
