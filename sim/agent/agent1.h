@@ -800,34 +800,36 @@ struct Agent1
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
         offset2[1] -= sqside;
 
-        show_pair = 1; // 1 means show for 2 and 3.
-        offset2[0] = offset[0];
-        offset2[1] = offset[1] + sqside;
-        // Retina
-        offset2[1] += sqside;
-        // true means cyan-magenta
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1));
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1));
+        if constexpr (N>2) {
+            show_pair = 1; // 1 means show for 2 and 3.
+            offset2[0] = offset[0];
+            offset2[1] = offset[1] + sqside;
+            // Retina
+            offset2[1] += sqside;
+            // true means cyan-magenta
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1));
 #ifdef SHOW_RET_GRADS
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
-        offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
-        offset2[1] -= sqside;
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+            offset2[1] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+            offset2[1] -= sqside;
 #endif
-        // Tectum
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
-        offset2[0] += sqside;
-        offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
-        offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
-        offset2[1] -= sqside;
-#endif
+            // Tectum
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            offset2[0] += sqside;
+            offset2[1] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+            offset2[1] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+            offset2[1] -= sqside;
+        }
+#endif // VISUALISE
     }
 
     void visinit()
