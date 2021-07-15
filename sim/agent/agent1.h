@@ -800,34 +800,36 @@ struct Agent1
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
         offset2[1] -= sqside;
 
-        show_pair = 1; // 1 means show for 2 and 3.
-        offset2[0] = offset[0];
-        offset2[1] = offset[1] + sqside;
-        // Retina
-        offset2[1] += sqside;
-        // true means cyan-magenta
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1));
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1));
+        if constexpr (N>2) {
+            show_pair = 1; // 1 means show for 2 and 3.
+            offset2[0] = offset[0];
+            offset2[1] = offset[1] + sqside;
+            // Retina
+            offset2[1] += sqside;
+            // true means cyan-magenta
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1));
 #ifdef SHOW_RET_GRADS
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
-        offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
-        offset2[1] -= sqside;
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+            offset2[1] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+            offset2[1] -= sqside;
 #endif
-        // Tectum
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
-        offset2[0] += sqside;
-        offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
-        offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
-        offset2[1] -= sqside;
-#endif
+            // Tectum
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            offset2[0] += sqside;
+            offset2[1] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+            offset2[1] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+            offset2[1] -= sqside;
+        }
+#endif // VISUALISE
     }
 
     void visinit()
@@ -865,17 +867,6 @@ struct Agent1
         v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
         offset[1] += 1.4f;
 
-        // This one gives an 'axon view'
-        offset[0] += 1.3f;
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-        this->av->axonview = true;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
-        v->addVisualModel (this->av);
-
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
@@ -893,10 +884,21 @@ struct Agent1
         this->tcv->finalize();
         this->tcv->addLabel ("experiment suggests", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->tcv);
+
+        // This one gives an 'axon view'
+        offset[0] += 1.5f;
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->av->axonview = true;
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->av->target_scale.compute_autoscale (0, 1);
+        this->av->finalize();
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        v->addVisualModel (this->av);
+
         offset[1] += 1.4f;
 
         // A graph of the SOS diffs between axon position centroids and target positions from retina
-        offset[0] += 1.5f;
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),

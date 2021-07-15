@@ -83,18 +83,25 @@ struct branch : public branch_base<T,N>
     }
 
     // A subroutine of compute_next
-    T compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp, morph::Vector<T, 2>& C, morph::Vector<T, 2>& I)
+    //
+    // Within a set distance of two_r, consider that receptors and ligands on
+    // the two growth cones interact and produce an attractive (and/or repulsive)
+    // interaction. Use the strength of this interaction to weight a vector between the
+    // two cones.
+    T compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
+                          morph::Vector<T, 2>& C, morph::Vector<T, 2>& I)
     {
-#ifndef CONE_RECEPTORS_AND_LIGANDS_INTERACT
-        morph::Vector<T, 2> nullvec = {0, 0}; // null vector
-#endif
         // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
         // sums these. However, that gives a competition term with a sign error. So
         // here, sum up the unit vectors kb.
         morph::Vector<T, 2> kb = this->current - kp->current;
         T d = kb.length();
-        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
+
+        // Q collects the overall signal transmitted by ligands binding to
+        // receptors. Repulsive interactions add to Q; attractive interactions make Q
+        // more negative.
         T Q = T{0};
+
         if constexpr (N == 4) {
             // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
             Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
@@ -105,20 +112,20 @@ struct branch : public branch_base<T,N>
             Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
             + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
         }
-        Q /= N; // to average the effect of each receptor type
+        Q /= N;
 
-        kb.renormalize(); // as in paper, vector bk is a unit vector
-#ifdef CONE_RECEPTORS_AND_LIGANDS_INTERACT
-        I += kb * Q * W; // receptor based signal-induced repulsion (or attaction, depending...)
-#else
-        I += Q > this->s ? kb * W : nullvec; // S-G like repulsive interaction
-        I += Q < -this->s ? -kb * W : nullvec; // S-G like attractive interaction
-#endif
+        kb.renormalize(); // vector bk is a unit vector
+
+        // I is the axon-axon interaction. Q is the signal. Interaction occurs if distance is <= two_r
+        I += kb * Q * (d <= this->two_r ? T{1} : T{0});
+
+        // W is a distance-dependent weight, which is 0 outside a distance of two_r and
+        // linearly increases to 1 when d=0.
+        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
         C += kb * W; // Generic, distance based competition
-        //if (W > T{0}) { n_k += T{1}; }
 
         // In client code, should we add to n_k or not?
-        return (W > T{0} ? T{1} : T{0});
+        return (d <= this->two_r ? T{1} : T{0});
     }
 
     // A subroutine of compute_next

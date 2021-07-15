@@ -203,7 +203,43 @@
 \vspace{-1.8cm} % HACK bring the introduction up towards the title. It
                 % would be better to do this with titling in \maketitle
 
-\emph{Abstract here.}
+% Note this is the SfN draft abstract, and will need rewriting.
+\emph{In the classic Chemoaffinity theory, the retinotectal axon projection is
+thought to use pairs of orthogonal signalling gradients in the retina to
+specify the eventual location of synapses made on the surface of the
+tectum/superior colliculus. Similar orthogonal gradients in the tectum provide
+a coordinate system which allows the axons to match their prespecified
+destination with the correct location. Although the Ephrins have been shown to
+guide axons toward their destination, there has yet to emerge a complete
+account of the local interactions which halt the axonal growth cones in the
+correct locations to recreate the topography of the retinal cells. The model
+of Simpson & Goodhill (2011) provides an account of the basic topographic
+arrangement of cells on the tectum, as well as reproducing well known surgical
+and genetic manipulation experiments. However, it suffers from the absence of
+a local chemotactic guidance mechanism. Instead, each agent in their model is
+given instantaneous knowledge of the vector that would move it toward its pre
+specified destination. In addition to the globally supervised chemoaffinity
+term, Simpson & Goodhill introduced a competitive interaction for space
+between growth cone agents and a receptor-ligand axon-axon interaction in
+order to account for the full set of experimental manipulations. Here, we
+propose the replacement of the chemoaffinity term with a gradient following
+model consisting of axonal growth cone agents which carry receptor molecule
+expression determined by their soma's location of origin on the retina. Growth
+cones move on the simulated tectum guided by two pairs of opposing, orthogonal
+signalling molecules representing the Ephrin ligands. We show that with only
+the chemoaffinity term and a receptor-ligand based axon-axon interaction term
+(meaning that all growth cone interactions are by receptor-ligand signalling),
+a full range of experimental manipulations to the retinotectal system can be
+reproduced. Furthermore, we show that the observation that competition is not
+and essential requirement for axons to find their way (Gosse et al., 2008) is
+also accounted for by the model, due to the opposing influences of signalling
+gradient pairs. Finally, we demonstrate that, assuming exponentially varying
+receptor expression in the retina, ligand expression should either be
+exponential if the receptor-ligand signal induces repulsion (i.e. gradient
+descent) or logarithmic if the signal induces attraction (gradient
+ascent). Thus, we find that a model analogous to the one we presented in James
+et al (2020) that accounts for murine barrel patterning is also a candidate
+mechanism for the arrangement of the more continuous retinotectal system.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -308,16 +344,26 @@ Gradient based models: \citet{nakomoto_topographically_1996}
 
 Our model was inspired by the agent-based model of \cite{simpson_simple_2011}
 and, in common with that work, consists of agents representing axonal growth
-cones, originating from a square retina and moving upon a square tectum. Also
-in common with the Simpson \& Goodhill model, we model three contributions to
-the movement of the growth cones; chemoaffinity, competition and axon-axon
-interaction. In our model, chemoaffinity and axon-axon interactions occur via
-signal transmission between receptors and ligands which are expressed in
-graded patterns on both retina and tectum. This sets our model apart from that
-of Simpson \& Goodhill, in which each growth cone moving on the tectum was
-always able to determine a vector to its designated target and advance along
-that vector. Competition is modelled as a distance based repulsion as
-in \cite{simpson_simple_2011}.
+cones, originating from a square retina and moving upon a square tectum.
+%
+\citet{simpson_simple_2011} models three contributions to the movement of the growth
+cones; chemoaffinity, competition for space and axon-axon interactions. The
+first two of these are modelled without reference to a particular mechanism;
+each agent is provided with globally-supervised information about its
+instantaneous location and its target location, allowing it to move along a
+vector towards the target. Competition is implemented as a movement of
+constant distance along the vector between two agents if two agents are within
+a threshold distance of one another. Interaction is signal-induced repulsion,
+which is triggered if two agents are both within the threshold distance of
+each other and have compatible EphA receptor expression.
+
+In our model, space-based competition is omitted and chemoaffinity and
+axon-axon interactions occur only via signal transmission between receptors
+and ligands, which are expressed in graded patterns on both retina and
+tectum. Signals induce attractive or repulsive interactions; for chemoaffinity
+the interaction is to ascend or descend the gradient of ligand expression on
+the tectum; for axon-axon interactions, the strength of short-range repulsion
+(or attraction) is governed by the receptor-ligand expression on pairs of axons.
 
 \subsection{Receptor and ligand expression}
 
@@ -334,26 +380,26 @@ orthogonal to $l_0$ and opposing $r_1$.
 
 Because there is convincing evidence that EphA and EphB receptors are
 expressed in exponentially increasing
-patterns \cite{reber_relative_2004,feldheim_genetic_2000,brown_topographic_2000,koulakov_stochastic_2004},
+patterns \citep{reber_relative_2004,feldheim_genetic_2000,brown_topographic_2000,koulakov_stochastic_2004},
 we use an exponential form for retinal receptor expressions, in common with
 other modelling
-studies~\cite{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
+studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
 %
 The tectum expresses the same sets of receptors and ligands, also in
 orthogonal pairs of gradients. In this work, we did not consider the effect of
 reverse signalling from tectal receptors to RGC ligands so we only modelled
 tectal ligand expression. Although several studies model tectal ligand
-expression with exponential functions~\cite{koulakov_stochastic_2004}, the
+expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for ligand expression is more ambiguous (Supp. Fig
 X). Correspondingly, we leave open the possibility that ligand expression may
 be modelled by exponential, linear or logarithmic functions.
 
 While we do not explicitly name $r_0$, $r_1$,
 etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes EphA,
-EphB, Ryk~\cite{schmitt_wntryk_2006} and
-Neogenin~\cite{rajagopalan_neogenin_2004} receptors and that $l$ includes the
-ephrin-A, ephrin-B, Wnt3~\cite{schmitt_wntryk_2006} and
-RGM~\cite{monnier_rgm_2002} ligands, each of which has been shown to play a
+EphB, Ryk \citep{schmitt_wntryk_2006} and
+Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $l$ includes the
+ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and
+RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a
 role in retino-tectal map formation.
 
 Figure~\ref{f:1} shows colour maps of receptor and ligand
@@ -386,29 +432,43 @@ exponential, linear or logarithmic in form.
 \subsection{Signalling}
 
 In this model, the signal transmitted when a ligand binds to a receptor on a
-growth cone can lead to one of two effects; the signal may induce the growth
-cone to climb the gradient of ligand expression, in which case the interaction
-is \emph{attractive} or the cone may descend the gradient of ligand expression
-if the interaction is \emph{repulsive}. To determine the strength of the
-effect we could assume a purely linear receptor binding model, and set the
-movement of the growth cone to be $\sum_i \pm r_i \times \grad l_i$. While
-this approach works, it does not allow us to investigate the effect of
-receptor binding noise (\textbf{FIXME}: Be sure to have included a discussion
-on the three types of noise as described by Goodhill, 2016 in the
-introduction) on the ability of the system to generate topographic order.
-
-Instead, we treat the receptor binding at the growth cone with greater
-care. Based on a Michaelis-Menten model applied to
-receptor binding, \citet{mortimer_bayesian_2009} give an expression for the
-probability of an individual receptor being bound as a function of the ligand
-expression, $\gamma$, and the ligand gradient, $\mu$;
+growth cone can lead to one of two effects; the signal may induce an
+attraction towards the ligand-expression region or a repulsion away from it.
+%
+For axon-tectum interactions, we implemented attraction as a climbing of the
+tectal ligand expression gradient and repulsion as gradient descent.
+%
+To determine the strength of the effect we assumed a purely linear receptor
+binding model, and set the chemotactic movement vector of the growth cone to
+be
+%
 \begin{equation}
-P(b=1|\gamma,\mu) = \frac{\gamma(1 + \mu r)}{1 + \gamma(1 + \mu r)},
+\mathbf{G} = \sum_i^N D_i r_i \nabla l_i
 \end{equation}
-where $r$ is the distance of the receptor from the centre of a 1D growth
-cone. To determine the growth cone's estimate of the gradient, we assume
-evenly spaced receptors and sample from a uniform distribution for each
-location across the growth cone. Activated receptors contribute
+%
+where $r_i$ is the receptor expression for ligand-receptor pair $i$,
+$\nabla l_i$ is the gradient of the ligand expression and $D_i$ denotes the
+direction of the interaction induced when a molecule of $l_i$ binds to
+$r_i$. $D_i$ takes the value -1 for a repulsive interaction or 1 for an
+attractive interaction.
+
+For axon-axon interactions, attraction causes a movement along a vector,
+$\mathbf{x}_{b_0}$, between two axons causing them to move closer together;
+repulsion causes the opposite effect. The interaction, $\mathbf{I}$, is given
+by
+%
+\begin{equation}
+\mathbf{I} = \sum_b \mathbf{x}_{b_0} Q(d_{b0})
+\end{equation}
+%
+where $Q(d_{b0})$ is the signalling strength between two growth cones, given by
+%
+\begin{equation}
+Q(d_{b0}) = \begin{cases}
+     \sum_i^N D_i l_i r_i    & d_{b0} < 2r \\
+     0 & d_{b0} \geq 2r
+     \end{cases}
+\end{equation}
 
 %This is where I really want to say ``the only interactions in the model are
 %via forward (ligand-activates-receptor) and reverse
@@ -434,3 +494,18 @@ location across the growth cone. Activated receptors contribute
 \bibliography{RetinoTectal}
 
 \end{document}
+
+
+%% For the noise based paper:
+%% Instead, we treat the receptor binding at the growth cone with greater
+%% care. Based on a Michaelis-Menten model applied to
+%% receptor binding, \citet{mortimer_bayesian_2009} give an expression for the
+%% probability of an individual receptor being bound as a function of the ligand
+%% expression, $\gamma$, and the ligand gradient, $\mu$;
+%% \begin{equation}
+%% P(b=1|\gamma,\mu) = \frac{\gamma(1 + \mu r)}{1 + \gamma(1 + \mu r)},
+%% \end{equation}
+%% where $r$ is the distance of the receptor from the centre of a 1D growth
+%% cone. To determine the growth cone's estimate of the gradient, we assume
+%% evenly spaced receptors and sample from a uniform distribution for each
+%% location across the growth cone. Activated receptors contribute
