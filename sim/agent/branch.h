@@ -341,7 +341,7 @@ struct branch : public branch_base<T,N>
             n_k += this->compute_for_branch (source_tissue, (&k), C, I);
         }
 
-        // Do the 1/|B_b| multiplication
+        // Do the 1/|B_b| multiplication to normalize C and I
         if (n_k > T{0}) {
             C = C/n_k;
             I = I/n_k;
