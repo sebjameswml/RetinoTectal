@@ -213,15 +213,15 @@ destination with the correct location. Although the Ephrins have been shown to
 guide axons toward their destination, there has yet to emerge a complete
 account of the local interactions which halt the axonal growth cones in the
 correct locations to recreate the topography of the retinal cells. The model
-of Simpson & Goodhill (2011) provides an account of the basic topographic
+of \citet{simpson_simple_2011} provides an account of the basic topographic
 arrangement of cells on the tectum, as well as reproducing well known surgical
 and genetic manipulation experiments. However, it suffers from the absence of
 a local chemotactic guidance mechanism. Instead, each agent in their model is
 given instantaneous knowledge of the vector that would move it toward its pre
 specified destination. In addition to the globally supervised chemoaffinity
-term, Simpson & Goodhill introduced a competitive interaction for space
-between growth cone agents and a receptor-ligand axon-axon interaction in
-order to account for the full set of experimental manipulations. Here, we
+term, \citet{simpson_simple_2011} introduced a competitive interaction for
+space between growth cone agents and a receptor-ligand axon-axon interaction
+in order to account for the full set of experimental manipulations. Here, we
 propose the replacement of the chemoaffinity term with a gradient following
 model consisting of axonal growth cone agents which carry receptor molecule
 expression determined by their soma's location of origin on the retina. Growth
@@ -231,15 +231,16 @@ the chemoaffinity term and a receptor-ligand based axon-axon interaction term
 (meaning that all growth cone interactions are by receptor-ligand signalling),
 a full range of experimental manipulations to the retinotectal system can be
 reproduced. Furthermore, we show that the observation that competition is not
-and essential requirement for axons to find their way (Gosse et al., 2008) is
-also accounted for by the model, due to the opposing influences of signalling
-gradient pairs. Finally, we demonstrate that, assuming exponentially varying
-receptor expression in the retina, ligand expression should either be
-exponential if the receptor-ligand signal induces repulsion (i.e. gradient
-descent) or logarithmic if the signal induces attraction (gradient
-ascent). Thus, we find that a model analogous to the one we presented in James
-et al (2020) that accounts for murine barrel patterning is also a candidate
-mechanism for the arrangement of the more continuous retinotectal system.}
+and essential requirement for axons to find their
+way \citep{gosse_retinotopic_2008} is also accounted for by the model, due to
+the opposing influences of signalling gradient pairs. Finally, we demonstrate
+that, assuming exponentially varying receptor expression in the retina, ligand
+expression should either be exponential if the receptor-ligand signal induces
+repulsion (i.e. gradient descent) or logarithmic if the signal induces
+attraction (gradient ascent). Thus, we find that a model analogous to the one
+we presented in \citet{james_modelling_2020} that accounts for murine barrel
+patterning is also a candidate mechanism for the arrangement of the more
+continuous retinotectal system.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -332,13 +333,13 @@ local model to reproduce the majority of reported phenomena associated with
 retinotectal organisation.
 
 There have been many approaches to modelling the organisation of the
-retino-tectal projection. Many of these models are wholly or partially
+retinotectal projection. Many of these models are wholly or partially
 phenomenological.
 
 A model which carefully deals with receptor
 binding is given by \citet{naoki_revisiting_2017} \citep[see also][]{mortimer_bayesian_2009}.
 
-Gradient based models: \citet{nakomoto_topographically_1996}
+Gradient based models: \citet{nakamoto_topographically_1996}
 
 \section{Model}
 
@@ -346,16 +347,16 @@ Our model was inspired by the agent-based model of \cite{simpson_simple_2011}
 and, in common with that work, consists of agents representing axonal growth
 cones, originating from a square retina and moving upon a square tectum.
 %
-\citet{simpson_simple_2011} models three contributions to the movement of the growth
+\citet{simpson_simple_2011} model three contributions to the movement of the growth
 cones; chemoaffinity, competition for space and axon-axon interactions. The
 first two of these are modelled without reference to a particular mechanism;
 each agent is provided with globally-supervised information about its
 instantaneous location and its target location, allowing it to move along a
 vector towards the target. Competition is implemented as a movement of
-constant distance along the vector between two agents if two agents are within
-a threshold distance of one another. Interaction is signal-induced repulsion,
-which is triggered if two agents are both within the threshold distance of
-each other and have compatible EphA receptor expression.
+constant distance along the vector between two agents if those two agents are
+within a threshold distance of one another. Interaction is signal-induced
+repulsion, which is triggered if two agents are both within the threshold
+distance of each other and have compatible EphA receptor expression.
 
 In our model, space-based competition is omitted and chemoaffinity and
 axon-axon interactions occur only via signal transmission between receptors
@@ -367,16 +368,42 @@ the tectum; for axon-axon interactions, the strength of short-range repulsion
 
 \subsection{Receptor and ligand expression}
 
-Each retinal ganglion cell projects $n=8$ growth cone agents which carry a set
-of 4 receptors, $r$, and 4 ligands, $l$, expressed at levels determined by the
-cell's location on the retina. The expression levels of the receptors and
-ligands vary with respect to the cell's position on the retinal surface. Each
-receptor or ligand varies with respect only to one dimension.  Receptor
-expression gradients are arranged in orthogonal pairs with the gradient of
-$r_0$ being orthogonal to that of $r_1$. $r_2$, whose gradient is opposite to
-$r_0$, is orthogonal to $r_3$. Ligands are also arranged in orthogonal pairs,
-with $l_0$ opposing $r_0$ (as $r_0$ increases, $l_0$ decreases) and $l_1$
-orthogonal to $l_0$ and opposing $r_1$.
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/expressions_fig.png}
+\caption{Simulated retinal and tectal signalling molecule expression. Four
+receptor types are expressed, and four corresponding ligand types. Receptors
+of type $i$ are activated by ligands of type $i$.
+%
+\textbf{A} Retinal receptor expression, $r_i$. Four receptors are expressed and
+displayed here in two dual-colour maps. $r_0$ and $r_1$ are red and blue;
+$r_2$ and $r_3$ are cyan and magenta. $r_0$ increases as an exponential
+function of $-x$; $r_1$ increases with an exponential function of $-y$. $r_2$
+and $r_3$ have the opposite sense. Retinal receptor expression is modelled
+with exponential functions because there is ample evidence to support this
+form. $N$: nasal, $T$: temporal, $D$: dorsal, $V$: ventral.
+%
+\textbf{B} Retinal ligand expression, $l_i$, is expressed in complimentary
+gradients \citep{hornberger_modulation_1999}.
+%
+\textbf{C} Tectal ligand expression $L_i$. Tectal ligand expression is shown in a linear form,
+as there is less evidence to determine whether ligand expression is
+exponential, linear or logarithmic on the tectum.
+$L$: lateral, $M$: medial, $C$: caudal, $R$: rostral.
+}
+\label{f:1}
+\end{figure}
+
+Each retinal ganglion cell projects $n=8$ growth cone agents (referred to
+as \emph{branches}) which carry a set of 4 receptors, $r_i$, and 4 ligands, $l_i$,
+expressed at levels determined by the cell's location on the retina. The
+expression levels of the receptors and ligands vary with respect to the cell's
+position on the retinal surface. Each receptor or ligand varies with respect
+only to one dimension.  Receptor expression gradients are arranged in
+orthogonal pairs with the gradient of $r_0$ being orthogonal to that of
+$r_1$. $r_2$, whose gradient is opposite to $r_0$, is orthogonal to
+$r_3$. Ligands are also arranged in orthogonal pairs, with $l_0$ opposing
+$r_0$ (as $r_0$ increases, $l_0$ decreases) and $l_1$ orthogonal to $l_0$ and
+opposing $r_1$.
 
 Because there is convincing evidence that EphA and EphB receptors are
 expressed in exponentially increasing
@@ -385,99 +412,91 @@ we use an exponential form for retinal receptor expressions, in common with
 other modelling
 studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
 %
-The tectum expresses the same sets of receptors and ligands, also in
-orthogonal pairs of gradients. In this work, we did not consider the effect of
-reverse signalling from tectal receptors to RGC ligands so we only modelled
-tectal ligand expression. Although several studies model tectal ligand
+The simulated tectum expresses the same types of receptors and ligands, also
+in orthogonal pairs of gradients. In this work, we did not consider the effect
+of reverse signalling from tectal receptors to RGC ligands so we only modelled
+tectal ligand expression, $L$. Although several studies model tectal ligand
 expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for ligand expression is more ambiguous (Supp. Fig
-X). Correspondingly, we leave open the possibility that ligand expression may
-be modelled by exponential, linear or logarithmic functions.
+X). Correspondingly, we leave open the possibility that tectal ligand
+expression may be modelled by exponential, linear or logarithmic functions.
 
 While we do not explicitly name $r_0$, $r_1$,
 etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes EphA,
 EphB, Ryk \citep{schmitt_wntryk_2006} and
-Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $l$ includes the
-ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and
+Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $l$ and $L$
+include the ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and
 RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a
-role in retino-tectal map formation.
+role in retinotectal map formation.
 
 Figure~\ref{f:1} shows colour maps of receptor and ligand
 expression, in this case tectal ligand expression maps are linear.
 
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/expressions_fig.png}
-\caption{Retinal and tectal gene expression.
-%
-\textbf{A} Retinal receptor expression. Four receptors are expressed and
-displayed here in two dual-colour maps. $r_0$ and $r_1$ are red and
-green;$r_2$ and $r_3$ are cyan and magenta. $r_0$ increases as an
-exponential function of $x$; $r_1$ increases with an exponential function of
-$y$. $r_2$ and $r_3$ have the opposite sense. The expression is modelled with
-exponential functions because there is ample evidence that shows that retinal
-receptor expressions follow this form.
-%
-\textbf{B} Retinal ligand expression. May not be included.
-%
-\textbf{C} Tectal receptor expression. May not be included.
-%
-\textbf{D} Tectal ligand expression. $l_0$ and $l_1$ are red and green; $l_2$
-and $l_3$ are cyan and magenta. These expressions are shown in a linear form,
-as there is less evidence to determine whether tectal ligand expression is
-exponential, linear or logarithmic in form.
-}
-\label{f:1}
-\end{figure}
-
-\subsection{Signalling}
+\subsection{Chemotaxis}
 
 In this model, the signal transmitted when a ligand binds to a receptor on a
-growth cone can lead to one of two effects; the signal may induce an
-attraction towards the ligand-expression region or a repulsion away from it.
+growth cone (forward signalling) can lead to one of two effects; the
+signal may induce an attraction towards the ligand-expressing region or a
+repulsion away from it.
 %
 For axon-tectum interactions, we implemented attraction as a climbing of the
 tectal ligand expression gradient and repulsion as gradient descent.
 %
 To determine the strength of the effect we assumed a purely linear receptor
-binding model, and set the chemotactic movement vector of the growth cone to
-be
+binding model, and set the chemotactic movement vector of the growth cone $b$ at
+location $\mathbf{x}_b$ on the tectum to be
 %
 \begin{equation}
-\mathbf{G} = \sum_i^N D_i r_i \nabla l_i
+\mathbf{G}_b = \sum_i^N F_i\,r_{i,b} \nabla L_i(\mathbf{x}_b)
 \end{equation}
 %
-where $r_i$ is the receptor expression for ligand-receptor pair $i$,
-$\nabla l_i$ is the gradient of the ligand expression and $D_i$ denotes the
-direction of the interaction induced when a molecule of $l_i$ binds to
-$r_i$. $D_i$ takes the value -1 for a repulsive interaction or 1 for an
-attractive interaction.
+where $r_{i,b}$ is the receptor expression on axon branch $b$ for
+ligand-receptor pair $i$, $\nabla L_i$ is the gradient of expression of ligand
+$i$ on the tectum and $F_i$ denotes the direction of the interaction induced
+when a molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes
+the value -1 for a repulsive interaction or 1 for an attractive interaction.
 
-For axon-axon interactions, attraction causes a movement along a vector,
-$\mathbf{x}_{b_0}$, between two axons causing them to move closer together;
-repulsion causes the opposite effect. The interaction, $\mathbf{I}$, is given
-by
+\subsection{Axon-axon interactions}
+
+For axon-axon interactions, repulsion causes a movement of branch $b$ along a
+unit vector, $\hat{\mathbf{x}}_{kb}$, from branch $k$ to branch $b$ causing
+them to move further apart; attraction causes the opposite movement. The
+interaction, $\mathbf{I}_b$, acting on axon branch $b$, is given by
 %
 \begin{equation}
-\mathbf{I} = \sum_b \mathbf{x}_{b_0} Q(d_{b0})
+\mathbf{I}_b = \frac{1}{|B_b|} \sum_k \hat{\mathbf{x}}_{kb}\,Q(d_{kb})
 \end{equation}
 %
-where $Q(d_{b0})$ is the signalling strength between two growth cones, given by
+where $Q(d_{kb})$ is the signalling strength between two growth cones of
+radius $r$ a distance $d_{kb}$ from one another, given by
 %
 \begin{equation}
-Q(d_{b0}) = \begin{cases}
-     \sum_i^N D_i l_i r_i    & d_{b0} < 2r \\
-     0 & d_{b0} \geq 2r
+Q(d_{kb}) = \begin{cases}
+     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r \\
+     0 & d_{kb} > 2r
      \end{cases}
 \end{equation}
+%
+The sign of $Q$ (which is dependent on the values of $F_i$) determines whether
+the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
+expression of ligand $i$ on branch $k$.
 
-%This is where I really want to say ``the only interactions in the model are
-%via forward (ligand-activates-receptor) and reverse
-%(receptor-activates-ligand) signalling''. Something like:
+\subsection{Movement}
 
-%Interactions in the model are by receptor-ligand interactions only. Forward
-%interactions are those in which the ligand activates the receptor, delivering
-%a signal into the receptor-expressing cell. Reverse signals occur when a
-%membrane-bound ligand is activated~\citep{wu_role_2019}.
+At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, of each
+branch, $b$, is updated according to
+%
+\begin{equation}
+\mathbf{x}_{b,t+1} = \mathbf{x}_{b,t} + \mathbf{M}_{b}
+\end{equation}
+%
+where
+%
+\begin{equation}
+\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{I}_b
+\end{equation}
+%
+evaluated at time $t$.
 
 \section{Results}
 
