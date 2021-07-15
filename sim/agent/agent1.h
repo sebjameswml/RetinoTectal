@@ -754,6 +754,7 @@ struct Agent1
         this->goslow = this->conf->getBool ("goslow", false);
     }
 
+    static constexpr bool show_tectal_receptors = false;
     static constexpr float widthtoheight = 0.5625f;
     // Initialise tissue visualisation
     void tvisinit()
@@ -789,8 +790,10 @@ struct Agent1
         offset2[1] -= sqside;
 #endif
         // Tectum
-        offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair));
+        if constexpr (show_tectal_receptors == true) {
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair));
+        }
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
         // Tectal gradients for 0/1
@@ -818,8 +821,10 @@ struct Agent1
             offset2[1] -= sqside;
 #endif
             // Tectum
-            offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
+            if constexpr (show_tectal_receptors == true) {
+                offset2[0] += sqside;
+                tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
+            }
             offset2[0] += sqside;
             tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
             offset2[0] += sqside;
