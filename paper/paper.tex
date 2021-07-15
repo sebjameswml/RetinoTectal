@@ -435,17 +435,40 @@ In this model, the signal transmitted when a ligand binds to a receptor on a
 growth cone can lead to one of two effects; the signal may induce an
 attraction towards the ligand-expression region or a repulsion away from it.
 %
-For axon-tectum interactions, we implement attraction as a climbing of the
+For axon-tectum interactions, we implemented attraction as a climbing of the
 tectal ligand expression gradient and repulsion as gradient descent.
 %
-To determine the strength of the effect we assume a purely linear receptor
-binding model, and set the movement of the growth cone to be $\sum_i \pm
-r_i \times \grad l_i$.
+To determine the strength of the effect we assumed a purely linear receptor
+binding model, and set the chemotactic movement vector of the growth cone to
+be
+%
+\begin{equation}
+\mathbf{G} = \sum_i^N D_i r_i \nabla l_i
+\end{equation}
+%
+where $r_i$ is the receptor expression for ligand-receptor pair $i$,
+$\nabla l_i$ is the gradient of the ligand expression and $D_i$ denotes the
+direction of the interaction induced when a molecule of $l_i$ binds to
+$r_i$. $D_i$ takes the value -1 for a repulsive interaction or 1 for an
+attractive interaction.
 
-For axon-axon interactions, attraction causes a movement along a vector
-between two axons causing them to move closer together; repulsion cause the
-opposite effect.
-
+For axon-axon interactions, attraction causes a movement along a vector,
+$\mathbf{x}_{b_0}$, between two axons causing them to move closer together;
+repulsion causes the opposite effect. The interaction, $\mathbf{I}$, is given
+by
+%
+\begin{equation}
+\mathbf{I} = \sum_b \mathbf{x}_{b_0} Q(d_{b0})
+\end{equation}
+%
+where $Q(d_{b0})$ is the signalling strength between two growth cones, given by
+%
+\begin{equation}
+Q(d_{b0}) = \begin{cases}
+     \sum_i^N D_i l_i r_i    & d_{b0} < 2r \\
+     0 & d_{b0} \geq 2r
+     \end{cases}
+\end{equation}
 
 %This is where I really want to say ``the only interactions in the model are
 %via forward (ligand-activates-receptor) and reverse

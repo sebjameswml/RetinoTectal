@@ -96,8 +96,12 @@ struct branch : public branch_base<T,N>
         // here, sum up the unit vectors kb.
         morph::Vector<T, 2> kb = this->current - kp->current;
         T d = kb.length();
-        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
+
+        // Q collects the overall signal transmitted by ligands binding to
+        // receptors. Repulsive interactions add to Q; attractive interactions make Q
+        // more negative.
         T Q = T{0};
+
         if constexpr (N == 4) {
             // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
             Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
@@ -112,12 +116,16 @@ struct branch : public branch_base<T,N>
 
         kb.renormalize(); // vector bk is a unit vector
 
-        I += kb * Q * W;
+        // I is the axon-axon interaction. Q is the signal. Interaction occurs if distance is <= two_r
+        I += kb * Q * (d <= this->two_r ? T{1} : T{0});
 
-        C += kb * W; // Generic, distance based competition (unused, mostly)
+        // W is a distance-dependent weight, which is 0 outside a distance of two_r and
+        // linearly increases to 1 when d=0.
+        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
+        C += kb * W; // Generic, distance based competition
 
         // In client code, should we add to n_k or not?
-        return (W > T{0} ? T{1} : T{0});
+        return (d <= this->two_r ? T{1} : T{0});
     }
 
     // A subroutine of compute_next
