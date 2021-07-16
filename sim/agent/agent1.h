@@ -270,7 +270,7 @@ struct Agent1
         } else if (alt_cmap == 2) {
             tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
         } else {
-            tv->cm.setHueRB();
+            tv->cm.setHueRG(); // WAS setHueRB, but when mixed you get magenta, so need RG for these maps still
         }
         std::stringstream ss;
         if (exview == expression_view::receptor_exp) {
@@ -570,6 +570,7 @@ struct Agent1
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
+            this->pending_branches[i].init();
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons

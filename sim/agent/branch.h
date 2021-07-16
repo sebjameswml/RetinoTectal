@@ -26,10 +26,20 @@ template<typename T, size_t N>
 struct branch : public branch_base<T,N>
 {
     // Distance parameter r is used as 2r
-    static constexpr T two_r = T{0.1};
-    static constexpr T r = T{0.05};
+    static constexpr T r = T{0.03};     // 0.05 // Note - arrangement is strongly dependent on this value
+    static constexpr T two_r = T{2}*r;  // 0.1
     // Signalling ratio parameter
     static constexpr T s = T{1.1};
+
+    // Interaction effect may have a history - after a cone's receptors are activated,
+    // assume that the movement induced has some lifetime (hardcoded here as size of
+    // Ihist container)
+    static constexpr size_t ihs = 20;
+    morph::Vector<morph::Vector<T, 2>, ihs> Ihist;
+    size_t ihp = 0;
+
+    // zero out the interaction history
+    virtual void init() { this->Ihist.zero(); }
 
     // Estimate the ligand gradient, given the true ligand gradient
     virtual morph::Vector<T, 2*N> estimate_ligand_gradient(morph::Vector<T,2*N>& true_lgnd_grad,
@@ -344,8 +354,18 @@ struct branch : public branch_base<T,N>
         // Do the 1/|B_b| multiplication to normalize C and I
         if (n_k > T{0}) {
             C = C/n_k;
-            I = I/n_k;
+            //I = I/n_k;
         } // else C and I will be {0,0} still
+
+        // Add I to history & rotate, reducing effect by 90% due to one time step passing
+        for (size_t i = 0; i>this->ihs-2; ++i) {
+            this->Ihist[i] = this->Ihist[i+1] * T{0.9};
+        }
+        this->Ihist[this->ihs-1] = I;
+
+        // Reset I and then sum Ihist to get effective I
+        I = {0,0};
+        for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
 
         // Collected non-border movement components
         morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];

@@ -20,6 +20,9 @@ struct branch_geb : public branch_base<T,N>
     // For random angle choice
     morph::RandUniform<T> rng;
 
+    // No init for branch_geb
+    virtual void init() {}
+
     // To achieve rotation of tectum wrt retina, as in biology then, if N==4:
     // receptor 0 interacts primarily with ligand 1
     // receptor 1 interacts primarily with ligand 0

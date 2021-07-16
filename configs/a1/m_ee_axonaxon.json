@@ -17,20 +17,20 @@
     "desc_directions" : "+x: increases with increasing x, etc",
     "ret_receptor_directions"    : ["-x", "-y", "+x", "+y"],
     "tectum_ligand_directions"   : ["+y", "+x", "-y", "-x"],
+    "ret_ligand_directions"      : ["x", "y", "-x", "-y"],
 
     "desc_interaction" : "retina forward interaction gives the behaviour of retinal receptor expressing projections when the receptors are activated. May be attraction (1) or repulsion (-1)",
     "ret_forward_interactions" : [-1,-1,-1,-1],
 
     "desc_non_functional_directions" : "These two direction sets matter for visualisation but aren't currently used by the model",
-    "ret_ligand_directions"      : ["-x", "-y", "x", "y"],
     "tectum_receptor_directions" : ["x", "+y", "-x", "-y"],
 
     "rgcside" : 20,
 
-    "desc_bpa" : "Branches per axon",            "bpa" : 8,
+    "desc_bpa" : "Branches per axon",            "bpa" : 4,
 
     "desc_m1" : "chemoaffinity",                 "m1" : 0.001,
     "desc_m2" : "axon-axon competition",         "m2" : 0.0,
-    "desc_m3" : "the axon-axon interactions",    "m3" : 0.03,
+    "desc_m3" : "the axon-axon interactions",    "m3" : 0.0005,
     "desc_mborder" : "border effect",            "mborder" : 0.5
 }

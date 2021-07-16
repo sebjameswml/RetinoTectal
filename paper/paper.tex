@@ -418,7 +418,7 @@ of reverse signalling from tectal receptors to RGC ligands so we only modelled
 tectal ligand expression, $L$. Although several studies model tectal ligand
 expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for ligand expression is more ambiguous (Supp. Fig
-X). Correspondingly, we leave open the possibility that tectal ligand
+\textbf{X}). Correspondingly, we leave open the possibility that tectal ligand
 expression may be modelled by exponential, linear or logarithmic functions.
 
 While we do not explicitly name $r_0$, $r_1$,
@@ -435,33 +435,33 @@ expression, in this case tectal ligand expression maps are linear.
 \subsection{Chemotaxis}
 
 In this model, the signal transmitted when a ligand binds to a receptor on a
-growth cone (forward signalling) can lead to one of two effects; the
-signal may induce an attraction towards the ligand-expressing region or a
-repulsion away from it.
+branch (forward signalling) can lead to one of two effects; the signal may
+induce an attraction towards the ligand-expressing region or a repulsion away
+from it.
 %
 For axon-tectum interactions, we implemented attraction as a climbing of the
 tectal ligand expression gradient and repulsion as gradient descent.
 %
 To determine the strength of the effect we assumed a purely linear receptor
-binding model, and set the chemotactic movement vector of the growth cone $b$ at
+binding model, and set the chemotactic movement vector of the branch $b$ at
 location $\mathbf{x}_b$ on the tectum to be
 %
 \begin{equation}
 \mathbf{G}_b = \sum_i^N F_i\,r_{i,b} \nabla L_i(\mathbf{x}_b)
 \end{equation}
 %
-where $r_{i,b}$ is the receptor expression on axon branch $b$ for
-ligand-receptor pair $i$, $\nabla L_i$ is the gradient of expression of ligand
-$i$ on the tectum and $F_i$ denotes the direction of the interaction induced
-when a molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes
-the value -1 for a repulsive interaction or 1 for an attractive interaction.
+where $r_{i,b}$ is the receptor expression on branch $b$ for ligand-receptor
+pair $i$, $\nabla L_i$ is the gradient of expression of ligand $i$ on the
+tectum and $F_i$ denotes the direction of the interaction induced when a
+molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes the value
+-1 for a repulsive interaction or 1 for an attractive interaction.
 
 \subsection{Axon-axon interactions}
 
 For axon-axon interactions, repulsion causes a movement of branch $b$ along a
 unit vector, $\hat{\mathbf{x}}_{kb}$, from branch $k$ to branch $b$ causing
 them to move further apart; attraction causes the opposite movement. The
-interaction, $\mathbf{I}_b$, acting on axon branch $b$, is given by
+interaction, $\mathbf{I}_b$, acting on branch $b$, is given by
 %
 \begin{equation}
 \mathbf{I}_b = \frac{1}{|B_b|} \sum_k \hat{\mathbf{x}}_{kb}\,Q(d_{kb})

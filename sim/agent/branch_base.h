@@ -29,6 +29,8 @@ struct branch_base
     }
 #endif
 
+    virtual void init() = 0;
+
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
     // place current into next and move on to next time step.
