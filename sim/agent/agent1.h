@@ -571,6 +571,7 @@ struct Agent1
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].init();
+            this->pending_branches[i].setr (this->mconf->getFloat ("r", 0.05f));
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons

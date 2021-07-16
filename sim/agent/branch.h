@@ -26,19 +26,24 @@ template<typename T, size_t N>
 struct branch : public branch_base<T,N>
 {
     // Distance parameter r is used as 2r
-    static constexpr T r = T{0.03};     // 0.05 // Note - arrangement is strongly dependent on this value
-    static constexpr T two_r = T{2}*r;  // 0.1
-    // Signalling ratio parameter
+    void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
+protected:
+    T r = T{0.04};  // Note - arrangement is quite strongly dependent on this interaction radius
+    T two_r = T{2}*r;
+public:
+    // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
+    static constexpr bool s_g_interaction = false;
     static constexpr T s = T{1.1};
 
     // Interaction effect may have a history - after a cone's receptors are activated,
     // assume that the movement induced has some lifetime (hardcoded here as size of
     // Ihist container)
-    static constexpr size_t ihs = 20;
+    static constexpr bool store_interaction_history = false;
+    static constexpr size_t ihs = 1; // History size
     morph::Vector<morph::Vector<T, 2>, ihs> Ihist;
     size_t ihp = 0;
 
-    // zero out the interaction history
+    // zero out the interaction history in init
     virtual void init() { this->Ihist.zero(); }
 
     // Estimate the ligand gradient, given the true ligand gradient
@@ -106,33 +111,48 @@ struct branch : public branch_base<T,N>
         // here, sum up the unit vectors kb.
         morph::Vector<T, 2> kb = this->current - kp->current;
         T d = kb.length();
+        kb.renormalize(); // vector kb is a unit vector
 
+        // Space-based competition, C
+        //
+        // W is a distance-dependent weight, which is 0 outside a distance of two_r and
+        // linearly increases to 1 when d=0.
+        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
+        C += kb * W;
+
+        // Receptor-ligand axon-axon interaction, I
+        //
         // Q collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
         // more negative.
         T Q = T{0};
-
-        if constexpr (N == 4) {
-            // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
-            Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
-        } else if constexpr (N == 2) {
-            Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
+        if constexpr (s_g_interaction == true) {
+            // The S & G interaction is based on the receptor expression only
+            if constexpr (N == 4) {
+                Q = kp->rcpt[0] / this->rcpt[0]
+                + kp->rcpt[1] / this->rcpt[1]
+                + kp->rcpt[2] / this->rcpt[2]
+                + kp->rcpt[3] / this->rcpt[3];
+            } else if constexpr (N == 2) {
+                Q = kp->rcpt[0] / this->rcpt[0] + kp->rcpt[1] / this->rcpt[1];
+            }
+            Q /= N;
+            morph::Vector<T, 2> nullvec = {0, 0};
+            I += Q > this->s ? kb * W : nullvec;
+        } else {
+            if constexpr (N == 4) {
+                // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
+                Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
+                + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
+                + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
+                + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
+            } else if constexpr (N == 2) {
+                Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
+                + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
+            }
+            Q /= N;
+            I += kb * Q * (d <= this->two_r ? T{1} : T{0});
         }
-        Q /= N;
-
-        kb.renormalize(); // vector bk is a unit vector
-
-        // I is the axon-axon interaction. Q is the signal. Interaction occurs if distance is <= two_r
-        I += kb * Q * (d <= this->two_r ? T{1} : T{0});
-
-        // W is a distance-dependent weight, which is 0 outside a distance of two_r and
-        // linearly increases to 1 when d=0.
-        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
-        C += kb * W; // Generic, distance based competition
 
         // In client code, should we add to n_k or not?
         return (d <= this->two_r ? T{1} : T{0});
@@ -352,21 +372,18 @@ struct branch : public branch_base<T,N>
         }
 
         // Do the 1/|B_b| multiplication to normalize C and I
-        if (n_k > T{0}) {
-            C = C/n_k;
-            //I = I/n_k;
-        } // else C and I will be {0,0} still
+        if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
 
-        // Add I to history & rotate, reducing effect by 90% due to one time step passing
-        for (size_t i = 0; i>this->ihs-2; ++i) {
-            this->Ihist[i] = this->Ihist[i+1] * T{0.9};
+        if constexpr (store_interaction_history == true) {
+            // Add I to history & rotate, reducing effect by 90% due to one time step passing
+            for (size_t i = 0; i>this->ihs-2; ++i) {
+                this->Ihist[i] = this->Ihist[i+1] * T{0.98};
+            }
+            this->Ihist[this->ihs-1] = I;
+            // Reset I and then sum Ihist to get effective I
+            I = {0,0};
+            for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
-        this->Ihist[this->ihs-1] = I;
-
-        // Reset I and then sum Ihist to get effective I
-        I = {0,0};
-        for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
-
         // Collected non-border movement components
         morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];
 

@@ -15,8 +15,11 @@ template<typename T, size_t N>
 struct branch_geb : public branch_base<T,N>
 {
     // The cone radius, hard coded
-    static constexpr T r = T{0.05};
+    void setr (T _r) { this->r = _r; }
+protected:
+    T r = T{0.05};
 
+public:
     // For random angle choice
     morph::RandUniform<T> rng;
 
