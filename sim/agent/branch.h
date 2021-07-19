@@ -385,6 +385,10 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
+        //std::cout << "Movement for branch " << this->id
+        //          << ": m[0]*G:" << (G*m[0])
+        //          << "+ m[1]*C:" << (C*m[1])
+        //          << "+ m[2]*I:" << (I*m[2]) << std::endl;
         morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];
 
         // Option for how movement is dealt with near the border; how to get axons back inside domain

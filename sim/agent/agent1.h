@@ -552,7 +552,8 @@ struct Agent1
 
         // Axon initial positions x and y can be uniformly randomly selected...
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
-        morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
+        //morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
+        morph::RandUniform<T, std::mt19937> rng_y(T{0.0}, T{0.2}); // S&G
         // ...or set from the ideal position plus a random perturbation
         morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
         // A normally distributed perturbation is added for each branch. SD=0.1.

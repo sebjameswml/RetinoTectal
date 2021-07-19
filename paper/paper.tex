@@ -345,7 +345,8 @@ Gradient based models: \citet{nakamoto_topographically_1996}
 
 Our model was inspired by the agent-based model of \cite{simpson_simple_2011}
 and, in common with that work, consists of agents representing axonal growth
-cones, originating from a square retina and moving upon a square tectum.
+cones, originating from a square retina and moving upon a square tectum of
+side length 1 in arbitrary units.
 %
 \citet{simpson_simple_2011} model three contributions to the movement of the growth
 cones; chemoaffinity, competition for space and axon-axon interactions. The
@@ -358,15 +359,16 @@ within a threshold distance of one another. Interaction is signal-induced
 repulsion, which is triggered if two agents are both within the threshold
 distance of each other and have compatible EphA receptor expression.
 
-In our model, space-based competition is omitted and chemoaffinity and
-axon-axon interactions occur only via signal transmission between receptors
-and ligands, which are expressed in graded patterns on both retina and
-tectum. Signals induce attractive or repulsive interactions; for chemoaffinity
-the interaction is to ascend or descend the gradient of ligand expression on
-the tectum; for axon-axon interactions, the strength of short-range repulsion
-(or attraction) is governed by the receptor-ligand expression on pairs of axons.
+In our model, space-based competition was omitted and chemoaffinity and
+axon-axon interactions were remodelled so that all interactions were via
+signal transmission between receptors and ligands, which are expressed in
+graded patterns on both retina and tectum. Signals induce attractive or
+repulsive interactions; for chemoaffinity the interaction is to ascend or
+descend the gradient of ligand expression on the tectum; for axon-axon
+interactions, the strength of short-range repulsion (or attraction) is
+governed by the receptor-ligand expression on pairs of axons.
 
-\subsection{Receptor and ligand expression}
+\subsection*{Receptor and ligand expression}
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_fig.png}
@@ -394,7 +396,8 @@ $L$: lateral, $M$: medial, $C$: caudal, $R$: rostral.
 \end{figure}
 
 Each retinal ganglion cell projects $n=8$ growth cone agents (referred to
-as \emph{branches}) which carry a set of 4 receptors, $r_i$, and 4 ligands, $l_i$,
+as \emph{branches}) which carry a set of 4 receptors, $r_i$, and 4 ligands,
+$l_i$, indexed by $i$ and
 expressed at levels determined by the cell's location on the retina. The
 expression levels of the receptors and ligands vary with respect to the cell's
 position on the retinal surface. Each receptor or ligand varies with respect
@@ -411,15 +414,32 @@ patterns \citep{reber_relative_2004,feldheim_genetic_2000,brown_topographic_2000
 we use an exponential form for retinal receptor expressions, in common with
 other modelling
 studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
-%
+We adopt the same precise form for the retinal receptor expression
+as \citet{simpson_simple_2011} which is
+\begin{equation}
+r_i(x,y) = 1.05 + 0.26 \exp(2.3 x)
+\end{equation}
+
 The simulated tectum expresses the same types of receptors and ligands, also
 in orthogonal pairs of gradients. In this work, we did not consider the effect
 of reverse signalling from tectal receptors to RGC ligands so we only modelled
-tectal ligand expression, $L$. Although several studies model tectal ligand
+tectal ligand expression, $L_i$. Although several studies model tectal ligand
 expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for ligand expression is more ambiguous (Supp. Fig
 \textbf{X}). Correspondingly, we leave open the possibility that tectal ligand
-expression may be modelled by exponential, linear or logarithmic functions.
+expression may be modelled by exponential, linear or logarithmic functions:
+\begin{equation}
+L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 x)
+\end{equation}
+or
+\begin{equation}
+L_i^{\text{lin}}(x,y) = 1.31 + 2.33 x;
+\end{equation}
+or
+\begin{equation}
+L_i^{\text{log}}(x,y) = 2.32 + 1.29 \log (2.3(x+0.2))
+\end{equation}
+(each of which has approximately the same expression values at $x=0$ and $x=1$).
 
 While we do not explicitly name $r_0$, $r_1$,
 etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes EphA,
@@ -432,7 +452,25 @@ role in retinotectal map formation.
 Figure~\ref{f:1} shows colour maps of receptor and ligand
 expression, in this case tectal ligand expression maps are linear.
 
-\subsection{Chemotaxis}
+\subsection*{Movement}
+
+At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, of each
+branch, $b$, is updated according to
+%
+\begin{equation}
+\mathbf{x}_{b,t+1} = \mathbf{x}_{b,t} + \mathbf{M}_{b}
+\end{equation}
+%
+where $\mathbf{M}_{b}$, the movement vector, is the sum of a chemoaffinity
+effect, $\mathbf{G}_b$ and an axon-axon interaction, $\mathbf{I}_b$:
+%
+\begin{equation}
+\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{I}_b
+\end{equation}
+%
+evaluated at time $t$. $m_1$ and $m_2$ are scalar parameters.
+
+\subsection*{Chemoaffinity}
 
 In this model, the signal transmitted when a ligand binds to a receptor on a
 branch (forward signalling) can lead to one of two effects; the signal may
@@ -456,7 +494,7 @@ tectum and $F_i$ denotes the direction of the interaction induced when a
 molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes the value
 -1 for a repulsive interaction or 1 for an attractive interaction.
 
-\subsection{Axon-axon interactions}
+\subsection*{Axon-axon interactions}
 
 For axon-axon interactions, repulsion causes a movement of branch $b$ along a
 unit vector, $\hat{\mathbf{x}}_{kb}$, from branch $k$ to branch $b$ causing
@@ -482,24 +520,33 @@ The sign of $Q$ (which is dependent on the values of $F_i$) determines whether
 the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
 expression of ligand $i$ on branch $k$.
 
-\subsection{Movement}
+\subsection*{Initial conditions}
 
-At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, of each
-branch, $b$, is updated according to
-%
+Branches were randomly distributed in a stripe at the rostral side of the
+tectum at the start of each simulation. Each RGC axon was assigned a random
+initial position coordinate:
 \begin{equation}
-\mathbf{x}_{b,t+1} = \mathbf{x}_{b,t} + \mathbf{M}_{b}
+\mathbf{x}_{\text{axon},t=0} = (U(0,1), U(-0.2,0))
 \end{equation}
-%
-where
-%
-\begin{equation}
-\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{I}_b
-\end{equation}
-%
-evaluated at time $t$.
+where U(p,q) is a number selected from a random uniform distribution in the
+range $[p,q)$. Each of the $n$ branches per RGC axon was given its parent
+axon's initial position, plus a randomly generated offset with coordinates
+derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 \section{Results}
+
+\subsection*{Chemoaffinity model}
+
+First, we describe the behaviour of the model with $m_2 = 0$, which has only
+the gradient-based chemoaffinity effect and no axon-axon interaction.
+
+\subsubsection*{Wildtype}
+\subsubsection*{Tectal ablation etc}
+
+\subsection*{Chemoaffinitiy with axon-axon interaction}
+
+\subsubsection*{Wildtype}
+\subsubsection*{Tectal ablation etc}
 
 \section{Discussion}
 

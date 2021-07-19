@@ -1,6 +1,6 @@
 {
     "id" : "expexp",
-    "file" : "An exponential-exponential model with all repulsive interactions",
+    "file" : "An exponential-linear model with all repulsive interactions. For Figure 1 in paper draft",
 
     "num_guiders" : 4,
     "totally_random_init" : true,
@@ -9,9 +9,9 @@
     "desc_arrays" : "Each array has num_guiders entries, in pairs. the order is [ x1, y1, x2, y2, etc ] where x1 means the 1st receptor/ligand that varies in the x direction",
     "desc_forms" : "0: linear  1: quadratic  2: exponential  3: logarithmic",
     "ret_receptor_forms"    : [2,2,2,2],
-    "tectum_ligand_forms"   : [2,2,2,2],
-    "desc_unused_arrays" : "The forms for retinal ligands/tectal receptors are just used when setting up guidingtissue objects",
+    "tectum_ligand_forms"   : [0,0,0,0],
     "ret_ligand_forms"      : [2,2,2,2],
+    "desc_unused_arrays" : "The forms for tectal receptors are just used when setting up guidingtissue objects",
     "tectum_receptor_forms" : [2,2,2,2],
 
     "desc_directions" : "+x: increases with increasing x, etc",
@@ -32,5 +32,5 @@
     "desc_m1" : "chemoaffinity",                 "m1" : 0.001,
     "desc_m2" : "axon-axon competition",         "m2" : 0.0,
     "desc_m3" : "the axon-axon interactions",    "m3" : 0.0,
-    "desc_mborder" : "border effect",            "mborder" : 0.0
+    "desc_mborder" : "border effect",            "mborder" : 0.5
 }
