@@ -552,8 +552,8 @@ struct Agent1
 
         // Axon initial positions x and y can be uniformly randomly selected...
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
-        //morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
-        morph::RandUniform<T, std::mt19937> rng_y(T{0.0}, T{0.2}); // S&G
+        morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
+        //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
         // ...or set from the ideal position plus a random perturbation
         morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
         // A normally distributed perturbation is added for each branch. SD=0.1.
@@ -867,7 +867,7 @@ struct Agent1
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->finalize();
-        this->bv->addLabel ("Growth cones", {0.0f, 1.1f, 0.0f});
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         v->addVisualModel (this->bv);
 
@@ -881,7 +881,7 @@ struct Agent1
         this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
         this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
-        this->cv->addLabel ("axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
@@ -890,7 +890,7 @@ struct Agent1
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
-        this->tcv->addLabel ("experiment suggests", {0.0f, 1.1f, 0.0f});
+        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
         v->addVisualModel (this->tcv);
 
         // This one gives an 'axon view'

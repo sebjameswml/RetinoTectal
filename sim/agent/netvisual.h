@@ -129,20 +129,22 @@ public:
                                this->locations->clr[i], this->locations->clr[i],
                                this->radiusFixed, 16);
 
-            // A line (cyl. tube) from target to actual position
-            this->computeTube (idx,
-                               this->locations->targ[i],
-                               this->locations->p[i]+actualpuckoffs,
-                               this->locations->clr[i], this->locations->clr[i],
-                               this->puckthick[2], 8);
+            if (this->draw_actual == true) {
+                // A line (cyl. tube) from target to actual position
+                this->computeTube (idx,
+                                   this->locations->targ[i],
+                                   this->locations->p[i]+actualpuckoffs,
+                                   this->locations->clr[i], this->locations->clr[i],
+                                   this->puckthick[2], 8);
 
-            // A slightly smaller puck for actual position
-            this->computeTube (idx,
-                               this->locations->p[i]+actualpuckoffs+puckthick,
-                               this->locations->p[i]+actualpuckoffs-puckthick,
-                               morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
-                               this->locations->clr[i], this->locations->clr[i],
-                               this->radiusFixed*0.667, 16);
+                // A slightly smaller puck for actual position
+                this->computeTube (idx,
+                                   this->locations->p[i]+actualpuckoffs+puckthick,
+                                   this->locations->p[i]+actualpuckoffs-puckthick,
+                                   morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                                   this->locations->clr[i], this->locations->clr[i],
+                                   this->radiusFixed*0.667, 16);
+            }
         }
         // Connections
         for (auto c : this->locations->c) {
@@ -186,6 +188,8 @@ public:
     net<Flt>* locations = (net<Flt>*)0;
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.004;
+    //! If true, draw small pucks and lines showing actual position imposed on the 'expt suggests' view
+    bool draw_actual = false;
     //! The maximum length of a line betwen two vertices for it to be visualised
     Flt maxlen = 1e9;
     morph::Vector<float,3> puckthick = { 0, 0, 0.002 };

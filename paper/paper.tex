@@ -392,10 +392,10 @@ as there is less evidence to determine whether ligand expression is
 exponential, linear or logarithmic on the tectum.
 $L$: lateral, $M$: medial, $C$: caudal, $R$: rostral.
 }
-\label{f:1}
+\label{f:ex}
 \end{figure}
 
-Each retinal ganglion cell projects $n=8$ growth cone agents (referred to
+Each retinal ganglion cell projects $n$ growth cone agents (referred to
 as \emph{branches}) which carry a set of 4 receptors, $r_i$, and 4 ligands,
 $l_i$, indexed by $i$ and
 expressed at levels determined by the cell's location on the retina. The
@@ -449,8 +449,11 @@ include the ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and
 RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a
 role in retinotectal map formation.
 
-Figure~\ref{f:1} shows colour maps of receptor and ligand
-expression, in this case tectal ligand expression maps are linear.
+Figure~\ref{f:ex} shows colour maps of receptor and ligand
+expression, in this case tectal ligand expression maps are linear. Note that
+the expression is discretized, and in simulations, the gradient is computed
+numerically from the discretized expression. This makes it straightforward to
+perform tectal and retinal `graft' manipulations.
 
 \subsection*{Movement}
 
@@ -462,13 +465,14 @@ branch, $b$, is updated according to
 \end{equation}
 %
 where $\mathbf{M}_{b}$, the movement vector, is the sum of a chemoaffinity
-effect, $\mathbf{G}_b$ and an axon-axon interaction, $\mathbf{I}_b$:
+effect, $\mathbf{G}_b$, an axon-axon interaction, $\mathbf{I}_b$ and a `border effect',
+$\mathbf{B}_b$, which acts to retain branches within the tectal region:
 %
 \begin{equation}
-\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{I}_b
+\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{I}_b + m_3 \mathbf{B}_b
 \end{equation}
 %
-evaluated at time $t$. $m_1$ and $m_2$ are scalar parameters.
+evaluated at time $t$. $m_1$, $m_2$ and $m_3$ are scalar parameters.
 
 \subsection*{Chemoaffinity}
 
@@ -520,6 +524,28 @@ The sign of $Q$ (which is dependent on the values of $F_i$) determines whether
 the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
 expression of ligand $i$ on branch $k$.
 
+\subsection*{Border effect}
+
+We implement a border effect based on gradient following by assuming that
+there is some other molecular signal which acts on all branches near the
+boundary of the tectal tissue. For a branch with position $(x,y)$, $\mathbf{B}_b$ is
+given by:
+%
+\begin{equation}
+B_{b,x} = \begin{cases}
+        2r-x    & x<2r \\
+        1-2r-x    & x>1-2r
+\end{cases}
+B_{b,y} = \begin{cases}
+        2r-y    & y<2r \\
+        1-2r-y    & y>1-2r
+\end{cases}
+\end{equation}
+%
+Thus $\mathbf{B}_b$ is equivalent to the action of a repulsive signalling
+molecule expressed around the border of the tectum, whose expression increases
+quadratically outside the tectum.
+
 \subsection*{Initial conditions}
 
 Branches were randomly distributed in a stripe at the rostral side of the
@@ -537,8 +563,42 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 \subsection*{Chemoaffinity model}
 
-First, we describe the behaviour of the model with $m_2 = 0$, which has only
-the gradient-based chemoaffinity effect and no axon-axon interaction.
+First, we describe the behaviour of a model which has only the gradient-based
+chemoaffinity effect and no axon-axon interaction or border effect
+(i.e.~$m_2=m_3=0$). This model is run with $n=8$ branches per RGC axon. All
+receptor-ligand signals induce repulsive interactions (i.e.~gradient
+descent). Receptor and ligand expressions are as shown in
+Fig.\,\ref{f:ex}. Fig.\,\ref{f:ch}A gives a colour map of retinal ganglion
+cell soma locations, with the colour red encoding $x$ position on the
+temporal-nasal axis (with red signifying nasal positions). Green encodes $y$
+position on the dorso-ventral axis.
+%
+Fig.\,\ref{f:ch}A+ shows the expected final location of each RGC axon,
+according to experimental observations in a `fishnet' plot, which draws lines
+between adjacent axons.
+%
+Fig.\,\ref{f:ch}B shows the position of
+400 branches at $t=500$ (in arbitrary time units). Considering each
+coordinate axis separately, each branch interacts differentially with two
+opposing gradients. Branches which settle nearest the rostral edge of the
+tectum interact more strongly with the gradient $L_0$ than with $L_2$
+(Fig\,\ref{f:ex}C). A similar pair of gradients separate branches along the
+M-L tectal axis. The branches become positioned on a grid due to the
+discretization of the tectal ligand gradient (as the number of branches and
+tectal elements tends towards infinity, the arangement tends towards a
+continuous map---see Fig.\,S1 \textbf{FIXME}).
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/fig_chemo.png}
+\caption{Chemoaffinity model}
+\label{f:ch}
+\end{figure}
+
+Fig.\,\ref{f:ch}C shows the RGC axon centroids; the mean location of $n$
+branches per axon. Because all $n$ branches for each RGC have identical
+receptor expression and they experience only the chemoaffinity effect, each
+branch attains almost the same final position and so the centroid graph
+strongly resembles the graph of all the branches. Fig.\,\ref{f:ch}C also shows
 
 \subsubsection*{Wildtype}
 \subsubsection*{Tectal ablation etc}
