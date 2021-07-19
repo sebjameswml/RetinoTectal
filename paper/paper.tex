@@ -428,7 +428,7 @@ expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for ligand expression is more ambiguous (Supp. Fig
 \textbf{X}). Correspondingly, we leave open the possibility that tectal ligand
 expression may be modelled by exponential, linear or logarithmic functions:
-\begin{equation}
+\begin{equation} \label{e:tecexp}
 L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 x)
 \end{equation}
 or
@@ -439,7 +439,8 @@ or
 \begin{equation}
 L_i^{\text{log}}(x,y) = 2.32 + 1.29 \log (2.3(x+0.2))
 \end{equation}
-(each of which has approximately the same expression values at $x=0$ and $x=1$).
+Each function has approximately the same expression values at $x=0$ and
+$x=1$. Opposing functions are obtained by substituting $(1-x)$ for $x$.
 
 While we do not explicitly name $r_0$, $r_1$,
 etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes EphA,
@@ -563,21 +564,25 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 \subsection*{Chemoaffinity model}
 
+\subsubsection*{Wildtype}
+
 First, we describe the behaviour of a model which has only the gradient-based
 chemoaffinity effect and no axon-axon interaction or border effect
-(i.e.~$m_2=m_3=0$). This model is run with $n=8$ branches per RGC axon. All
-receptor-ligand signals induce repulsive interactions (i.e.~gradient
-descent). Receptor and ligand expressions are as shown in
-Fig.\,\ref{f:ex}. Fig.\,\ref{f:ch}A gives a colour map of retinal ganglion
-cell soma locations, with the colour red encoding $x$ position on the
+(i.e.~$m_2=m_3=0$). This model was run with $n=8$ branches per RGC axon. All
+receptor-ligand signals induced repulsive interactions (i.e.~gradient
+descent). Receptor and ligand expressions were as shown in Fig.\,\ref{f:ex},
+noting that tectal ligand expression was of exponential form
+(Eq.\,\ref{e:tecexp}). Fig.\,\ref{f:ch}A gives a colour map of retinal
+ganglion cell soma locations, with the colour red encoding $x$ position on the
 temporal-nasal axis (with red signifying nasal positions). Green encodes $y$
 position on the dorso-ventral axis.
 %
-Fig.\,\ref{f:ch}A+ shows the expected final location of each RGC axon,
-according to experimental observations in a `fishnet' plot, which draws lines
-between adjacent axons.
+Fig.\,\ref{f:ch}B shows the expected final location of each RGC axon,
+according to experimental observations, in a `fishnet' plot which draws lines
+between adjacent axons giving a visual indication of the topology of the
+arrangement.
 %
-Fig.\,\ref{f:ch}B shows the position of
+Fig.\,\ref{f:ch}C shows the position of
 400 branches at $t=500$ (in arbitrary time units). Considering each
 coordinate axis separately, each branch interacts differentially with two
 opposing gradients. Branches which settle nearest the rostral edge of the
@@ -594,13 +599,20 @@ continuous map---see Fig.\,S1 \textbf{FIXME}).
 \label{f:ch}
 \end{figure}
 
-Fig.\,\ref{f:ch}C shows the RGC axon centroids; the mean location of $n$
-branches per axon. Because all $n$ branches for each RGC have identical
-receptor expression and they experience only the chemoaffinity effect, each
-branch attains almost the same final position and so the centroid graph
-strongly resembles the graph of all the branches. Fig.\,\ref{f:ch}C also shows
+Fig.\,\ref{f:ch}D shows a fishnet plot of the RGC axon centroids; the mean
+location of $n$ branches per axon. Because all $n$ branches for each RGC have
+identical receptor expression and they experience only the chemoaffinity
+effect, each branch attains almost the same final position and so the centroid
+graph strongly resembles Fig.\,\ref{f:ch}B. Fig.\,\ref{f:ch}D indicates that
+the topology of the arrangement resembles that of the experimental result, but
+the area over which the branches arrange themselves is limited to about 50\%
+of the tectum. It is possible to tailor the tectal ligand expression, whcih
+adjusts the relative contributions of the opposing interactions, to tune the
+final map. This allows the chemoaffinity model to attain a good match to the
+experimental arrangement (Fig.\~S2 \textbf{fixme}). However, the match is
+highly dependent on the form of receptor/ligand expression in both retinal and
+tectal cells.
 
-\subsubsection*{Wildtype}
 \subsubsection*{Tectal ablation etc}
 
 \subsection*{Chemoaffinitiy with axon-axon interaction}

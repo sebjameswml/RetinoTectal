@@ -94,19 +94,23 @@ int main (int argc, char **argv)
     if (num_guiders == 4) {
         if (branch_model == "gebhardt") {
             Agent1<float, 4, branch_geb<float, 4>> model (conf, mconf);
+            model.title = std::string("geb_") + m_id + std::string("_") + e_id;
             model.run();
             model.save (outfile);
         } else if (branch_model == "stochastic") {
             Agent1<float, 4, branch_stochastic<float, 4, 10>> model (conf, mconf);
+            model.title = std::string("stoc_") + m_id + std::string("_") + e_id;
             model.run();
             model.save (outfile);
         } else {
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
+            model.title = std::string("j4_") + m_id + std::string("_") + e_id;
             model.run();
             model.save (outfile);
         }
     } else if (num_guiders == 2) {
         Agent1<float, 2, branch<float, 2>> model (conf, mconf);
+        model.title = std::string("j2_") + m_id + std::string("_") + e_id;
         model.run();
         model.save (outfile);
     }
