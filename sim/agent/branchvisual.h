@@ -86,8 +86,8 @@ public:
         // for the rcpt expression. Also lines from end of common path to each sphere.
         for (auto b : *this->branches) {
             if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { this->rcpt_scale.transform_one(b.rcpt[0]),
-                                         this->rcpt_scale.transform_one(b.rcpt[1]), 0 }; // position colour
+            std::array<float, 3> clr = { this->target_scale.transform_one(b.target[0]),
+                                         this->target_scale.transform_one(b.target[1]), 0 }; // position colour
             std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0,
                                           this->rcpt_scale.transform_one(b.rcpt[1]) }; // rcpt expr colour
             morph::Vector<float, 3> cur = { 0, 0, 0 };
