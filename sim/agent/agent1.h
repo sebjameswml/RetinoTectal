@@ -770,9 +770,11 @@ struct Agent1
     void tvisinit()
     {
 #ifdef VISUALISE
-        const unsigned int ww = this->conf->getUInt ("win_width", 2000);
-        const unsigned int wh = this->conf->getUInt ("win_height", 2000);
+        const unsigned int ww = this->conf->getUInt ("win_width", 1800);
+        const unsigned int wh = this->conf->getUInt ("win_height", 1200);
         this->tvv = new morph::Visual (ww, wh, "Retinal and Tectal expression");
+        this->tvv->setSceneTransXY(-0.393088,-0.0804043);
+        this->tvv->setSceneTransZ(-5);
         if constexpr (use_ortho_tvv) {
             float orthoside = 2.5;
             this->tvv->ptype = morph::perspective_type::orthographic;
