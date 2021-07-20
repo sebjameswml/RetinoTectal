@@ -6,7 +6,7 @@
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 21, 38, 189, 378, 361 ],
 
-    "freeze_time1" : 20,
+    "freeze_time1" : 40,
     "freeze_time2" : 200,
 
     "desc_movie" : "If true, then save images to make a movie",

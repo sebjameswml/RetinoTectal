@@ -569,32 +569,62 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 \label{f:wt}
 \end{figure}
 
-To enable a simulation it is necessary to make the assumptions, in addition to
-those implicit in the description of the model above, that i) All
+To enable a simulation it is necessary to make the assumptions (in addition to
+those implicit in the description of the model above) that i) All
 receptor-ligand interactions are repulsive, as for EphA-ephrinA
 coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}; and ii)
 all tectal ligand expressions vary exponentially along a given axis, following
 Eq.\,\ref{e:tecexp}. The result of running this system are presented in
 Fig.\,\ref{f:wt}.
 %
-Fig.\,\ref{f:wt}A shows a dual-colour map of retinal ganglion cell positions
+Fig.\,\ref{f:wt}Ai shows a dual-colour map of retinal ganglion cell positions
 on the square retina, with red encoding position on the $x$ axis (temporal to
 nasal) and green encoding position on the $y$ axis (ventral to
-dorsal). Fig.\,\ref{f:wt}B presents a fishnet plot of the expected location on
+dorsal). Fig.\,\ref{f:wt}Aii presents a fishnet plot of the expected location on
 the tectal surface of each RGC at the end of the development process. Thus,
 the `red' RGC from the ventro-nasal corner should map to the caudo-medial
 corner of the tectum and the `green' RGC from the dorso-temporal corner should
 find its way to the rostro-lateral corner on the tectum. The lines between the
-dots of Fig.\,\ref{f:wt}B indicate the adjacency relationships between
-cells. Thus, colour in each panel indicates a branch's location of origin on
-the retina.
+dots of Fig.\,\ref{f:wt}Aii indicate the adjacency relationships between
+cells. Thus, colour in each panel indicates a branch or axon's location of
+origin on the retina.
 %
-Fig.\,\ref{f:wt}C shows the initial state of the system, with branches
+Fig.\,\ref{f:wt}B shows the initial state of the system, with branches
 stochastically arranged around the rostral edge of the tectum. Each dot
-represents the centroid of $n=8$ branches per RGC axon. Figs.\,\ref{f:wt}D-E
-show the development of the system with time, with Fig.\,\ref{f:wt}E showing
+represents the centroid of $n=8$ branches per RGC axon. Figs.\,\ref{f:wt}C and \ref{f:wt}D
+show the development of the system with time, with Fig.\,\ref{f:wt}D showing a
+well ordered arrangement, with a majority of adjacency relationships matching
+the experimental prediction (i.e. there are few crossed lines). The
+intermediate timepoint at $t=40$ indicates that branches quickly cover the simulated
+tectal surface, with final adjacency relationships developing over a longer
+timescale. This dynamic behaviour is also evident in Fig.\,\ref{f:wt}E, which
+shows \textbf{RMS error or some metric} of the axon centroids with respect to
+the experimental prediction. Fig.\,\ref{f:wt}F shows the final
+location of each branch in the simulation, which gives a more continuous view
+of the order present in Fig.\,\ref{f:wt}D. Finally, Fig.\,\ref{f:wt}G shows the
+branches and their centroid path history for five selected RGCs, with path
+histories strongly resembling those presented by \citet{simpson_simple_2011}.
 
-\subsection*{Chemoaffinity---Wildtype}
+This result shows that a gradient following model based on receptor-ligand
+interactions and incorporating axon-axon repulsion is able to generate the
+basic mapping observed in the retinotectal projection.
+
+\subsection*{Manipulations}
+
+To determine if the model can explain the many surgical and genetic
+manipulations described in the literature
+\citep*[for a review, see][]{goodhill_retinotectal_1999} we performed
+simulations matching those in \citet{simpson_simple_2011} where we either
+rotated or translocated grafts of the tectum, ablated portions of the retina
+and/or the tectum or manipulated the receptor or ligand expressions in the
+model...
+
+
+\subsection*{Grating simulations}
+
+I'd like to do this if it's not too much work!
+
+\subsection*{Is chemoaffinity alone sufficient to explain the retinotectal projection?}
 
 Introductory sentence.
 

@@ -163,14 +163,12 @@ struct Agent1
             glfwPollEvents();
         }
 
-        if (this->layout != graph_layout::c) {
-            this->bv->reinit(); // Branches
-        }
+        this->bv->reinit(); // Branches
 
         // Centroids that should show up to a certain time
         if (this->layout == graph_layout::c) {
             if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); }
-            if (stepnum <= this->freeze_times[2]) { this->cv2->reinit(); }
+            //if (stepnum <= this->freeze_times[2]) { this->cv2->reinit(); }
             //if (stepnum <= this->freeze_times[3]) { this->cv3->reinit(); }
         }
         this->cv->reinit(); // Centroids to end
@@ -1000,45 +998,19 @@ struct Agent1
 
         } else  if (this->layout == graph_layout::c) { // Layout with diff. time end points
 
-            offset[1] -= 1.6f;
-
             // A Retinal cell positions
             v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
 
+            offset[1] -= 1.6f;
+
             // B Experiment: Another NetVisual view showing the target locations
-            offset[0] += 1.3f;
             this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
             this->tcv->viewmode = netvisual_viewmode::targetplus;
             this->tcv->finalize();
             this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
             v->addVisualModel (this->tcv);
 
-            // C Selected axons: This one gives an 'axon view'
             offset[0] += 1.3f;
-            this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->av->axonview = true;
-            for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-            this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-            this->av->target_scale.compute_autoscale (0, 1);
-            this->av->finalize();
-            this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
-            v->addVisualModel (this->av);
-
-            offset[0] += 1.3f;
-
-            // D Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
-            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
-            this->gv->twodimensional = false;
-            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                                 0, this->conf->getFloat("graph_ymax", 200.0f));
-            this->gv->policy = morph::stylepolicy::lines;
-            this->gv->ylabel = "SOS";
-            this->gv->xlabel = "Sim time";
-            this->gv->prepdata ("SOS");
-            this->gv->finalize();
-            v->addVisualModel (this->gv);
-
-            offset[0] -= 3.9f;
             offset[1] += 1.6f;
 
             // t=0
@@ -1062,6 +1034,7 @@ struct Agent1
             this->addOrientationLabels (this->cv1, std::string("Tectal"));
             v->addVisualModel (this->cv1);
 
+#if 0
             // Axon centroids2: Centroids of branches viewed with a NetVisual
             offset[0] += 1.3f;
             this->cv2 = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
@@ -1074,7 +1047,6 @@ struct Agent1
             this->addOrientationLabels (this->cv2, std::string("Tectal"));
             v->addVisualModel (this->cv2);
 
-#if 0
             // Axon centroids3: Centroids of branches viewed with a NetVisual
             offset[0] += 1.3f;
             this->cv3 = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
@@ -1098,6 +1070,41 @@ struct Agent1
             this->addOrientationLabels (this->cv, std::string("Tectal"));
             v->addVisualModel (this->cv);
 
+            offset[0] -= 2.6f;
+            offset[1] -= 1.6f;
+
+            // D Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
+            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
+            this->gv->twodimensional = false;
+            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                                 0, this->conf->getFloat("graph_ymax", 200.0f));
+            this->gv->policy = morph::stylepolicy::lines;
+            this->gv->ylabel = "SOS";
+            this->gv->xlabel = "Sim time";
+            this->gv->prepdata ("SOS");
+            this->gv->finalize();
+            v->addVisualModel (this->gv);
+
+            // Branches: Visualise the branches with a custom VisualModel
+            offset[0] += 1.3f;
+            this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+            this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+            this->bv->target_scale.compute_autoscale (0, 1);
+            this->bv->finalize();
+            this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+            this->addOrientationLabels (this->bv, std::string("Tectal"));
+            v->addVisualModel (this->bv);
+
+            // C Selected axons: This one gives an 'axon view'
+            offset[0] += 1.3f;
+            this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+            this->av->axonview = true;
+            for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+            this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+            this->av->target_scale.compute_autoscale (0, 1);
+            this->av->finalize();
+            this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+            v->addVisualModel (this->av);
 
         } else {
             throw std::runtime_error ("Unknown layout");
