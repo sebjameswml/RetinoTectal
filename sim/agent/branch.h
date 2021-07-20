@@ -200,16 +200,16 @@ public:
         } else if (be == border_effect::gradients) {
             //std::cout << "gradients\n";
             // Updated border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
-            if (b[0] < (tissue->x_min()+(2*r))) {
-                B[0] = (tissue->x_min()+(2*r)) - b[0];
-            } else if (b[0] > (tissue->x_max()-(2*r))) {
-                B[0] = -(b[0] - (tissue->x_max()-(2*r)));
+            if (b[0] < (tissue->x_min()+r)) {
+                B[0] = (tissue->x_min()+r) - b[0];
+            } else if (b[0] > (tissue->x_max()-r)) {
+                B[0] = -(b[0] - (tissue->x_max()-r));
             }
 
-            if (b[1] < (tissue->y_min()+(2*r))) {
-                B[1] = (tissue->y_min()+(2*r)) - b[1];
-            } else if (b[1] > (tissue->y_max()-(2*r))) {
-                B[1] = -(b[1] - (tissue->y_max()-(2*r)));
+            if (b[1] < (tissue->y_min()+r)) {
+                B[1] = (tissue->y_min()+r) - b[1];
+            } else if (b[1] > (tissue->y_max()-r)) {
+                B[1] = -(b[1] - (tissue->y_max()-r));
             }
 
         } else if (be == border_effect::penned) {

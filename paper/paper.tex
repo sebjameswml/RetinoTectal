@@ -534,18 +534,19 @@ given by:
 %
 \begin{equation}
 B_{b,x} = \begin{cases}
-        2r-x    & x<2r \\
-        1-2r-x    & x>1-2r
+        r-x      & x<r \\
+        1-r-x    & x>1-r
 \end{cases}
 B_{b,y} = \begin{cases}
-        2r-y    & y<2r \\
-        1-2r-y    & y>1-2r
+        r-y      & y<r \\
+        1-r-y    & y>1-r
 \end{cases}
 \end{equation}
 %
 Thus $\mathbf{B}_b$ is equivalent to the action of a repulsive signalling
 molecule expressed around the border of the tectum, whose expression increases
-quadratically outside the tectum.
+quadratically outside the tectum and affects any branch touching (or outside)
+the boundary
 
 \subsection*{Initial conditions}
 
@@ -564,18 +565,34 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/j4_ee_wt.png}
-\caption{Gradient following model with axon-axon interaction}
+\caption{Gradient following model with axon-axon interactions.}
 \label{f:wt}
 \end{figure}
 
-We first present the result of running the model above, which assumes that
-axonal growth cones express graded levels of receptors which interact with
-ligands expressed as gradients on the tectum and on the surface of other
-growth cones to guide their movement. We make the following additional
-assumptions: i) All receptor-ligand interactions are repulsive, as for
-EphA-ephrinA coupling \citep{nakamoto_topographically_1996}; and ii) tectal
-ligand expressions vary exponentially along a given axis, following
-Eq.\,\ref{e:tecexp}.
+To enable a simulation it is necessary to make the assumptions, in addition to
+those implicit in the description of the model above, that i) All
+receptor-ligand interactions are repulsive, as for EphA-ephrinA
+coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}; and ii)
+all tectal ligand expressions vary exponentially along a given axis, following
+Eq.\,\ref{e:tecexp}. The result of running this system are presented in
+Fig.\,\ref{f:wt}.
+%
+Fig.\,\ref{f:wt}A shows a dual-colour map of retinal ganglion cell positions
+on the square retina, with red encoding position on the $x$ axis (temporal to
+nasal) and green encoding position on the $y$ axis (ventral to
+dorsal). Fig.\,\ref{f:wt}B presents a fishnet plot of the expected location on
+the tectal surface of each RGC at the end of the development process. Thus,
+the `red' RGC from the ventro-nasal corner should map to the caudo-medial
+corner of the tectum and the `green' RGC from the dorso-temporal corner should
+find its way to the rostro-lateral corner on the tectum. The lines between the
+dots of Fig.\,\ref{f:wt}B indicate the adjacency relationships between
+cells. Thus, colour in each panel indicates a branch's location of origin on
+the retina.
+%
+Fig.\,\ref{f:wt}C shows the initial state of the system, with branches
+stochastically arranged around the rostral edge of the tectum. Each dot
+represents the centroid of $n=8$ branches per RGC axon. Figs.\,\ref{f:wt}D-E
+show the development of the system with time, with Fig.\,\ref{f:wt}E showing
 
 \subsection*{Chemoaffinity---Wildtype}
 
@@ -629,6 +646,11 @@ highly dependent on the form of receptor/ligand expression in both retinal and
 tectal cells.
 
 \section{Discussion}
+
+The model described above assumes that branches express graded levels of
+receptors which interact with ligands expressed as gradients on the tectum,
+the tectal border and on the surface of other branches, and that only these
+interactions guide their movement.
 
 % Discuss the Hill Equation! https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)
 % This relates to the work \cite{naoki_revisiting_2017}

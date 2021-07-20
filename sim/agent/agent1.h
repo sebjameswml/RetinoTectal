@@ -70,6 +70,8 @@ struct Agent1
     {
 #ifdef VISUALISE
         if (this->layout == graph_layout::c) {
+            // Set up (from config file if necssary) the times at which the various
+            // graphs will be frozen (i.e. no longer updated from the sim)
             this->freeze_times[0] = 0;
             this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
             this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
@@ -868,6 +870,8 @@ struct Agent1
 #endif // VISUALISE
     }
 
+    // Set up the simulation visualisation scene. This depends on whether this->layout
+    // is graph_layout::a, ::b or ::c, etc.
     void visinit()
     {
 #ifdef VISUALISE
