@@ -562,11 +562,26 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 \section{Results}
 
-\subsection*{Chemoaffinity model}
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_wt.png}
+\caption{Gradient following model with axon-axon interaction}
+\label{f:wt}
+\end{figure}
 
-\subsubsection*{Wildtype}
+We first present the result of running the model above, which assumes that
+axonal growth cones express graded levels of receptors which interact with
+ligands expressed as gradients on the tectum and on the surface of other
+growth cones to guide their movement. We make the following additional
+assumptions: i) All receptor-ligand interactions are repulsive, as for
+EphA-ephrinA coupling \citep{nakamoto_topographically_1996}; and ii) tectal
+ligand expressions vary exponentially along a given axis, following
+Eq.\,\ref{e:tecexp}.
 
-First, we describe the behaviour of a model which has only the gradient-based
+\subsection*{Chemoaffinity---Wildtype}
+
+Introductory sentence.
+
+We now describe the behaviour of a model which has only the gradient-based
 chemoaffinity effect and no axon-axon interaction or border effect
 (i.e.~$m_2=m_3=0$). This model was run with $n=8$ branches per RGC axon. All
 receptor-ligand signals induced repulsive interactions (i.e.~gradient
@@ -594,7 +609,7 @@ tectal elements tends towards infinity, the arangement tends towards a
 continuous map---see Fig.\,S1 \textbf{FIXME}).
 
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_chemo.png}
+\includegraphics[width=\linewidth]{./images/j4_ee_chemoonly_wt_chemoonly.png}
 \caption{Chemoaffinity model}
 \label{f:ch}
 \end{figure}
@@ -612,13 +627,6 @@ final map. This allows the chemoaffinity model to attain a good match to the
 experimental arrangement (Fig.\~S2 \textbf{fixme}). However, the match is
 highly dependent on the form of receptor/ligand expression in both retinal and
 tectal cells.
-
-\subsubsection*{Tectal ablation etc}
-
-\subsection*{Chemoaffinitiy with axon-axon interaction}
-
-\subsubsection*{Wildtype}
-\subsubsection*{Tectal ablation etc}
 
 \section{Discussion}
 

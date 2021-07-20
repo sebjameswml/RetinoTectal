@@ -69,6 +69,13 @@ struct Agent1
     void run()
     {
 #ifdef VISUALISE
+        if (this->layout == graph_layout::c) {
+            this->freeze_times[0] = 0;
+            this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
+            this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
+            this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
+        }
+
         this->visinit();
 #endif
         this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
@@ -126,7 +133,7 @@ struct Agent1
 #ifdef VISUALISE
         // Save final image based on config file names
         std::stringstream nss;
-        nss << this->title << ".png";
+        nss << "./paper/images/" << this->title << ".png";
         this->v->saveImage (nss.str());
         this->vis(this->conf->getUInt ("steps", 1000));
         this->v->keepOpen();
@@ -158,11 +165,11 @@ struct Agent1
             this->bv->reinit(); // Branches
         }
 
-         // Centroids that should show up to a certain time
+        // Centroids that should show up to a certain time
         if (this->layout == graph_layout::c) {
-            if (stepnum < 20) { this->cv1->reinit(); }
-            if (stepnum < 80) { this->cv2->reinit(); }
-            //if (stepnum < 80) { this->cv3->reinit(); }
+            if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); }
+            if (stepnum <= this->freeze_times[2]) { this->cv2->reinit(); }
+            //if (stepnum <= this->freeze_times[3]) { this->cv3->reinit(); }
         }
         this->cv->reinit(); // Centroids to end
 
@@ -870,7 +877,7 @@ struct Agent1
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
         if (this->layout == graph_layout::b) { hdefault = 700; }
-        if (this->layout == graph_layout::c) { hdefault = 1130; }
+        if (this->layout == graph_layout::c) { hdefault = 1180; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
 
         std::string tt("Agent based retinotectal model: ");
@@ -881,8 +888,8 @@ struct Agent1
             this->v->setSceneTransXY(-0.326813, -0.00970902);
             this->v->setSceneTransZ(-2.6);
         } else if (this->layout == graph_layout::c) {
-            this->v->setSceneTransXY(-0.939322,0.741942);
-            this->v->setSceneTransZ(-5.6);
+            this->v->setSceneTransXY(-0.943763,0.800606);
+            this->v->setSceneTransZ(-5.9);
         }
 
         if constexpr (use_ortho) {
@@ -989,6 +996,8 @@ struct Agent1
 
         } else  if (this->layout == graph_layout::c) { // Layout with diff. time end points
 
+            offset[1] -= 1.6f;
+
             // A Retinal cell positions
             v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
 
@@ -1026,7 +1035,7 @@ struct Agent1
             v->addVisualModel (this->gv);
 
             offset[0] -= 3.9f;
-            offset[1] -= 1.4f;
+            offset[1] += 1.6f;
 
             // t=0
             this->cv0 = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
@@ -1043,7 +1052,9 @@ struct Agent1
             this->cv1->maxlen = this->conf->getDouble ("maxnetline", 1.0);
             this->cv1->viewmode = netvisual_viewmode::actual;
             this->cv1->finalize();
-            this->cv1->addLabel ("Axon centroids (t1)", {0.0f, 1.1f, 0.0f});
+            std::stringstream ss1;
+            ss1 << "t=" << this->freeze_times[1];
+            this->cv1->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->cv1, std::string("Tectal"));
             v->addVisualModel (this->cv1);
 
@@ -1053,7 +1064,9 @@ struct Agent1
             this->cv2->maxlen = this->conf->getDouble ("maxnetline", 1.0);
             this->cv2->viewmode = netvisual_viewmode::actual;
             this->cv2->finalize();
-            this->cv2->addLabel ("Axon centroids (t2)", {0.0f, 1.1f, 0.0f});
+            std::stringstream ss2;
+            ss2 << "t=" << this->freeze_times[2];
+            this->cv2->addLabel (ss2.str(), {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->cv2, std::string("Tectal"));
             v->addVisualModel (this->cv2);
 
@@ -1075,7 +1088,9 @@ struct Agent1
             this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
             this->cv->viewmode = netvisual_viewmode::actual;
             this->cv->finalize();
-            this->cv->addLabel ("Axon centroids (tfinal)", {0.0f, 1.1f, 0.0f});
+            std::stringstream ssf;
+            ssf << "t=" << this->conf->getInt("steps", -1);
+            this->cv->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->cv, std::string("Tectal"));
             v->addVisualModel (this->cv);
 
@@ -1140,6 +1155,8 @@ struct Agent1
     NetVisual<T>* cv1;
     NetVisual<T>* cv2;
     NetVisual<T>* cv3;
+    // Simulation times to stop updating graphs (see graph_layout::c)
+    morph::Vector<size_t, 4> freeze_times;
     // Centroid visual for targets
     NetVisual<T>* tcv;
     // A graph for the SOS metric
