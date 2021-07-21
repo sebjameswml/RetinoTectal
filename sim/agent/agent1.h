@@ -69,6 +69,9 @@ struct Agent1
     void run()
     {
 #ifdef VISUALISE
+        // Get layout from config file. Default to 0 or 'a'
+        this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
+
         if (this->layout == graph_layout::c) {
             // Set up (from config file if necssary) the times at which the various
             // graphs will be frozen (i.e. no longer updated from the sim)

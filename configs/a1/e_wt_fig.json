@@ -1,0 +1,30 @@
+{
+    "id" : "wildtype",
+
+    "desc" : "Wildtype experiment",
+
+    "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
+    "graph_layout" : 2,
+
+    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
+    "seeaxons" : [ 21, 38, 189, 378, 361 ],
+
+    "freeze_time1" : 40,
+    "freeze_time2" : 200,
+
+    "desc_movie" : "If true, then save images to make a movie",
+    "movie" : false,
+
+    "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
+    "lighting" : true,
+
+    "win_width" : 1920,
+
+    "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
+    "goslow" : false,
+
+    "desc_steps" : "How many simulation steps should be computed?",
+    "steps" : 1500,
+
+    "graph_ymax" : 220
+}
