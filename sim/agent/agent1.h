@@ -878,9 +878,12 @@ struct Agent1
 #ifdef VISUALISE
         // morph::Visual init
         unsigned int wdefault = 1200;
+        if (this->layout == graph_layout::a) { wdefault = 1920; }
+        if (this->layout == graph_layout::b) { wdefault = 2200; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
+        if (this->layout == graph_layout::a) { hdefault = 1200; }
         if (this->layout == graph_layout::b) { hdefault = 700; }
         if (this->layout == graph_layout::c) { hdefault = 1180; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
@@ -889,12 +892,12 @@ struct Agent1
         tt += this->title;
         this->v = new morph::Visual (ww, wh, tt);
 
-        if (this->layout == graph_layout::b) {
-            this->v->setSceneTransXY(-0.326813, -0.00970902);
-            this->v->setSceneTransZ(-2.6);
+        if (this->layout == graph_layout::a) {
+            this->v->setSceneTrans (-0.413126f, 0.6811f, -5.0f);
+        } else if (this->layout == graph_layout::b) {
+            this->v->setSceneTrans (-0.326813f, -0.00970902f, -2.6f);
         } else if (this->layout == graph_layout::c) {
-            this->v->setSceneTransXY(-0.943763,0.800606);
-            this->v->setSceneTransZ(-5.9);
+            this->v->setSceneTrans (-0.943763f, 0.800606f, -5.9f);
         }
 
         if constexpr (use_ortho) {
