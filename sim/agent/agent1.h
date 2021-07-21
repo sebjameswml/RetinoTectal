@@ -171,14 +171,12 @@ struct Agent1
         // Centroids that should show up to a certain time
         if (this->layout == graph_layout::c) {
             if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); }
-            //if (stepnum <= this->freeze_times[2]) { this->cv2->reinit(); }
-            //if (stepnum <= this->freeze_times[3]) { this->cv3->reinit(); }
         }
         this->cv->reinit(); // Centroids to end
 
         this->tcv->reinit(); // Experiment
+        this->av->reinit(); // Selected axons
         if (this->layout == graph_layout::a || this->layout == graph_layout::c) {
-            this->av->reinit(); // Selected axons
             this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         }
         this->v->render();
@@ -879,7 +877,7 @@ struct Agent1
         // morph::Visual init
         unsigned int wdefault = 1200;
         if (this->layout == graph_layout::a) { wdefault = 1920; }
-        if (this->layout == graph_layout::b) { wdefault = 2200; }
+        if (this->layout == graph_layout::b) { wdefault = 2650; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
@@ -895,7 +893,7 @@ struct Agent1
         if (this->layout == graph_layout::a) {
             this->v->setSceneTrans (-0.413126f, 0.6811f, -5.0f);
         } else if (this->layout == graph_layout::b) {
-            this->v->setSceneTrans (-0.326813f, -0.00970902f, -2.6f);
+            this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::c) {
             this->v->setSceneTrans (-0.943763f, 0.800606f, -5.9f);
         }
@@ -995,12 +993,24 @@ struct Agent1
             // Axon centroids: Centroids of branches viewed with a NetVisual
             offset[0] += 1.3f;
             this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-            this->cv->viewmode = netvisual_viewmode::actual;
+            //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+            this->cv->viewmode = netvisual_viewmode::actual_nolines;
+            this->cv->radiusFixed = 0.02;
             this->cv->finalize();
             this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->cv, std::string("Tectal"));
             v->addVisualModel (this->cv);
+
+            // Selected axons: This one gives an 'axon view'
+            offset[0] += 1.3f;
+            this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+            this->av->axonview = true;
+            for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+            this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+            this->av->target_scale.compute_autoscale (0, 1);
+            this->av->finalize();
+            this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+            v->addVisualModel (this->av);
 
         } else  if (this->layout == graph_layout::c) { // Layout with diff. time end points
 

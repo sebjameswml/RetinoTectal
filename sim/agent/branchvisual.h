@@ -47,6 +47,20 @@ public:
     // Target location will have a different scale
     morph::Scale<Flt, Flt> target_scale;
 
+    void drawBoundary (VBOint& idx)
+    {
+        std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
+        float w = 1, h = 1;
+        this->computeLine (idx, morph::Vector<Flt, 3>({0, 0, 0}), morph::Vector<Flt, 3>({w, 0, 0}),
+                           this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
+        this->computeLine (idx, morph::Vector<Flt, 3>({w, 0, 0}), morph::Vector<Flt, 3>({w, h, 0}),
+                           this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
+        this->computeLine (idx, morph::Vector<Flt, 3>({w, h, 0}), morph::Vector<Flt, 3>({0, h, 0}),
+                           this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
+        this->computeLine (idx, morph::Vector<Flt, 3>({0, h, 0}), morph::Vector<Flt, 3>({0, 0, 0}),
+                           this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
+    }
+
     void initializeVertices()
     {
         if (this->axonview) { return this->initializeAxonview(); }
@@ -96,6 +110,8 @@ public:
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
             this->computeFlatLineRnd (idx, (*this->ax_history)[b.aid].back(), cur, this->uz, clr, this->linewidth/2.0f, 0.0f, true, false);
         }
+
+        this->drawBoundary (idx);
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
@@ -113,6 +129,7 @@ public:
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.008;
+    Flt blinewidth = 0.004;
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
     //! In axon view, show just a small selection of axons

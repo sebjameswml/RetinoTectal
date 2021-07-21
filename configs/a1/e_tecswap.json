@@ -2,12 +2,17 @@
     "id" : "tecswap",
     "file" : "Tectum ablation experiment",
 
-    "graftswap_coords" : { "locn1" : [2,4], "locn2" : [10,10], "patchsize" : [4,4] },
+    "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
+    "graph_layout" : 1,
+
+    "desc_graftswap_coords" : "Note, that these depend on the size of model defined in the m_*.json config",
+    //"graftswap_coords" : { "locn1" : [16,16], "locn2" : [16,40], "patchsize" : [16,16] },
+    "graftswap_coords" : { "locn1" : [4,4], "locn2" : [4,12], "patchsize" : [12,4] },
 
     "tectal_graftswap" : true,
 
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
-    "seeaxons" : [ 21, 38, 189, 378, 361 ],
+    "seeaxons" : [ 129, 270 ],
 
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
@@ -15,11 +20,9 @@
     "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
     "lighting" : true,
 
-    "win_width" : 1920,
-
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 1000
+    "steps" : 1500
 }

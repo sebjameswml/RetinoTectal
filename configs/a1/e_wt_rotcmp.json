@@ -1,16 +1,16 @@
 {
-    "id" : "tecrot180",
-    "file" : "Tectum rotation experiment",
+    "id" : "tecrot90",
+    "file" : "Tectum rotation experiment - null expt for comparing what seeaxons do",
 
     "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
     "graph_layout" : 1,
 
     "graftswap_coords" : { "locn1" : [6,6], "locn2" : [10,10], "patchsize" : [8,8] },
 
-    "tectal_rotations" : 2,
+    "tectal_rotations" : 0,
 
-    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
-    "seeaxons" : [ 126, 189, 273 ],
+    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]. Count from bottom left, raster-fashion",
+    "seeaxons" : [ 126, 189, 273],
 
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,

@@ -26,6 +26,7 @@
 enum class netvisual_viewmode
 {
     actual, // Show a visualisation of actual locations and relations
+    actual_nolines, // actual locations, but not the relationship lines
     target, // Show a visualisation of target locations and relations
     targetplus // Show target locations (with relationship net), and actual locations and lines connecting
 };
@@ -49,7 +50,8 @@ public:
             this->initv_target();
         } else if (this->viewmode == netvisual_viewmode::targetplus) {
             this->initv_target2();
-        } else if (this->viewmode == netvisual_viewmode::actual) {
+        } else if (this->viewmode == netvisual_viewmode::actual
+                   || this->viewmode == netvisual_viewmode::actual_nolines) {
             this->initv_actual();
         } else {
             throw std::runtime_error ("Unknown netvisual_viewmode");
@@ -72,17 +74,18 @@ public:
                                this->radiusFixed, 16);
         }
         // Connection lines
-        for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
-            morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
-            std::array<float, 3> clr1 = this->locations->clr[c[0]];
-            std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            if ((c1-c2).length() < maxlen) {
-                // omit long lines for a bit more clarity
-                this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
+        if (this->viewmode == netvisual_viewmode::actual) {
+            for (auto c : this->locations->c) {
+                morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
+                morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
+                std::array<float, 3> clr1 = this->locations->clr[c[0]];
+                std::array<float, 3> clr2 = this->locations->clr[c[1]];
+                if ((c1-c2).length() < maxlen) {
+                    // omit long lines for a bit more clarity
+                    this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
+                }
             }
         }
-
         this->drawBoundary (idx);
     }
 
