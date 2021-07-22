@@ -346,7 +346,7 @@ struct guidingtissue : public tissue<T>
     //! Convolve with a Gaussian to smooth the transitions in the expression
     void smooth_expression()
     {
-        static constexpr float sigma = 0.025f;
+        static constexpr float sigma = 0.05f;
         static constexpr float one_over_sigma_root_2_pi = 1.0f / sigma * 2.506628275f;
         static constexpr float two_sigma_sq = 2.0f * sigma * sigma;
 
@@ -360,11 +360,11 @@ struct guidingtissue : public tissue<T>
         // Create two 1-D Gaussian kernels, to be applied two ways to the data
         float gauss = 0;
         for (int k = 0; k < 21; ++k) {
+
             float px = this->dx[0] * (k-10); // x position for index k
-            //std::cout << "px for k=" << k << " is " << px << std::endl;
             gauss = (one_over_sigma_root_2_pi * std::exp ( -(px*px) / two_sigma_sq ));
-            //std::cout << "guass for k=" << k << " is " << gauss << std::endl;
             kernel_x[k].set_from (gauss);
+
             float py = this->dx[1] * (k-10);
             gauss = (one_over_sigma_root_2_pi * std::exp ( -(py*py) / two_sigma_sq ));
             kernel_y[k].set_from (gauss);
@@ -376,15 +376,12 @@ struct guidingtissue : public tissue<T>
         for (int k = 0; k < 21; ++k) {
             kernel_x[k] /= sum_r; // or 2 * sum as we're applying this twice?
             kernel_y[k] /= sum_l;
-            //std::cout << "kernel_x[" << k << "] = " << kernel_x[k] << std::endl;
         }
-        //for (int k = 0; k < 21; ++k) {
-        //    std::cout << "kernel_y[" << k << "] = " << kernel_y[k] << std::endl;
-        //}
 
-        for (int i = 0; i < (int)this->h; ++i) {
+        int gap = 2; // Don't convolve all the way to the edges
+        for (int i = gap; i < (int)this->h-gap; ++i) {
             std::cout << "i = " << i << std::endl;
-            for (int j = 0; j < (int)this->w; ++j) {
+            for (int j = gap; j < (int)this->w-gap; ++j) {
                 // convolve rcpt[i] - first along x, then along y
                 int idx = (i*(int)this->w) + j; // data index
                 std::cout << "data index is " << idx << ", and position index (j) is " << j << std::endl;
@@ -394,30 +391,24 @@ struct guidingtissue : public tissue<T>
                 std::cout << "sum_r zeroed\n";
                 // For each element in the kernel:
                 for (int k = 0; k < 21; ++k) {
-                    if ((j+k-10) > 0 && (j+k-10) < (int)this->w) {
-                        // No can do :) can't do Vector<float, n> * vVector<float> for now.
-                        //sum_r += this->rcpt[idx+k-10] * kernel_x[k];
-                        //sum_l += this->lgnd[idx+k-10] * kernel_x[k];
-                        for (size_t ii = 0; ii < N; ii++) {
-                            sum_r[ii] += this->rcpt[idx+k-10][ii] * kernel_x[k][ii];
-                            sum_l[ii] += this->lgnd[idx+k-10][ii] * kernel_y[k][ii];
-                        }
+                    if ((j+k-10) >= 0 && (j+k-10) < (int)this->w) {
+                        sum_r += this->rcpt[idx+k-10] * kernel_x[k];
+                        sum_l += this->lgnd[idx+k-10] * kernel_x[k];
                     }
                     //std::cout << "sum_r is now " << sum_r << std::endl;
                 }
                 std::cout << "rcpt["<<idx<<"] set to " << sum_r << std::endl;
-                for (size_t ii = 0; ii < N; ii++) {
-                    this->rcpt[idx][ii] = sum_r[ii];
-                    this->lgnd[idx][ii] = sum_l[ii];
-                }
+                this->rcpt[idx] = sum_r;
+                this->lgnd[idx] = sum_l;
             }
         }
+
+        // FIXME: Have done convolution in x direction, need to do it in y direction too.
     }
 
     //! Numerically differentiate rcpt and lgnd
     void compute_gradients()
     {
-        this->smooth_expression(); // when it works...
         this->rcpt_grad.resize (this->rcpt.size());
         this->lgnd_grad.resize (this->lgnd.size());
         this->spacegrad2D (this->rcpt, this->rcpt_grad);
@@ -767,6 +758,7 @@ struct guidingtissue : public tissue<T>
             idx2 += this->w;
         }
 
+        //this->smooth_expression();
         this->compute_gradients();
     }
 

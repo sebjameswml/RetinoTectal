@@ -994,7 +994,8 @@ struct Agent1
             offset[0] += 1.3f;
             this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
             //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-            this->cv->viewmode = netvisual_viewmode::actual_nolines;
+            //this->cv->viewmode = netvisual_viewmode::actual_nolines;
+            this->cv->viewmode = netvisual_viewmode::actual;
             this->cv->radiusFixed = 0.02;
             this->cv->finalize();
             this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
