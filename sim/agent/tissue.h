@@ -320,10 +320,88 @@ struct guidingtissue : public tissue<T>
             }
         }
     }
+#if 0
+    // Create a circular HexGrid to contain the Gaussian convolution kernel
+    float sigma = 0.025f;
+    morph::HexGrid kernel(0.01, 20.0f*sigma, 0, morph::HexDomainShape::Boundary);
+    kernel.setCircularBoundary (6.0f*sigma);
+    std::vector<float> kerneldata (kernel.num(), 0.0f);
+    // Once-only parts of the calculation of the Gaussian.
+    float one_over_sigma_root_2_pi = 1 / sigma * 2.506628275;
+    float two_sigma_sq = 2.0f * sigma * sigma;
+    // Gaussian dist. result, and a running sum of the results:
+    float gauss = 0;
+    float sum = 0;
+    for (auto& k : kernel.hexen) {
+        // Gaussian profile based on the hex's distance from centre, which is
+        // already computed in each Hex as Hex::r
+        gauss = (one_over_sigma_root_2_pi * std::exp ( -(k.r*k.r) / two_sigma_sq ));
+        kerneldata[k.vi] = gauss;
+        sum += gauss;
+    }
+    // Renormalise
+    for (auto& k : kernel.hexen) { kerneldata[k.vi] /= sum; }
+#endif
+
+    //! Convolve with a Gaussian to smooth the transitions in the expression
+    void smooth_expression()
+    {
+        static constexpr float sigma = 0.025f;
+        static constexpr float one_over_sigma_root_2_pi = 1.0f / sigma * 2.506628275f;
+        static constexpr float two_sigma_sq = 2.0f * sigma * sigma;
+
+        morph::Vector<morph::Vector<float, N>, 21> kernel_x;
+        morph::Vector<morph::Vector<float, N>, 21> kernel_y;
+
+        morph::Vector<float, N> sum_r; // use for x too
+        morph::Vector<float, N> sum_l; // use for y too
+
+        // Create two 1-D Gaussian kernels, to be applied two ways to the data
+        float gauss = 0;
+        for (int k = 0; k < 21; ++k) {
+            float px = this->dx[0] * (k-10); // x position for index k
+            //std::cout << "px for k=" << k << " is " << px << std::endl;
+            gauss = (one_over_sigma_root_2_pi * std::exp ( -(px*px) / two_sigma_sq ));
+            std::cout << "guass for k=" << k << " is " << gauss << std::endl;
+            kernel_x[k].set_from (gauss);
+            float py = this->dx[1] * (k-10);
+            gauss = (one_over_sigma_root_2_pi * std::exp ( -(py*py) / two_sigma_sq ));
+            kernel_y[k].set_from (gauss);
+
+            sum_r += kernel_x[k];
+            sum_l += kernel_y[k];
+        }
+        // Renormalise
+        for (int k = 0; k < 21; ++k) {
+            kernel_x[k] /= sum_r; // or 2 * sum as we're applying this twice?
+            kernel_y[k] /= sum_l;
+            std::cout << "kernel_x[" << k << "] = " << kernel_x[k] << std::endl;
+        }
+
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                // convolve rcpt[i] - first along x, then along y
+                int idx = i*N+j; // data index
+                //int pidx = j; // position index
+                sum_r.zero();
+                sum_l.zero();
+                // For each element in the kernel:
+                for (int k = 0; k < 21; ++k) {
+                    if ((j+k-10) > 0 && (j+k-10) < N) {
+                        sum_r += this->rcpt[idx+k-10] * kernel_x[k];
+                        sum_l += this->lgnd[idx+k-10] * kernel_x[k];
+                    }
+                }
+                this->rcpt[idx] = sum_r;
+                this->lgnd[idx] = sum_l;
+            }
+        }
+    }
 
     //! Numerically differentiate rcpt and lgnd
     void compute_gradients()
     {
+        //this->smooth_expression(); // when it works...
         this->rcpt_grad.resize (this->rcpt.size());
         this->lgnd_grad.resize (this->lgnd.size());
         this->spacegrad2D (this->rcpt, this->rcpt_grad);
