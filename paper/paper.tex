@@ -573,7 +573,7 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 To enable a simulation it is necessary to make the assumptions (in addition to
 those implicit in the description of the model above) that i) All
-receptor-ligand interactions are repulsive, as for EphA-ephrinA
+receptor-ligand signalled interactions are repulsive, as for EphA-ephrinA
 coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}; and ii)
 all tectal ligand expressions vary exponentially along a given axis, following
 Eq.\,\ref{e:tecexp}. The result of running this system are presented in
@@ -621,15 +621,32 @@ rotated or translocated grafts of the tectum; ablated portions of the retina
 and/or the tectum; or manipulated the receptor or ligand expressions in the
 model.
 
+Fig.\,\ref{f:manip} shows the result of simulating three surgical
+manipulations alongside the wildtype result, which is shown on Row A. Rows B
+and C show graft rotation simulations (90$\degree$ and 180$\degree$). In each
+case an 8x8 square on the tectum (each unit is 0.05x0.05) is rotated. The
+rotational sense can be observed clearly in the `Branches' column; for the
+90$\degree$ rotation, the top-right (caudal-lateral) corner of the rotated
+square is red, whereas the top-left corner of the wildtype tectum is red. \textbf{etc}.
+
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/fig_manipulations.png}
-\caption{Surgical manipulations}
+\caption{Surgical manipulations. Row A: wildtype. Row B: 90 degree
+rotation. Row C: 180 degree rotation. Row D: Graft swap.}
 \label{f:manip}
 \end{figure}
 
-\subsection*{Grating simulations}
+\subsection*{ligand expression profiles}
 
-I'd like to do this if it's not too much work!
+A section to show the effect of assuming linear or logarithmic expression
+profiles. Especially that linear expression fails to reproduce the rotation
+and graft swap manipulations. Hmm, actually, it looks ok?!
+
+\subsection*{Attractive receptor-ligand interactions}
+
+Show that, if you switch one of the receptor-ligand  interactions in the
+system to be attractive instead of repulsive, then you have to make the ligand
+expression form logarithmic instead of exponential.
 
 \subsection*{Is chemoaffinity alone sufficient to explain the retinotectal projection?}
 
@@ -681,6 +698,10 @@ final map. This allows the chemoaffinity model to attain a good match to the
 experimental arrangement (Fig.\~S2 \textbf{fixme}). However, the match is
 highly dependent on the form of receptor/ligand expression in both retinal and
 tectal cells.
+
+\subsection*{Grating simulations}
+
+I'd like to do this if it's not too much work!
 
 \section{Discussion}
 
