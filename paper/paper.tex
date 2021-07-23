@@ -621,7 +621,7 @@ rotated or translocated grafts of the tectum; ablated portions of the retina
 and/or the tectum; or manipulated the receptor or ligand expressions in the
 model.
 
-Fig.\,\ref{f:manip} shows the result of simulating three surgical
+Fig.\,\ref{f:surg1} shows the result of simulating three surgical
 manipulations alongside the wildtype result, which is shown on Row A. Rows B
 and C show graft rotation simulations (90$\degree$ and 180$\degree$). In each
 case an 8x8 square on the tectum (each unit is 0.05x0.05) is rotated. The
@@ -633,7 +633,19 @@ square is red, whereas the top-left corner of the wildtype tectum is red. \textb
 \includegraphics[width=\linewidth]{./images/fig_manipulations.png}
 \caption{Surgical manipulations. Row A: wildtype. Row B: 90 degree
 rotation. Row C: 180 degree rotation. Row D: Graft swap.}
-\label{f:manip}
+\label{f:surg1}
+\end{figure}
+
+Fig.\,\ref{f:surg2} shows retinal ablation, tectal ablation, mismatch and
+compound eye experiments (Stuart: see Simpson and Goodhill Fig. 4).
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/fig_manipulations2.png}
+\caption{Surgical manipulations 2. Row A: Retinal ablation, Row B: Tectal
+ablation, Row C: Mismatch (ablate retina and also the tectum that matches the
+left-behind retina), Row D: Compound eye (Two nasal retinal halves `glued
+together')}
+\label{f:surg2}
 \end{figure}
 
 \subsection*{ligand expression profiles}
@@ -647,6 +659,25 @@ and graft swap manipulations. Hmm, actually, it looks ok?!
 Show that, if you switch one of the receptor-ligand  interactions in the
 system to be attractive instead of repulsive, then you have to make the ligand
 expression form logarithmic instead of exponential.
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_ephb_wt.png}
+\caption{The effect of making one interaction attractive. This models
+switching one receptor/ligand pair to be an analogue of EphB, but retains an
+assumption that the ephrin-B ligand has exponential form. The change compared
+with the model of Fig.\,\ref{f:wt} is that the tectal ligand direction of
+$L_1$ is reversed and the interaction of $r_1$ and $L_1$/$l_1$ is made
+attractive. $L_1$ retains the assumption of exponential change. Note the
+`bunching up' of the field to the medial side of the tectal sheet.}
+\label{f:ee_oneattractive}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_eel_ephb_wt.png}
+\caption{The arrangement is restored by making the expression of $L_1$ on the
+tectal sheet change logarithmically.}
+\label{f:eel_oneattractive}
+\end{figure}
 
 \subsection*{Is chemoaffinity alone sufficient to explain the retinotectal projection?}
 
@@ -698,6 +729,14 @@ final map. This allows the chemoaffinity model to attain a good match to the
 experimental arrangement (Fig.\~S2 \textbf{fixme}). However, the match is
 highly dependent on the form of receptor/ligand expression in both retinal and
 tectal cells.
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/fig_chemo_manipulations.png}
+\caption{Surgical manipulations in the chemoaffinity-only model. Row A: wildtype. Row B: 90 degree
+rotation. Row C: 180 degree rotation. Row D: Graft swap}
+\label{f:chemosurg}
+\end{figure}
+
 
 \subsection*{Grating simulations}
 

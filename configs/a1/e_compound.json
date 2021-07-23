@@ -2,6 +2,9 @@
     "id" : "compound",
     "file" : "Wildtype experiment",
 
+    "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
+    "graph_layout" : 1,
+
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 21, 38, 189, 378, 361 ],
 
@@ -12,8 +15,6 @@
 
     "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
     "lighting" : true,
-
-    "win_width" : 1920,
 
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
