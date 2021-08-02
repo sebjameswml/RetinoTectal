@@ -571,12 +571,14 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 
 \subsection*{Normal development}
 
-To enable a simulation it is necessary to make the assumptions (in addition to
-those implicit in the description of the model above) that i) All
-receptor-ligand signalled interactions are repulsive, as for EphA-ephrinA
+To enable a simulation it is necessary to make assumptions about the nature of
+the receptor-ligand signalled interactions (i.e. whether they are attractive
+or repulsive) and about the pattern of ligand expression on the tectal
+surface. We assume that i) All receptor-ligand signalled interactions are
+repulsive, as for EphA-ephrinA
 coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}; and ii)
 all tectal ligand expressions vary exponentially along a given axis, following
-Eq.\,\ref{e:tecexp}. The result of running this system are presented in
+Eq.\,\ref{e:tecexp}. The results of running such a system are presented in
 Fig.\,\ref{f:wt}.
 %
 Fig.\,\ref{f:wt}Ai shows a dual-colour map of retinal ganglion cell positions
@@ -611,6 +613,8 @@ This result shows that a gradient following model based on receptor-ligand
 interactions and incorporating axon-axon repulsion is able to generate the
 basic mapping observed in the retinotectal projection.
 
+
+
 \subsection*{Manipulations}
 
 To determine if the model can explain the many surgical and genetic
@@ -620,6 +624,8 @@ simulations matching those in \citet{simpson_simple_2011} in which we either
 rotated or translocated grafts of the tectum; ablated portions of the retina
 and/or the tectum; or manipulated the receptor or ligand expressions in the
 model.
+
+\subsubsection*{Surgical Manipulations}
 
 Fig.\,\ref{f:surg1} shows the result of simulating three surgical
 manipulations alongside the wildtype result, which is shown on Row A. Rows B
@@ -647,6 +653,12 @@ left-behind retina), Row D: Compound eye (Two nasal retinal halves `glued
 together')}
 \label{f:surg2}
 \end{figure}
+
+\subsubsection*{Genetic manipulations}
+
+Brown et al. EphA knock-in.
+
+Describe Reber and other gene knock-in and knock-out experiments.
 
 \subsection*{ligand expression profiles}
 
@@ -736,7 +748,6 @@ tectal cells.
 rotation. Row C: 180 degree rotation. Row D: Graft swap}
 \label{f:chemosurg}
 \end{figure}
-
 
 \subsection*{Grating simulations}
 

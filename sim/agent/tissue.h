@@ -4,6 +4,7 @@
 #include <morph/Vector.h>
 #include <morph/Random.h>
 #include <algorithm>
+#include <bitset>
 
 //! Some 2D brain tissue, arranged as a Cartesian grid of neurons of width w and height h.
 template<typename T>
@@ -122,11 +123,15 @@ struct guidingtissue : public tissue<T>
     morph::vVector<morph::Vector<T,N>> rcpt;
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
+    // Set fields true if the receptor expression has been manipulated
+    morph::vVector<std::bitset<N>> rcpt_manipulated;
 
     //! The tissue also has an expression of ligands to interact with receptors of other
     //! cells/agents
     morph::vVector<morph::Vector<T,N>> lgnd;
     morph::vVector<morph::Vector<T,2*N>> lgnd_grad;
+    // Set fields true if the ligand expression has been manipulated
+    morph::vVector<std::bitset<N>> lgnd_manipulated;
 
     //! Get the relevant axis position (or its inverse) for the position index pi and
     //! the given expression direction, so that an expression value can be computed.
@@ -185,6 +190,14 @@ struct guidingtissue : public tissue<T>
     {
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
+        this->rcpt_manipulated.resize (this->posn.size());
+        this->lgnd_manipulated.resize (this->posn.size());
+
+        // zero out the _manipulations vectors
+        for (size_t ri = 0; ri < this->posn.size(); ++ri) {
+            this->rcpt_manipulated[ri].reset();
+            this->lgnd_manipulated[ri].reset();
+        }
 
         // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
@@ -653,14 +666,18 @@ struct guidingtissue : public tissue<T>
         if constexpr (random_knockin == true) {
             morph::RandUniform<T> rng(0,1);
             std::vector<T> rns = rng.get(this->rcpt.size());
-            size_t ri = 0;
-            for (auto& r : this->rcpt) {
-                if (rns[ri++] < affected) { r[idx] += amount; }
+            for (size_t ri = 0; ri < this->rcpt.size(); ++ri) {
+                if (rns[ri] < affected) {
+                    this->rcpt[ri][idx] += amount;
+                    this->rcpt_manipulated[ri][idx] = true;
+                }
             }
         } else {
-            size_t ri = 0;
-            for (auto& r : this->rcpt) {
-                if (ri++%2 == 0) { r[idx] += amount; }
+            for (size_t ri = 0; ri < this->rcpt.size(); ++ri) {
+                if (ri%2 == 0) {
+                    this->rcpt[ri][idx] += amount;
+                    this->rcpt_manipulated[ri][idx] = true;
+                }
             }
         }
         this->compute_gradients();

@@ -536,14 +536,24 @@ struct Agent1
         }
 
         // Knockin will increase expression for half of all cells. There's code in tissue.h to make this randomised or regular
+        bool genetic_manipulation = false;
         T affected = T{0.5};
-        T amount = T{1};
+        T amount = this->conf->getDouble ("amount", 1);
         if (this->conf->getBool ("reber", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
             this->ret->receptor_knockin (0, affected, amount);
             this->ret->receptor_knockdown (0, amount);
             manipulated = true;
+            genetic_manipulation = true;
+        }
+
+        if (this->conf->getBool ("brown", false)) {
+            if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
+            // Knockin receptor 0 in half of RGCs (but with no knockdown):
+            this->ret->receptor_knockin (0, affected, amount);
+            manipulated = true;
+            genetic_manipulation = true;
         }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
@@ -593,6 +603,9 @@ struct Agent1
         bool totally_random = this->mconf->getBool ("totally_random_init", true);
         std::string branch_model = this->mconf->getString ("branch_model", "james_agent");
 
+        std::array<float, 3> red = { 1.0f, 0.0f, 0.0f };
+        std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
+
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
@@ -633,6 +646,12 @@ struct Agent1
             }
 
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
+
+            if (genetic_manipulation == true) { // genetic manipulation of retinal receptor 0
+                // Set colour red or blue depending on if receptor 0 in the retina was manipulated or not.
+
+                this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? red : blue;
+            }
 
             // "experiment suggests": The target for axon centroids is defined by their
             // origin location on the retina. However, their target on the tectum is the
@@ -738,6 +757,11 @@ struct Agent1
         }
 
         if (this->conf->getBool ("reber", false)) {
+            this->ax_centroids.targ_reber();
+        }
+
+        // Don't have a brown-specific target yet
+        if (this->conf->getBool ("brown", false)) {
             this->ax_centroids.targ_reber();
         }
 
