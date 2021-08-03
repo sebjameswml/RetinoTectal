@@ -690,14 +690,18 @@ struct guidingtissue : public tissue<T>
         if constexpr (random_knockin == true) {
             morph::RandUniform<T> rng(0,1);
             std::vector<T> rns = rng.get(this->lgnd.size());
-            size_t ri = 0;
-            for (auto& l : this->lgnd) {
-                if (rns[ri++] < affected) { l[idx] += amount; }
+            for (size_t li = 0; li < this->lgnd.size(); ++li) {
+                if (rns[li] < affected) {
+                    this->lgnd[li][idx] += amount;
+                    this->lgnd_manipulated[li][idx] = true;
+                }
             }
         } else {
-            size_t ri = 0;
-            for (auto& l : this->lgnd) {
-                if (ri++%2 == 0) { l[idx] += amount; }
+            for (size_t li = 0; li < this->lgnd.size(); ++li) {
+                if (li%2 == 0) {
+                    this->lgnd[li][idx] += amount;
+                    this->lgnd_manipulated[li][idx] = true;
+                }
             }
         }
         this->compute_gradients();
