@@ -20,22 +20,24 @@
 #include <morph/Random.h>
 #include <morph/HdfData.h>
 
-#ifdef VISUALISE
-# include <morph/Visual.h>
-# include <morph/GraphVisual.h>
-#endif
-
 #include "branch.h"
 #include "branch_geb.h"
 #include "net.h"
 #include "tissue.h"
 
 #ifdef VISUALISE
+# include <morph/Visual.h>
+# include <morph/GraphVisual.h>
 # include "branchvisual.h"
 # include "netvisual.h"
 # include "tissuevisual.h"
-enum class graph_layout { a, b, c };
+static constexpr bool visualise = true;
+#else
+static constexpr bool visualise = false;
 #endif
+
+// A selection of possible graph layouts to show when running the program
+enum class graph_layout { a, b, c, d };
 
 template<typename T, size_t N, typename B=branch<T, N>>
 struct Agent1
@@ -68,21 +70,21 @@ struct Agent1
     //! Run this model!
     void run()
     {
-#ifdef VISUALISE
-        // Get layout from config file. Default to 0 or 'a'
-        this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
+        if constexpr (visualise == true) {
+            // Get layout from config file. Default to 0 or 'a'
+            this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
 
-        if (this->layout == graph_layout::c) {
-            // Set up (from config file if necssary) the times at which the various
-            // graphs will be frozen (i.e. no longer updated from the sim)
-            this->freeze_times[0] = 0;
-            this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
-            this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
-            this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
+            if (this->layout == graph_layout::c) {
+                // Set up (from config file if necssary) the times at which the various
+                // graphs will be frozen (i.e. no longer updated from the sim)
+                this->freeze_times[0] = 0;
+                this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
+                this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
+                this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
+            }
+
+            this->visinit();
         }
-
-        this->visinit();
-#endif
         this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
 
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
@@ -101,10 +103,10 @@ struct Agent1
             std::cout << "branches.size(): " << this->branches.size() << std::endl;
             this->steprandom();
             std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
-#ifdef VISUALISE
-            this->vis(1);
-            this->v->keepOpen();
-#endif
+            if constexpr (visualise == true) {
+                this->vis(1);
+                this->v->keepOpen();
+            }
             return;
         }
 
@@ -123,9 +125,11 @@ struct Agent1
             }
 
             this->step();
-#ifdef VISUALISE
-            if (i%visevery == 0) { this->vis(i); } // Visualize every 10 doubles time required for program
-#endif
+
+            if constexpr (visualise == true) {
+                if (i%visevery == 0) { this->vis(i); } // Visualize every 10 doubles time required for program
+            }
+
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
                 std::cout << "step " << i << ". Per step: "
@@ -135,14 +139,35 @@ struct Agent1
             }
         }
         std::cout << "Done simulating\n";
-#ifdef VISUALISE
-        // Save final image based on config file names
-        std::stringstream nss;
-        nss << "./paper/images/" << this->title << ".png";
-        this->v->saveImage (nss.str());
-        this->vis(this->conf->getUInt ("steps", 1000));
-        this->v->keepOpen();
-#endif
+        if constexpr (visualise == true) {
+
+            // Update retinal TN position vs tectal RC position graph for the 'd' layout:
+            if (this->layout == graph_layout::d) {
+                morph::vVector<T>tn(this->ret->posn.size(), 0);
+                size_t ii = 0;
+                for (auto p : this->ret->posn) {
+                    tn[ii++] = p[0]; // Get x-component of retinal position into tn.
+                }
+                morph::vVector<T>rc(this->ax_centroids.p.size(), 0);
+                ii = 0;
+                for (auto p : this->ax_centroids.p) {
+                    rc[ii++] = p[1]; // Get y-component of final tectal position into rc
+                }
+                if (rc.size() != tn.size()) {
+                    throw std::runtime_error ("rc and tn not same size");
+                }
+                this->gv->setdata (rc, tn);
+                this->gv->reinit(); // re-finalize?
+                this->v->render();
+            }
+
+            // Save final image based on config file names
+            std::stringstream nss;
+            nss << "./paper/images/" << this->title << ".png";
+            this->v->saveImage (nss.str());
+            this->vis(this->conf->getUInt ("steps", 1000));
+            this->v->keepOpen();
+        }
     }
 
     //! Save any relevant results of the simulation to an HdfData object.
@@ -179,6 +204,7 @@ struct Agent1
         if (this->layout == graph_layout::a || this->layout == graph_layout::c) {
             this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         }
+
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
@@ -807,12 +833,13 @@ struct Agent1
         this->goslow = this->conf->getBool ("goslow", false);
     }
 
+#ifdef VISUALISE
     static constexpr bool show_tectal_receptors = false;
     static constexpr float widthtoheight = 0.5625f;
+
     // Initialise tissue visualisation
     void tvisinit()
     {
-#ifdef VISUALISE
         const unsigned int ww = this->conf->getUInt ("win_width", 1800);
         const unsigned int wh = this->conf->getUInt ("win_height", 1200);
         this->tvv = new morph::Visual (ww, wh, "Retinal and Tectal expression");
@@ -890,14 +917,12 @@ struct Agent1
             tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
             offset2[1] -= sqside;
         }
-#endif // VISUALISE
     }
 
     // Set up the simulation visualisation scene. This depends on whether this->layout
     // is graph_layout::a, ::b or ::c, etc.
     void visinit()
     {
-#ifdef VISUALISE
         // morph::Visual init
         unsigned int wdefault = 1200;
         if (this->layout == graph_layout::a) { wdefault = 1920; }
@@ -936,7 +961,9 @@ struct Agent1
         // Adding to the Main Visual second
         this->v->setCurrent();
 
-        if (this->layout == graph_layout::a) { // Standard layout for investigations
+        if (this->layout == graph_layout::a // Standard layout for investigations
+            || this->layout == graph_layout::d // Standard layout tweaked with graphs like in Brown et al
+            ) {
 
             // Branches: Visualise the branches with a custom VisualModel
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
@@ -985,12 +1012,20 @@ struct Agent1
             // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
             this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
             this->gv->twodimensional = false;
-            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                                 0, this->conf->getFloat("graph_ymax", 200.0f));
-            this->gv->policy = morph::stylepolicy::lines;
-            this->gv->ylabel = "SOS";
-            this->gv->xlabel = "Sim time";
-            this->gv->prepdata ("SOS");
+            if (this->layout == graph_layout::a) {
+                this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                                     0, this->conf->getFloat("graph_ymax", 200.0f));
+                this->gv->policy = morph::stylepolicy::lines;
+                this->gv->ylabel = "SOS";
+                this->gv->xlabel = "Sim time";
+                this->gv->prepdata ("SOS");
+            } else {
+                this->gv->setlimits (0, 1, 0, 1);
+                this->gv->policy = morph::stylepolicy::markers;
+                this->gv->ylabel = "Percent R-C tectum";
+                this->gv->xlabel = "Percent N-T retina";
+                //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
+            }
             this->gv->finalize();
             v->addVisualModel (this->gv);
 
@@ -1037,7 +1072,7 @@ struct Agent1
             this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
             v->addVisualModel (this->av);
 
-        } else  if (this->layout == graph_layout::c) { // Layout with diff. time end points
+        } else if (this->layout == graph_layout::c) { // Layout with diff. time end points
 
             // A Retinal cell positions
             v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
@@ -1150,8 +1185,8 @@ struct Agent1
         } else {
             throw std::runtime_error ("Unknown layout");
         }
-#endif // VISUALISE
     }
+#endif // VISUALISE
 
     // The axons to see - these will have their path information stored
     std::set<size_t> seeaxons = {21, 38, 189, 378, 361};
