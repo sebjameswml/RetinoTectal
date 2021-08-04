@@ -658,7 +658,7 @@ struct guidingtissue : public tissue<T>
 
     // For receptor index idx, knock-in affected proportion (range [0,1]) of cells,
     // adding amount as a constant increase in receptor expression
-    static constexpr bool random_knockin = false;
+    static constexpr bool random_knockin = true;
     void receptor_knockin (size_t idx, T affected, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }

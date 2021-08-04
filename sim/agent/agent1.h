@@ -37,7 +37,7 @@ static constexpr bool visualise = false;
 #endif
 
 // A selection of possible graph layouts to show when running the program
-enum class graph_layout { a, b, c, d };
+enum class graph_layout { a, b, c, d, e };
 
 template<typename T, size_t N, typename B=branch<T, N>>
 struct Agent1
@@ -141,23 +141,31 @@ struct Agent1
         std::cout << "Done simulating\n";
         if constexpr (visualise == true) {
 
-            // Update retinal TN position vs tectal RC position graph for the 'd' layout:
-            if (this->layout == graph_layout::d) {
-                morph::vVector<T>tn(this->ret->posn.size(), 0);
+            // Update retinal NT position vs tectal RC position graph for the 'd' layout:
+            if (this->layout == graph_layout::d || this->layout == graph_layout::e) {
+                morph::vVector<T>nt;
+                morph::vVector<T>rc;
+                morph::vVector<T>nt_m; // manipulated
+                morph::vVector<T>rc_m;
+
                 size_t ii = 0;
-                for (auto p : this->ret->posn) {
-                    tn[ii++] = p[0]; // Get x-component of retinal position into tn.
+                for (ii = 0; ii < this->ret->posn.size(); ++ii) {
+                    if (this->ret->rcpt_manipulated[ii][0]) {
+                        nt_m.push_back(1-this->ret->posn[ii][0]);
+                        rc_m.push_back(this->ax_centroids.p[ii][1]);
+                    } else {
+                        nt.push_back(1-this->ret->posn[ii][0]);
+                        rc.push_back(this->ax_centroids.p[ii][1]);
+                    }
                 }
-                morph::vVector<T>rc(this->ax_centroids.p.size(), 0);
-                ii = 0;
-                for (auto p : this->ax_centroids.p) {
-                    rc[ii++] = p[1]; // Get y-component of final tectal position into rc
-                }
-                if (rc.size() != tn.size()) {
-                    throw std::runtime_error ("rc and tn not same size");
-                }
-                this->gv->setdata (rc, tn);
-                this->gv->reinit(); // re-finalize?
+
+                this->gv->setdata (nt, rc, "wt");
+                T ki_amount = this->conf->getDouble ("knockin", 1);
+                T kd_amount = this->conf->getDouble ("knockdown", 0);
+                std::stringstream ss;
+                ss << "ski:" << ki_amount << ", gkd:" << kd_amount;
+                this->gv->setdata (nt_m, rc_m, ss.str());
+                this->gv->reinit();
                 this->v->render();
             }
 
@@ -199,12 +207,13 @@ struct Agent1
         }
         this->cv->reinit(); // Centroids to end
 
-        this->tcv->reinit(); // Experiment
-        this->av->reinit(); // Selected axons
+        if (this->layout != graph_layout::e) {
+            this->tcv->reinit(); // Experiment
+            this->av->reinit(); // Selected axons
+        }
         if (this->layout == graph_layout::a || this->layout == graph_layout::c) {
             this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
         }
-
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
@@ -564,12 +573,13 @@ struct Agent1
         // Knockin will increase expression for half of all cells. There's code in tissue.h to make this randomised or regular
         bool genetic_manipulation = false;
         T affected = T{0.5};
-        T amount = this->conf->getDouble ("amount", 1);
+        T ki_amount = this->conf->getDouble ("knockin", 1);
+        T kd_amount = this->conf->getDouble ("knockdown", 0);
         if (this->conf->getBool ("reber", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
-            this->ret->receptor_knockin (0, affected, amount);
-            this->ret->receptor_knockdown (0, amount);
+            this->ret->receptor_knockin (0, affected, ki_amount);
+            this->ret->receptor_knockdown (0, kd_amount);
             manipulated = true;
             genetic_manipulation = true;
         }
@@ -577,7 +587,7 @@ struct Agent1
         if (this->conf->getBool ("brown", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin receptor 0 in half of RGCs (but with no knockdown):
-            this->ret->receptor_knockin (0, affected, amount);
+            this->ret->receptor_knockin (0, affected, ki_amount);
             manipulated = true;
             genetic_manipulation = true;
         }
@@ -925,13 +935,13 @@ struct Agent1
     {
         // morph::Visual init
         unsigned int wdefault = 1200;
-        if (this->layout == graph_layout::a) { wdefault = 1920; }
-        if (this->layout == graph_layout::b) { wdefault = 2650; }
+        if (this->layout == graph_layout::a || this->layout == graph_layout::d) { wdefault = 1920; }
+        if (this->layout == graph_layout::b || this->layout == graph_layout::e) { wdefault = 2650; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
-        if (this->layout == graph_layout::a) { hdefault = 1200; }
-        if (this->layout == graph_layout::b) { hdefault = 700; }
+        if (this->layout == graph_layout::a || this->layout == graph_layout::d) { hdefault = 1200; }
+        if (this->layout == graph_layout::b || this->layout == graph_layout::e) { hdefault = 700; }
         if (this->layout == graph_layout::c) { hdefault = 1180; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
 
@@ -939,9 +949,11 @@ struct Agent1
         tt += this->title;
         this->v = new morph::Visual (ww, wh, tt);
 
-        if (this->layout == graph_layout::a) {
+        if (this->layout == graph_layout::a || this->layout == graph_layout::d) {
             this->v->setSceneTrans (-0.413126f, 0.6811f, -5.0f);
         } else if (this->layout == graph_layout::b) {
+            this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
+        } else if (this->layout == graph_layout::e) {
             this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::c) {
             this->v->setSceneTrans (-0.943763f, 0.800606f, -5.9f);
@@ -962,8 +974,7 @@ struct Agent1
         this->v->setCurrent();
 
         if (this->layout == graph_layout::a // Standard layout for investigations
-            || this->layout == graph_layout::d // Standard layout tweaked with graphs like in Brown et al
-            ) {
+            || this->layout == graph_layout::d) { // Standard layout tweaked with graphs like in Brown et al
 
             // Branches: Visualise the branches with a custom VisualModel
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
@@ -1022,15 +1033,14 @@ struct Agent1
             } else {
                 this->gv->setlimits (0, 1, 0, 1);
                 this->gv->policy = morph::stylepolicy::markers;
-                this->gv->ylabel = "Percent R-C tectum";
-                this->gv->xlabel = "Percent N-T retina";
+                this->gv->ylabel = "R ---------- tectum ---------> C";
+                this->gv->xlabel = "N ---------- retina ---------> T";
                 //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
             }
             this->gv->finalize();
             v->addVisualModel (this->gv);
 
         } else if (this->layout == graph_layout::b) { // A pared down layout with just 3 graphs
-
 
             // Experiment: Another NetVisual view showing the target locations
             this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
@@ -1055,14 +1065,16 @@ struct Agent1
             //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
             //this->cv->viewmode = netvisual_viewmode::actual_nolines;
             this->cv->viewmode = netvisual_viewmode::actual;
-            this->cv->radiusFixed = 0.02;
+            if (this->layout == graph_layout::b) {
+                this->cv->radiusFixed = 0.02;
+            }
             this->cv->finalize();
             this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->cv, std::string("Tectal"));
             v->addVisualModel (this->cv);
 
-            // Selected axons: This one gives an 'axon view'
             offset[0] += 1.3f;
+            // Selected axons: This one gives an 'axon view'
             this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->av->axonview = true;
             for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
@@ -1071,6 +1083,41 @@ struct Agent1
             this->av->finalize();
             this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
             v->addVisualModel (this->av);
+
+        } else if (this->layout == graph_layout::e) {
+
+            // Branches: Visualise the branches with a custom VisualModel
+            this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+            this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+            this->bv->target_scale.compute_autoscale (0, 1);
+            this->bv->finalize();
+            this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+            this->addOrientationLabels (this->bv, std::string("Tectal"));
+            v->addVisualModel (this->bv);
+
+            // Axon centroids: Centroids of branches viewed with a NetVisual
+            offset[0] += 1.3f;
+            this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+            this->cv->viewmode = netvisual_viewmode::actual;
+            if (this->layout == graph_layout::b) {
+                this->cv->radiusFixed = 0.02;
+            }
+            this->cv->finalize();
+            this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+            this->addOrientationLabels (this->cv, std::string("Tectal"));
+            v->addVisualModel (this->cv);
+
+            offset[0] += 1.4f;
+
+            // The position graph, like Brown/Reber and S&G papers
+            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
+            this->gv->twodimensional = false;
+            this->gv->setlimits (0, 1, 0, 1);
+            this->gv->policy = morph::stylepolicy::markers;
+            this->gv->ylabel = "R ---------- tectum ---------> C";
+            this->gv->xlabel = "N ---------- retina ---------> T";
+            //this->gv->finalize();
+            v->addVisualModel (this->gv);
 
         } else if (this->layout == graph_layout::c) { // Layout with diff. time end points
 
