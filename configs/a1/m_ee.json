@@ -29,8 +29,10 @@
 
     "desc_bpa" : "Branches per axon",            "bpa" : 8,
 
+    "desc_r" : "Radius of interaction",          "r" : 0.05,
+
     "desc_m1" : "chemoaffinity",                 "m1" : 0.001,
-    "desc_m2" : "axon-axon competition",         "m2" : 0.2,
+    "desc_m2" : "axon-axon competition",         "m2" : 0.1,
     "desc_m3" : "the axon-axon interactions",    "m3" : 0.0,
     "desc_mborder" : "border effect",            "mborder" : 0.5
 }
