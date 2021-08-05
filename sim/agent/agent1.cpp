@@ -23,6 +23,7 @@ int main (int argc, char **argv)
     std::string m_id("");
     std::string e_id("");
 
+    int runtimesteps = -1;
     if (argc >= 3) {
         // If given two arguments, then the first is the model config and the second is the expt/sim config
         paramsfile_mdl = std::string(argv[1]);
@@ -46,6 +47,9 @@ int main (int argc, char **argv)
             std::vector<std::string> two = morph::Tools::stringToVector (one[0], "e_");
             if (two.size() > 1) { e_id = two[1]; }
         }
+
+        // A 3rd arg is converted into a number to be simulation steps
+        if (argc > 3) { runtimesteps = std::stoi (argv[3]); }
 
     } else if (argc == 2) {
         // With one argument, we use the same file for both model and expt/sim config
@@ -82,6 +86,9 @@ int main (int argc, char **argv)
         if (argc > 2) { delete mconf; }
         return 1;
     }
+
+    // Update simulation steps if user provided a number
+    if (runtimesteps > 0) { conf->set ("steps", runtimesteps); }
 
     morph::Tools::createDirIf ("./log/agent");
 
