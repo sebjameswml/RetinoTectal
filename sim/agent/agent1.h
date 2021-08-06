@@ -642,12 +642,17 @@ struct Agent1
         std::array<float, 3> red = { 1.0f, 0.0f, 0.0f };
         std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
 
+        float r_conf = this->mconf->getFloat ("r", 0.05f);
+        float rc_conf = this->mconf->getFloat ("rc", r_conf);
+        float rrl_conf = this->mconf->getFloat ("rrl", r_conf);
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].init();
-            this->pending_branches[i].setr (this->mconf->getFloat ("r", 0.05f));
+            this->pending_branches[i].setr (r_conf);
+            this->pending_branches[i].setrc (rc_conf);
+            this->pending_branches[i].setrrl (rrl_conf);
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons

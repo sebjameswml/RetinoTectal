@@ -65,6 +65,13 @@ public:
     {
         if (this->axonview) { return this->initializeAxonview(); }
 
+        // Set radius from the first branch
+        if (this->setRadiusFromBranches && !this->branches->empty()) {
+            this->radiusFixed = (*this->branches)[0].getr();
+            this->rad_competition = (*this->branches)[0].getrc() > this->radiusFixed ? (*this->branches)[0].getrc() : 0.0f;
+            this->rad_interaction = (*this->branches)[0].getrrl() > this->radiusFixed ? (*this->branches)[0].getrrl() : 0.0f;
+        }
+
         VBOint idx = 0;
         // For each branch,simply draw a sphere for the current location, with a second
         // colour for the rcpt expression.
@@ -78,11 +85,24 @@ public:
             // sphere to change size of clr2 disc at top
             morph::Vector<float, 3> cur = { b.current[0], b.current[1], 0 };
             this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
+
+            // Draw ring for the competition interaction
+            if (rad_competition > 0.0f) {
+                this->computeRing (idx, cur, clr, this->rad_competition, 0.1f*this->rad_competition, 12);
+            }
+            if (rad_interaction > 0.0f) {
+                this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 12);
+            }
         }
     }
 
     void initializeAxonview()
     {
+        // Set radius from the first branch
+        if (this->setRadiusFromBranches && !this->branches->empty()) {
+            this->radiusFixed = (*this->branches)[0].getr();
+        }
+
         VBOint idx = 0;
 
         if (this->ax_history->empty()) { return; }
@@ -128,6 +148,10 @@ public:
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;
+    Flt rad_competition = 0.0; // For a ring showing competitive interaction radius
+    Flt rad_interaction = 0.0; // For a ring showing recpt-lgnd interaction radius
+    // If true, then use the r which is encoded in the first branch in branches to set radiusFixed. Else, don't change it.
+    bool setRadiusFromBranches = true;
     Flt linewidth = 0.008;
     Flt blinewidth = 0.004;
     //! A normal vector, fixed as pointing up

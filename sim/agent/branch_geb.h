@@ -16,8 +16,15 @@ struct branch_geb : public branch_base<T,N>
 {
     // The cone radius, hard coded
     void setr (T _r) { this->r = _r; }
+    T getr() { return this->r; }
+    T getrc() { return this->rc; }
+    T getrrl() { return this->rrl; }
+    void setrc(T _r) {}
+    void setrrl(T _r) {}
 protected:
     T r = T{0.05};
+    T rc = T{0.0};
+    T rrl = T{0.0};
 
 public:
     // For random angle choice

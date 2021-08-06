@@ -1,6 +1,6 @@
 {
     "id" : "expexp",
-    "file" : "An exponential-exponential model with all repulsive interactions",
+    "file" : "An exponential-exponential model with all repulsive interactions, axon-axon AND competition",
 
     "num_guiders" : 4,
     "totally_random_init" : true,
@@ -27,12 +27,12 @@
 
     "rgcside" : 20,
 
-    "desc_bpa" : "Branches per axon",            "bpa" : 6,
+    "desc_bpa" : "Branches per axon",            "bpa" : 8,
 
-    "desc_r" : "Radius of interaction",          "r" : 0.03,
+    "desc_r" : "Radius of interaction",          "r" : 0.05,
 
-    "desc_m1" : "chemoaffinity",                 "m1" : 0.002, // 0.001
-    "desc_m2" : "axon-axon competition",         "m2" : 0.1,
-    "desc_m3" : "the axon-axon interactions",    "m3" : 0.0007, // with no 1/B_b .0007 works for bpa 6 or 8, seb's interaction
+    "desc_m1" : "chemoaffinity",                 "m1" : 0.001, // 0.001
+    "desc_m2" : "axon-axon competition",         "m2" : 0.05,
+    "desc_m3" : "the axon-axon interactions",    "m3" : 0.0003, // with no 1/B_b .0007 works for bpa 6 or 8, seb's interaction
     "desc_mborder" : "border effect",            "mborder" : 0.5
 }

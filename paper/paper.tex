@@ -182,7 +182,10 @@
   \emph{or} \\
   Self-organisation of topographically ordered axon connections can take place
   in a noisy environment if axons compete \\
+  \emph{or} \\
   Time to stop; modelling chemoaffinity with competition \\
+  \emph{or} \\
+  Can the retinotectal projection be modelled exclusively by receptor-ligand interactions?
 }
 \date{} % No date please
 \author{\Authors}
@@ -359,14 +362,15 @@ within a threshold distance of one another. Interaction is signal-induced
 repulsion, which is triggered if two agents are both within the threshold
 distance of each other and have compatible EphA receptor expression.
 
-In our model, space-based competition was omitted and chemoaffinity and
-axon-axon interactions were remodelled so that all interactions were via
-signal transmission between receptors and ligands, which are expressed in
-graded patterns on both retina and tectum. Signals induce attractive or
-repulsive interactions; for chemoaffinity the interaction is to ascend or
-descend the gradient of ligand expression on the tectum; for axon-axon
-interactions, the strength of short-range repulsion (or attraction) is
-governed by the receptor-ligand expression on pairs of axons.
+In our model, space-based competition was retained (though sometimes omitted)
+and chemoaffinity and axon-axon interactions were remodelled so that all
+interactions occurred via signal transmission between receptors and ligands,
+both of which are expressed in graded patterns on both retina and
+tectum. Signals induce attractive or repulsive interactions; for chemoaffinity
+the interaction is to ascend or descend the gradient of ligand expression on
+the tectum; for axon-axon interactions, the strength of short-range repulsion
+(or attraction) is governed by the receptor-ligand expression on pairs of
+axons.
 
 \subsection*{Receptor and ligand expression}
 
@@ -450,30 +454,44 @@ include the ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and
 RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a
 role in retinotectal map formation.
 
-Figure~\ref{f:ex} shows colour maps of receptor and ligand
-expression, in this case tectal ligand expression maps are linear. Note that
-the expression is discretized, and in simulations, the gradient is computed
-numerically from the discretized expression. This makes it straightforward to
-perform tectal and retinal `graft' manipulations.
+Figure~\ref{f:ex} shows colour maps of receptor and ligand expression, in this
+case tectal ligand expression maps are linear. Note that the expression is
+discretized, and in simulations, the gradient is computed numerically from the
+discretized expression. This makes it straightforward to perform tectal and
+retinal `graft' manipulations. Coordinates within the simulated retina and
+tectum are normalised, with 1 corresponding to 2 mm on the tectum and on the
+retina for mouse \citep{reber_relative_2004}. This means that growth cones of
+approximate radius 5 $\mu$m = 0.005 mm \citep{goodhill_molecular_2016} have a
+radius $r$ = 0.0025 in the arbitrary units of the simulation. For a realistic
+simulation based on mouse, the approximate RGC density in the retina is around
+44000 cells per retina \citep{jeon_major_1998}. This sets the side length of
+the retina to $\sqrt{44000} \approx 200$. This results in a simulation of
+prodigious computational size, which although tractable (10 s per step,
+requiring several hours, rather than days to run) is not convenient. To
+maintain the relationship between growth cone size and cell density, we permit
+a smaller number of growth cones ($400\times8=3200$) but keep the fractional
+area of the branches at 0.86 ($44000 \times \pi r^2$) (if there is one cone
+per axon) or 6.9 (if there are 8 cones per axon).
 
 \subsection*{Movement}
 
-At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, of each
-branch, $b$, is updated according to
+At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, at time
+$t$ of each branch $b$ is updated according to
 %
 \begin{equation}
 \mathbf{x}_{b,t+1} = \mathbf{x}_{b,t} + \mathbf{M}_{b}
 \end{equation}
 %
 where $\mathbf{M}_{b}$, the movement vector, is the sum of a chemoaffinity
-effect, $\mathbf{G}_b$, an axon-axon interaction, $\mathbf{I}_b$ and a `border effect',
+effect, $\mathbf{G}_b$, axon-axon competition, $\mathbf{C}_b$, an axon-axon
+receptor-ligand interaction, $\mathbf{I}_b$ and a `border effect',
 $\mathbf{B}_b$, which acts to retain branches within the tectal region:
 %
 \begin{equation}
-\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{I}_b + m_3 \mathbf{B}_b
+\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{C}_b + m_3 \mathbf{I}_b + m_4 \mathbf{B}_b
 \end{equation}
 %
-evaluated at time $t$. $m_1$, $m_2$ and $m_3$ are scalar parameters.
+evaluated at time $t$. $m_1$--$m_4$ are scalar parameters.
 
 \subsection*{Chemoaffinity}
 
@@ -498,6 +516,27 @@ pair $i$, $\nabla L_i$ is the gradient of expression of ligand $i$ on the
 tectum and $F_i$ denotes the direction of the interaction induced when a
 molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes the value
 -1 for a repulsive interaction or 1 for an attractive interaction.
+
+\subsection*{Axon-axon competition}
+
+Competition, in the context of this model, is a repulsive effect which acts
+between any two branches, whether they originate from different retinal
+ganglion cells or from the same cell. It assumes that there is some kind of
+self-other signal (\textbf{be sure to discuss possible origins}) which acts to
+discourage two cells from approaching each other.
+%
+\begin{equation}
+\mathbf{C}_b = \frac{1}{|B_b|} \sum_k \hat{\mathbf{x}}_{kb} W
+\end{equation}
+where the distance based weight $W$ is given by
+\begin{equation}
+W(d_{kb}) = \begin{cases}
+      1 - \frac{d_{kb}}{2r}   & d_{kb} \leq 2r \\
+     0 & d_{kb} > 2r
+     \end{cases}
+\end{equation}
+for two growth cones of radius $r$ separated by a distance $d_{kb}$. $B_b$ is
+the set of growth cones within a distance $2r$ of branch $b$.
 
 \subsection*{Axon-axon interactions}
 
@@ -708,6 +747,10 @@ tectal sheet change logarithmically.}
 \subsection*{Is chemoaffinity alone sufficient to explain the retinotectal projection?}
 
 Introductory sentence.
+
+\textbf{FIXME: Find the expression functions for the tectum which give a
+decent WT result. Perhaps I already did this? Experiment with these and
+axon-axon with smaller radius of interaction.}
 
 We now describe the behaviour of a model which has only the gradient-based
 chemoaffinity effect and no axon-axon interaction or border effect

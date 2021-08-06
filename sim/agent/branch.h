@@ -27,9 +27,18 @@ struct branch : public branch_base<T,N>
 {
     // Distance parameter r is used as 2r
     void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
+    T getr() { return this->r; }
+    T getrc() { return this->rc; }
+    T getrrl() { return this->rrl; }
+    void setrc (T _r) { this->rc = _r; this->two_rc = _r*T{2}; }
+    void setrrl (T _r) { this->rrl = _r; this->two_rrl = _r*T{2}; }
 protected:
     T r = T{0.04};  // Note - arrangement is quite strongly dependent on this interaction radius
     T two_r = T{2}*r;
+    T rc = T{0.04};
+    T two_rc = T{2}*r;
+    T rrl = T{0.04};
+    T two_rrl = T{2}*r;
 public:
     // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
     static constexpr bool s_g_interaction = false;
@@ -117,7 +126,7 @@ public:
         //
         // W is a distance-dependent weight, which is 0 outside a distance of two_r and
         // linearly increases to 1 when d=0.
-        T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
+        T W = d <= this->two_rc ? (T{1} - d/this->two_rc) : T{0};
         C += kb * W;
 
         // Receptor-ligand axon-axon interaction, I
@@ -151,11 +160,11 @@ public:
                 + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
             }
             Q /= N;
-            I += kb * Q * (d <= this->two_r ? T{1} : T{0});
+            I += kb * Q * (d <= this->two_rrl ? T{1} : T{0});
         }
 
-        // In client code, should we add to n_k or not?
-        return (d <= this->two_r ? T{1} : T{0});
+        // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
+        return (d <= this->two_rc ? T{1} : T{0});
     }
 
     // A subroutine of compute_next
