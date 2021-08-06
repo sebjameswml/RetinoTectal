@@ -84,14 +84,14 @@ public:
             std::array<float, 3> clr_r1 = { 0, this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             std::array<float, 3> clr_r2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[2]) };
             std::array<float, 3> clr_r3 = { this->rcpt_scale.transform_one(b.rcpt[3]),
-                                            0,/*this->rcpt_scale.transform_one(b.rcpt[3]),*/
+                                            0,
                                             this->rcpt_scale.transform_one(b.rcpt[3]) };
 
             std::array<float, 3> clr_l0 = { this->rcpt_scale.transform_one(b.lgnd[0]), 0, 0 };
             std::array<float, 3> clr_l1 = { 0, this->rcpt_scale.transform_one(b.lgnd[1]), 0 };
             std::array<float, 3> clr_l2 = { 0, 0, this->rcpt_scale.transform_one(b.lgnd[2]) };
             std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
-                                            0,/*this->rcpt_scale.transform_one(b.lgnd[3]),*/
+                                            0,
                                             this->rcpt_scale.transform_one(b.lgnd[3]) };
 
             // A sphere at the last location. Tune number of rings (second last arg) in
@@ -131,10 +131,10 @@ public:
                        std::array<float, 3> l3,
                        float r = 1.0f, int segments = 16)
     {
-        float r_1 = 2.0f * r/10.0f; // centre circle - rcpt
+        float r_1 = 2.6f * r/10.0f; // centre circle - rcpt
         float r_2 = 3.0f * r/10.0f; // white ring
         float r_3 = 5.0f * r/10.0f; // ligand ring
-        float r_4 = 6.0f * r/10.0f; // outer white ring
+        float r_4 = 5.4f * r/10.0f; // outer white ring
 
         std::array<VBOint, 4> capMiddle;
         std::array<std::array<float, 3>, 4> rclrs = { r0, r1, r2, r3 };
@@ -159,35 +159,34 @@ public:
         capMiddle[3] = idx++;
 
         // Centre circle
-        bool firstseg = true;
+        for (int jj = 0; jj < 4; ++jj) { // jj indexes quarters
+            int quarlen = segments/4;
+            int quarstart = jj*quarlen;
+            int quarend = quarstart + quarlen;
+            for (int j = quarstart; j < quarend; ++j) {
 
-        for (int j = 0; j < segments; j++) {
+                float segment = 2 * M_PI * (float) (j) / segments;
+                float x1 = r_1*cos(segment);
+                float y1 = r_1*sin(segment);
 
-            int jj = j < segments/2 ? (j < segments/4 ? 0 : 1) : (j < 3*segments/4 ? 2 : 3);
+                int jnext = (j+1)%segments;
+                float segnext = 2 * M_PI * (float) (jnext) / segments;
+                float x1n = r_1*cos(segnext);
+                float y1n = r_1*sin(segnext);
 
-            float segment = 2 * M_PI * (float) (j) / segments;
-            float x = cos(segment);
-            float y = sin(segment);
-
-            float x1 = x*r_1;
-            float y1 = y*r_1;
-
-            this->vertex_push (so[0]+x1, so[1]+y1, so[2], this->vertexPositions);
-            this->vertex_push (this->uz, this->vertexNormals);
-            this->vertex_push (rclrs[jj], this->vertexColors);
-
-            if (!firstseg) {
                 this->indices.push_back (capMiddle[jj]);
-                this->indices.push_back (idx-1);
+
+                this->vertex_push (so[0]+x1, so[1]+y1, so[2], this->vertexPositions);
+                this->vertex_push (this->uz, this->vertexNormals);
+                this->vertex_push (rclrs[jj], this->vertexColors);
                 this->indices.push_back (idx++);
-            } else {
-                idx++;
-                firstseg = false;
+
+                this->vertex_push (so[0]+x1n, so[1]+y1n, so[2], this->vertexPositions);
+                this->vertex_push (this->uz, this->vertexNormals);
+                this->vertex_push (rclrs[jj], this->vertexColors);
+                this->indices.push_back (idx++);
             }
         }
-        this->indices.push_back (capMiddle[3]);
-        this->indices.push_back (idx-1);
-        this->indices.push_back (capMiddle[3]+1);
 
         // White ring
         for (int j = 0; j < segments; j++) {
@@ -232,7 +231,7 @@ public:
             this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, lclrs[jj]);
         }
 
-        // White ring
+        // White spacer ring
         for (int j = 0; j < segments; j++) {
             float segment = 2 * M_PI * (float) (j) / segments;
             float xin = r_3 * cos(segment);
