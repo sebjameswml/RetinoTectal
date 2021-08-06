@@ -84,86 +84,100 @@ public:
             std::array<float, 3> clr_r1 = { 0, this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
             std::array<float, 3> clr_r2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[2]) };
             std::array<float, 3> clr_r3 = { this->rcpt_scale.transform_one(b.rcpt[3]),
-                                            this->rcpt_scale.transform_one(b.rcpt[3]),
+                                            0,/*this->rcpt_scale.transform_one(b.rcpt[3]),*/
                                             this->rcpt_scale.transform_one(b.rcpt[3]) };
 
             std::array<float, 3> clr_l0 = { this->rcpt_scale.transform_one(b.lgnd[0]), 0, 0 };
             std::array<float, 3> clr_l1 = { 0, this->rcpt_scale.transform_one(b.lgnd[1]), 0 };
             std::array<float, 3> clr_l2 = { 0, 0, this->rcpt_scale.transform_one(b.lgnd[2]) };
             std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
-                                            this->rcpt_scale.transform_one(b.lgnd[3]),
+                                            0,/*this->rcpt_scale.transform_one(b.lgnd[3]),*/
                                             this->rcpt_scale.transform_one(b.lgnd[3]) };
 
             // A sphere at the last location. Tune number of rings (second last arg) in
             // sphere to change size of clr2 disc at top
             morph::Vector<float, 3> cur = { b.current[0], b.current[1], 0 };
-            //this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
-            this->computeSphereA (idx, cur, clr,
-                                  clr_r0, clr_r1, clr_r2, clr_r3,
-                                  clr_l0, clr_l1, clr_l2, clr_l3,
-                                  this->radiusFixed, 14, 12);
+            if (this->showexpression) {
+                this->computeDiscA (idx, cur, clr,
+                                    clr_r0, clr_r1, clr_r2, clr_r3,
+                                    clr_l0, clr_l1, clr_l2, clr_l3,
+                                    this->radiusFixed);
+            } else {
+                std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]),
+                                              this->rcpt_scale.transform_one(b.lgnd[0]), 0 }; // receptor/ligand 0
+                this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
+            }
 
             // Draw ring for the competition interaction
             if (rad_competition > 0.0f) {
-                this->computeRing (idx, cur, clr, this->rad_competition, 0.1f*this->rad_competition, 12);
+                this->computeRing (idx, cur, clr, this->rad_competition, 0.1f*this->rad_competition, 18);
             }
             if (rad_interaction > 0.0f) {
-                this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 12);
+                this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
             }
         }
     }
 
-    // A specialised computeSphere with a funky colour cap to visualise the 4 receptors and 4 ligands
-    void computeSphereA (VBOint& idx, morph::Vector<float> so,
-                         std::array<float, 3> sc, // Main sphere colour
-                         std::array<float, 3> r0, // Rcpt 0 colour
-                         std::array<float, 3> r1,
-                         std::array<float, 3> r2,
-                         std::array<float, 3> r3,
-                         std::array<float, 3> l0, // ligands 0
-                         std::array<float, 3> l1,
-                         std::array<float, 3> l2,
-                         std::array<float, 3> l3,
-                         float r = 1.0f, int rings = 10, int segments = 12)
+    // A special puck/disc with colours to show receptor and ligand expression
+    void computeDiscA (VBOint& idx, morph::Vector<float> so,
+                       std::array<float, 3> sc, // Main colour
+                       std::array<float, 3> r0, // Rcpt 0 colour
+                       std::array<float, 3> r1,
+                       std::array<float, 3> r2,
+                       std::array<float, 3> r3,
+                       std::array<float, 3> l0, // ligand 0 colour
+                       std::array<float, 3> l1,
+                       std::array<float, 3> l2,
+                       std::array<float, 3> l3,
+                       float r = 1.0f, int segments = 16)
     {
-        // First cap, draw as a triangle fan, but record indices so that
-        // we only need a single call to glDrawElements.
-        float rings0 = M_PI * -0.5;
-        float _z0  = sin(rings0);
-        float z0  = r * _z0;
-        float r_0 =  cos(rings0);
-        float rings1 = M_PI * (-0.5 + 1.0f / rings);
-        float _z1 = sin(rings1);
-        float z1 = r * _z1;
-        float r_1 = cos(rings1);
+        float r_1 = 2.0f * r/10.0f; // centre circle - rcpt
+        float r_2 = 3.0f * r/10.0f; // white ring
+        float r_3 = 5.0f * r/10.0f; // ligand ring
+        float r_4 = 6.0f * r/10.0f; // outer white ring
 
+        std::array<VBOint, 4> capMiddle;
+        std::array<std::array<float, 3>, 4> rclrs = { r0, r1, r2, r3 };
+        std::array<std::array<float, 3>, 4> lclrs = { l0, l1, l2, l3 };
+        std::array<float, 3> white = {1,1,1};
         // Push the central point
-        this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
-        this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
-        this->vertex_push (sc, this->vertexColors);
-        VBOint capMiddle = idx++;
-        VBOint ringStartIdx = idx;
-        VBOint lastRingStartIdx = idx;
+        this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
+        this->vertex_push (this->uz, this->vertexNormals);
+        this->vertex_push (r0, this->vertexColors);
+        capMiddle[0] = idx++;
+        this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
+        this->vertex_push (this->uz, this->vertexNormals);
+        this->vertex_push (r1, this->vertexColors);
+        capMiddle[1] = idx++;
+        this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
+        this->vertex_push (this->uz, this->vertexNormals);
+        this->vertex_push (r2, this->vertexColors);
+        capMiddle[2] = idx++;
+        this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
+        this->vertex_push (this->uz, this->vertexNormals);
+        this->vertex_push (r3, this->vertexColors);
+        capMiddle[3] = idx++;
 
-        // Top cap actually appears as bottom cap in the vis.
+        // Centre circle
         bool firstseg = true;
+
         for (int j = 0; j < segments; j++) {
+
+            int jj = j < segments/2 ? (j < segments/4 ? 0 : 1) : (j < 3*segments/4 ? 2 : 3);
 
             float segment = 2 * M_PI * (float) (j) / segments;
             float x = cos(segment);
             float y = sin(segment);
 
-            float _x1 = x*r_1;
-            float x1 = _x1*r;
-            float _y1 = y*r_1;
-            float y1 = _y1*r;
+            float x1 = x*r_1;
+            float y1 = y*r_1;
 
-            this->vertex_push (so[0]+x1, so[1]+y1, so[2]+z1, this->vertexPositions);
-            this->vertex_push (_x1, _y1, _z1, this->vertexNormals);
-            this->vertex_push (sc, this->vertexColors);
+            this->vertex_push (so[0]+x1, so[1]+y1, so[2], this->vertexPositions);
+            this->vertex_push (this->uz, this->vertexNormals);
+            this->vertex_push (rclrs[jj], this->vertexColors);
 
             if (!firstseg) {
-                this->indices.push_back (capMiddle);
+                this->indices.push_back (capMiddle[jj]);
                 this->indices.push_back (idx-1);
                 this->indices.push_back (idx++);
             } else {
@@ -171,121 +185,93 @@ public:
                 firstseg = false;
             }
         }
-        this->indices.push_back (capMiddle);
+        this->indices.push_back (capMiddle[3]);
         this->indices.push_back (idx-1);
-        this->indices.push_back (capMiddle+1);
+        this->indices.push_back (capMiddle[3]+1);
 
-        std::array<float, 3> fillclr = { 1.0f, 1.0f, 1.0f };
-
-        // Now add the triangles around the rings, with appropriate colours
-        for (int i = 2; i < rings; i++) {
-
-            rings0 = M_PI * (-0.5 + (float) (i) / rings);
-            _z0  = sin(rings0);
-            z0  = r * _z0;
-            r_0 =  cos(rings0);
-
-            for (int j = 0; j < segments; j++) {
-
-                // "current" segment
-                float segment = 2 * M_PI * (float)j / segments;
-                float x = cos(segment);
-                float y = sin(segment);
-
-                // One vertex per segment
-                float _x0 = x*r_0;
-                float x0 = _x0*r;
-                float _y0 = y*r_0;
-                float y0 = _y0*r;
-
-                std::array<float, 3> jrcol = (j < segments/2 ?
-                                              (j < segments/4 ? r0 : r1)
-                                              :
-                                              (j < segments*3/4 ? r2 : r3));
-
-                std::array<float, 3> jlcol = (j < segments/2 ?
-                                              (j < segments/4 ? l0 : l1)
-                                              :
-                                              (j < segments*3/4 ? l2 : l3));
-
-                // NB: Only add ONE vertex per segment. ALREADY have the first ring!
-                this->vertex_push (so[0]+x0, so[1]+y0, so[2]+z0, this->vertexPositions);
-                // The vertex normal of a vertex that makes up a sphere is
-                // just a normal vector in the direction of the vertex.
-                this->vertex_push (_x0, _y0, _z0, this->vertexNormals);
-                if (i== (rings-5)) {
-                    this->vertex_push (fillclr, this->vertexColors);
-                } else if (i==(rings-4) || i == (rings-3)) {
-                    this->vertex_push (jlcol, this->vertexColors);
-                } else if (i==(rings-2)) {
-                    this->vertex_push (fillclr, this->vertexColors);
-                } else if (i==(rings-1)) {
-                    this->vertex_push (jrcol, this->vertexColors);
-                } else {
-                    this->vertex_push (sc, this->vertexColors);
-                }
-                if (j == segments - 1) {
-                    // Last vertex is back to the start
-                    this->indices.push_back (ringStartIdx++);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (lastRingStartIdx);
-                    this->indices.push_back (lastRingStartIdx);
-                    this->indices.push_back (idx++);
-                    this->indices.push_back (lastRingStartIdx+segments);
-                } else {
-                    this->indices.push_back (ringStartIdx++);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (ringStartIdx);
-                    this->indices.push_back (ringStartIdx);
-                    this->indices.push_back (idx++);
-                    this->indices.push_back (idx);
-                }
-            }
-            lastRingStartIdx += segments;
+        // White ring
+        for (int j = 0; j < segments; j++) {
+            float segment = 2 * M_PI * (float) (j) / segments;
+            float xin = r_1 * cos(segment);
+            float yin = r_1 * sin(segment);
+            float xout = r_2 * cos(segment);
+            float yout = r_2 * sin(segment);
+            int segjnext = (j+1) % segments;
+            float segnext = 2 * M_PI * (float) (segjnext) / segments;
+            float xin_n = r_1 * cos(segnext);
+            float yin_n = r_1 * sin(segnext);
+            float xout_n = r_2 * cos(segnext);
+            float yout_n = r_2 * sin(segnext);
+            // Quad corners
+            morph::Vector<float> c1 = {xin, yin, 0};
+            morph::Vector<float> c2 = {xout, yout, 0};
+            morph::Vector<float> c3 = {xout_n, yout_n, 0};
+            morph::Vector<float> c4 = {xin_n, yin_n, 0};
+            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, white);
         }
 
-        // bottom cap
-        rings0 = M_PI * 0.5;
-        _z0  = sin(rings0);
-        z0  = r * _z0;
-        r_0 =  cos(rings0);
-        // Push the central point of the bottom cap
-
-        this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-        this->vertex_push (r0, this->vertexColors);
-        capMiddle = idx++;
-        this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-        this->vertex_push (r1, this->vertexColors);
-        VBOint capMiddle2 = idx++;
-        this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-        this->vertex_push (r2, this->vertexColors);
-        VBOint capMiddle3 = idx++;
-        this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-        this->vertex_push (r3, this->vertexColors);
-        VBOint capMiddle4 = idx++;
-        firstseg = true;
-        // No more vertices to push, just do the indices for the bottom cap
-        ringStartIdx = lastRingStartIdx;
+        // Ligands ring
         for (int j = 0; j < segments; j++) {
-            if (j != segments - 1) {
-                this->indices.push_back (
-                              j < segments/2 ?
-                              (j < segments/4 ? capMiddle : capMiddle2)
-                              :
-                               (j < 3*segments/4 ? capMiddle3 : capMiddle4)
-                                  );
-                this->indices.push_back (ringStartIdx++);
-                this->indices.push_back (ringStartIdx);
-            } else {
-                // Last segment
-                this->indices.push_back (capMiddle4);
-                this->indices.push_back (ringStartIdx);
-                this->indices.push_back (lastRingStartIdx);
-            }
+            int jj = j < segments/2 ? (j < segments/4 ? 0 : 1) : (j < 3*segments/4 ? 2 : 3);
+            float segment = 2 * M_PI * (float) (j) / segments;
+            float xin = r_2 * cos(segment);
+            float yin = r_2 * sin(segment);
+            float xout = r_3 * cos(segment);
+            float yout = r_3 * sin(segment);
+            int segjnext = (j+1) % segments;
+            float segnext = 2 * M_PI * (float) (segjnext) / segments;
+            float xin_n = r_2 * cos(segnext);
+            float yin_n = r_2 * sin(segnext);
+            float xout_n = r_3 * cos(segnext);
+            float yout_n = r_3 * sin(segnext);
+            // Quad corners
+            morph::Vector<float> c1 = {xin, yin, 0};
+            morph::Vector<float> c2 = {xout, yout, 0};
+            morph::Vector<float> c3 = {xout_n, yout_n, 0};
+            morph::Vector<float> c4 = {xin_n, yin_n, 0};
+            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, lclrs[jj]);
+        }
+
+        // White ring
+        for (int j = 0; j < segments; j++) {
+            float segment = 2 * M_PI * (float) (j) / segments;
+            float xin = r_3 * cos(segment);
+            float yin = r_3 * sin(segment);
+            float xout = r_4 * cos(segment);
+            float yout = r_4 * sin(segment);
+            int segjnext = (j+1) % segments;
+            float segnext = 2 * M_PI * (float) (segjnext) / segments;
+            float xin_n = r_3 * cos(segnext);
+            float yin_n = r_3 * sin(segnext);
+            float xout_n = r_4 * cos(segnext);
+            float yout_n = r_4 * sin(segnext);
+            // Quad corners
+            morph::Vector<float> c1 = {xin, yin, 0};
+            morph::Vector<float> c2 = {xout, yout, 0};
+            morph::Vector<float> c3 = {xout_n, yout_n, 0};
+            morph::Vector<float> c4 = {xin_n, yin_n, 0};
+            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, white);
+        }
+
+        // Outer ring
+        for (int j = 0; j < segments; j++) {
+            float segment = 2 * M_PI * (float) (j) / segments;
+            float xin = r_4 * cos(segment);
+            float yin = r_4 * sin(segment);
+            float xout = r * cos(segment);
+            float yout = r * sin(segment);
+            int segjnext = (j+1) % segments;
+            float segnext = 2 * M_PI * (float) (segjnext) / segments;
+            float xin_n = r_4 * cos(segnext);
+            float yin_n = r_4 * sin(segnext);
+            float xout_n = r * cos(segnext);
+            float yout_n = r * sin(segnext);
+            // Quad corners
+            morph::Vector<float> c1 = {xin, yin, 0};
+            morph::Vector<float> c2 = {xout, yout, 0};
+            morph::Vector<float> c3 = {xout_n, yout_n, 0};
+            morph::Vector<float> c4 = {xin_n, yin_n, 0};
+            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, sc);
         }
     }
 
@@ -351,6 +337,8 @@ public:
     morph::Vector<float, 3> uz = {0,0,1};
     //! In axon view, show just a small selection of axons
     bool axonview = false;
+    //! if true, then show receptor and ligand expression. Centre dist is receptor expression; ring is ligand expression
+    bool showexpression = false;
     //! How much history to show at max in the default view?
     unsigned int histlen = 20;
     //! Identities of axons to show in the axon view

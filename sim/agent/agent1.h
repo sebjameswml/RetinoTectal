@@ -985,6 +985,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
+            this->bv->showexpression = true;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1059,6 +1060,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
+            this->bv->showexpression = true;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1095,6 +1097,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
+            this->bv->showexpression = true;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1218,6 +1221,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
+            this->bv->showexpression = true;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));

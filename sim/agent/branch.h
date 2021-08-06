@@ -136,7 +136,7 @@ public:
         // more negative.
         T Q = T{0};
         if constexpr (s_g_interaction == true) {
-            // The S & G interaction is based on the receptor expression only
+            // The S & G interaction is based on the receptor expression only and (guided by Reber) looks at the relative levels
             if constexpr (N == 4) {
                 Q = kp->rcpt[0] / this->rcpt[0]
                 + kp->rcpt[1] / this->rcpt[1]
