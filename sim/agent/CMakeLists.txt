@@ -14,3 +14,7 @@ target_link_libraries(agent1c ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 add_executable(tissuevis tissuevis.cpp)
 target_compile_definitions(tissuevis PUBLIC FLT=float VISUALISE=1)
 target_link_libraries(tissuevis ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
+add_executable(testnet testnet.cpp)
+target_compile_definitions(testnet PUBLIC FLT=float VISUALISE=1)
+target_link_libraries(testnet ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
