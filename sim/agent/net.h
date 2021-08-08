@@ -5,7 +5,9 @@
 #pragma once
 
 #include <vector>
+#include <set>
 #include <morph/Vector.h>
+#include <morph/vVector.h>
 #include "tissue.h"
 
 template<typename T>
