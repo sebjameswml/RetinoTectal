@@ -8,6 +8,7 @@
 #include <set>
 #include <morph/Vector.h>
 #include <morph/vVector.h>
+#include <morph/MathAlgo.h>
 #include "tissue.h"
 
 template<typename T>
@@ -51,6 +52,113 @@ struct net
                 this->c.insert (morph::Vector<size_t, 2>({x+y*_w, 1+x+y*_w}));
             }
         }
+    }
+
+    static constexpr bool debug_crossing = false;
+    // Count the number of crossings of the links in the net using naive algorithm (O(n^2) time)
+    // Algorithm taken from
+    // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+    size_t crosscount()
+    {
+        size_t cc = 0;
+        //size_t nc = this->c.size();
+        // Have to iterate the std::set
+        std::set<morph::Vector<size_t, 2>>::iterator ci = this->c.begin();
+
+        std::set< std::set<morph::Vector<size_t, 2>>> pairs_tested;
+
+        while (ci != this->c.end()) {
+            std::set<morph::Vector<size_t, 2>>::iterator cj = this->c.begin();
+            int ncj = 0;
+            while (cj != this->c.end()) {
+                ncj++;
+                if (cj == ci) {
+                    if constexpr (debug_crossing) { std::cout << "skip; cj==ci\n"; }
+                    ++cj;
+                    continue;
+                }
+
+                morph::Vector<float, 2> p1 = this->p[(*ci)[0]].less_one_dim();
+                morph::Vector<float, 2> q1 = this->p[(*ci)[1]].less_one_dim();
+                morph::Vector<float, 2> p2 = this->p[(*cj)[0]].less_one_dim();
+                morph::Vector<float, 2> q2 = this->p[(*cj)[1]].less_one_dim();
+
+                if (p1 == p2 || p1 == q2 || q1 == p2 || q1 == q2) {
+                    // Don't count intersections between line segments that are connected ANYWAY
+                    ++cj;
+                    continue;
+                }
+
+                if constexpr (debug_crossing) {
+                    std::cout << "-------------------------\n";
+                    std::cout << "ci is p[" <<(*ci)[0] << "] to p[" <<(*ci)[1] << "] p1->q1:  " << p1 << "->" << q1 << std::endl;
+                    std::cout << "cj is p[" <<(*cj)[0] << "] to p[" <<(*cj)[1] << "] p2->q2:  " << p2 << "->" << q2 << std::endl;
+                }
+
+                // Have we already considered ci, cj as cj, ci?
+                std::set<morph::Vector<size_t, 2>> linepair;
+                linepair.insert (*ci);
+                linepair.insert (*cj);
+                if (pairs_tested.count (linepair)) {
+                    if constexpr (debug_crossing) { std::cout << "skip this pair as we already considered it in another order\n"; }
+                    ++cj;
+                    continue;
+                }
+                pairs_tested.insert (linepair);
+
+                morph::rotation_sense p1q1p2 = morph::MathAlgo::orientation (p1,q1,p2);
+                morph::rotation_sense p1q1q2 = morph::MathAlgo::orientation (p1,q1,q2);
+                morph::rotation_sense p2q2p1 = morph::MathAlgo::orientation (p2,q2,p1);
+                morph::rotation_sense p2q2q1 = morph::MathAlgo::orientation (p2,q2,q1);
+
+                if (p1q1p2 != p1q1q2 && p2q2p1 != p2q2q1) {
+                    // ci and cj intersect
+                    if constexpr (debug_crossing) {
+                        std::cout << "ISECT " << cc << ": "  << p1 << "," << p2 << " and " << q1 << "," << q2 << " intersect.\n";
+                        std::cout << "p1q1p2 is " << (int)p1q1p2 << std::endl;
+                        std::cout << "p1q1q2 is " << (int)p1q1q2 << std::endl;
+                        std::cout << "p2q2p1 is " << (int)p2q2p1 << std::endl;
+                        std::cout << "p2q2q1 is " << (int)p2q2q1 << std::endl;
+                    }
+                    ++cc;
+                } else {
+                    // Are they colinear?
+                    if (p1q1p2 == morph::rotation_sense::colinear
+                        && morph::MathAlgo::onsegment (p1, p2, q1)) {
+                        if constexpr (debug_crossing) {
+                            std::cout << "ONSEG " << cc << ": "<< p2 << " (p2) lies on the segment " << p1 << "->" << q1 << ".\n";
+                        }
+                        ++cc;
+                    }
+                    else if (p1q1q2 == morph::rotation_sense::colinear
+                        && morph::MathAlgo::onsegment (p1, q2, q1)) {
+                        if constexpr (debug_crossing) {
+                            std::cout << "ONSEG " << cc << ": "<< q2 << " (q2) lies on the segment " << p1 << "->" << q1 << ".\n";
+                        }
+                        ++cc;
+                    }
+                    else if (p2q2p1 == morph::rotation_sense::colinear
+                        && morph::MathAlgo::onsegment (p2, p1, q2)) {
+                        if constexpr (debug_crossing) {
+                            std::cout << "ONSEG " << cc << ": "<< p1 << " (p1) lies on the segment " << p2 << "->" << q2 << ".\n";
+                        }
+                        ++cc;
+                    }
+                    else if (p2q2q1 == morph::rotation_sense::colinear
+                        && morph::MathAlgo::onsegment (p2, q1, q2)) {
+                        if constexpr (debug_crossing) {
+                            std::cout << "ONSEG " << cc << ": "<< q1 << " (q1) lies on the segment " << p2 << "->" << q2 << ".\n";
+                        }
+                        ++cc;
+                    }
+                }
+                ++cj;
+            }
+            if constexpr (debug_crossing) { std::cout << "ncj = " << ncj << std::endl; }
+            ++ci;
+        }
+        if constexpr (debug_crossing) { std::cout << "pairs_tested: " << pairs_tested.size() << std::endl; }
+        return cc;
     }
 
     //! Return sum of squared distances between p and targ
