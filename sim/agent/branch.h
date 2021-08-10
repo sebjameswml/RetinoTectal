@@ -155,6 +155,7 @@ public:
                 + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
                 + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
                 + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
+                // Alternative? Could have a kind of competition for the movement, rather than just adding 'em all up.
             } else if constexpr (N == 2) {
                 Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
                 + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
