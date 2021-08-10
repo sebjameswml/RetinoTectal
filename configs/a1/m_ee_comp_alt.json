@@ -31,11 +31,11 @@
     "desc_bpa" : "Branches per axon",            "bpa" : 4,
 
     "desc_r" : "Radius of branch's growth cone", "r" : 0.009,
-    "desc_rc" : "Radius of interaction C",       "rc" : 0.019,
+    "desc_rc" : "Radius of interaction C",       "rc" : 0.04, //.045
     "desc_rrl" : "Radius of interaction R-L",    "rrl" : 0.0,
 
     "desc_m1" : "chemoaffinity",                 "m1" : 0.002,
-    "desc_m2" : "axon-axon competition",         "m2" : 0.025,
+    "desc_m2" : "axon-axon competition",         "m2" : 0.01,
     "desc_m3" : "the axon-axon interactions",    "m3" : 0.0,
     "desc_mborder" : "border effect",            "mborder" : 0.5
 }
