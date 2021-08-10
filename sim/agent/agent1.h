@@ -213,7 +213,9 @@ struct Agent1
         }
         if (this->layout == graph_layout::a || this->layout == graph_layout::c) {
             this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
-            this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+            if (stepnum > 1000 && stepnum%50 == 0) {
+                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+            }
         }
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
