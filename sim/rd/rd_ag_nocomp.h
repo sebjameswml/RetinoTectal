@@ -305,12 +305,13 @@ public:
     virtual void noiseify_vector_vector (std::vector<std::vector<Flt> >& vv,
                                          std::vector<GaussParams<Flt> >& gp)
     {
+        morph::RandUniform<Flt> rng;
         for (unsigned int i = 0; i<this->N; ++i) {
             for (auto h : this->hg->hexen) {
                 // boundarySigmoid. Jumps sharply (100, larger is sharper) over length
                 // scale 0.05 to 1. So if distance from boundary > 0.05, noise has
                 // normal value. Close to boundary, noise is less.
-                vv[i][h.vi] = morph::Tools::randF<Flt>() * this->aNoiseGain + this->aInitialOffset;
+                vv[i][h.vi] = rng.get() * this->aNoiseGain + this->aInitialOffset;
                 if (h.distToBoundary > -0.5) { // It's possible that distToBoundary is set to -1.0
                     Flt bSig = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
                     vv[i][h.vi] = vv[i][h.vi] * bSig * gp[i].gain; // New: apply gain here (and not
