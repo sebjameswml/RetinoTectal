@@ -29,6 +29,7 @@ protected:
 public:
     // For random angle choice
     morph::RandUniform<T> rng;
+    T s; // usused, dummy.
 
     // No init for branch_geb
     virtual void init() {}

@@ -84,11 +84,13 @@ enum class tissue_region
 
 // What interaction does a forward signal transmit when ligand binds to receptor?  This
 // is either attraction - the branch climbs the ligand gradient - or repulsion - the
-// branch descends the ligand gradient.
+// branch descends the ligand gradient. null interaction means nothing happens between
+// these receptors/ligands.
 enum class interaction
 {
     attraction,
-    repulsion
+    repulsion,
+    null
 };
 
 /*!
@@ -116,6 +118,8 @@ struct guidingtissue : public tissue<T>
     morph::Vector<interaction, N> forward_interactions;
     // Reverse signalling interactions when ligands in this tissue are activated
     morph::Vector<interaction, N> reverse_interactions;
+    // Signalling interactions when receptors in this tissue are triggered by other receptors. Potentially an NxN matrix.
+    morph::Vector<interaction, N> rcptrcpt_interactions;
 
     //! A left-right interaction parameter and an up-down interaction parameter for each
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
@@ -179,7 +183,8 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<expression_direction, N> _rcpt_dirn,
                   morph::Vector<expression_direction, N> _lgnd_dirn,
                   morph::Vector<interaction, N> _for_int,
-                  morph::Vector<interaction, N> _rev_int)
+                  morph::Vector<interaction, N> _rev_int,
+                  morph::Vector<interaction, N> _rcptrcpt_int)
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -187,6 +192,7 @@ struct guidingtissue : public tissue<T>
         , lgnd_dirns(_lgnd_dirn)
         , forward_interactions(_for_int)
         , reverse_interactions(_rev_int)
+        , rcptrcpt_interactions(_rcptrcpt_int)
     {
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());

@@ -5,7 +5,8 @@
     "reber" : true,
     "desc_knockin" : "The amount of knockin to apply. The range of expression values is in the units (about 3 is max)",
     "knockin" : 1.1,
-    "knockdown" : 2,
+    "desc_knockdown" : "Take care not to knock down so that receptor expression becomes negative. For exp that's 1.3 or less",
+    "knockdown" : 0.6,
 
     "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
     "graph_layout" : 3,

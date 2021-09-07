@@ -23,9 +23,22 @@ R_ki_plus = ki_plus ./ plus_plus;
 % Eq. 8 - ratio for ki/ki EphA3 knockin
 R_ki_ki = ki_ki ./ plus_plus;
 
+mult = ki_plus .* plus_plus;
+mult = mult ./ max(mult);
+
+Eq12 = 3.7 ./ (0.26 .* exp(0.023.*x) + 1.05);
+
 figure(1); clf;
 plot (x, plus_plus);
 hold on;
 plot (x, ki_plus);
 plot (x, R_ki_plus);
-legend (['+/+ (Eq 4)';'ki/+ (Eq 5)';'Signal ki/+ (Eq 7 = Eq 5/Eq 4)']);
+plot (x, mult);
+plot (x, Eq12);
+legend (['+/+ (Eq 4)';'ki/+ (Eq 5)';'Signal ki/+ (Eq 7 = Eq 5/Eq 4)';'Eq 5*Eq 4 (normalised)';'Eq12']);
+
+figure(2); clf;
+xx = [-200:0.1:200];
+Eq12 = 3.7 ./ (0.26 .* exp(0.023.*xx) + 1.05);
+plot (xx, Eq12);
+legend('Eq 12 over a wider range')

@@ -275,19 +275,19 @@ struct Agent1
         }
 #else
         if constexpr (debug_compute_branch == true) {
-#pragma omp parallel for
             for (auto& b : this->branches) {
                 morph::Vector<T, 2*N> rns;
                 this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
                 b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
             }
-#endif
         } else {
+#pragma omp parallel for
             for (auto& b : this->branches) {
                 morph::Vector<T, 2*N> rns;
                 this->gradient_rng->get (rns);
                 b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
             }
+#endif
         }
         // Update centroids
         for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
@@ -412,11 +412,16 @@ struct Agent1
     morph::Vector<interaction, N> get_interactions (const std::string& interactions_tag)
     {
         morph::Vector<interaction, N> interactions;
-        for (auto& ii : interactions) { ii = interaction::repulsion; }
+        for (auto& ii : interactions) { ii = interaction::null; }
         Json::Value arr = this->mconf->getArray (interactions_tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
-                interactions[i] = arr[i].asInt() > 0 ? interaction::attraction : interaction::repulsion;
+                int ai = arr[i].asInt();
+                if (ai < 0) {
+                    interactions[i] = interaction::repulsion;
+                } else if (ai > 0) {
+                    interactions[i] = interaction::attraction;
+                } // else if 0 then leave as interaction::null
             }
         } else {
             std::stringstream ee;
@@ -462,6 +467,9 @@ struct Agent1
         morph::Vector<interaction, N> ret_forward_interactions = this->get_interactions ("ret_forward_interactions");
         // Set reverse interactions same as forward for now:
         morph::Vector<interaction, N> ret_reverse_interactions = this->get_interactions ("ret_forward_interactions");
+        // Retinal receptor-receptor interactions. This models rcpt[i]-to-rcpt[i]
+        // interactions. What about rcpt[i]-to-rcpt[j]? Could be a 4x4 matrix.
+        morph::Vector<interaction, N> ret_rcptrcpt_interactions = this->get_interactions ("ret_rcptrcpt_interactions");
 
         morph::Vector<expression_form, N> tectum_receptor_forms = this->get_forms ("tectum_receptor_forms");
         morph::Vector<expression_form, N> tectum_ligand_forms = this->get_forms ("tectum_ligand_forms");
@@ -482,7 +490,8 @@ struct Agent1
                                                 ret_receptor_directions,
                                                 ret_ligand_directions,
                                                 ret_forward_interactions,
-                                                ret_reverse_interactions);
+                                                ret_reverse_interactions,
+                                                ret_rcptrcpt_interactions);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
@@ -490,7 +499,8 @@ struct Agent1
                                                    tectum_receptor_directions,
                                                    tectum_ligand_directions,
                                                    tectum_forward_interactions,
-                                                   tectum_reverse_interactions);
+                                                   tectum_reverse_interactions,
+                                                   tectum_reverse_interactions); // a dummy arg really
         } else {
             // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
             []<bool flag = false>() { static_assert (flag, "N must be 2 or 4"); }();
@@ -660,11 +670,13 @@ struct Agent1
         float r_conf = this->mconf->getFloat ("r", 0.05f);
         float rc_conf = this->mconf->getFloat ("rc", r_conf);
         float rrl_conf = this->mconf->getFloat ("rrl", r_conf);
+        T s = this->mconf->getFloat ("s", 1.1f);
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].init();
+            this->pending_branches[i].s = s;
             this->pending_branches[i].setr (r_conf);
             this->pending_branches[i].setrc (rc_conf);
             this->pending_branches[i].setrrl (rrl_conf);

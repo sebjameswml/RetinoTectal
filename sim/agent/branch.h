@@ -46,7 +46,7 @@ protected:
 public:
     // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
     static constexpr bool s_g_interaction = false;
-    static constexpr T s = T{1.1};
+    T s = T{0.3};
 
     // Interaction effect may have a history - after a cone's receptors are activated,
     // assume that the movement induced has some lifetime (hardcoded here as size of
@@ -140,26 +140,58 @@ public:
         // QI/J collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
         // more negative.
-
+#define SIMPSON_GOODHILL_LIKE_RCPTRCPT_INTERACTIONS 1
+#ifdef SIMPSON_GOODHILL_LIKE_RCPTRCPT_INTERACTIONS
         // The S & G axon-axon interaction is based on the receptor expression only and
         // (guided by Reber) looks at the relative levels
         T QI = T{0};
         W = d <= this->two_rrr ? (T{1} - d/this->two_rrr) : T{0};
         if constexpr (N == 4) {
-            QI = kp->rcpt[0] / this->rcpt[0]
-            + kp->rcpt[1] / this->rcpt[1]
-            + kp->rcpt[2] / this->rcpt[2]
-            + kp->rcpt[3] / this->rcpt[3];
+            QI = kp->rcpt[0] / this->rcpt[0];
+            //+ kp->rcpt[1] / this->rcpt[1]
+            //+ kp->rcpt[2] / this->rcpt[2]
+            //+ kp->rcpt[3] / this->rcpt[3];
         } else if constexpr (N == 2) {
             QI = kp->rcpt[0] / this->rcpt[0] + kp->rcpt[1] / this->rcpt[1];
         }
-        QI /= N;
+        //QI /= N;
         morph::Vector<T, 2> nullvec = {0, 0};
         if constexpr (debug_compute_branch == true) {
             std::cout << "QI=" << QI << ", this->s = " << this->s << std::endl;
         }
         I += QI > this->s ? kb * W : nullvec;
-
+#else
+        T QI = T{0};
+        if constexpr (N == 4) {
+            T QI0 = T{0};
+            T QI1 = T{0};
+            T QI2 = T{0};
+            T QI3 = T{0};
+            // Receptor-receptor activation according to rcptrcpt_interactions
+            QI0 = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
+                                                 (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0));
+            QI1 = kp->rcpt[1] * this->rcpt[1] * (source_tissue->rcptrcpt_interactions[1] == interaction::repulsion ? 1 :
+                                                 (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
+            QI2 = kp->rcpt[2] * this->rcpt[2] * (source_tissue->rcptrcpt_interactions[2] == interaction::repulsion ? 1 :
+                                                 (source_tissue->rcptrcpt_interactions[2] == interaction::attraction ? -1 : 0));
+            QI3 = kp->rcpt[3] * this->rcpt[3] * (source_tissue->rcptrcpt_interactions[3] == interaction::repulsion ? 1 :
+                                                 (source_tissue->rcptrcpt_interactions[3] == interaction::attraction ? -1 : 0));
+            if constexpr (debug_compute_branch == true) {
+                std::cout << "QI components: " << QI0 << "," << QI1 << "," << QI2 << "," << QI3 << std::endl;
+            }
+            QI = QI0 + QI1 + QI2 + QI3;
+        } else if constexpr (N == 2) {
+            QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
+                                                (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0))
+            + kp->rcpt[1] * this->rcpt[1] * (source_tissue->rcptrcpt_interactions[1] == interaction::repulsion ? 1 :
+                                             (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
+        }
+        QI /= N;
+        if constexpr (debug_compute_branch == true) {
+            std::cout << "QI/N=" << QI << std::endl;
+        }
+        I += kb * QI * (d <= this->two_rrr ? T{1} : T{0});
+#endif
         // Receptor-ligand axon-axon interaction, J
         T QJ = T{0};
         if constexpr (N == 4) {
