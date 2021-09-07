@@ -8,6 +8,9 @@
  * work.
  */
 
+// If true, turns parallel execution OFF and branch interaction debugging ON.
+static constexpr bool debug_compute_branch = false;
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -21,6 +24,7 @@
 #include <morph/HdfData.h>
 
 #include "branch.h"
+#include "branch_stochastic.h"
 #include "branch_geb.h"
 #include "net.h"
 #include "tissue.h"
@@ -270,13 +274,21 @@ struct Agent1
             this->branches[i].compute_next (this->branches, this->ret, this->tectum, this->m, rns);
         }
 #else
+        if constexpr (debug_compute_branch == true) {
 #pragma omp parallel for
-        for (auto& b : this->branches) {
-            morph::Vector<T, 2*N> rns;
-            this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
-            b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
-        }
+            for (auto& b : this->branches) {
+                morph::Vector<T, 2*N> rns;
+                this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
+                b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
+            }
 #endif
+        } else {
+            for (auto& b : this->branches) {
+                morph::Vector<T, 2*N> rns;
+                this->gradient_rng->get (rns);
+                b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
+            }
+        }
         // Update centroids
         for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
@@ -842,12 +854,13 @@ struct Agent1
         }
 
         // Parameters settable from json
-        this->m[0] = this->mconf->getDouble ("m1", 0.001);
-        this->m[1] = this->mconf->getDouble ("m2", 0.2);
-        this->m[2] = this->mconf->getDouble ("m3", 0.0);
-        this->m[3] = this->mconf->getDouble ("mborder", 0.5);
+        this->m[0] = this->mconf->getDouble ("m1", 0.001);    // G
+        this->m[1] = this->mconf->getDouble ("m2", 0.2);      // C
+        this->m[2] = this->mconf->getDouble ("m3", 0.0);      // I
+        this->m[3] = this->mconf->getDouble ("m4", 0.0);      // J
+        this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
 
-        // Finally, set any addition parameters that will be needed with calling Agent1::run
+        // Finally, set any additional parameters that will be needed with calling Agent1::run
         this->goslow = this->conf->getBool ("goslow", false);
     }
 
@@ -1268,8 +1281,9 @@ struct Agent1
     guidingtissue<T, N>* ret;
     // Same sized tectum tissue
     guidingtissue<T, N>* tectum;
-    // Parameters vecto (See Table 2 in the paper)
-    morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
+    // Parameters vector (See Table 2 in the paper)
+    //                        G        C       I        J        B
+    morph::Vector<T, 5> m = { T{0.02}, T{0.2}, T{0.15}, T{0.15}, T{0.1}};
     // The centre coordinate
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME bit of a hack, this.
     // (rgcside^2 * bpa) branches, as per the paper

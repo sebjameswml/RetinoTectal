@@ -41,7 +41,7 @@ public:
     void compute_next (const std::vector<branch_geb<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 4>& m,
+                       const morph::Vector<T, 5>& m,
                        const morph::Vector<T, 2*N>& rns)
     {
         // Sums

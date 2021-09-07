@@ -30,15 +30,19 @@ struct branch : public branch_base<T,N>
     T getr() { return this->r; }
     T getrc() { return this->rc; }
     T getrrl() { return this->rrl; }
+    T getrrr() { return this->rrr; }
     void setrc (T _r) { this->rc = _r; this->two_rc = _r*T{2}; }
     void setrrl (T _r) { this->rrl = _r; this->two_rrl = _r*T{2}; }
+    void setrrr (T _r) { this->rrr = _r; this->two_rrr = _r*T{2}; }
 protected:
-    T r = T{0.04};  // Note - arrangement is quite strongly dependent on this interaction radius
+    T r = T{0.04};   // Actual radius of a growth cone
     T two_r = T{2}*r;
-    T rc = T{0.04};
+    T rc = T{0.04};  // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
     T two_rc = T{2}*r;
-    T rrl = T{0.04};
+    T rrl = T{0.04}; // receptor-ligand interaction distance
     T two_rrl = T{2}*r;
+    T rrr = T{0.04}; // receptor-receptor interaction distance
+    T two_rrr = T{2}*r;
 public:
     // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
     static constexpr bool s_g_interaction = false;
@@ -108,12 +112,13 @@ public:
 
     // A subroutine of compute_next
     //
-    // Within a set distance of two_r, consider that receptors and ligands on
-    // the two growth cones interact and produce an attractive (and/or repulsive)
+    // Within a set distance of two_r, consider that receptors and ligands on the two
+    // growth cones interact and produce an attractive (and/or repulsive)
     // interaction. Use the strength of this interaction to weight a vector between the
-    // two cones.
+    // two cones. I is the receptor-receptor interaction of S&G, J is my receptor-ligand
+    // axon-axon interaction.
     T compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
-                          morph::Vector<T, 2>& C, morph::Vector<T, 2>& I)
+                          morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J)
     {
         // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
         // sums these. However, that gives a competition term with a sign error. So
@@ -122,6 +127,9 @@ public:
         T d = kb.length();
         kb.renormalize(); // vector kb is a unit vector
 
+        if constexpr (debug_compute_branch == true) {
+            std::cout << "d=" << d << ", 2rrl=" << this->two_rrl << ", 2rrr=" << this->two_rrr <<  std::endl;
+        }
         // Space-based competition, C
         //
         // W is a distance-dependent weight, which is 0 outside a distance of two_r and
@@ -129,39 +137,47 @@ public:
         T W = d <= this->two_rc ? (T{1} - d/this->two_rc) : T{0};
         C += kb * W;
 
-        // Receptor-ligand axon-axon interaction, I
-        //
-        // Q collects the overall signal transmitted by ligands binding to
+        // QI/J collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
         // more negative.
-        T Q = T{0};
-        if constexpr (s_g_interaction == true) {
-            // The S & G interaction is based on the receptor expression only and (guided by Reber) looks at the relative levels
-            if constexpr (N == 4) {
-                Q = kp->rcpt[0] / this->rcpt[0]
-                + kp->rcpt[1] / this->rcpt[1]
-                + kp->rcpt[2] / this->rcpt[2]
-                + kp->rcpt[3] / this->rcpt[3];
-            } else if constexpr (N == 2) {
-                Q = kp->rcpt[0] / this->rcpt[0] + kp->rcpt[1] / this->rcpt[1];
-            }
-            Q /= N;
-            morph::Vector<T, 2> nullvec = {0, 0};
-            I += Q > this->s ? kb * W : nullvec;
-        } else {
-            if constexpr (N == 4) {
-                // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
-                Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
-                + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
-                + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
-                + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
-                // Alternative? Could have a kind of competition for the movement, rather than just adding 'em all up.
-            } else if constexpr (N == 2) {
-                Q = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
-                + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
-            }
-            Q /= N;
-            I += kb * Q * (d <= this->two_rrl ? T{1} : T{0});
+
+        // The S & G axon-axon interaction is based on the receptor expression only and
+        // (guided by Reber) looks at the relative levels
+        T QI = T{0};
+        W = d <= this->two_rrr ? (T{1} - d/this->two_rrr) : T{0};
+        if constexpr (N == 4) {
+            QI = kp->rcpt[0] / this->rcpt[0]
+            + kp->rcpt[1] / this->rcpt[1]
+            + kp->rcpt[2] / this->rcpt[2]
+            + kp->rcpt[3] / this->rcpt[3];
+        } else if constexpr (N == 2) {
+            QI = kp->rcpt[0] / this->rcpt[0] + kp->rcpt[1] / this->rcpt[1];
+        }
+        QI /= N;
+        morph::Vector<T, 2> nullvec = {0, 0};
+        if constexpr (debug_compute_branch == true) {
+            std::cout << "QI=" << QI << ", this->s = " << this->s << std::endl;
+        }
+        I += QI > this->s ? kb * W : nullvec;
+
+        // Receptor-ligand axon-axon interaction, J
+        T QJ = T{0};
+        if constexpr (N == 4) {
+            // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
+            QJ = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
+            // Alternative? Could have a kind of competition for the movement, rather than just adding 'em all up.
+        } else if constexpr (N == 2) {
+            QJ = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
+            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
+        }
+        QJ /= N;
+        J += kb * QJ * (d <= this->two_rrl ? T{1} : T{0});
+
+        if constexpr (debug_compute_branch == true) {
+            std::cout << "For this branch, I=" << I << ", and J=" << J << std::endl;
         }
 
         // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
@@ -361,7 +377,7 @@ public:
     void compute_next (const std::vector<branch<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 4>& m,
+                       const morph::Vector<T, 5>& m,
                        const morph::Vector<T, 2*N>& rns)
     {
         // Current location is named b
@@ -369,16 +385,17 @@ public:
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
 
-        // Competition, C, and Axon-axon interactions, I, computed during the same loop
+        // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
         // over the other branches
         morph::Vector<T, 2> C = {0, 0};
         morph::Vector<T, 2> I = {0, 0};
+        morph::Vector<T, 2> J = {0, 0};
 
         // Other branches are called k, making a set B_b, with a number of members that I call n_k
         T n_k = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            n_k += this->compute_for_branch (source_tissue, (&k), C, I);
+            n_k += this->compute_for_branch (source_tissue, (&k), C, I, J);
         }
 
         // Do the 1/|B_b| multiplication to normalize C and I
@@ -395,11 +412,7 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-        //std::cout << "Movement for branch " << this->id
-        //          << ": m[0]*G:" << (G*m[0])
-        //          << "+ m[1]*C:" << (C*m[1])
-        //          << "+ m[2]*I:" << (I*m[2]) << std::endl;
-        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];
+        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2] + J * m[3];
 
         // Option for how movement is dealt with near the border; how to get axons back inside domain
         border_effect be = border_effect::gradients;
@@ -408,7 +421,7 @@ public:
         morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB, be);
 
         // The change in b from the model and border effects:
-        morph::Vector<T, 2> db = (nonB + B * m[3]);
+        morph::Vector<T, 2> db = (nonB + B * m[4]);
 
         // Finally add b and db to get next (uncomment to apply a speedlimit)
         this->next = b + db /* * this->speedlimit(db) */;
@@ -418,125 +431,4 @@ public:
             if (be == border_effect::penned && this->entered == true) { this->pen_in (tissue); }
         }
     }
-};
-
-// \tparam T floating point type for the numbers
-// \tparam N number of receptor-ligand pairs in the system
-// \tparam R The number of locations at which to sample the ligand gradient.
-//           For realism, select R=1000 or so
-template<typename T, size_t N, size_t R>
-struct branch_stochastic : public branch<T,N>
-{
-    // Params for the receptor binding model
-    static constexpr T gc_width = T{1}; // growth cone width. 10 um is 1e-5 and is a realistic value
-
-    // Estimate the ligand gradient, given the true ligand gradient and receptor noise
-    virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& mu,
-                                                            morph::Vector<T,N>& gamma)
-    {
-        // Choose a set of R locations across the growth cone.
-        morph::Vector<T, R> r; // The positions, r across the growth cone. Must be -ve to +ve
-        morph::Vector<T, R> c; // The concentration of ligand, c
-        morph::Vector<T, R> p; // The probability of binding, p
-        morph::Vector<bool, R> b; // The state of binding
-        morph::Vector<T, 2*N> lg; // rtn container
-
-        morph::RandUniform<T, std::mt19937> rng;
-        morph::Vector<T, R> rns;
-
-        static constexpr bool debug_stochastic = false;
-
-        for (size_t i = 0; i < N; ++i) { // For each receptor-ligand pairing
-            for (size_t d = 0; d < 2; ++d) { // For each dimension
-
-                morph::vVector<T> bound; // posns of bound receptors
-                rng.get(rns);
-
-                for (size_t ir = 0; ir < R; ++ir) { // For each of R evenly spaced samples
-
-                    // Long winded for now, until it's sorted
-                    r[ir] = gc_width / T{R} * ir - gc_width / T{R} * (R/2) ; // position
-                    c[ir] = gamma[i] * (1 + mu[2*i+d] * r[ir]); // concentration
-                    p[ir] = c[ir] / (T{1} + c[ir]); // probability of binding
-                    b[ir] = (rns[ir] < p[ir]) ? true : false; // sampled state of binding
-
-                    if (b[ir] == true) { bound.push_back (r[ir]); }
-                }
-
-                if constexpr (debug_stochastic) {
-                    std::cout << "r=" << r << std::endl;
-                    std::cout << "c=" << c << std::endl;
-                    std::cout << "p=" << p << std::endl;
-                    std::cout << "b=" << b << std::endl;
-                    std::cout << "rns=" << rns << std::endl;
-                    std::cout << "bound=" << bound << std::endl;
-                }
-                // Linear fit to the bound receptors, weighted by position
-                morph::vVector<T> bound_w = bound.abs();
-                if (bound.size() < 2) {
-                    lg[2*i+d] = T{0};
-                } else {
-                    std::pair<T,T> mc = morph::MathAlgo::linregr (bound, bound_w);
-                    lg[2*i+d] = mc.first;
-                }
-                if constexpr (debug_stochastic) {
-                    std::cout << "Gradient " << mu[2*i+d] << " estimated as: " << lg[2*i+d] << "; bound size: " << bound.size() << std::endl;
-                }
-            }
-        }
-
-        //std::cout << "Ligand gradient is " << mu << "\nEstimate gradient is " << lg << std::endl;
-
-        return lg;
-    }
-
-    // This function is duplicated (cf struct branch) so I can pass in a vector<branch_stochastic<T, N, R>&
-    void compute_next (const std::vector<branch_stochastic<T, N, R>>& branches,
-                       const guidingtissue<T, N>* source_tissue,
-                       const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 4>& m,
-                       const morph::Vector<T, 2*N>& rns)
-    {
-        // Current location is named b
-        morph::Vector<T, 2> b = this->current;
-        // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
-        morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
-
-        // Competition, C, and Axon-axon interactions, I, computed during the same loop
-        // over the other branches
-        morph::Vector<T, 2> C = {0, 0};
-        morph::Vector<T, 2> I = {0, 0};
-
-        // Other branches are called k, making a set B_b, with a number of members that I call n_k
-        T n_k = T{0};
-        for (auto k : branches) {
-            if (k.id == this->id) { continue; } // Don't interact with self
-            n_k += this->compute_for_branch (source_tissue, &k, C, I);
-        }
-
-        // Do the 1/|B_b| multiplication
-        if (n_k > T{0}) {
-            C = C/n_k;
-            I = I/n_k;
-        } // else C and I will be {0,0} still
-
-        // Collected non-border movement components
-        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];
-
-        // Option for how movement is dealt with near the border; how to get axons back inside domain
-        border_effect be = border_effect::gradients;
-
-        // Border effect. A 'force' to move agents back inside the tissue boundary
-        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB, be);
-
-        // The change in b from the model and border effects:
-        morph::Vector<T, 2> db = (nonB + B * m[3]);
-
-        // Finally add b and db to get next (uncomment to apply a speedlimit)
-        this->next = b + db /* * this->speedlimit(db) */;
-
-        // If we're penning the agent in, then check this->next and change as necessary
-        if (be == border_effect::penned && this->entered == true) { this->pen_in (tissue); }
-    }
-
 };

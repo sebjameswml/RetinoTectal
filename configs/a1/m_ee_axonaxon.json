@@ -30,9 +30,13 @@
     "desc_bpa" : "Branches per axon",            "bpa" : 8,
 
     "desc_r" : "Radius of interaction",          "r" : 0.01,
+    "desc_rc" : "Interaction radius via competition interaction", "rc" : 0.0,
+    "desc_rrl" : "Interaction radius via rcpt-lgnd interaction", "rrl" : 0.02,
+    "desc_rrr" : "Interaction radius via rcpt-rcpt interaction", "rrr" : 0.02,
 
     "desc_m1" : "chemoaffinity",                 "m1" : 0.001, // 0.001
     "desc_m2" : "axon-axon competition",         "m2" : 0.0,
-    "desc_m3" : "the axon-axon interactions",    "m3" : 0.0004, // with no 1/B_b .0007 works for bpa 6 or 8, seb's interaction
+    "desc_m3" : "rcpt-rcpt axon-axon intrctns",  "m3" : 0.007, // with no 1/B_b .0007 works for bpa 6 or 8, seb's interaction
+    "desc_m4" : "rcpt-lgnd axon-axon intrctns",  "m4" : 0.0007,
     "desc_mborder" : "border effect",            "mborder" : 0.5
 }

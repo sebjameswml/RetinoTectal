@@ -32,9 +32,11 @@
     "desc_r" : "Radius of branches/cones", "r" : 0.005,
     "desc_rc" : "Interaction radius via competition interaction", "rc" : 0.0,
     "desc_rrl" : "Interaction radius via rcpt-lgnd interaction", "rrl" : 0.02,
+    "desc_rrr" : "Interaction radius via rcpt-rcpt interaction", "rrr" : 0.02,
 
     "desc_m1" : "chemoaffinity",                 "m1" : 0.002,
     "desc_m2" : "axon-axon competition",         "m2" : 0.0,
     "desc_m3" : "the axon-axon interactions",    "m3" : 0.0001,
+    "desc_m4" : "the axon-axon rcpt-rcpt interactions", "m4" : 0.0005,
     "desc_mborder" : "border effect",            "mborder" : 0.5
 }
