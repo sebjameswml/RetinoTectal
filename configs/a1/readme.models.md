@@ -22,7 +22,7 @@ A better scheme would be to mirror the letters used in the paper. So a model wit
 
 m_ee_G.json
 
-whereas a model with chemo, and interaction woudl be
+whereas a model with chemo, and interaction would be
 
 m_ee_GI.json
 
@@ -42,3 +42,21 @@ m_eE_GIJ.json
 or
 
 m_eE_GCIJ.json
+
+
+m_eel*.json files are exponential-exponential with one logarithmic
+ligand on the tectum (modelling EphB).
+
+m_lin* models are linear models - receptors and ligands vary linearly
+
+m_linattr* models are linear models with attractive interactions.
+
+If the m_XX tag ends with '2' then it;s a model with only 2 receptor-ligands per sheet instead of 4.
+
+m_ql models are 'quadratic-linear'
+
+m_random.json is a special model to randomly locate branches for performing statistical analysis
+
+m_stoc.json is a special stochastic model, yet to be fully developed
+
+m_geb.json sets up the Gebhardt et al model
