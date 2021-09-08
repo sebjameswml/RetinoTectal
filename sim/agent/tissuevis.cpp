@@ -2,6 +2,8 @@
  * Just visualise the tissue of agent1.cpp (without running the model)
  */
 
+#include "branch_rng_float.h"
+
 #include <string>
 #include <vector>
 #include <morph/tools.h>

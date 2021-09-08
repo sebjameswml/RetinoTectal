@@ -38,7 +38,7 @@
 
     "desc_m1" : "chemoaffinity",                                  "m1" : 0.002,
     "desc_m2" : "axon-axon competition",                          "m2" : 0,
-    "desc_m3" : "the axon-axon rcpt-rcpt interactions",           "m3" : 0.002,
-    "desc_m4" : "the axon-axon rcpt-lgnd interactions",           "m4" : 0.0001,
+    "desc_m3" : "the axon-axon rcpt-rcpt interactions",           "m3" : 0.0,
+    "desc_m4" : "the axon-axon rcpt-lgnd interactions",           "m4" : 0.0002,
     "desc_mborder" : "border effect",                        "mborder" : 0.5
 }

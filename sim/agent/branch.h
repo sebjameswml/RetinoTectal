@@ -127,9 +127,9 @@ public:
         T d = kb.length();
         kb.renormalize(); // vector kb is a unit vector
 
-        if constexpr (debug_compute_branch == true) {
-            std::cout << "d=" << d << ", 2rrl=" << this->two_rrl << ", 2rrr=" << this->two_rrr <<  std::endl;
-        }
+        //if constexpr (debug_compute_branch == true) {
+        //    std::cout << "d=" << d << ", 2rrl=" << this->two_rrl << ", 2rrr=" << this->two_rrr <<  std::endl;
+        //}
         // Space-based competition, C
         //
         // W is a distance-dependent weight, which is 0 outside a distance of two_r and
@@ -156,9 +156,9 @@ public:
         }
         //QI /= N;
         morph::Vector<T, 2> nullvec = {0, 0};
-        if constexpr (debug_compute_branch == true) {
-            std::cout << "QI=" << QI << ", this->s = " << this->s << std::endl;
-        }
+        //if constexpr (debug_compute_branch == true) {
+        //    std::cout << "QI=" << QI << ", this->s = " << this->s << std::endl;
+        //}
         I += QI > this->s ? kb * W : nullvec;
 #else
         T QI = T{0};
@@ -176,9 +176,9 @@ public:
                                                  (source_tissue->rcptrcpt_interactions[2] == interaction::attraction ? -1 : 0));
             QI3 = kp->rcpt[3] * this->rcpt[3] * (source_tissue->rcptrcpt_interactions[3] == interaction::repulsion ? 1 :
                                                  (source_tissue->rcptrcpt_interactions[3] == interaction::attraction ? -1 : 0));
-            if constexpr (debug_compute_branch == true) {
-                std::cout << "QI components: " << QI0 << "," << QI1 << "," << QI2 << "," << QI3 << std::endl;
-            }
+            //if constexpr (debug_compute_branch == true) {
+            //    std::cout << "QI components: " << QI0 << "," << QI1 << "," << QI2 << "," << QI3 << std::endl;
+            //}
             QI = QI0 + QI1 + QI2 + QI3;
         } else if constexpr (N == 2) {
             QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
@@ -187,9 +187,9 @@ public:
                                              (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
         }
         QI /= N;
-        if constexpr (debug_compute_branch == true) {
-            std::cout << "QI/N=" << QI << std::endl;
-        }
+        //if constexpr (debug_compute_branch == true) {
+        //    std::cout << "QI/N=" << QI << std::endl;
+        //}
         I += kb * QI * (d <= this->two_rrr ? T{1} : T{0});
 #endif
         // Receptor-ligand axon-axon interaction, J
@@ -208,9 +208,9 @@ public:
         QJ /= N;
         J += kb * QJ * (d <= this->two_rrl ? T{1} : T{0});
 
-        if constexpr (debug_compute_branch == true) {
-            std::cout << "For this branch, I=" << I << ", and J=" << J << std::endl;
-        }
+        //if constexpr (debug_compute_branch == true) {
+        //    std::cout << "For this branch, I=" << I << ", and J=" << J << std::endl;
+        //}
 
         // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
         return (d <= this->two_rc ? T{1} : T{0});
@@ -444,7 +444,13 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2] + J * m[3];
+        morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
+        brng::i()->get(R);
+
+        //if constexpr (debug_compute_branch == true) {
+        //    std::cout << "G*m[0]=" << (G * m[0]) << " and R=" << R << std::endl;
+        //}
+        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2] + J * m[3] + R;
 
         // Option for how movement is dealt with near the border; how to get axons back inside domain
         border_effect be = border_effect::gradients;
