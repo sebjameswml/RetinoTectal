@@ -123,10 +123,10 @@ def save_model_set (modeltag, pobj):
     print ('Wrote {0}'.format (fpath))
 
 # Set params once here
-m1 = 0.001  # G
+m1 = 0.002  # G
 m2 = 0.001 # J
 m3 = 0.002  # I
-c1 = 0.009  # C
+c1 = 0.2  # C
 
 # These are all the model combos I might have:
 modeltag = 'eE'
