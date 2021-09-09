@@ -8,15 +8,6 @@
 #include <morph/MathAlgo.h>
 #include "tissue.h"
 
-// A choice of schemes to deal with axon branches that try to move outside the tissue domain
-enum class border_effect
-{
-    original, // The original scheme proposed by Simpson & Goodhill
-    gradients, // A scheme which acts like there are gradients pushing axon branchs back inside tissue
-    penned,     // Axon branches are 'penned in' - once inside the tissue, they can't move outside the tissue region
-    penned_pushed // Like 'penned in' but also pushed away from the border with 1/r component as in original
-};
-
 // The branch which does chemoaffinity + comp + axon-axon interaction
 //
 // For receptor/ligand interactions we define:
@@ -39,9 +30,9 @@ protected:
     T two_r = T{2}*r;
     T rc = T{0.04};  // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
     T two_rc = T{2}*r;
-    T rrl = T{0.04}; // receptor-ligand interaction distance
+    T rrl = T{0.04}; // receptor-ligand interaction distance for axon-axon interactions
     T two_rrl = T{2}*r;
-    T rrr = T{0.04}; // receptor-receptor interaction distance
+    T rrr = T{0.04}; // receptor-receptor interaction distance for axon-axon interactions
     T two_rrr = T{2}*r;
 public:
     // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
@@ -127,9 +118,6 @@ public:
         T d = kb.length();
         kb.renormalize(); // vector kb is a unit vector
 
-        //if constexpr (debug_compute_branch == true) {
-        //    std::cout << "d=" << d << ", 2rrl=" << this->two_rrl << ", 2rrr=" << this->two_rrr <<  std::endl;
-        //}
         // Space-based competition, C
         //
         // W is a distance-dependent weight, which is 0 outside a distance of two_r and
@@ -156,10 +144,7 @@ public:
         }
         //QI /= N;
         morph::Vector<T, 2> nullvec = {0, 0};
-        //if constexpr (debug_compute_branch == true) {
-        //    std::cout << "QI=" << QI << ", this->s = " << this->s << std::endl;
-        //}
-        I += QI > this->s ? kb * W : nullvec;
+        I += QI > this->s ? kb * W : nullvec; // FIXME FIXME: Need to count up number of interactions and divide by this number (like for comp)
 #else
         T QI = T{0};
         if constexpr (N == 4) {
@@ -176,9 +161,6 @@ public:
                                                  (source_tissue->rcptrcpt_interactions[2] == interaction::attraction ? -1 : 0));
             QI3 = kp->rcpt[3] * this->rcpt[3] * (source_tissue->rcptrcpt_interactions[3] == interaction::repulsion ? 1 :
                                                  (source_tissue->rcptrcpt_interactions[3] == interaction::attraction ? -1 : 0));
-            //if constexpr (debug_compute_branch == true) {
-            //    std::cout << "QI components: " << QI0 << "," << QI1 << "," << QI2 << "," << QI3 << std::endl;
-            //}
             QI = QI0 + QI1 + QI2 + QI3;
         } else if constexpr (N == 2) {
             QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
@@ -187,9 +169,6 @@ public:
                                              (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
         }
         QI /= N;
-        //if constexpr (debug_compute_branch == true) {
-        //    std::cout << "QI/N=" << QI << std::endl;
-        //}
         I += kb * QI * (d <= this->two_rrr ? T{1} : T{0});
 #endif
         // Receptor-ligand axon-axon interaction, J
@@ -208,198 +187,29 @@ public:
         QJ /= N;
         J += kb * QJ * (d <= this->two_rrl ? T{1} : T{0});
 
-        //if constexpr (debug_compute_branch == true) {
-        //    std::cout << "For this branch, I=" << I << ", and J=" << J << std::endl;
-        //}
-
         // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
         return (d <= this->two_rc ? T{1} : T{0});
     }
 
     // A subroutine of compute_next
-    morph::Vector<T, 2> apply_border_effect (const guidingtissue<T, N>* tissue, morph::Vector<T, 2>& nonB, const border_effect be)
+    morph::Vector<T, 2> apply_border_effect (const guidingtissue<T, N>* tissue, morph::Vector<T, 2>& nonB)
     {
-        morph::Vector<T, 2> b = this->current;
-
         morph::Vector<T, 2> B = {0,0};
 
-        if (be == border_effect::original) {
-            // A piecewise linear contribution to movement of agents lying outside the
-            // boundary towards the inside of the tissue boundary. Includes a movement
-            // away from the tissue edge up to an inner distance r from the inside
-            // boundary. Also zeros the other components I (G, I, C) that contribute to
-            // the agent's next position if agent is outside. This is the scheme used in
-            // the Simpson & Goodhill paper and leads to quite large oscillating
-            // dynamics around the tissue edge.
-            if (b[0] < tissue->x_min()) {
-                nonB = {0,0};
-                B[0] = T{1};
-            } else if (b[0] < tissue->x_min()+r) {
-                B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
-            } else if (b[0] > tissue->x_max()) {
-                nonB = {0,0};
-                B[0] = T{-1};
-            } else if (b[0] > (tissue->x_max()-r)) {
-                B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
-            }
+        // Gradient based border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
+        if (this->current[0] < (tissue->x_min()+r)) {
+            B[0] = (tissue->x_min()+r) - this->current[0];
+        } else if (this->current[0] > (tissue->x_max()-r)) {
+            B[0] = -(this->current[0] - (tissue->x_max()-r));
+        }
 
-            if (b[1] < tissue->y_min()) {
-                nonB = {0,0};
-                B[1] = T{1};
-            } else if (b[1] < tissue->y_min()+r) {
-                B[1] = T{1} - b[1]/r;
-            } else if (b[1] > tissue->y_max()) {
-                nonB = {0,0};
-                B[1] = T{-1};
-            } else if (b[1] > (tissue->y_max()-r)) {
-                B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
-            }
-
-        } else if (be == border_effect::gradients) {
-            //std::cout << "gradients\n";
-            // Updated border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
-            if (b[0] < (tissue->x_min()+r)) {
-                B[0] = (tissue->x_min()+r) - b[0];
-            } else if (b[0] > (tissue->x_max()-r)) {
-                B[0] = -(b[0] - (tissue->x_max()-r));
-            }
-
-            if (b[1] < (tissue->y_min()+r)) {
-                B[1] = (tissue->y_min()+r) - b[1];
-            } else if (b[1] > (tissue->y_max()-r)) {
-                B[1] = -(b[1] - (tissue->y_max()-r));
-            }
-
-        } else if (be == border_effect::penned) {
-            //std::cout << "penned\n";
-            // Try looking at the next location and preventing the agent from moving
-            // outside the domain. Have to deal with incoming agents. Give each branch
-            // an 'inside' marker, which if true, says the axon has entered the domain
-            // and may never leave (mu-ha-ha)
-            if (this->entered == false) {
-                // Use the S-G scheme before branches have entered the domain
-                if (b[0] < tissue->x_min()) {
-                    nonB = {0,0};
-                    B[0] = T{1};
-                } else if (b[0] < tissue->x_min()+r) {
-                    B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
-                    this->entered = true;
-                } else if (b[0] > tissue->x_max()) {
-                    nonB = {0,0};
-                    B[0] = T{-1};
-                } else if (b[0] > (tissue->x_max()-r)) {
-                    B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
-                    this->entered = true;
-                } else {
-                    this->entered = true;
-                }
-
-                if (b[1] < tissue->y_min()) {
-                    nonB = {0,0};
-                    B[1] = T{1};
-                } else if (b[1] < tissue->y_min()+r) {
-                    B[1] = T{1} - b[1]/r;
-                    this->entered = true;
-                } else if (b[1] > tissue->y_max()) {
-                    nonB = {0,0};
-                    B[1] = T{-1};
-                } else if (b[1] > (tissue->y_max()-r)) {
-                    B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
-                    this->entered = true;
-                } else {
-                    this->entered = true;
-                }
-
-                //b += nonB + B * m[3];
-                //this->next = b;
-            } else {
-                // Border effect when near edge
-                if (b[0] < tissue->x_min()+r) {
-                    B[0] = T{1} * (T{1} - b[0]/r);
-                } else if (b[0] > (tissue->x_max()-r)) {
-                    B[0] = -(b[0] + r - T{1})/r;
-                }
-
-                if (b[1] < tissue->y_min()+r) {
-                    B[1] = T{1} - b[1]/r;
-                } else if (b[1] > (tissue->y_max()-r)) {
-                    B[1] = -(b[1] + r - T{1})/r;
-                }
-            }
+        if (this->current[1] < (tissue->y_min()+r)) {
+            B[1] = (tissue->y_min()+r) - this->current[1];
+        } else if (this->current[1] > (tissue->y_max()-r)) {
+            B[1] = -(this->current[1] - (tissue->y_max()-r));
         }
 
         return B;
-    }
-
-    // Another subroutine of compute_next
-    T speedlimit (const morph::Vector<T, 2>& db)
-    {
-        T slimit = T{1};
-
-        morph::Vector<T, 2> b = this->current;
-
-        //std::cout << "speedlimit\n";
-        // Compute a 'speed limit' to slow movements down near to the edge of the tissue
-        // and avoid the rather annoying oscillations around the edge.
-        // Distance to the edge? Easy in a square. Find closest edge, find
-        // perp. distance to that edge. Do this using b. Will assume that tissue is in
-        // range 0 to 1. {t, b, r, l}
-        morph::Vector<T, 4> distances = {1-b[1], -b[1], 1-b[0], -b[0]};
-        size_t nearedge = distances.argshortest();
-
-        bool goingin = false;
-        switch (nearedge) {
-        case 0: // top
-        {
-            if (db[1] < 0) { goingin = true; }
-            break;
-        }
-        case 1: // bot
-        {
-            if (db[1] > 0) { goingin = true; }
-            break;
-        }
-        case 2: // r
-        {
-            if (db[0] < 0) { goingin = true; }
-            break;
-        }
-        case 3: // l
-        {
-            if (db[0] > 0) { goingin = true; }
-            break;
-        }
-        default:
-        {
-            break;
-        }
-        }
-
-        if (!goingin) {
-            // Apply a slowdown based on distance toedge
-            T toedge = distances.shortest();
-            slimit = T{0.1} + (T{2} / (T{1} + std::exp(-T{50} * std::abs(toedge)))) - T{1};
-            //std::cout << "To edge: " << toedge << " and speedlimit: " << slimit << std::endl;
-        }
-
-        return slimit;
-    }
-
-    // One of the border effect options is to pen the cones in.
-    static constexpr bool apply_pen_in_effect = false;
-    void pen_in (const guidingtissue<T, N>* tissue)
-    {
-        // Prevent agents from moving outside; limit this->next
-        if (this->next[0] < tissue->x_min()) {
-            this->next[0] = tissue->x_min();
-        } else if (this->next[0] > tissue->x_max()) {
-            this->next[0] = tissue->x_max();
-        }
-        if (this->next[1] < tissue->y_min()) {
-            this->next[1] = tissue->y_min();
-        } else if (this->next[1] > tissue->y_max()) {
-            this->next[1] = tissue->y_max();
-        }
     }
 
     // Compute the next position for this branch, using information from all other
@@ -429,9 +239,9 @@ public:
             if (k.id == this->id) { continue; } // Don't interact with self
             n_k += this->compute_for_branch (source_tissue, (&k), C, I, J);
         }
-
-        // Do the 1/|B_b| multiplication to normalize C and I
+        // Do the 1/|B_b| multiplication to normalize C and I(!!)
         if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
+        //std::cout << "C=" << C << std::endl;
 
         if constexpr (store_interaction_history == true) {
             // Add I to history & rotate, reducing effect by 90% due to one time step passing
@@ -444,29 +254,20 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
+
+#if 0
         morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
         brng::i()->get(R);
-
-        //if constexpr (debug_compute_branch == true) {
-        //    std::cout << "G*m[0]=" << (G * m[0]) << " and R=" << R << std::endl;
-        //}
-        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2] + J * m[3] + R;
-
-        // Option for how movement is dealt with near the border; how to get axons back inside domain
-        border_effect be = border_effect::gradients;
+#endif
+        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3]; // + R * m[5];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
-        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB, be);
+        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
 
         // The change in b from the model and border effects:
         morph::Vector<T, 2> db = (nonB + B * m[4]);
 
-        // Finally add b and db to get next (uncomment to apply a speedlimit)
-        this->next = b + db /* * this->speedlimit(db) */;
-
-        // If we're penning the agent in, then check this->next and change as necessary
-        if constexpr (apply_pen_in_effect == true) {
-            if (be == border_effect::penned && this->entered == true) { this->pen_in (tissue); }
-        }
+        // Finally add b and db to get next
+        this->next = b + db;
     }
 };

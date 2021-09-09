@@ -9,7 +9,7 @@
 class brng
 {
 private:
-    brng() { this->rng = new morph::RandUniform<float>(-0.0005f, 0.0005f); }
+    brng() { this->rng = new morph::RandUniform<float>(-1.0f, 1.0f); }
     ~brng() { delete this->rng; }
     static brng* pInstance_brng;
 public:

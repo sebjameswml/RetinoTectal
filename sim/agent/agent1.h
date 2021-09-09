@@ -668,8 +668,9 @@ struct Agent1
         std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
 
         float r_conf = this->mconf->getFloat ("r", 0.05f);
-        float rc_conf = this->mconf->getFloat ("rc", r_conf);
-        float rrl_conf = this->mconf->getFloat ("rrl", r_conf);
+        float rc_conf = this->mconf->getFloat ("rc", 0.0f);
+        float rrl_conf = this->mconf->getFloat ("rrl", 0.0f);
+        float rrr_conf = this->mconf->getFloat ("rrr", 0.0f);
         T s = this->mconf->getFloat ("s", 1.1f);
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
@@ -680,6 +681,7 @@ struct Agent1
             this->pending_branches[i].setr (r_conf);
             this->pending_branches[i].setrc (rc_conf);
             this->pending_branches[i].setrrl (rrl_conf);
+            this->pending_branches[i].setrrr (rrr_conf);
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
@@ -866,10 +868,11 @@ struct Agent1
         }
 
         // Parameters settable from json
-        this->m[0] = this->mconf->getDouble ("m1", 0.001);    // G
-        this->m[1] = this->mconf->getDouble ("m2", 0.2);      // C
-        this->m[2] = this->mconf->getDouble ("m3", 0.0);      // I
-        this->m[3] = this->mconf->getDouble ("m4", 0.0);      // J
+        this->m[0] = this->mconf->getDouble ("m1", 0.001);    // G rcpt-lgnd (axon-tectum)
+        this->m[1] = this->mconf->getDouble ("m2", 0.0);      // J rcpt-lgnd (axon-axon)
+        this->m[2] = this->mconf->getDouble ("m3", 0.0);      // I rcpt-rcpt (axon-axon)
+        this->m[3] = this->mconf->getDouble ("c1", 0.0);      // C (if used)
+        std::cout << "Competition param = " << this->m[3] << std::endl;
         this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
 
         // Finally, set any additional parameters that will be needed with calling Agent1::run
@@ -1013,7 +1016,9 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
-            this->bv->showexpression = true;
+            //this->bv->view = branchvisual_view::detail;
+            this->bv->view = branchvisual_view::discs;
+            //this->bv->view = branchvisual_view::discint;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1044,7 +1049,7 @@ struct Agent1
             // Selected axons: This one gives an 'axon view'
             offset[0] += 1.5f;
             this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->av->axonview = true;
+            this->av->view = branchvisual_view::axonview;
             for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
             this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->av->target_scale.compute_autoscale (0, 1);
@@ -1089,7 +1094,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
-            this->bv->showexpression = true;
+            this->bv->view = branchvisual_view::discs;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1112,7 +1117,7 @@ struct Agent1
             offset[0] += 1.3f;
             // Selected axons: This one gives an 'axon view'
             this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->av->axonview = true;
+            this->av->view = branchvisual_view::axonview;
             for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
             this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->av->target_scale.compute_autoscale (0, 1);
@@ -1126,7 +1131,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
-            this->bv->showexpression = true;
+            this->bv->view = branchvisual_view::discs;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1251,7 +1256,7 @@ struct Agent1
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->bv->target_scale.compute_autoscale (0, 1);
-            this->bv->showexpression = true;
+            this->bv->view = branchvisual_view::discs;
             this->bv->finalize();
             this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
             this->addOrientationLabels (this->bv, std::string("Tectal"));
@@ -1260,7 +1265,7 @@ struct Agent1
             // C Selected axons: This one gives an 'axon view'
             offset[0] += 1.3f;
             this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->av->axonview = true;
+            this->av->view = branchvisual_view::axonview;
             for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
             this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
             this->av->target_scale.compute_autoscale (0, 1);

@@ -1,9 +1,9 @@
 /*!
  * \file
  *
- * Visualise a bunch of agents (as spheres), each of which has a history of locations
+ * Visualise a bunch of agents, each of which has a history of locations
  * that it has visited previously, shown as lines. A coloured cap is used to indicate
- * EphA expression level.
+ * EphA expression level. Saturn rings can be used to show interaction radius
  *
  * \author Seb James
  * \date 2021
@@ -24,6 +24,14 @@
 
 #include "branch.h"
 
+enum class branchvisual_view
+{
+    detailed,  // Show receptor expression info as coloured pies and interaction radii
+    discs,     // Just show a disc, of size the largest interaction radius
+    axonview,  // discs with a grey history path
+    discint    // disc and interaction hoop
+};
+
 template <typename Flt, size_t N, typename B=branch<Flt, N>>
 class BranchVisual : public morph::VisualModel
 {
@@ -31,11 +39,11 @@ public:
     BranchVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset,
                  std::vector<B>* _branches,
                  std::map<size_t, morph::vVector<morph::Vector<Flt, 3>>>* _ax_history,
-                 bool _axonview = false)
+                 branchvisual_view _view = branchvisual_view::detailed)
     {
         this->branches = _branches;
         this->ax_history = _ax_history;
-        this->axonview = _axonview;
+        this->view = _view;
         this->shaderprog = sp;
         this->tshaderprog = tsp;
         this->mv_offset = _offset;
@@ -63,13 +71,15 @@ public:
 
     void initializeVertices()
     {
-        if (this->axonview) { return this->initializeAxonview(); }
+        if (this->view == branchvisual_view::axonview) { return this->initializeAxonview(); }
 
         // Set radius from the first branch
-        if (this->setRadiusFromBranches && !this->branches->empty()) {
+        if (!this->branches->empty()) {
             this->radiusFixed = (*this->branches)[0].getr();
-            this->rad_competition = (*this->branches)[0].getrc() > this->radiusFixed ? (*this->branches)[0].getrc() : 0.0f;
-            this->rad_interaction = (*this->branches)[0].getrrl() > this->radiusFixed ? (*this->branches)[0].getrrl() : 0.0f;
+
+            morph::Vector<Flt, 3> rads = { (*this->branches)[0].getrc(), (*this->branches)[0].getrrl(), (*this->branches)[0].getrrr() };
+            this->rad_interaction = rads.max() > this->radiusFixed ? rads.max() : Flt{0.0};
+            //std::cout << "radiusFixed: " << radiusFixed << " rad_interaction: " << rad_interaction << std::endl;
         }
 
         VBOint idx = 0;
@@ -80,40 +90,43 @@ public:
             std::array<float, 3> clr = { this->target_scale.transform_one(b.target[0]),
                                          this->target_scale.transform_one(b.target[1]), 0 }; // position colour
 
-            std::array<float, 3> clr_r0 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0, 0 }; // rcpt0 expression colour is red
-            std::array<float, 3> clr_r1 = { 0, this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
-            std::array<float, 3> clr_r2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[2]) };
-            std::array<float, 3> clr_r3 = { this->rcpt_scale.transform_one(b.rcpt[3]),
-                                            0,
-                                            this->rcpt_scale.transform_one(b.rcpt[3]) };
-
-            std::array<float, 3> clr_l0 = { this->rcpt_scale.transform_one(b.lgnd[0]), 0, 0 };
-            std::array<float, 3> clr_l1 = { 0, this->rcpt_scale.transform_one(b.lgnd[1]), 0 };
-            std::array<float, 3> clr_l2 = { 0, 0, this->rcpt_scale.transform_one(b.lgnd[2]) };
-            std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
-                                            0,
-                                            this->rcpt_scale.transform_one(b.lgnd[3]) };
-
             // A sphere at the last location. Tune number of rings (second last arg) in
             // sphere to change size of clr2 disc at top
             morph::Vector<float, 3> cur = { b.current[0], b.current[1], 0 };
-            if (this->showexpression) {
+            if (this->view == branchvisual_view::detailed) {
+                std::array<float, 3> clr_r0 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0, 0 }; // rcpt0 expression colour is red
+                std::array<float, 3> clr_r1 = { 0, this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
+                std::array<float, 3> clr_r2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[2]) };
+                std::array<float, 3> clr_r3 = { this->rcpt_scale.transform_one(b.rcpt[3]),
+                                                0,
+                                                this->rcpt_scale.transform_one(b.rcpt[3]) };
+
+                std::array<float, 3> clr_l0 = { this->rcpt_scale.transform_one(b.lgnd[0]), 0, 0 };
+                std::array<float, 3> clr_l1 = { 0, this->rcpt_scale.transform_one(b.lgnd[1]), 0 };
+                std::array<float, 3> clr_l2 = { 0, 0, this->rcpt_scale.transform_one(b.lgnd[2]) };
+                std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
+                                                0,
+                                                this->rcpt_scale.transform_one(b.lgnd[3]) };
                 this->computeDiscA (idx, cur, clr,
                                     clr_r0, clr_r1, clr_r2, clr_r3,
                                     clr_l0, clr_l1, clr_l2, clr_l3,
                                     this->radiusFixed);
-            } else {
-                std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]),
-                                              this->rcpt_scale.transform_one(b.lgnd[0]), 0 }; // receptor/ligand 0
-                this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
-            }
+                // Draw ring for the interaction, if it's larger than radiusFixed
+                if (rad_interaction > 0.0f) {
+                    this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
+                }
 
-            // Draw ring for the competition interaction
-            if (rad_competition > 0.0f) {
-                this->computeRing (idx, cur, clr, this->rad_competition, 0.1f*this->rad_competition, 18);
-            }
-            if (rad_interaction > 0.0f) {
-                this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
+            } else if (this->view == branchvisual_view::discs) {
+                this->computeTube (idx, cur, cur-morph::Vector<float,3>({0,0,this->radiusFixed*0.1f}), this->ux, this->uy,
+                                   clr, clr,
+                                   this->radiusFixed, 20);
+            } else if (this->view == branchvisual_view::discint) {
+                this->computeTube (idx, cur, cur-morph::Vector<float,3>({0,0,this->radiusFixed*0.1f}), this->ux, this->uy,
+                                   clr, clr,
+                                   this->radiusFixed, 20);
+                if (this->rad_interaction > 0.0f) {
+                    this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 20);
+                }
             }
         }
     }
@@ -277,9 +290,7 @@ public:
     void initializeAxonview()
     {
         // Set radius from the first branch
-        if (this->setRadiusFromBranches && !this->branches->empty()) {
-            this->radiusFixed = (*this->branches)[0].getr();
-        }
+        if (!this->branches->empty()) { this->radiusFixed = (*this->branches)[0].getr(); }
 
         VBOint idx = 0;
 
@@ -326,18 +337,16 @@ public:
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;
-    Flt rad_competition = 0.0; // For a ring showing competitive interaction radius
-    Flt rad_interaction = 0.0; // For a ring showing recpt-lgnd interaction radius
-    // If true, then use the r which is encoded in the first branch in branches to set radiusFixed. Else, don't change it.
-    bool setRadiusFromBranches = true;
+    Flt rad_interaction = 0.0; // For a ring showing the largest interaction radius
     Flt linewidth = 0.008;
     Flt blinewidth = 0.004;
     //! A normal vector, fixed as pointing up
+    morph::Vector<float, 3> ux = {1,0,0};
+    morph::Vector<float, 3> uy = {0,1,0};
     morph::Vector<float, 3> uz = {0,0,1};
     //! In axon view, show just a small selection of axons
-    bool axonview = false;
-    //! if true, then show receptor and ligand expression. Centre dist is receptor expression; ring is ligand expression
-    bool showexpression = false;
+    //bool axonview = false;
+    branchvisual_view view = branchvisual_view::detailed;
     //! How much history to show at max in the default view?
     unsigned int histlen = 20;
     //! Identities of axons to show in the axon view

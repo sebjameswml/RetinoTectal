@@ -60,3 +60,10 @@ m_random.json is a special model to randomly locate branches for performing stat
 m_stoc.json is a special stochastic model, yet to be fully developed
 
 m_geb.json sets up the Gebhardt et al model
+
+## Autogeneration of models
+
+Because there are so many permutations, I decided to write
+make_models.py to generate all the json configs. That means if I
+change a common parameter (like branches per axon, bpa) then I can
+easily re-generate ALL of these files.

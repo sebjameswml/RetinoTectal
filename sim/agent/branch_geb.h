@@ -19,12 +19,15 @@ struct branch_geb : public branch_base<T,N>
     T getr() { return this->r; }
     T getrc() { return this->rc; }
     T getrrl() { return this->rrl; }
+    T getrrr() { return this->rrr; }
     void setrc(T _r) {}
     void setrrl(T _r) {}
+    void setrrr(T _r) {}
 protected:
     T r = T{0.05};
     T rc = T{0.0};
     T rrl = T{0.0};
+    T rrr = T{0.0};
 
 public:
     // For random angle choice

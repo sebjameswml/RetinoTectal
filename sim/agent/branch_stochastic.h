@@ -102,22 +102,16 @@ struct branch_stochastic : public branch<T,N>
         } // else C and I will be {0,0} still
 
         // Collected non-border movement components
-        morph::Vector<T, 2> nonB = G * m[0] + C * m[1] + I * m[2];
-
-        // Option for how movement is dealt with near the border; how to get axons back inside domain
-        border_effect be = border_effect::gradients;
+        morph::Vector<T, 2> nonB = G * m[0] + C * m[3] + I * m[2];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
-        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB, be);
+        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
 
         // The change in b from the model and border effects:
         morph::Vector<T, 2> db = (nonB + B * m[3]);
 
         // Finally add b and db to get next (uncomment to apply a speedlimit)
         this->next = b + db /* * this->speedlimit(db) */;
-
-        // If we're penning the agent in, then check this->next and change as necessary
-        if (be == border_effect::penned && this->entered == true) { this->pen_in (tissue); }
     }
 
 };

@@ -482,14 +482,16 @@ $t$ of each branch $b$ is updated according to
 %
 where $\mathbf{M}_{b}$, the movement vector, is the sum of a chemoaffinity
 effect, $\mathbf{G}_b$, axon-axon competition, $\mathbf{C}_b$, an axon-axon
-receptor-ligand interaction, $\mathbf{I}_b$ and a `border effect',
+receptor-receptor interaction, $\mathbf{I}_b$, and axon-axon receptor-ligand
+interaction, $\mathbf{J}_b$, and a `border effect',
 $\mathbf{B}_b$, which acts to retain branches within the tectal region:
 %
 \begin{equation}
-\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{C}_b + m_3 \mathbf{I}_b + m_4 \mathbf{B}_b
+\mathbf{M}_{b} = m_1 \mathbf{G}_b + m_2 \mathbf{C}_b + m_3 \mathbf{I}_b +
+m_4 \mathbf{J}_b + m_5 \mathbf{B}_b
 \end{equation}
 %
-evaluated at time $t$. $m_1$--$m_4$ are scalar parameters.
+evaluated at time $t$. $m_1$--$m_4$ are scalar parameters. $m_2$
 
 \subsection*{Chemoaffinity}
 
