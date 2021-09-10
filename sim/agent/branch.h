@@ -248,14 +248,11 @@ public:
             n_ki += cij_added[1] ? T{1} : T{0};
             n_kj += cij_added[2] ? T{1} : T{0};
         }
-        //std::cout << "C had " << n_k << " interactions, I had " << n_ki << " and J had " << n_kj << std::endl;
-        //std::cout << "J=" << J << " and J/" << n_kj << "=" << (J/n_kj) << std::endl;
 
         // Do the 1/|B_b| multiplication to normalize C and I(!!)
         if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
         I = n_ki > T{0} ? I/n_ki : I;
         J = n_kj > T{0} ? J/n_kj : J;
-        //std::cout << "C=" << C << std::endl;
 
         if constexpr (store_interaction_history == true) {
             // Add I to history & rotate, reducing effect by 90% due to one time step passing
@@ -268,12 +265,7 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-
-#if 0
-        morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
-        brng::i()->get(R);
-#endif
-        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3]; // + R * m[5];
+        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
