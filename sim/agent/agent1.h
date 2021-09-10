@@ -109,7 +109,9 @@ struct Agent1
             std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
             if constexpr (visualise == true) {
                 this->vis(1);
-                this->v->keepOpen();
+                if (this->immediate_exit == false) {
+                    this->v->keepOpen();
+                }
             }
             return;
         }
@@ -178,7 +180,9 @@ struct Agent1
             nss << "./paper/images/" << this->title << ".png";
             this->v->saveImage (nss.str());
             this->vis(this->conf->getUInt ("steps", 1000));
-            this->v->keepOpen();
+            if (this->immediate_exit == false) {
+                this->v->keepOpen();
+            }
         }
     }
 
@@ -877,6 +881,7 @@ struct Agent1
 
         // Finally, set any additional parameters that will be needed with calling Agent1::run
         this->goslow = this->conf->getBool ("goslow", false);
+        this->immediate_exit = this->conf->getBool ("exit", false);
     }
 
 #ifdef VISUALISE
@@ -1287,6 +1292,8 @@ struct Agent1
     unsigned int rgcside = 20;
     // If true, then slow things down a bit in the visualization
     bool goslow = false;
+    // Exit or keep showing graphics?
+    bool immediate_exit = false;
     // How many steps to store history. Note, we might choose not to show all of these
     // in a visualisation?
     static constexpr size_t history = 2000;

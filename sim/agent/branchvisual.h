@@ -77,7 +77,7 @@ public:
         if (!this->branches->empty()) {
             this->radiusFixed = (*this->branches)[0].getr();
 
-            morph::Vector<Flt, 3> rads = { (*this->branches)[0].getrc(), (*this->branches)[0].getrrl(), (*this->branches)[0].getrrr() };
+            morph::Vector<Flt, 3> rads = { (*this->branches)[0].getr_c(), (*this->branches)[0].getr_j(), (*this->branches)[0].getr_i() };
             this->rad_interaction = rads.max() > this->radiusFixed ? rads.max() : Flt{0.0};
             //std::cout << "radiusFixed: " << radiusFixed << " rad_interaction: " << rad_interaction << std::endl;
         }

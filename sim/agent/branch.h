@@ -156,20 +156,15 @@ public:
 #else
         T QI = T{0};
         if constexpr (N == 4) {
-            T QI0 = T{0};
-            T QI1 = T{0};
-            T QI2 = T{0};
-            T QI3 = T{0};
             // Receptor-receptor activation according to rcptrcpt_interactions
-            QI0 = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
-                                                 (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0));
-            QI1 = kp->rcpt[1] * this->rcpt[1] * (source_tissue->rcptrcpt_interactions[1] == interaction::repulsion ? 1 :
-                                                 (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
-            QI2 = kp->rcpt[2] * this->rcpt[2] * (source_tissue->rcptrcpt_interactions[2] == interaction::repulsion ? 1 :
-                                                 (source_tissue->rcptrcpt_interactions[2] == interaction::attraction ? -1 : 0));
-            QI3 = kp->rcpt[3] * this->rcpt[3] * (source_tissue->rcptrcpt_interactions[3] == interaction::repulsion ? 1 :
-                                                 (source_tissue->rcptrcpt_interactions[3] == interaction::attraction ? -1 : 0));
-            QI = QI0 + QI1 + QI2 + QI3;
+            QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
+                                                (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0))
+            + kp->rcpt[1] * this->rcpt[1] * (source_tissue->rcptrcpt_interactions[1] == interaction::repulsion ? 1 :
+                                             (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0))
+            + kp->rcpt[2] * this->rcpt[2] * (source_tissue->rcptrcpt_interactions[2] == interaction::repulsion ? 1 :
+                                             (source_tissue->rcptrcpt_interactions[2] == interaction::attraction ? -1 : 0))
+            + kp->rcpt[3] * this->rcpt[3] * (source_tissue->rcptrcpt_interactions[3] == interaction::repulsion ? 1 :
+                                             (source_tissue->rcptrcpt_interactions[3] == interaction::attraction ? -1 : 0));
         } else if constexpr (N == 2) {
             QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
                                                 (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0))
@@ -197,7 +192,6 @@ public:
         J += kb * QJ * (d <= this->two_r_j ? T{1} : T{0});
         rtn[2] = (d <= this->two_r_j && QJ > T{0}) ? true : false;
 
-        // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
         return rtn;
     }
 

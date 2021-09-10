@@ -49,6 +49,7 @@
 \usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage[outercaption]{sidecap}
+\usepackage{subfigure}
 
 % Nice quotes
 \usepackage{csquotes}
@@ -491,7 +492,7 @@ $\mathbf{B}_b$, which acts to retain branches within the tectal region:
 m_4 \mathbf{J}_b + m_5 \mathbf{B}_b
 \end{equation}
 %
-evaluated at time $t$. $m_1$--$m_4$ are scalar parameters. $m_2$
+evaluated at time $t$. $m_1$--$m_5$ are scalar parameters.
 
 \subsection*{Chemoaffinity}
 
@@ -517,7 +518,9 @@ tectum and $F_i$ denotes the direction of the interaction induced when a
 molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes the value
 -1 for a repulsive interaction or 1 for an attractive interaction.
 
-\subsection*{Axon-axon competition}
+\subsection*{Axon-axon interactions}
+
+\subsection*{Space based (or self-other) competition}
 
 Competition, in the context of this model, is a repulsive effect which acts
 between any two branches, whether they originate from different retinal
@@ -526,41 +529,72 @@ self-other signal (\textbf{be sure to discuss possible origins}) which acts to
 discourage two cells from approaching each other.
 %
 \begin{equation}
-\mathbf{C}_b = \frac{1}{|B_b|} \sum_k \hat{\mathbf{x}}_{kb} W
+\mathbf{C}_b = \frac{1}{|B_{b,c}|} \sum_k \hat{\mathbf{x}}_{kb} W
 \end{equation}
 where the distance based weight $W$ is given by
 \begin{equation}
 W(d_{kb}) = \begin{cases}
-      1 - \frac{d_{kb}}{2r}   & d_{kb} \leq 2r \\
-     0 & d_{kb} > 2r
+      1 - \frac{d_{kb}}{2r}   & d_{kb} \leq 2r_c \\
+     0 & d_{kb} > 2r_c
      \end{cases}
 \end{equation}
-for two growth cones of radius $r$ separated by a distance $d_{kb}$. $B_b$ is
-the set of growth cones within a distance $2r$ of branch $b$.
+for two growth cones of interaction radius $r_c$ separated by a distance
+$d_{kb}$. $B_{b,c}$ is the set of growth cones within a distance $2r_c$ of
+branch $b$.
 
-\subsection*{Axon-axon interactions}
+\subsection*{Receptor-receptor axon-axon interactions}
 
-For axon-axon interactions, repulsion causes a movement of branch $b$ along a
-unit vector, $\hat{\mathbf{x}}_{kb}$, from branch $k$ to branch $b$ causing
-them to move further apart; attraction causes the opposite movement. The
-interaction, $\mathbf{I}_b$, acting on branch $b$, is given by
+We model interactions between axon growth cones due to signalling between
+receptors of the same type. For these interactions, repulsion causes a
+movement of branch $b$ along a unit vector, $\hat{\mathbf{x}}_{kb}$, from
+branch $k$ to branch $b$ causing them to move further apart; attraction causes
+the opposite movement. The interaction, $\mathbf{I}_b$, acting on branch $b$,
+is given by
+
+\textbf{FIXME} In the code, I'm mostly using the Reber-like ratio based
+interaction, as described in Simpson and Goodhill.
+
 %
 \begin{equation}
-% No \frac{1}{|B_b|} in this one
+% No \frac{1}{|B_b|} in this one. Really?
 \mathbf{I}_b = \sum_k \hat{\mathbf{x}}_{kb}\,Q(d_{kb})
 \end{equation}
 %
-where $Q(d_{kb})$ is the signalling strength between two growth cones of
-radius $r$ a distance $d_{kb}$ from one another, given by
+where $Q_I(d_{kb})$ is the signalling strength between two growth cones of
+receptor-receptor interaction radius $r_i$ a distance $d_{kb}$ from one
+another, given by
 %
 \begin{equation}
-Q(d_{kb}) = \begin{cases}
-     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r \\
-     0 & d_{kb} > 2r
+Q_I(d_{kb}) = \begin{cases}
+     \sum_i^N E_i\,r_{i,b}\,r_{i,k}    & d_{kb} \leq 2r_i \\
+     0 & d_{kb} > 2r_i
      \end{cases}
 \end{equation}
 %
-The sign of $Q$ (which is dependent on the values of $F_i$) determines whether
+The sign of $Q_I$ is dependent on the values of $E_i$, which determines
+whether the receptor-recetpro interaction, $\mathbf{I}_b$, is repulsive or
+attractive. $r_{i,k}$ is the expression of receptor $i$ on branch $k$.
+
+\subsection*{Receptor-ligand axon-axon interactions}
+
+%
+\begin{equation}
+% No \frac{1}{|B_b|} in this one. Really?
+\mathbf{J}_b = \sum_k \hat{\mathbf{x}}_{kb}\,Q_J(d_{kb})
+\end{equation}
+%
+where $Q_J(d_{kb})$ is the signalling strength between two growth cones of
+receptor-ligand interaction radius $r_j$ a distance $d_{kb}$ from one another,
+given by
+%
+\begin{equation}
+Q_J(d_{kb}) = \begin{cases}
+     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r_j \\
+     0 & d_{kb} > 2r_j
+     \end{cases}
+\end{equation}
+%
+The sign of $Q_J$ (which is dependent on the values of $F_i$) determines whether
 the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
 expression of ligand $i$ on branch $k$.
 
@@ -611,7 +645,7 @@ relationships. Perhaps J also needs a self-self interaction (i.e. for members
 of the same axon?).
 
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_wt_fig.png}
+\includegraphics[width=\linewidth]{./images/j4_eE_GJ_wt.png}
 \caption{Gradient following model with axon-axon interactions.}
 \label{f:wt}
 \end{figure}
@@ -656,11 +690,9 @@ of the order present in Fig.\,\ref{f:wt}D. Finally, Fig.\,\ref{f:wt}G shows the
 branches and their centroid path history for five selected RGCs, with path
 histories strongly resembling those presented by \citet{simpson_simple_2011}.
 
-This result shows that a gradient following model based on receptor-ligand
-interactions and incorporating axon-axon repulsion is able to generate the
-basic mapping observed in the retinotectal projection.
-
-
+This result shows that a gradient-following model based on receptor-ligand
+interactions (both for axon-to-tectum and axon-to-axon interactions) is
+able to generate the basic mapping observed in the retinotectal projection.
 
 \subsection*{Manipulations}
 
@@ -682,8 +714,22 @@ rotational sense can be observed clearly in the `Branches' column; for the
 90$\degree$ rotation, the top-right (caudal-lateral) corner of the rotated
 square is red, whereas the top-left corner of the wildtype tectum is red. \textbf{etc}.
 
+
+%\includegraphics[width=\linewidth]{./images/fig_manipulations.png}
+
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_manipulations.png}
+\begin{subfigure}{\linewidth}
+\includegraphics[width=\linewidth]{./images/j4_eE_GC_wt_rotcmp.png}
+\end{subfigure}
+\begin{subfigure}{\linewidth}
+\includegraphics[width=\linewidth]{./images/j4_eE_GC_tecrot90.png}
+\end{subfigure}
+\begin{subfigure}{\linewidth}
+\includegraphics[width=\linewidth]{./images/j4_eE_GC_tecrot180.png}
+\end{subfigure}
+\begin{subfigure}{\linewidth}
+\includegraphics[width=\linewidth]{./images/j4_eE_GC_tecswap.png}
+\end{subfigure}
 \caption{Surgical manipulations. Row A: wildtype. Row B: 90 degree
 rotation. Row C: 180 degree rotation. Row D: Graft swap.}
 \label{f:surg1}
