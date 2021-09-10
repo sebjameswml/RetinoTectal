@@ -20,21 +20,21 @@ struct branch : public branch_base<T,N>
     // Distance parameter r is used as 2r
     void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
     T getr() { return this->r; }
-    T getrc() { return this->rc; }
-    T getrrl() { return this->rrl; }
-    T getrrr() { return this->rrr; }
-    void setrc (T _r) { this->rc = _r; this->two_rc = _r*T{2}; }
-    void setrrl (T _r) { this->rrl = _r; this->two_rrl = _r*T{2}; }
-    void setrrr (T _r) { this->rrr = _r; this->two_rrr = _r*T{2}; }
+    T getr_c() { return this->r_c; }
+    T getr_j() { return this->r_j; }
+    T getr_i() { return this->r_i; }
+    void setr_c (T _r) { this->r_c = _r; this->two_r_c = _r*T{2}; }
+    void setr_j (T _r) { this->r_j = _r; this->two_r_j = _r*T{2}; }
+    void setr_i (T _r) { this->r_i = _r; this->two_r_i = _r*T{2}; }
 protected:
     T r = T{0.04};   // Actual radius of a growth cone (may be used for visualisation)
     T two_r = T{2}*r;
-    T rc = T{0.04};  // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
-    T two_rc = T{2}*r;
-    T rrl = T{0.04}; // receptor-ligand interaction distance for axon-axon interactions
-    T two_rrl = T{2}*r;
-    T rrr = T{0.04}; // receptor-receptor interaction distance for axon-axon interactions
-    T two_rrr = T{2}*r;
+    T r_c = T{0.04};  // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
+    T two_r_c = T{2}*r;
+    T r_j = T{0.04}; // receptor-ligand interaction distance for axon-axon interactions
+    T two_r_j = T{2}*r;
+    T r_i = T{0.04}; // receptor-receptor interaction distance for axon-axon interactions
+    T two_r_i = T{2}*r;
 public:
     // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
     static constexpr bool s_g_interaction = false;
@@ -127,9 +127,9 @@ public:
         //
         // W is a distance-dependent weight, which is 0 outside a distance of two_r and
         // linearly increases to 1 when d=0.
-        T W = d <= this->two_rc ? (T{1} - d/this->two_rc) : T{0};
+        T W = d <= this->two_r_c ? (T{1} - d/this->two_r_c) : T{0};
         C += kb * W;
-        rtn[0] = d <= this->two_rc ? true : false;
+        rtn[0] = d <= this->two_r_c ? true : false;
 
         // QI/J collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
@@ -139,7 +139,7 @@ public:
         // The S & G axon-axon interaction is based on the receptor expression only and
         // (guided by Reber) looks at the relative levels
         T QI = T{0};
-        W = d <= this->two_rrr ? (T{1} - d/this->two_rrr) : T{0};
+        W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
         if constexpr (N == 4) {
             QI = kp->rcpt[0] / this->rcpt[0];
             //+ kp->rcpt[1] / this->rcpt[1]
@@ -177,8 +177,8 @@ public:
                                              (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
         }
         QI /= N;
-        I += kb * QI * (d <= this->two_rrr ? T{1} : T{0});
-        rtn[1] = (d <= this->two_rrr && QI > T{0}) ? true : false;
+        I += kb * QI * (d <= this->two_r_i ? T{1} : T{0});
+        rtn[1] = (d <= this->two_r_i && QI > T{0}) ? true : false;
 #endif
         // Receptor-ligand axon-axon interaction, J
         T QJ = T{0};
@@ -194,8 +194,8 @@ public:
             + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
         }
         QJ /= N;
-        J += kb * QJ * (d <= this->two_rrl ? T{1} : T{0});
-        rtn[2] = (d <= this->two_rrl && QJ > T{0}) ? true : false;
+        J += kb * QJ * (d <= this->two_r_j ? T{1} : T{0});
+        rtn[2] = (d <= this->two_r_j && QJ > T{0}) ? true : false;
 
         // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
         return rtn;

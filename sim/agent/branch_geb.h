@@ -17,17 +17,17 @@ struct branch_geb : public branch_base<T,N>
     // The cone radius, hard coded
     void setr (T _r) { this->r = _r; }
     T getr() { return this->r; }
-    T getrc() { return this->rc; }
-    T getrrl() { return this->rrl; }
-    T getrrr() { return this->rrr; }
-    void setrc(T _r) {}
-    void setrrl(T _r) {}
-    void setrrr(T _r) {}
+    T getr_c() { return this->r_c; }
+    T getr_j() { return this->r_j; }
+    T getr_i() { return this->r_i; }
+    void setr_c(T _r) {}
+    void setr_j(T _r) {}
+    void setr_i(T _r) {}
 protected:
     T r = T{0.05};
-    T rc = T{0.0};
-    T rrl = T{0.0};
-    T rrr = T{0.0};
+    T r_c = T{0.0};
+    T r_j = T{0.0};
+    T r_i = T{0.0};
 
 public:
     // For random angle choice

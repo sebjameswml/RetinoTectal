@@ -668,9 +668,9 @@ struct Agent1
         std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
 
         float r_conf = this->mconf->getFloat ("r", 0.05f);
-        float rc_conf = this->mconf->getFloat ("rc", 0.0f);
-        float rrl_conf = this->mconf->getFloat ("rrl", 0.0f);
-        float rrr_conf = this->mconf->getFloat ("rrr", 0.0f);
+        float r_c_conf = this->mconf->getFloat ("r_c", 0.0f);
+        float r_j_conf = this->mconf->getFloat ("r_j", 0.0f);
+        float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
         T s = this->mconf->getFloat ("s", 1.1f);
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
@@ -679,9 +679,9 @@ struct Agent1
             this->pending_branches[i].init();
             this->pending_branches[i].s = s;
             this->pending_branches[i].setr (r_conf);
-            this->pending_branches[i].setrc (rc_conf);
-            this->pending_branches[i].setrrl (rrl_conf);
-            this->pending_branches[i].setrrr (rrr_conf);
+            this->pending_branches[i].setr_c (r_c_conf);
+            this->pending_branches[i].setr_j (r_j_conf);
+            this->pending_branches[i].setr_i (r_i_conf);
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
@@ -868,10 +868,10 @@ struct Agent1
         }
 
         // Parameters settable from json
-        this->m[0] = this->mconf->getDouble ("m1", 0.001);    // G rcpt-lgnd (axon-tectum)
-        this->m[1] = this->mconf->getDouble ("m2", 0.0);      // J rcpt-lgnd (axon-axon)
-        this->m[2] = this->mconf->getDouble ("m3", 0.0);      // I rcpt-rcpt (axon-axon)
-        this->m[3] = this->mconf->getDouble ("c1", 0.0);      // C (if used)
+        this->m[0] = this->mconf->getDouble ("m_g", 0.001);    // G rcpt-lgnd (axon-tectum)
+        this->m[1] = this->mconf->getDouble ("m_j", 0.0);      // J rcpt-lgnd (axon-axon)
+        this->m[2] = this->mconf->getDouble ("m_i", 0.0);      // I rcpt-rcpt (axon-axon)
+        this->m[3] = this->mconf->getDouble ("m_c", 0.0);      // C (if used)
         std::cout << "Competition param = " << this->m[3] << std::endl;
         this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
 

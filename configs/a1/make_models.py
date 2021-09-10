@@ -38,95 +38,95 @@ def make_pobj():
         "r" : 0.015, # 0.005 accurate ish, 0.015 good for vis
         #"desc_rc" : "Interaction radius via competition interaction",
         "rc" : 0.04,
-        #"desc_rrr" : "Interaction radius via rcpt-rcpt interaction",
-        "rrr" : 0.04, # 0.015 ok. 0.05 S&G
+        #"desc_r_i" : "Interaction radius via rcpt-rcpt interaction",
+        "r_i" : 0.04, # 0.015 ok. 0.05 S&G
         #"desc_rrl" : "Interaction radius via rcpt-lgnd interaction",
         "rrl" : 0.04,
         #"desc_s" : "Rcpt-rcpt signalling threshold value",
         "s" : 1.1,
-        #"desc_m1" : "chemoaffinity axon-tectum rcpt-lgnd (G)",
-        "m1" : -1,
-        #"desc_m2" : "the axon-axon rcpt-lgnd interactions (J)",
-        "m2" : -1,
-        #"desc_m3" : "the axon-axon rcpt-rcpt interactions (I)",
-        "m3" : -1,
+        #"desc_m_g" : "chemoaffinity axon-tectum rcpt-lgnd (G)",
+        "m_g" : -1,
+        #"desc_m_j" : "the axon-axon rcpt-lgnd interactions (J)",
+        "m_j" : -1,
+        #"desc_m_i" : "the axon-axon rcpt-rcpt interactions (I)",
+        "m_i" : -1,
         #"desc_mborder" : "border effect",
         "mborder" : 0.5,
-        #"desc_c1" : "axon-axon competition (C)",
-        "c1" : -1
+        #"desc_m_c" : "axon-axon competition (C)",
+        "m_c" : -1
     }
     return pobj
 
 # Save out one set of models, for a given configuration of rcpt/lgnd expression functions
 def save_model_set (modeltag, pobj):
     fpath = 'm_{0}_GIJ.json'.format(modeltag)
-    pobj["m1"] = m1
-    pobj["m2"] = m2
-    pobj["m3"] = m3
-    pobj["c1"] = 0.0
+    pobj["m_g"] = m_g
+    pobj["m_j"] = m_j
+    pobj["m_i"] = m_i
+    pobj["m_c"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
     fpath = 'm_{0}_IJ.json'.format(modeltag)
-    pobj["m1"] = 0.0
-    pobj["m2"] = m2
-    pobj["m3"] = m3
-    pobj["c1"] = 0.0
+    pobj["m_g"] = 0.0
+    pobj["m_j"] = m_j
+    pobj["m_i"] = m_i
+    pobj["m_c"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
     fpath = 'm_{0}_GJ.json'.format(modeltag)
-    pobj["m1"] = m1
-    pobj["m2"] = m2
-    pobj["m3"] = 0.0
-    pobj["c1"] = 0.0
+    pobj["m_g"] = m_g
+    pobj["m_j"] = m_j
+    pobj["m_i"] = 0.0
+    pobj["m_c"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
     fpath = 'm_{0}_GI.json'.format(modeltag)
-    pobj["m1"] = m1
-    pobj["m2"] = 0.0
-    pobj["m3"] = m3
-    pobj["c1"] = 0.0
+    pobj["m_g"] = m_g
+    pobj["m_j"] = 0.0
+    pobj["m_i"] = m_i
+    pobj["m_c"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
     fpath = 'm_{0}_G.json'.format(modeltag)
-    pobj["m1"] = m1
-    pobj["m2"] = 0.0
-    pobj["m3"] = 0.0
-    pobj["c1"] = 0.0
+    pobj["m_g"] = m_g
+    pobj["m_j"] = 0.0
+    pobj["m_i"] = 0.0
+    pobj["m_c"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
     fpath = 'm_{0}_GC.json'.format(modeltag)
-    pobj["m1"] = m1
-    pobj["m2"] = 0.0
-    pobj["m3"] = 0.0
-    pobj["c1"] = c1;
+    pobj["m_g"] = m_g
+    pobj["m_j"] = 0.0
+    pobj["m_i"] = 0.0
+    pobj["m_c"] = m_c;
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
     fpath = 'm_{0}_GCI.json'.format(modeltag)
-    pobj["m1"] = m1
-    pobj["m2"] = 0.0
-    pobj["m3"] = m3
-    pobj["c1"] = c1;
+    pobj["m_g"] = m_g
+    pobj["m_j"] = 0.0
+    pobj["m_i"] = m_i
+    pobj["m_c"] = m_c;
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
 # Set params once here. Sensitive to ee vs eE, I think
-m1 = 0.002  # G
-m2 = 0.001  # J
-m3 = 0.04   # I
-c1 = 0.2    # C
+m_g = 0.002  # G
+m_j = 0.001  # J
+m_i = 0.04   # I
+m_c = 0.2    # C
 
 # These are all the model combos I might have:
 modeltag = 'eE'
