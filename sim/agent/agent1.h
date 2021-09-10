@@ -876,8 +876,8 @@ struct Agent1
         this->m[1] = this->mconf->getDouble ("m_j", 0.0);      // J rcpt-lgnd (axon-axon)
         this->m[2] = this->mconf->getDouble ("m_i", 0.0);      // I rcpt-rcpt (axon-axon)
         this->m[3] = this->mconf->getDouble ("m_c", 0.0);      // C (if used)
-        std::cout << "Competition param = " << this->m[3] << std::endl;
-        this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
+        this->m[4] = this->mconf->getDouble ("mborder", 0.5);  // B
+        this->m[5] = this->mconf->getDouble ("m_h", 0.0);      // H axon-axon self-repulsion (like C, but only with self)
 
         // Finally, set any additional parameters that will be needed with calling Agent1::run
         this->goslow = this->conf->getBool ("goslow", false);
@@ -1306,8 +1306,8 @@ struct Agent1
     // Same sized tectum tissue
     guidingtissue<T, N>* tectum;
     // Parameters vector (See Table 2 in the paper)
-    //                        G        C       I        J        B
-    morph::Vector<T, 5> m = { T{0.02}, T{0.2}, T{0.15}, T{0.15}, T{0.1}};
+    //                        G        C       I        J        B       H
+    morph::Vector<T, 6> m = { T{0.02}, T{0.2}, T{0.15}, T{0.15}, T{0.1}, T{0.2}};
     // The centre coordinate
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME bit of a hack, this.
     // (rgcside^2 * bpa) branches, as per the paper

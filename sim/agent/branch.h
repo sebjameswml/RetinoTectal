@@ -109,12 +109,13 @@ public:
     // interaction. Use the strength of this interaction to weight a vector between the
     // two cones. I is the receptor-receptor interaction of S&G, J is my receptor-ligand
     // axon-axon interaction.
-    std::bitset<3>
+    std::bitset<4>
     compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
-                        morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J)
+                        morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J,
+                        morph::Vector<T, 2>& H)
     {
         // Holds flags to say if we should add to C, I or J.
-        std::bitset<3> rtn;
+        std::bitset<4> rtn;
 
         // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
         // sums these. However, that gives a competition term with a sign error. So
@@ -130,6 +131,11 @@ public:
         T W = d <= this->two_r_c ? (T{1} - d/this->two_r_c) : T{0};
         C += kb * W;
         rtn[0] = d <= this->two_r_c ? true : false;
+
+        // cis space based competition, H (uses r_c for interaction distance, same as C)
+        //
+        H += kp->id == this->id ? kb * W : kb * T{0};
+        rtn[3] = d <= this->two_r_c && kp->id == this->id ? true : false;
 
         // QI/J collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
@@ -223,7 +229,7 @@ public:
     void compute_next (const std::vector<branch<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 5>& m,
+                       const morph::Vector<T, 6>& m,
                        const morph::Vector<T, 2*N>& rns)
     {
         // Current location is named b
@@ -236,26 +242,28 @@ public:
         morph::Vector<T, 2> C = {0, 0};
         morph::Vector<T, 2> I = {0, 0};
         morph::Vector<T, 2> J = {0, 0};
+        morph::Vector<T, 2> H = {0, 0};
 
         // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
         T n_ki = T{0};
         T n_kj = T{0};
+        T n_kh = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            std::bitset<3> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J);
+            std::bitset<4> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J, H);
             n_k += cij_added[0] ? T{1} : T{0};
             n_ki += cij_added[1] ? T{1} : T{0};
             n_kj += cij_added[2] ? T{1} : T{0};
+            n_kh += cij_added[3] ? T{1} : T{0};
         }
-        //std::cout << "C had " << n_k << " interactions, I had " << n_ki << " and J had " << n_kj << std::endl;
-        //std::cout << "J=" << J << " and J/" << n_kj << "=" << (J/n_kj) << std::endl;
 
         // Do the 1/|B_b| multiplication to normalize C and I(!!)
-        if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
+        C = n_k > T{0} ? C/n_k : C;
         I = n_ki > T{0} ? I/n_ki : I;
         J = n_kj > T{0} ? J/n_kj : J;
-        //std::cout << "C=" << C << std::endl;
+        //std::cout << "n_kh = " << n_kh << " and H is " << H << std::endl;
+        H = n_kh > T{0} ? H/n_kh : H;
 
         if constexpr (store_interaction_history == true) {
             // Add I to history & rotate, reducing effect by 90% due to one time step passing
@@ -268,12 +276,7 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-
-#if 0
-        morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
-        brng::i()->get(R);
-#endif
-        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3]; // + R * m[5];
+        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3] + H * m[5];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);

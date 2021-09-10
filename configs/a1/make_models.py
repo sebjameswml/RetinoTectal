@@ -6,6 +6,7 @@ m_g = 0.002  # G
 m_j = 0.001  # J
 m_i = 0.04   # I
 m_c = 0.2    # C
+m_h = 2    # H
 r_int = 0.04 # common interaction radius
 
 # A Python structure containing the base values that should appear in the output json files
@@ -58,6 +59,8 @@ def make_pobj():
         "m_i" : -1,
         #"desc_m_j" : "the axon-axon rcpt-lgnd interactions (J)",
         "m_j" : -1,
+        #"desc_m_h" : "the axon-axon self-repulsion interaction (like C but only between branches of same axon)",
+        "m_h" : 0,
         #"desc_mborder" : "border effect",
         "mborder" : 0.5
     }
@@ -71,6 +74,7 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = m_j
     pobj["m_i"] = m_i
     pobj["m_c"] = 0.0
+    pobj["m_h"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
@@ -80,6 +84,7 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = m_j
     pobj["m_i"] = m_i
     pobj["m_c"] = 0.0
+    pobj["m_h"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
@@ -89,6 +94,7 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = m_j
     pobj["m_i"] = 0.0
     pobj["m_c"] = 0.0
+    pobj["m_h"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
@@ -98,6 +104,7 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = 0.0
     pobj["m_i"] = m_i
     pobj["m_c"] = 0.0
+    pobj["m_h"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
@@ -107,6 +114,7 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = 0.0
     pobj["m_i"] = 0.0
     pobj["m_c"] = 0.0
+    pobj["m_h"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
@@ -116,6 +124,7 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = 0.0
     pobj["m_i"] = 0.0
     pobj["m_c"] = m_c;
+    pobj["m_h"] = 0.0
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
@@ -125,6 +134,17 @@ def save_model_set (modeltag, pobj):
     pobj["m_j"] = 0.0
     pobj["m_i"] = m_i
     pobj["m_c"] = m_c;
+    pobj["m_h"] = 0.0
+    with open(fpath, 'w') as outfile:
+        json.dump(pobj, outfile, indent=4)
+    print ('Wrote {0}'.format (fpath))
+
+    fpath = 'm_{0}_GJH.json'.format(modeltag)
+    pobj["m_g"] = m_g
+    pobj["m_j"] = m_j
+    pobj["m_i"] = 0.0
+    pobj["m_c"] = 0.0;
+    pobj["m_h"] = m_h
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))

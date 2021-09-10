@@ -74,7 +74,7 @@ struct branch_stochastic : public branch<T,N>
     void compute_next (const std::vector<branch_stochastic<T, N, R>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 5>& m,
+                       const morph::Vector<T, 6>& m,
                        const morph::Vector<T, 2*N>& rns)
     {
         // Current location is named b
@@ -87,30 +87,30 @@ struct branch_stochastic : public branch<T,N>
         morph::Vector<T, 2> C = {0, 0};
         morph::Vector<T, 2> I = {0, 0};
         morph::Vector<T, 2> J = {0, 0};
+        morph::Vector<T, 2> H = {0, 0};
 
         // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
         T n_ki = T{0};
         T n_kj = T{0};
+        T n_kh = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            std::bitset<3> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J);
+            std::bitset<4> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J, H);
             n_k += cij_added[0] ? T{1} : T{0};
             n_ki += cij_added[1] ? T{1} : T{0};
             n_kj += cij_added[2] ? T{1} : T{0};
+            n_kh += cij_added[3] ? T{1} : T{0};
         }
+
         // Do the 1/|B_b| multiplication to normalize C and I(!!)
-        if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
+        C = n_k > T{0} ? C/n_k : C;
         I = n_ki > T{0} ? I/n_ki : I;
-        J = n_kj > T{0} ? I/n_kj : J;
-        //std::cout << "C=" << C << std::endl;
+        J = n_kj > T{0} ? J/n_kj : J;
+        H = n_kh > T{0} ? H/n_kh : H;
 
         // Collected non-border movement components
-#if 0
-        morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
-        brng::i()->get(R);
-#endif
-        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3]; // + R * m[5];
+        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3] + H * m[5];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
