@@ -1,6 +1,12 @@
 # A script to auto-generate all the config json files, so that I can
 # manage them as a group.
-import json
+
+# Set params once here. Sensitive to ee vs eE, I think
+m_g = 0.002  # G
+m_j = 0.001  # J
+m_i = 0.04   # I
+m_c = 0.2    # C
+r_int = 0.04 # common interaction radius
 
 # A Python structure containing the base values that should appear in the output json files
 def make_pobj():
@@ -33,30 +39,31 @@ def make_pobj():
         "rgcside" : 20,
 
         #"desc_bpa" : "Branches per axon",
-        "bpa" : 8,
+        "bpa" : 4,
         #"desc_r" : "Radius of branches/cones (for visualisation)",
         "r" : 0.015, # 0.005 accurate ish, 0.015 good for vis
         #"desc_rc" : "Interaction radius via competition interaction",
-        "rc" : 0.04,
+        "r_c" : r_int,
         #"desc_r_i" : "Interaction radius via rcpt-rcpt interaction",
-        "r_i" : 0.04, # 0.015 ok. 0.05 S&G
+        "r_i" : r_int, # 0.015 ok. 0.05 S&G
         #"desc_rrl" : "Interaction radius via rcpt-lgnd interaction",
-        "rrl" : 0.04,
+        "r_j" : r_int,
         #"desc_s" : "Rcpt-rcpt signalling threshold value",
         "s" : 1.1,
         #"desc_m_g" : "chemoaffinity axon-tectum rcpt-lgnd (G)",
         "m_g" : -1,
-        #"desc_m_j" : "the axon-axon rcpt-lgnd interactions (J)",
-        "m_j" : -1,
+        #"desc_m_c" : "axon-axon competition (C)",
+        "m_c" : -1,
         #"desc_m_i" : "the axon-axon rcpt-rcpt interactions (I)",
         "m_i" : -1,
+        #"desc_m_j" : "the axon-axon rcpt-lgnd interactions (J)",
+        "m_j" : -1,
         #"desc_mborder" : "border effect",
-        "mborder" : 0.5,
-        #"desc_m_c" : "axon-axon competition (C)",
-        "m_c" : -1
+        "mborder" : 0.5
     }
     return pobj
 
+import json
 # Save out one set of models, for a given configuration of rcpt/lgnd expression functions
 def save_model_set (modeltag, pobj):
     fpath = 'm_{0}_GIJ.json'.format(modeltag)
@@ -121,12 +128,6 @@ def save_model_set (modeltag, pobj):
     with open(fpath, 'w') as outfile:
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
-
-# Set params once here. Sensitive to ee vs eE, I think
-m_g = 0.002  # G
-m_j = 0.001  # J
-m_i = 0.04   # I
-m_c = 0.2    # C
 
 # These are all the model combos I might have:
 modeltag = 'eE'
