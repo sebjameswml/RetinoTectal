@@ -3,6 +3,7 @@
 #include "branch_base.h"
 
 #include <vector>
+#include <bitset>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
 #include <morph/MathAlgo.h>
@@ -26,7 +27,7 @@ struct branch : public branch_base<T,N>
     void setrrl (T _r) { this->rrl = _r; this->two_rrl = _r*T{2}; }
     void setrrr (T _r) { this->rrr = _r; this->two_rrr = _r*T{2}; }
 protected:
-    T r = T{0.04};   // Actual radius of a growth cone
+    T r = T{0.04};   // Actual radius of a growth cone (may be used for visualisation)
     T two_r = T{2}*r;
     T rc = T{0.04};  // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
     T two_rc = T{2}*r;
@@ -108,9 +109,13 @@ public:
     // interaction. Use the strength of this interaction to weight a vector between the
     // two cones. I is the receptor-receptor interaction of S&G, J is my receptor-ligand
     // axon-axon interaction.
-    T compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
-                          morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J)
+    std::bitset<3>
+    compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
+                        morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J)
     {
+        // Holds flags to say if we should add to C, I or J.
+        std::bitset<3> rtn;
+
         // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
         // sums these. However, that gives a competition term with a sign error. So
         // here, sum up the unit vectors kb.
@@ -124,6 +129,7 @@ public:
         // linearly increases to 1 when d=0.
         T W = d <= this->two_rc ? (T{1} - d/this->two_rc) : T{0};
         C += kb * W;
+        rtn[0] = d <= this->two_rc ? true : false;
 
         // QI/J collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
@@ -145,6 +151,8 @@ public:
         //QI /= N;
         morph::Vector<T, 2> nullvec = {0, 0};
         I += QI > this->s ? kb * W : nullvec; // FIXME FIXME: Need to count up number of interactions and divide by this number (like for comp)
+        rtn[1] = (QI > this->s && W > T{0}) ? true : false;
+
 #else
         T QI = T{0};
         if constexpr (N == 4) {
@@ -170,6 +178,7 @@ public:
         }
         QI /= N;
         I += kb * QI * (d <= this->two_rrr ? T{1} : T{0});
+        rtn[1] = (d <= this->two_rrr && QI > T{0}) ? true : false;
 #endif
         // Receptor-ligand axon-axon interaction, J
         T QJ = T{0};
@@ -186,9 +195,10 @@ public:
         }
         QJ /= N;
         J += kb * QJ * (d <= this->two_rrl ? T{1} : T{0});
+        rtn[2] = (d <= this->two_rrl && QJ > T{0}) ? true : false;
 
         // In client code, should we add to n_k or not? (only used for competition, hence d <= two_rc)
-        return (d <= this->two_rc ? T{1} : T{0});
+        return rtn;
     }
 
     // A subroutine of compute_next
@@ -233,14 +243,24 @@ public:
         morph::Vector<T, 2> I = {0, 0};
         morph::Vector<T, 2> J = {0, 0};
 
-        // Other branches are called k, making a set B_b, with a number of members that I call n_k
+        // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
+        T n_ki = T{0};
+        T n_kj = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            n_k += this->compute_for_branch (source_tissue, (&k), C, I, J);
+            std::bitset<3> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J);
+            n_k += cij_added[0] ? T{1} : T{0};
+            n_ki += cij_added[1] ? T{1} : T{0};
+            n_kj += cij_added[2] ? T{1} : T{0};
         }
+        //std::cout << "C had " << n_k << " interactions, I had " << n_ki << " and J had " << n_kj << std::endl;
+        //std::cout << "J=" << J << " and J/" << n_kj << "=" << (J/n_kj) << std::endl;
+
         // Do the 1/|B_b| multiplication to normalize C and I(!!)
         if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
+        I = n_ki > T{0} ? I/n_ki : I;
+        J = n_kj > T{0} ? J/n_kj : J;
         //std::cout << "C=" << C << std::endl;
 
         if constexpr (store_interaction_history == true) {

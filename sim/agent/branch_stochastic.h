@@ -82,36 +82,43 @@ struct branch_stochastic : public branch<T,N>
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
 
-        // Competition, C, and Axon-axon interactions, I, computed during the same loop
+        // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
         // over the other branches
         morph::Vector<T, 2> C = {0, 0};
         morph::Vector<T, 2> I = {0, 0};
         morph::Vector<T, 2> J = {0, 0};
 
-        // Other branches are called k, making a set B_b, with a number of members that I call n_k
+        // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
+        T n_ki = T{0};
+        T n_kj = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            n_k += this->compute_for_branch (source_tissue, &k, C, I, J);
+            std::bitset<3> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J);
+            n_k += cij_added[0] ? T{1} : T{0};
+            n_ki += cij_added[1] ? T{1} : T{0};
+            n_kj += cij_added[2] ? T{1} : T{0};
         }
-
-        // Do the 1/|B_b| multiplication
-        if (n_k > T{0}) {
-            C = C/n_k;
-            I = I/n_k;
-        } // else C and I will be {0,0} still
+        // Do the 1/|B_b| multiplication to normalize C and I(!!)
+        if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
+        I = n_ki > T{0} ? I/n_ki : I;
+        J = n_kj > T{0} ? I/n_kj : J;
+        //std::cout << "C=" << C << std::endl;
 
         // Collected non-border movement components
-        morph::Vector<T, 2> nonB = G * m[0] + C * m[3] + I * m[2];
+#if 0
+        morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
+        brng::i()->get(R);
+#endif
+        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3]; // + R * m[5];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
 
         // The change in b from the model and border effects:
-        morph::Vector<T, 2> db = (nonB + B * m[3]);
+        morph::Vector<T, 2> db = (nonB + B * m[4]);
 
-        // Finally add b and db to get next (uncomment to apply a speedlimit)
-        this->next = b + db /* * this->speedlimit(db) */;
+        // Finally add b and db to get next
+        this->next = b + db;
     }
-
 };

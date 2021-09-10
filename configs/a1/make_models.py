@@ -37,22 +37,22 @@ def make_pobj():
         #"desc_r" : "Radius of branches/cones (for visualisation)",
         "r" : 0.015, # 0.005 accurate ish, 0.015 good for vis
         #"desc_rc" : "Interaction radius via competition interaction",
-        "rc" : 0.05,
+        "rc" : 0.04,
         #"desc_rrr" : "Interaction radius via rcpt-rcpt interaction",
-        "rrr" : 0.015, # 0.015 ok. 0.05 S&G
+        "rrr" : 0.04, # 0.015 ok. 0.05 S&G
         #"desc_rrl" : "Interaction radius via rcpt-lgnd interaction",
-        "rrl" : 0.015,
+        "rrl" : 0.04,
         #"desc_s" : "Rcpt-rcpt signalling threshold value",
         "s" : 1.1,
-        #"desc_m1" : "chemoaffinity axon-tectum rcpt-lgnd",
+        #"desc_m1" : "chemoaffinity axon-tectum rcpt-lgnd (G)",
         "m1" : -1,
-        #"desc_m2" : "the axon-axon rcpt-lgnd interactions",
+        #"desc_m2" : "the axon-axon rcpt-lgnd interactions (J)",
         "m2" : -1,
-        #"desc_m3" : "the axon-axon rcpt-rcpt interactions",
+        #"desc_m3" : "the axon-axon rcpt-rcpt interactions (I)",
         "m3" : -1,
         #"desc_mborder" : "border effect",
         "mborder" : 0.5,
-        #"desc_c1" : "axon-axon competition (leave out of paper)",
+        #"desc_c1" : "axon-axon competition (C)",
         "c1" : -1
     }
     return pobj
@@ -122,11 +122,11 @@ def save_model_set (modeltag, pobj):
         json.dump(pobj, outfile, indent=4)
     print ('Wrote {0}'.format (fpath))
 
-# Set params once here
+# Set params once here. Sensitive to ee vs eE, I think
 m1 = 0.002  # G
-m2 = 0.001 # J
-m3 = 0.002  # I
-c1 = 0.2  # C
+m2 = 0.001  # J
+m3 = 0.04   # I
+c1 = 0.2    # C
 
 # These are all the model combos I might have:
 modeltag = 'eE'
