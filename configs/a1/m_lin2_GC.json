@@ -1,7 +1,4 @@
 {
-    "id" : "expexp",
-    "file" : "An exponential-exponential model with all repulsive interactions, but only 2 guiding molecules",
-
     "num_guiders" : 2,
     "totally_random_init" : true,
     "intro_every" : 0,

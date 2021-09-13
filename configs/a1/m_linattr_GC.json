@@ -1,5 +1,4 @@
 {
-    "id" : "linear",
     "desc" : "A linear-linear model with attractive forward interactions",
 
     "num_guiders" : 4,

@@ -1,6 +1,5 @@
 {
-    "id" : "expexp",
-    "file" : "An exponential-linear model with all repulsive interactions. For Figure 1 in paper draft",
+    "desc" : "An exponential-linear model with all repulsive interactions.",
 
     "num_guiders" : 4,
     "totally_random_init" : true,

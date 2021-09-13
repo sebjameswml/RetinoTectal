@@ -1,6 +1,5 @@
 {
-    "id" : "quadlog",
-    "file" : "A quadratic-logarithmic model",
+    "desc" : "A quadratic-logarithmic model",
 
     "num_guiders" : 4,
     "totally_random_init" : true,

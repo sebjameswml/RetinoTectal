@@ -1,6 +1,4 @@
 {
-    "id" : "expexp",
-    "file" : "An exponential-exponential model with all repulsive interactions",
     "branch_model" : "stochastic",
 
     "num_guiders" : 4,

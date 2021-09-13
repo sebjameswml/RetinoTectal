@@ -1,6 +1,5 @@
 {
-    "id" : "expexp",
-    "file" : "An exponential-exponential model for using with Gebhardt model",
+    "desc" : "An exponential-exponential model for using with Gebhardt model",
 
     "desc_branch_model" : "Which overall type of model to implement: gebhardt or default is my model (james_agent)",
     "branch_model" : "gebhardt",
