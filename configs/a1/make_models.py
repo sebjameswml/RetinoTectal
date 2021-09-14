@@ -3,8 +3,8 @@
 
 # Set params once here. Sensitive to ee vs eE, I think
 m_g = 0.002  # G
-m_j = 0.0001  # J
-m_i = 0.1    # I 0.04
+m_j = 0.01   # J
+m_i = 0.5    # I 0.04
 m_c = 0.05   # C
 r_int = 0.05 # common interaction radius
 
@@ -31,7 +31,7 @@ def make_pobj():
         #"desc_interaction" : "retina forward interaction gives the behaviour of retinal receptor expressing projections when the receptors are activated. May be attraction (1), no effect (0), or repulsion (-1)",
         "ret_forward_interactions" : [-1,-1,-1,-1],
         #"desc_rcptrcpt_interactions" : "Do receptor receptor interactions generate repulsion or attraction? May be attraction (1), no effect (0), or repulsion (-1)",
-        "ret_rcptrcpt_interactions" : [-1,0,0,0],
+        "ret_rcptrcpt_interactions" : [-1,-1,-1,-1],
 
         #"desc_non_functional_directions" : "These two direction sets matter for visualisation but aren't currently used by the model",
         "tectum_receptor_directions" : ["x", "+y", "-x", "-y"],

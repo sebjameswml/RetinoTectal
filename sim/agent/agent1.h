@@ -12,6 +12,8 @@
 static constexpr bool debug_compute_branch = false;
 // If true, then compile code to collect minimum and maximum interactions from branches
 static constexpr bool branch_min_maxes = false;
+static constexpr bool branch_min_max_i = false; // make one false
+static constexpr bool branch_min_max_j = true; // and one true
 
 #include <iostream>
 #include <string>
@@ -319,8 +321,8 @@ struct Agent1
                     maxes[i] = b.maxes[i] > maxes[i] ? b.maxes[i] : maxes[i];
                 }
             }
-            //std::cout << "Minimum rcpt-rcpt signal: " << minses << std::endl;
-            //std::cout << "Maximum rcpt-rcpt signal: " << maxes << std::endl;
+            std::cout << "Minimum axon-axon signal: " << minses << std::endl;
+            std::cout << "Maximum axon-axon signal: " << maxes << std::endl;
         }
         // Update centroids
         for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
