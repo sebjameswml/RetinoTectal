@@ -37,8 +37,11 @@ protected:
     T two_r_i = T{2}*r;
 public:
     // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
-    static constexpr bool s_g_interaction = false;
+    static constexpr bool s_g_interaction = false; // (unused)
     T s = T{0.3};
+    // Track rcpt-rcpt interaction sizes
+    morph::Vector<T, N> minses;
+    morph::Vector<T, N> maxes;
 
     // Interaction effect may have a history - after a cone's receptors are activated,
     // assume that the movement induced has some lifetime (hardcoded here as size of
@@ -52,8 +55,8 @@ public:
     virtual void init() { this->Ihist.zero(); }
 
     // Estimate the ligand gradient, given the true ligand gradient
-    virtual morph::Vector<T, 2*N> estimate_ligand_gradient(morph::Vector<T,2*N>& true_lgnd_grad,
-                                                           morph::Vector<T,N>& true_lgnd_exp)
+    virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& true_lgnd_grad,
+                                                            morph::Vector<T,N>& true_lgnd_exp)
     {
         // This is the non-stochastic implementation
         morph::Vector<T, 2*N> lg = true_lgnd_grad;
@@ -138,21 +141,40 @@ public:
 #ifdef SIMPSON_GOODHILL_LIKE_RCPTRCPT_INTERACTIONS
         // The S & G axon-axon interaction is based on the receptor expression only and
         // (guided by Reber) looks at the relative levels
-        T QI = T{0};
+        morph::Vector<T,N> QI;
+        QI.zero();
         W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
-        if constexpr (N == 4) {
-            QI = kp->rcpt[0] / this->rcpt[0];
-            //+ kp->rcpt[1] / this->rcpt[1]
-            //+ kp->rcpt[2] / this->rcpt[2]
-            //+ kp->rcpt[3] / this->rcpt[3];
-        } else if constexpr (N == 2) {
-            QI = kp->rcpt[0] / this->rcpt[0] + kp->rcpt[1] / this->rcpt[1];
-        }
-        //QI /= N;
-        morph::Vector<T, 2> nullvec = {0, 0};
-        I += QI > this->s ? kb * W : nullvec; // FIXME FIXME: Need to count up number of interactions and divide by this number (like for comp)
-        rtn[1] = (QI > this->s && W > T{0}) ? true : false;
 
+        QI = this->rcpt/kp->rcpt;
+
+        if constexpr (branch_min_maxes == true) {
+            if (W > T{0}) {
+                for (size_t i = 0; i < N; ++i) {
+                    maxes[i] = QI[i] > maxes[i] ? QI[i] : maxes[i];
+                    minses[i] = QI[i] < minses[i] ? QI[i] : minses[i];
+                }
+            }
+        }
+
+        if constexpr (N == 4) {
+            if ((source_tissue->rcptrcpt_interactions[0] != interaction::null && QI[0] > this->s)
+                || (source_tissue->rcptrcpt_interactions[1] != interaction::null && QI[1] > this->s)
+                || (source_tissue->rcptrcpt_interactions[2] != interaction::null && QI[2] > this->s)
+                || (source_tissue->rcptrcpt_interactions[3] != interaction::null && QI[3] > this->s)) {
+                I += kb * W;
+                rtn[1] = true;
+            } else {
+                rtn[1] = false;
+            }
+        } else if constexpr (N == 2) {
+            if ((source_tissue->rcptrcpt_interactions[0] != interaction::null && QI[0] > this->s)
+                || (source_tissue->rcptrcpt_interactions[1] != interaction::null && QI[1] > this->s)) {
+                I += kb * W;
+                rtn[1] = true;
+            } else {
+                rtn[1] = false;
+            }
+        }
 #else
         T QI = T{0};
         if constexpr (N == 4) {

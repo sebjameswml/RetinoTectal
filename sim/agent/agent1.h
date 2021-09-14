@@ -10,6 +10,8 @@
 
 // If true, turns parallel execution OFF and branch interaction debugging ON.
 static constexpr bool debug_compute_branch = false;
+// If true, then compile code to collect minimum and maximum interactions from branches
+static constexpr bool branch_min_maxes = false;
 
 #include <iostream>
 #include <string>
@@ -86,6 +88,9 @@ struct Agent1
                 this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
                 this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
             }
+
+            // How early to start showing the crossings metric?
+            this->crosscount_from = this->conf->getUInt ("crosscount_from", 1000);
 
             this->visinit();
         }
@@ -221,7 +226,7 @@ struct Agent1
         }
         if (this->layout == graph_layout::a || this->layout == graph_layout::c) {
             this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
-            if (stepnum > 1000 && stepnum%50 == 0) {
+            if (stepnum > this->crosscount_from && stepnum%50 == 0) {
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
         }
@@ -268,6 +273,14 @@ struct Agent1
     //! Perform one step of the simulation
     void step()
     {
+        if constexpr (branch_min_maxes == true) {
+            // Reset minses/maxes for branches to compute min/max in this step
+            for (auto& b : this->branches) {
+                b.minses.set_from (std::numeric_limits<T>::max());
+                b.maxes.set_from(std::numeric_limits<T>::lowest());
+            }
+        }
+
         // Compute the next position for each branch:
 #ifdef __OSX__
         // Mac compiler didn't like omp parallel for in front of a for(auto...
@@ -292,6 +305,22 @@ struct Agent1
                 b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
             }
 #endif
+        }
+
+        if constexpr (branch_min_maxes == true) {
+            // Check mins/maxes
+            morph::Vector<T,N> minses;
+            minses.set_from(std::numeric_limits<T>::max());
+            morph::Vector<T,N> maxes;
+            maxes.set_from(std::numeric_limits<T>::lowest());
+            for (auto b : this->branches) {
+                for (size_t i = 0; i < N; ++i) {
+                    minses[i] = b.minses[i] < minses[i] ? b.minses[i] : minses[i];
+                    maxes[i] = b.maxes[i] > maxes[i] ? b.maxes[i] : maxes[i];
+                }
+            }
+            //std::cout << "Minimum rcpt-rcpt signal: " << minses << std::endl;
+            //std::cout << "Maximum rcpt-rcpt signal: " << maxes << std::endl;
         }
         // Update centroids
         for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
@@ -682,6 +711,10 @@ struct Agent1
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].init();
             this->pending_branches[i].s = s;
+            if constexpr (branch_min_maxes == true) {
+                this->pending_branches[i].maxes.set_from(std::numeric_limits<T>::lowest());
+                this->pending_branches[i].minses.set_from(std::numeric_limits<T>::max());
+            }
             this->pending_branches[i].setr (r_conf);
             this->pending_branches[i].setr_c (r_c_conf);
             this->pending_branches[i].setr_j (r_j_conf);
@@ -977,7 +1010,7 @@ struct Agent1
         // morph::Visual init
         unsigned int wdefault = 1200;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { wdefault = 1920; }
-        if (this->layout == graph_layout::b || this->layout == graph_layout::e) { wdefault = 2650; }
+        if (this->layout == graph_layout::b || this->layout == graph_layout::e) { wdefault = 2480; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
@@ -993,7 +1026,7 @@ struct Agent1
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) {
             this->v->setSceneTrans (-0.413126f, 0.6811f, -5.0f);
         } else if (this->layout == graph_layout::b) {
-            this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
+            this->v->setSceneTrans (-0.948019743f, -0.00213310868f, -2.69999981f);
         } else if (this->layout == graph_layout::e) {
             this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::c) {
@@ -1343,6 +1376,8 @@ struct Agent1
     NetVisual<T>* cv3;
     // Simulation times to stop updating graphs (see graph_layout::c)
     morph::Vector<size_t, 4> freeze_times;
+    // crosscount_from - how early to start showing the crossings count metric?
+    unsigned int crosscount_from = 1000;
     // Centroid visual for targets
     NetVisual<T>* tcv;
     // A graph for the SOS metric

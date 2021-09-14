@@ -32,7 +32,9 @@ protected:
 public:
     // For random angle choice
     morph::RandUniform<T> rng;
-    T s; // usused, dummy.
+    T s; // unused, dummy.
+    morph::Vector<T, N> minses; // unused, dummy.
+    morph::Vector<T, N> maxes; // unused, dummy.
 
     // No init for branch_geb
     virtual void init() {}

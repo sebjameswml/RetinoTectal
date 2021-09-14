@@ -1,7 +1,7 @@
 % Equations used in my modelling. See tissue.h and
 % guidingtissue::exponential_expression and similar
 
-x = [0:0.01:1];
+x = [0:0.05:1];
 
 _exp = 0.26 .* exp (2.3.*x) + 1.05;
 _exp2 = 0.26 .* exp (1.2.*x) + 1.05;
@@ -44,3 +44,39 @@ plot (x, _exp2_ki_kd);
 plot (x, _exp2_ki_kd./_exp2_kd);
 ylim([0,5]);
 lg = legend (['Exp2, knocked down';'Exp2, knocked down and in';'kikd/kd'],'Location','NorthWest');
+
+figure(30); clf;
+plot (x, _exp2_kd);
+hold on;
+plot (x, _exp2_ki_kd);
+plot (x, _exp2_ki_kd.*_exp2_kd);
+ylim([0,5]);
+lg = legend (['Exp2, knocked down';'Exp2, knocked down and in';'kikd*kd'],'Location','NorthWest');
+
+% The J effect
+figure(4); clf;
+plot (x, _exp); % exp for receptors on retina
+hold on;
+plot (x, flip(_exp)); % ligands
+plot (x, _exp .* flip(_exp));
+lg = legend (['rcpt';'lgnd';'rcpt*lgnd interaction'],'Location','North');
+
+% The I effect (relative)
+figure(5); clf;
+%_x = -x(2)+x(1);
+%x = [_x, x(1:end-1)];
+%_exp = 0.26 .* exp (2.3.*x) + 1.05;
+plot (x, _exp, '.'); % exp for receptors on retina
+hold on;
+plot (x, circshift(_exp,1)); % adjacent receptors
+plot (x, _exp ./ circshift(_exp,1));
+plot (x, circshift(_exp,1) ./ _exp);
+lg = legend (['rcpt';'rcptshift';'rcpt/rcptshift interaction';'rcptshift interaction/rcpt'],'Location','North');
+
+% The I effect (mass-action)
+figure(6); clf;
+plot (x, _exp, 'o-'); % exp for receptors on retina
+hold on;
+plot (x, circshift(_exp,1), 'o-'); % adjacent receptors
+plot (x, _exp .* circshift(_exp,1), 'o-');
+lg = legend (['rcpt';'rcptshift';'rcpt*rcptshift interaction'],'Location','North');

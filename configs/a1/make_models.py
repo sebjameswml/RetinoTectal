@@ -3,10 +3,10 @@
 
 # Set params once here. Sensitive to ee vs eE, I think
 m_g = 0.002  # G
-m_j = 0.001  # J
-m_i = 0.04   # I
-m_c = 0.2    # C
-r_int = 0.04 # common interaction radius
+m_j = 0.0001  # J
+m_i = 0.1    # I 0.04
+m_c = 0.05   # C
+r_int = 0.05 # common interaction radius
 
 # A Python structure containing the base values that should appear in the output json files
 def make_pobj():
@@ -31,7 +31,7 @@ def make_pobj():
         #"desc_interaction" : "retina forward interaction gives the behaviour of retinal receptor expressing projections when the receptors are activated. May be attraction (1), no effect (0), or repulsion (-1)",
         "ret_forward_interactions" : [-1,-1,-1,-1],
         #"desc_rcptrcpt_interactions" : "Do receptor receptor interactions generate repulsion or attraction? May be attraction (1), no effect (0), or repulsion (-1)",
-        "ret_rcptrcpt_interactions" : [-1,0,0,0], # For now only first of these is acted on
+        "ret_rcptrcpt_interactions" : [-1,0,0,0],
 
         #"desc_non_functional_directions" : "These two direction sets matter for visualisation but aren't currently used by the model",
         "tectum_receptor_directions" : ["x", "+y", "-x", "-y"],
@@ -49,7 +49,7 @@ def make_pobj():
         #"desc_rrl" : "Interaction radius via rcpt-lgnd interaction",
         "r_j" : r_int,
         #"desc_s" : "Rcpt-rcpt signalling threshold value",
-        "s" : 1.1,
+        "s" : 1.1, # sensitive.
         #"desc_m_g" : "chemoaffinity axon-tectum rcpt-lgnd (G)",
         "m_g" : -1,
         #"desc_m_c" : "axon-axon competition (C)",

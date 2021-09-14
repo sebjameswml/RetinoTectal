@@ -17,8 +17,8 @@
     "goslow" : false,
 
     "desc_exit" : "If true, then exit at the end to allow running in scripts",
-    "exit" : true,
+    "exit" : false,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 1500
+    "steps" : 2500
 }
