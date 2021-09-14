@@ -79,24 +79,25 @@ struct Agent1
     void run()
     {
         if constexpr (visualise == true) {
-            // Get layout from config file. Default to 0 or 'a'
-            this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
+            if (this->visinit_done == false) {
+                // Get layout from config file. Default to 0 or 'a'
+                this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
 
-            if (this->layout == graph_layout::c) {
-                // Set up (from config file if necssary) the times at which the various
-                // graphs will be frozen (i.e. no longer updated from the sim)
-                this->freeze_times[0] = 0;
-                this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
-                this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
-                this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
+                if (this->layout == graph_layout::c) {
+                    // Set up (from config file if necssary) the times at which the various
+                    // graphs will be frozen (i.e. no longer updated from the sim)
+                    this->freeze_times[0] = 0;
+                    this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
+                    this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
+                    this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
+                }
+
+                // How early to start showing the crossings metric?
+                this->crosscount_from = this->conf->getUInt ("crosscount_from", 1000);
+
+                this->visinit();
             }
-
-            // How early to start showing the crossings metric?
-            this->crosscount_from = this->conf->getUInt ("crosscount_from", 1000);
-
-            this->visinit();
         }
-        this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
 
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
 
@@ -106,7 +107,8 @@ struct Agent1
         unsigned int intro_every = this->mconf->getUInt ("intro_every", 0);
         if (intro_every == 0) {
             this->branches.resize (this->pending_branches.size());
-            this->branches.swap (this->pending_branches);
+            std::copy (this->pending_branches.begin(), this->pending_branches.end(), this->branches.begin());
+            //this->branches.swap (this->pending_branches);
         }
 
         // Are we running the random 'model'?
@@ -123,6 +125,7 @@ struct Agent1
             return;
         }
 
+        this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
 
             if (intro_every > 0 && pb_sz_it != this->pb_sizes.end() && i%intro_every == 0) {
@@ -151,7 +154,9 @@ struct Agent1
                 laststep = std::chrono::steady_clock::now();
             }
         }
+        delete this->gradient_rng;
         std::cout << "Done simulating\n";
+
         if constexpr (visualise == true) {
 
             // Update retinal NT position vs tectal RC position graph for the 'd' layout:
@@ -196,6 +201,7 @@ struct Agent1
     //! Save any relevant results of the simulation to an HdfData object.
     void save (const std::string& outfile)
     {
+        std::cout << "save...\n";
         morph::HdfData d(outfile, morph::FileAccess::TruncateWrite);
         d.add_val ("/sos", this->ax_centroids.sos());
         d.add_val ("/rms", this->ax_centroids.rms());
@@ -270,7 +276,7 @@ struct Agent1
     }
 
     //! RNG for adding noise to gradient sampling
-    morph::RandNormal<T, std::mt19937>* gradient_rng;
+    morph::RandNormal<T, std::mt19937>* gradient_rng = (morph::RandNormal<T, std::mt19937>*)0;
 
     //! Perform one step of the simulation
     void step()
@@ -483,6 +489,165 @@ struct Agent1
         return function_forms;
     }
 
+    void setup_pending_branches()
+    {
+        // Axon initial positions x and y can be uniformly randomly selected...
+        morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
+        morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
+        //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
+        // ...or set from the ideal position plus a random perturbation
+        morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
+        // A normally distributed perturbation is added for each branch. SD=0.1.
+        morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
+        // Generate random number sequences all at once
+        size_t axc_sz = this->ax_centroids.p.size();
+        std::vector<T> rn_x = rng_x.get (axc_sz); // ax_centroids size?
+        std::vector<T> rn_y = rng_y.get (axc_sz);
+        std::vector<T> rn_p = rng_p.get (axc_sz * 2 * this->bpa);
+        std::vector<T> rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
+        bool totally_random = this->mconf->getBool ("totally_random_init", true);
+        std::string branch_model = this->mconf->getString ("branch_model", "james_agent");
+
+        std::array<float, 3> red = { 1.0f, 0.0f, 0.0f };
+        std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
+
+        float r_conf = this->mconf->getFloat ("r", 0.05f);
+        float r_c_conf = this->mconf->getFloat ("r_c", 0.0f);
+        float r_j_conf = this->mconf->getFloat ("r_j", 0.0f);
+        float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
+        T s = this->mconf->getFloat ("s", 1.1f);
+        // A loop to set up each branch object in pending_branches.
+        for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
+            // Set the branch's termination zone
+            unsigned int ri = i/bpa; // retina index
+            this->pending_branches[i].init();
+            this->pending_branches[i].s = s;
+            if constexpr (branch_min_maxes == true) {
+                this->pending_branches[i].maxes.set_from(std::numeric_limits<T>::lowest());
+                this->pending_branches[i].minses.set_from(std::numeric_limits<T>::max());
+            }
+            this->pending_branches[i].setr (r_conf);
+            this->pending_branches[i].setr_c (r_c_conf);
+            this->pending_branches[i].setr_j (r_j_conf);
+            this->pending_branches[i].setr_i (r_i_conf);
+            this->pending_branches[i].aid = (int)ri; // axon index
+            if (conf->getBool ("singleaxon", false)) {
+                this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
+                this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
+                this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
+            } else {
+                this->pending_branches[i].rcpt = this->ret->rcpt[ri];
+                this->pending_branches[i].lgnd = this->ret->lgnd[ri];
+                this->pending_branches[i].target = this->ret->posn[ri];
+            }
+            // Call the first interaction parameter 'EphA'
+            rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
+            rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
+
+            // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
+            morph::Vector<T, 3> initpos;
+            if (totally_random == true) {
+                if (branch_model == "gebhardt") {
+                    // In Gebhardt model, arrange randomly along x axis
+                    initpos = { rn_x[ri] + rn_p[2*i], 0, 0 };
+                    initpos[0] = initpos[0] > 1 ? 1 : initpos[0];
+                    initpos[0] = initpos[0] < 0 ? 0 : initpos[0];
+                } else {
+                    initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+                }
+            } else {
+                morph::Vector<T, 2> init_offset = { T{0}, T{-0.5} };
+                morph::Vector<T, 2> init_mult = { T{1}, T{0.2} };
+                initpos.set_from ((this->pending_branches[i].target*init_mult) + init_offset);
+                initpos[0] += rn_p0[2*i];
+                initpos[1] += rn_p0[2*i+1];
+            }
+
+            this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
+
+            if (this->genetic_manipulation == true) { // genetic manipulation of retinal receptor 0
+                // Set colour red or blue depending on if receptor 0 in the retina was manipulated or not.
+
+                this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? red : blue;
+            }
+
+            // "experiment suggests": The target for axon centroids is defined by their
+            // origin location on the retina. However, their target on the tectum is the
+            // retinal position *transformed*. ALSO, if experimental manipulations have
+            // been made, then the target positions will need to be modified
+            // accordingly.
+
+            // To convert from retinal position to tectal position, x'=y and y'=x.
+            morph::Vector<T,2> tpos = this->ret->posn[ri];
+            tpos.rotate();
+
+            this->ax_centroids.targ[ri].set_from (tpos);
+            this->ax_centroids.mirrored = true;
+
+            this->pending_branches[i].current = initpos.less_one_dim();
+            this->pending_branches[i].id = i;
+        }
+
+        /*
+         * Now arrange the order of the pending branches, so that the first ones in the
+         * list are those closest to the centre of the retina. That means extracting the
+         * branches by retina index or, more easily, by .target
+         */
+        // If retina has been ablated, then have to change xbreaks and y breaks
+        if (this->conf->getBool ("ablate_ret_left", false) || this->conf->getBool ("ablate_tec_top", false)) {
+            // Don't change pending branches at all
+        } else {
+            std::vector<B> pending_branches_reordered;
+            // FIXME. Should this be 8 or bpa?
+            morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
+            size_t xstart = this->ret->w/2;
+
+            for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
+            morph::vVector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
+            for (size_t i = 0; i < 4; ++i) {
+                // copy elements from pending_branches in a square from
+                // (w/2-x_breaks[i],h/2-y_breaks[i]) to (w/2+x_breaks[i],h/2+y_breaks[i])
+                // into pending_branches_reordered.
+                for (size_t yy = this->ret->h/2-y_breaks[i]; yy < this->ret->h/2+y_breaks[i]; ++yy) {
+                    for (size_t xx = xstart-x_breaks[i]; xx < xstart+x_breaks[i]; ++xx) {
+                        // Try to find branches with target xx,yy
+                        morph::Vector<T,2> coord = this->ret->coord (xx, yy);
+                        // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
+                        typename std::vector<B>::iterator it = this->pending_branches.begin();
+                        while (it != this->pending_branches.end()) {
+                            if ((it->target - coord).length() < 0.00001) {
+                                pending_branches_reordered.push_back (*it);
+                                it = this->pending_branches.erase (it);
+                            } else {
+                                ++it;
+                            }
+                        }
+                    }
+                }
+                if (this->pb_sizes.empty()) {
+                    this->pb_sizes.push_back (pending_branches_reordered.size());
+                } else {
+                    this->pb_sizes.push_back (pending_branches_reordered.size() - this->pb_sizes.sum());
+                }
+            }
+
+            this->pending_branches.resize (pending_branches_reordered.size());
+            this->pending_branches.swap (pending_branches_reordered);
+        }
+    }
+
+    //! Re-compute initial positions of branches; reset content of graphs
+    void reset()
+    {
+        size_t num_branches = this->ret->num() * this->bpa;
+        if (this->pending_branches.size() != num_branches) { throw std::runtime_error ("num_branches is wrong."); }
+        this->setup_pending_branches();
+#ifdef VISUALISE
+        this->ax_history.clear();
+        if (this->gv != (morph::GraphVisual<T>*)0) { this->gv->clear(); }
+#endif
+    }
+
     //! Simulation init
     void init()
     {
@@ -631,7 +796,7 @@ struct Agent1
         }
 
         // Knockin will increase expression for half of all cells. There's code in tissue.h to make this randomised or regular
-        bool genetic_manipulation = false;
+        this->genetic_manipulation = false;
         T affected = T{0.5};
         T ki_amount = this->conf->getDouble ("knockin", 1);
         T kd_amount = this->conf->getDouble ("knockdown", 0);
@@ -641,7 +806,7 @@ struct Agent1
             this->ret->receptor_knockin (0, affected, ki_amount);
             this->ret->receptor_knockdown (0, kd_amount);
             manipulated = true;
-            genetic_manipulation = true;
+            this->genetic_manipulation = true;
         }
 
         if (this->conf->getBool ("brown", false)) {
@@ -649,7 +814,7 @@ struct Agent1
             // Knockin receptor 0 in half of RGCs (but with no knockdown):
             this->ret->receptor_knockin (0, affected, ki_amount);
             manipulated = true;
-            genetic_manipulation = true;
+            this->genetic_manipulation = true;
         }
 
         std::cout << "Retina has " << this->ret->num() << " cells\n";
@@ -682,149 +847,7 @@ struct Agent1
             this->ax_centroids.dx = this->tectum->dx;
         }
 
-        // Axon initial positions x and y can be uniformly randomly selected...
-        morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
-        morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
-        //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
-        // ...or set from the ideal position plus a random perturbation
-        morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
-        // A normally distributed perturbation is added for each branch. SD=0.1.
-        morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
-        // Generate random number sequences all at once
-        size_t axc_sz = this->ax_centroids.p.size();
-        std::vector<T> rn_x = rng_x.get (axc_sz); // ax_centroids size?
-        std::vector<T> rn_y = rng_y.get (axc_sz);
-        std::vector<T> rn_p = rng_p.get (axc_sz * 2 * this->bpa);
-        std::vector<T> rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
-        bool totally_random = this->mconf->getBool ("totally_random_init", true);
-        std::string branch_model = this->mconf->getString ("branch_model", "james_agent");
-
-        std::array<float, 3> red = { 1.0f, 0.0f, 0.0f };
-        std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
-
-        float r_conf = this->mconf->getFloat ("r", 0.05f);
-        float r_c_conf = this->mconf->getFloat ("r_c", 0.0f);
-        float r_j_conf = this->mconf->getFloat ("r_j", 0.0f);
-        float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
-        T s = this->mconf->getFloat ("s", 1.1f);
-        // A loop to set up each branch object in pending_branches.
-        for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
-            // Set the branch's termination zone
-            unsigned int ri = i/bpa; // retina index
-            this->pending_branches[i].init();
-            this->pending_branches[i].s = s;
-            if constexpr (branch_min_maxes == true) {
-                this->pending_branches[i].maxes.set_from(std::numeric_limits<T>::lowest());
-                this->pending_branches[i].minses.set_from(std::numeric_limits<T>::max());
-            }
-            this->pending_branches[i].setr (r_conf);
-            this->pending_branches[i].setr_c (r_c_conf);
-            this->pending_branches[i].setr_j (r_j_conf);
-            this->pending_branches[i].setr_i (r_i_conf);
-            this->pending_branches[i].aid = (int)ri; // axon index
-            if (conf->getBool ("singleaxon", false)) {
-                this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
-                this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
-                this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
-            } else {
-                this->pending_branches[i].rcpt = this->ret->rcpt[ri];
-                this->pending_branches[i].lgnd = this->ret->lgnd[ri];
-                this->pending_branches[i].target = this->ret->posn[ri];
-            }
-            // Call the first interaction parameter 'EphA'
-            rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
-            rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
-
-            // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
-            morph::Vector<T, 3> initpos;
-            if (totally_random == true) {
-                if (branch_model == "gebhardt") {
-                    // In Gebhardt model, arrange randomly along x axis
-                    initpos = { rn_x[ri] + rn_p[2*i], 0, 0 };
-                    initpos[0] = initpos[0] > 1 ? 1 : initpos[0];
-                    initpos[0] = initpos[0] < 0 ? 0 : initpos[0];
-                } else {
-                    initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
-                }
-            } else {
-                morph::Vector<T, 2> init_offset = { T{0}, T{-0.5} };
-                morph::Vector<T, 2> init_mult = { T{1}, T{0.2} };
-                initpos.set_from ((this->pending_branches[i].target*init_mult) + init_offset);
-                initpos[0] += rn_p0[2*i];
-                initpos[1] += rn_p0[2*i+1];
-            }
-
-            this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
-
-            if (genetic_manipulation == true) { // genetic manipulation of retinal receptor 0
-                // Set colour red or blue depending on if receptor 0 in the retina was manipulated or not.
-
-                this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? red : blue;
-            }
-
-            // "experiment suggests": The target for axon centroids is defined by their
-            // origin location on the retina. However, their target on the tectum is the
-            // retinal position *transformed*. ALSO, if experimental manipulations have
-            // been made, then the target positions will need to be modified
-            // accordingly.
-
-            // To convert from retinal position to tectal position, x'=y and y'=x.
-            morph::Vector<T,2> tpos = this->ret->posn[ri];
-            tpos.rotate();
-
-            this->ax_centroids.targ[ri].set_from (tpos);
-            this->ax_centroids.mirrored = true;
-
-            this->pending_branches[i].current = initpos.less_one_dim();
-            this->pending_branches[i].id = i;
-        }
-
-        /*
-         * Now arrange the order of the pending branches, so that the first ones in the
-         * list are those closest to the centre of the retina. That means extracting the
-         * branches by retina index or, more easily, by .target
-         */
-        // If retina has been ablated, then have to change xbreaks and y breaks
-        if (this->conf->getBool ("ablate_ret_left", false) || this->conf->getBool ("ablate_tec_top", false)) {
-            // Don't change pending branches at all
-        } else {
-            std::vector<B> pending_branches_reordered;
-            // FIXME. Should this be 8 or bpa?
-            morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
-            size_t xstart = this->ret->w/2;
-
-            for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
-            morph::vVector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
-            for (size_t i = 0; i < 4; ++i) {
-                // copy elements from pending_branches in a square from
-                // (w/2-x_breaks[i],h/2-y_breaks[i]) to (w/2+x_breaks[i],h/2+y_breaks[i])
-                // into pending_branches_reordered.
-                for (size_t yy = this->ret->h/2-y_breaks[i]; yy < this->ret->h/2+y_breaks[i]; ++yy) {
-                    for (size_t xx = xstart-x_breaks[i]; xx < xstart+x_breaks[i]; ++xx) {
-                        // Try to find branches with target xx,yy
-                        morph::Vector<T,2> coord = this->ret->coord (xx, yy);
-                        // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
-                        typename std::vector<B>::iterator it = this->pending_branches.begin();
-                        while (it != this->pending_branches.end()) {
-                            if ((it->target - coord).length() < 0.00001) {
-                                pending_branches_reordered.push_back (*it);
-                                it = this->pending_branches.erase (it);
-                            } else {
-                                ++it;
-                            }
-                        }
-                    }
-                }
-                if (this->pb_sizes.empty()) {
-                    this->pb_sizes.push_back (pending_branches_reordered.size());
-                } else {
-                    this->pb_sizes.push_back (pending_branches_reordered.size() - this->pb_sizes.sum());
-                }
-            }
-
-            this->pending_branches.resize (pending_branches_reordered.size());
-            this->pending_branches.swap (pending_branches_reordered);
-        }
+        this->setup_pending_branches ();
 
         /*
          * Setting up the 'experiment suggests' information
@@ -1316,6 +1339,7 @@ struct Agent1
         } else {
             throw std::runtime_error ("Unknown layout");
         }
+        this->visinit_done = true;
     }
 #endif // VISUALISE
 
@@ -1353,6 +1377,8 @@ struct Agent1
     morph::vVector<size_t> pb_sizes;
     // Centroid of the branches for each axon
     rgcnet<T> ax_centroids;
+    // Has a genetic manipulation been applied?
+    bool genetic_manipulation = false;
     // Path history is a map indexed by axon id. 3D as it's used for vis.
     std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
     // Receptor max and min - used across init() and visinit()
@@ -1365,6 +1391,8 @@ struct Agent1
     morph::Visual* v;
     // A visual environment specifically for the tissue visualisation
     morph::Visual* tvv;
+    // Has visualisation been done already?
+    bool visinit_done = false;
     // Specialised visualization of agents as spheres with a little extra colour patch on top
     BranchVisual<T, N, B>* bv;
     // Another visualization to show axon paths with only a few axons
@@ -1383,7 +1411,7 @@ struct Agent1
     // Centroid visual for targets
     NetVisual<T>* tcv;
     // A graph for the SOS metric
-    morph::GraphVisual<T>* gv;
+    morph::GraphVisual<T>* gv = (morph::GraphVisual<T>*)0;
     // Make a couple of options for the graph layout for different figure types
     graph_layout layout = graph_layout::c;
 #endif // VISUALISE
