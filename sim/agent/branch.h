@@ -144,10 +144,8 @@ public:
         morph::Vector<T,N> QI;
         QI.zero();
         W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
-
         QI = this->rcpt/kp->rcpt;
-
-        if constexpr (branch_min_maxes == true) {
+        if constexpr (branch_min_maxes == true && branch_min_max_i == true) {
             if (W > T{0}) {
                 for (size_t i = 0; i < N; ++i) {
                     maxes[i] = QI[i] > maxes[i] ? QI[i] : maxes[i];
@@ -155,62 +153,42 @@ public:
                 }
             }
         }
-
-        if constexpr (N == 4) {
-            if ((source_tissue->rcptrcpt_interactions[0] != interaction::null && QI[0] > this->s)
-                || (source_tissue->rcptrcpt_interactions[1] != interaction::null && QI[1] > this->s)
-                || (source_tissue->rcptrcpt_interactions[2] != interaction::null && QI[2] > this->s)
-                || (source_tissue->rcptrcpt_interactions[3] != interaction::null && QI[3] > this->s)) {
+        rtn[1] = false;
+        for (size_t i = 0; i < N; ++i) {
+            if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
                 I += kb * W;
                 rtn[1] = true;
-            } else {
-                rtn[1] = false;
-            }
-        } else if constexpr (N == 2) {
-            if ((source_tissue->rcptrcpt_interactions[0] != interaction::null && QI[0] > this->s)
-                || (source_tissue->rcptrcpt_interactions[1] != interaction::null && QI[1] > this->s)) {
-                I += kb * W;
-                rtn[1] = true;
-            } else {
-                rtn[1] = false;
+                break;
             }
         }
 #else
+        // Mass-action receptor-receptor axon-axon interaction
         T QI = T{0};
-        if constexpr (N == 4) {
-            // Receptor-receptor activation according to rcptrcpt_interactions
-            QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
-                                                (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0))
-            + kp->rcpt[1] * this->rcpt[1] * (source_tissue->rcptrcpt_interactions[1] == interaction::repulsion ? 1 :
-                                             (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0))
-            + kp->rcpt[2] * this->rcpt[2] * (source_tissue->rcptrcpt_interactions[2] == interaction::repulsion ? 1 :
-                                             (source_tissue->rcptrcpt_interactions[2] == interaction::attraction ? -1 : 0))
-            + kp->rcpt[3] * this->rcpt[3] * (source_tissue->rcptrcpt_interactions[3] == interaction::repulsion ? 1 :
-                                             (source_tissue->rcptrcpt_interactions[3] == interaction::attraction ? -1 : 0));
-        } else if constexpr (N == 2) {
-            QI = kp->rcpt[0] * this->rcpt[0] * (source_tissue->rcptrcpt_interactions[0] == interaction::repulsion ? 1 :
-                                                (source_tissue->rcptrcpt_interactions[0] == interaction::attraction ? -1 : 0))
-            + kp->rcpt[1] * this->rcpt[1] * (source_tissue->rcptrcpt_interactions[1] == interaction::repulsion ? 1 :
-                                             (source_tissue->rcptrcpt_interactions[1] == interaction::attraction ? -1 : 0));
+        for (size_t i = 0; i < N; ++i) {
+            QI += kp->rcpt[i] * this->rcpt[i] * (source_tissue->rcptrcpt_interactions[i] == interaction::repulsion ? T{1} :
+                                                 (source_tissue->rcptrcpt_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QI /= N;
         I += kb * QI * (d <= this->two_r_i ? T{1} : T{0});
         rtn[1] = (d <= this->two_r_i && QI > T{0}) ? true : false;
 #endif
-        // Receptor-ligand axon-axon interaction, J
-        T QJ = T{0};
-        if constexpr (N == 4) {
-            // Forward signalling is activation of the receptor by the ligand. Treat as a multiplicative signal.
-            QJ = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[2] * this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[3] * this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? 1 : -1);
-            // Alternative? Could have a kind of competition for the movement, rather than just adding 'em all up.
-        } else if constexpr (N == 2) {
-            QJ = kp->lgnd[0] * this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? 1 : -1)
-            + kp->lgnd[1] * this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? 1 : -1);
+        // Mass action receptor-ligand axon-axon interaction, J
+        morph::Vector<T,N> QJar;
+        for (size_t i = 0; i < N; ++i) {
+            QJar[i] = (source_tissue->forward_interactions[i] == interaction::repulsion ? T{1} :
+                       (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
-        QJ /= N;
+        QJar *= kp->lgnd * this->rcpt;
+        // Debug QJar into maxes/minses if requested:
+        if constexpr (branch_min_maxes == true && branch_min_max_j == true) {
+            if (d <= this->two_r_j) {
+                for (size_t i = 0; i < N; ++i) {
+                    maxes[i] = QJar[i] > maxes[i] ? QJar[i] : maxes[i];
+                    minses[i] = QJar[i] < minses[i] ? QJar[i] : minses[i];
+                }
+            }
+        }
+        T QJ = QJar.sum()/N;
         J += kb * QJ * (d <= this->two_r_j ? T{1} : T{0});
         rtn[2] = (d <= this->two_r_j && QJ > T{0}) ? true : false;
 
