@@ -89,12 +89,25 @@ int main (int argc, char **argv)
         model.immediate_exit = true;
         size_t i = 0;
 
+        AgentMetrics<float> metrics1;
+        AgentMetrics<float> metrics2;
         // For each expt (or group of expts? many models?) run, then adjust params, etc:
+        model.run();
+        metrics1 = model.get_metrics();
+        model.reset();
         while (i++<10) {
+            // For each model tag in s_ config:
+            float m_g = mconf->getFloat ("m_g", 0.001f);
+            m_g += m_g/10.0f;
+            mconf->set ("m_g", m_g);
+            model.update_m();
             model.run();
-            //metrics = model.evaluate();
-            //mconf->set ("param", x);
+            metrics2 = model.get_metrics();
+            std::cout << "Metrics...\n";
+            std::cout << "Original metrics: " << metrics1 << std::endl;
+            std::cout << "Updated metrics: " << metrics2 << std::endl;
             model.reset();
+            metrics1 = metrics2;
         }
         model.save (outfile);
         //mconf.save (outfile_js);

@@ -15,6 +15,7 @@ static constexpr bool branch_min_maxes = false;
 static constexpr bool branch_min_max_i = false; // make one false
 static constexpr bool branch_min_max_j = true; // and one true
 
+#include <ostream>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -43,6 +44,40 @@ static constexpr bool visualise = true;
 #else
 static constexpr bool visualise = false;
 #endif
+
+// Declare class
+template<typename T> struct AgentMetrics;
+// Declare operator<< function
+template<typename T> std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am);
+// Define class. To hold information about an Agent1 model.
+template<typename T>
+struct AgentMetrics
+{
+    // The number of agents
+    size_t n_agents = 0;
+    // Sum of squared errors
+    T sos = T{0};
+    // RMS error = sqrt(sos/n_agents)
+    T rms = T{0};
+    // Number of crossings
+    T crosscount = T{0};
+    // Output a string
+    std::string str() const
+    {
+        std::stringstream ss;
+        ss << "SOS: " << this->sos << " RMS: " << this->rms << " #X: " << this->crosscount;
+        return ss.str();
+    }
+    // Overload the stream output operator
+    friend std::ostream& operator<< <> (std::ostream& os, const AgentMetrics<T>& am);
+};
+// Define operator<< friend function
+template <typename T>
+std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am)
+{
+    os << am.str();
+    return os;
+}
 
 // A selection of possible graph layouts to show when running the program
 enum class graph_layout { a, b, c, d, e };
@@ -118,9 +153,7 @@ struct Agent1
             std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
             if constexpr (visualise == true) {
                 this->vis(1);
-                if (this->immediate_exit == false) {
-                    this->v->keepOpen();
-                }
+                if (this->immediate_exit == false) { this->v->keepOpen(); }
             }
             return;
         }
@@ -142,9 +175,7 @@ struct Agent1
 
             this->step();
 
-            if constexpr (visualise == true) {
-                if (i%visevery == 0) { this->vis(i); } // Visualize every 10 doubles time required for program
-            }
+            if constexpr (visualise == true) { if (i%visevery == 0) { this->vis(i); } }
 
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
@@ -192,10 +223,19 @@ struct Agent1
             nss << "./paper/images/" << this->title << ".png";
             this->v->saveImage (nss.str());
             this->vis(this->conf->getUInt ("steps", 1000));
-            if (this->immediate_exit == false) {
-                this->v->keepOpen();
-            }
+            if (this->immediate_exit == false) { this->v->keepOpen(); }
         }
+    }
+
+    //! Compute SOS, crossings count etc and return info
+    AgentMetrics<T> get_metrics()
+    {
+        AgentMetrics<T> am;
+        am.n_agents = this->ax_centroids.targ.size();
+        am.sos = this->ax_centroids.sos();
+        am.rms = this->ax_centroids.rms();
+        am.crosscount = this->ax_centroids.crosscount();
+        return am;
     }
 
     //! Save any relevant results of the simulation to an HdfData object.
@@ -648,6 +688,16 @@ struct Agent1
 #endif
     }
 
+    //! Update the 'm' parameters by reading mconf
+    void update_m()
+    {
+        this->m[0] = this->mconf->getDouble ("m_g", 0.001);    // G rcpt-lgnd (axon-tectum)
+        this->m[1] = this->mconf->getDouble ("m_j", 0.0);      // J rcpt-lgnd (axon-axon)
+        this->m[2] = this->mconf->getDouble ("m_i", 0.0);      // I rcpt-rcpt (axon-axon)
+        this->m[3] = this->mconf->getDouble ("m_c", 0.0);      // C (if used)
+        this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
+    }
+
     //! Simulation init
     void init()
     {
@@ -930,12 +980,7 @@ struct Agent1
         }
 
         // Parameters settable from json
-        this->m[0] = this->mconf->getDouble ("m_g", 0.001);    // G rcpt-lgnd (axon-tectum)
-        this->m[1] = this->mconf->getDouble ("m_j", 0.0);      // J rcpt-lgnd (axon-axon)
-        this->m[2] = this->mconf->getDouble ("m_i", 0.0);      // I rcpt-rcpt (axon-axon)
-        this->m[3] = this->mconf->getDouble ("m_c", 0.0);      // C (if used)
-        std::cout << "Competition param = " << this->m[3] << std::endl;
-        this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
+        this->update_m();
 
         // Finally, set any additional parameters that will be needed with calling Agent1::run
         this->goslow = this->conf->getBool ("goslow", false);
