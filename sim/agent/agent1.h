@@ -148,9 +148,9 @@ struct Agent1
 
         // Are we running the random 'model'?
         if (this->mconf->getString ("model", "axgrad") == "random") {
-            std::cout << "branches.size(): " << this->branches.size() << std::endl;
+            //std::cout << "branches.size(): " << this->branches.size() << std::endl;
             this->steprandom();
-            std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
+            //std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
             if constexpr (visualise == true) {
                 this->vis(1);
                 if (this->immediate_exit == false) { this->v->keepOpen(); }
@@ -179,14 +179,13 @@ struct Agent1
 
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
-                std::cout << "step " << i << ". Per step: "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery << " ms\n";
-                std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
+                //std::cout << "step " << i << ". Per step: "
+                //          << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery << " ms\n";
+                //std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
                 laststep = std::chrono::steady_clock::now();
             }
         }
         delete this->gradient_rng;
-        std::cout << "Done simulating\n";
 
         if constexpr (visualise == true) {
 
@@ -642,7 +641,7 @@ struct Agent1
             morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
             size_t xstart = this->ret->w/2;
 
-            for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
+            //for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
             morph::vVector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
             for (size_t i = 0; i < 4; ++i) {
                 // copy elements from pending_branches in a square from
