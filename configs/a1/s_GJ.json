@@ -1,0 +1,4 @@
+{
+    "desc_params" : "An array of paramter names to optimise",
+    "params" : ["m_g", "m_j"] // Want to add r_j to opt.
+}

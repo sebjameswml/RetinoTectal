@@ -11,7 +11,29 @@
 #include <vector>
 #include <morph/tools.h>
 #include <morph/Config.h>
+#include <morph/NM_Simplex.h>
+#include <morph/rng_single.h>
 #include "agent1.h"
+
+// Objective function involves running the agent based model
+template <typename T=float, size_t N=4>
+T objfn (Agent1<T, N, branch<T, N>>& model,
+         morph::Config* mconf,
+         std::vector<std::string>& params,
+         std::vector<T>& param_values)
+{
+    // Set params in model
+    model.reset();
+    for (size_t i = 0; i < params.size(); ++i) {
+        mconf->set (params[i], param_values[i]);
+    }
+    model.update_m();
+    // Run it then get metrics
+    model.run();
+    AgentMetrics<T> m = model.get_metrics();
+    T rtn = m.sos + m.crosscount;
+    return rtn;
+}
 
 int main (int argc, char **argv)
 {
@@ -77,6 +99,43 @@ int main (int argc, char **argv)
     std::string branch_model = mconf->getString ("branch_model", "james_agent");
     size_t num_guiders = mconf->getInt("num_guiders", 4);
 
+    // Open s_*.json and get the array "params".
+    std::vector<std::string> params;
+    std::vector<float> param_values;
+    Json::Value params_j = sconf->getArray ("params");
+    for (auto p : params_j) {
+        params.push_back (p.asString());
+        param_values.push_back (mconf->getFloat(p.asString(), 0));
+    }
+
+    std::cout << "Optimisable parameters:\n";
+    size_t np = params.size(); // num params
+    size_t nv = np+1;          // num vertices
+    for (size_t i = 0; i < np; ++i) {
+        std::cout << params[i] << " = " << param_values[i] << std::endl;
+    }
+
+    // NM Search parameters
+    std::vector<std::vector<float>> i_vertices(nv);
+    // First vertex set from config file
+    i_vertices[0].resize(np);
+    for (size_t i = 0; i < np; ++i) {
+        i_vertices[0][i] = param_values[i];
+    }
+    // Other vertices obtained by adding/subtracting a bit (this could be a NM_Simplex method)
+    for (size_t j = 1; j < nv; ++j) {
+        i_vertices[j].resize(np);
+        for (size_t i = 0; i < np; ++i) {
+            float pv = param_values[i];
+            pv = pv + (pv/10)*(morph::randSingle()-0.5f);
+            i_vertices[j][i] = pv;
+        }
+    }
+
+    morph::NM_Simplex<float> simp(i_vertices);
+    //simp.termination_threshold = std::numeric_limits<float>::epsilon();
+    simp.termination_threshold = 0.1f;
+
     if (num_guiders == 4) {
 
         // for (each expt) {
@@ -85,9 +144,8 @@ int main (int argc, char **argv)
         std::string paramsfile_expt = "./configs/a1/e_wt.json";
         morph::Config* econf = new morph::Config (paramsfile_expt);
         Agent1<float, 4, branch<float, 4>> model (econf, mconf);
-        model.title = std::string("j4_") + m_id + std::string("_") + s_id;
+        model.title = std::string("j4_") + m_id + std::string("_s_") + s_id;
         model.immediate_exit = true;
-        size_t i = 0;
 
         AgentMetrics<float> metrics1;
         AgentMetrics<float> metrics2;
@@ -95,28 +153,58 @@ int main (int argc, char **argv)
         model.run();
         metrics1 = model.get_metrics();
         model.reset();
-        while (i++<10) {
-            // For each model tag in s_ config:
-            float m_g = mconf->getFloat ("m_g", 0.001f);
-            m_g += m_g/10.0f;
-            mconf->set ("m_g", m_g);
-            model.update_m();
-            model.run();
-            metrics2 = model.get_metrics();
-            std::cout << "Metrics...\n";
-            std::cout << "Original metrics: " << metrics1 << std::endl;
-            std::cout << "Updated metrics: " << metrics2 << std::endl;
-            model.reset();
-            metrics1 = metrics2;
+
+        // Condense metrics into a single value.
+        float val = metrics1.sos + metrics1.crosscount;
+
+        while (simp.state != morph::NM_Simplex_State::ReadyToStop) {
+
+            std::cout << "During optimization:\n";
+            std::vector<float> final_params = simp.best_vertex();
+            if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
+            for (size_t i = 0; i < np; ++i) {
+                std::cout << params[i] << " = " << final_params[i] << std::endl;
+            }
+
+            if (simp.state == morph::NM_Simplex_State::NeedToComputeThenOrder) {
+                // 1. apply objective to each vertex
+                for (unsigned int i = 0; i <= simp.n; ++i) {
+                    simp.values[i] = objfn (model, mconf, params, simp.vertices[i]);
+                    std::cout << "Vertex " << i << " returns objective " << simp.values[i] << std::endl;
+                }
+                simp.order();
+
+            } else if (simp.state == morph::NM_Simplex_State::NeedToOrder) {
+                simp.order();
+
+            } else if (simp.state == morph::NM_Simplex_State::NeedToComputeReflection) {
+                val = objfn (model, mconf, params, simp.xr);
+                std::cout << "Before apply_reflection, objective is " << val << std::endl;
+                simp.apply_reflection (val);
+
+            } else if (simp.state == morph::NM_Simplex_State::NeedToComputeExpansion) {
+                val = objfn (model, mconf, params, simp.xe);
+                std::cout << "Before apply_expansion, objective is " << val << std::endl;
+                simp.apply_expansion (val);
+
+            } else if (simp.state == morph::NM_Simplex_State::NeedToComputeContraction) {
+                val = objfn (model, mconf, params, simp.xc);
+                std::cout << "Before apply_contraction, objective is " << val << std::endl;
+                simp.apply_contraction (val);
+            }
         }
-        model.save (outfile);
-        //mconf.save (outfile_js);
+
+        std::cout << "After optimization:\n";
+        std::vector<float> final_params = simp.best_vertex();
+        if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
+        for (size_t i = 0; i < np; ++i) {
+            std::cout << params[i] << " = " << final_params[i] << std::endl;
+        }
 
         delete econf;
 
     } else if (num_guiders == 2) {
-        // Similar to above but with:
-        //Agent1<float, 2, branch<float, 2>> model (conf, mconf);
+        std::cerr << "Not implemented for num_guiders == 2\n";
     }
 
     delete sconf;
