@@ -20,5 +20,5 @@
     "exit" : false,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 2500
+    "steps" : 1200
 }

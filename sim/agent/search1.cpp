@@ -134,14 +134,15 @@ int main (int argc, char **argv)
 
     morph::NM_Simplex<float> simp(i_vertices);
     //simp.termination_threshold = std::numeric_limits<float>::epsilon();
-    simp.termination_threshold = 0.1f;
+    simp.termination_threshold = 0.001f; // Needs to be matched to (or obtained from) e_*.json file
 
     if (num_guiders == 4) {
 
         // for (each expt) {
 
         // Create/use an expt config
-        std::string paramsfile_expt = "./configs/a1/e_wt.json";
+        //std::string paramsfile_expt = "./configs/a1/e_wt.json";
+        std::string paramsfile_expt = "./configs/a1/e_retablate.json";
         morph::Config* econf = new morph::Config (paramsfile_expt);
         Agent1<float, 4, branch<float, 4>> model (econf, mconf);
         model.title = std::string("j4_") + m_id + std::string("_s_") + s_id;
