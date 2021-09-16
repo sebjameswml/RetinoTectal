@@ -675,12 +675,79 @@ struct Agent1
         }
     }
 
+    /*
+     * Setting up the 'experiment suggests' information
+     *
+     * This requires some manual setup in the code below - the organisation of the
+     * tissue after a manipulation is based on an interpretation of the various
+     * papers in the literature.
+     *
+     * After initialising the ax_centroid targets from the retinal locations, we
+     * have to modify ax_centroid's targ attribute, which gives the 'experiment
+     * suggests' arrangement, if any of the experimental manipulations have been
+     * applied.
+     */
+    void setup_expt_suggests()
+    {
+        // Have we had a graft swap?
+        if (this->conf->getBool ("tectal_graftswap", false)) {
+            std::cout << "tectal_graftswap..." << std::endl;
+            this->ax_centroids.targ_graftswap (l1v, psv, l2v);
+        }
+
+        if (this->conf->getBool ("retinal_graftswap", false)) {
+            std::cout << "WARNING: graft swap applied to retina, but axon centroids net was not updated with a prediction\n";
+        }
+
+        // Has tectum been rotated? If so, then modify the projected target - a
+        // patch at l1v of size psv is rotated.
+        unsigned int rots = 0;
+        if ((rots = this->conf->getUInt ("tectal_rotations", 0)) > 0) {
+            this->ax_centroids.targ_graftrotate (l1v, psv[0], rots);
+        }
+
+        if ((rots = this->conf->getUInt ("retinal_rotations", 0)) > 0) {
+            throw std::runtime_error("WARNING: graft rotation applied to retina, but axon centroids net was not updated with a prediction");
+        }
+
+        if (this->conf->getBool ("compound_retina", false)) {
+            // copy tissue::compound_tissue
+            this->ax_centroids.targ_compound_tissue();
+        }
+
+        if (this->conf->getBool ("reber", false)) {
+            this->ax_centroids.targ_reber();
+        }
+
+        // Don't have a brown-specific target yet
+        if (this->conf->getBool ("brown", false)) {
+            this->ax_centroids.targ_reber();
+        }
+
+        if (conf->getBool ("singleaxon", false)) {
+            // Now put the selected axon's expected final location in.
+            if (!ax_centroids.targ.empty()) {
+                ax_centroids.targ[0] = this->ret->posn[singleaxon_idx].plus_one_dim();
+            }
+        }
+
+        if (this->conf->getBool ("ablate_ret_left", false)) {
+            // expected layout has half as many locations, but they're stretched out into the full area?
+            this->ax_centroids.targ_expand_topdown();
+        }
+
+        if (this->conf->getBool ("ablate_tec_top", false)) {
+            this->ax_centroids.targ_squish_topdown();
+        }
+    }
+
     //! Re-compute initial positions of branches; reset content of graphs
     void reset()
     {
         size_t num_branches = this->ret->num() * this->bpa;
         if (this->pending_branches.size() != num_branches) { throw std::runtime_error ("num_branches is wrong."); }
         this->setup_pending_branches();
+        this->setup_expt_suggests();
 #ifdef VISUALISE
         this->ax_history.clear();
         if (this->gv != (morph::GraphVisual<T>*)0) { this->gv->clear(); }
@@ -696,6 +763,14 @@ struct Agent1
         this->m[3] = this->mconf->getDouble ("m_c", 0.0);      // C (if used)
         this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
     }
+
+    //! Graftswap "locn1" parameter from JSON, stored as a Vector. Member as it's used
+    //! in setup_expt_suggests
+    morph::Vector<size_t, 2> l1v;
+    //! Graftswap "locn2" parameter from JSON, stored as a Vector.
+    morph::Vector<size_t, 2> l2v;
+    //! Graftswap "patchsize" parameter from Json.
+    morph::Vector<size_t, 2> psv;
 
     //! Simulation init
     void init()
@@ -769,9 +844,6 @@ struct Agent1
         Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
         Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
         Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
-        morph::Vector<size_t, 2> l1v;
-        morph::Vector<size_t, 2> l2v;
-        morph::Vector<size_t, 2> psv;
         // now, those are only used for rotation and graftswap, so only error on that combination
         if ((this->conf->getBool ("tectal_graftswap", false)
              || this->conf->getBool ("retinal_graftswap", false)
@@ -896,71 +968,8 @@ struct Agent1
             this->ax_centroids.dx = this->tectum->dx;
         }
 
-        this->setup_pending_branches ();
-
-        /*
-         * Setting up the 'experiment suggests' information
-         *
-         * This requires some manual setup in the code below - the organisation of the
-         * tissue after a manipulation is based on an interpretation of the various
-         * papers in the literature.
-         *
-         * After initialising the ax_centroid targets from the retinal locations, we
-         * have to modify ax_centroid's targ attribute, which gives the 'experiment
-         * suggests' arrangement, if any of the experimental manipulations have been
-         * applied.
-         */
-
-        // Have we had a graft swap?
-        if (this->conf->getBool ("tectal_graftswap", false)) {
-            std::cout << "tectal_graftswap..." << std::endl;
-            this->ax_centroids.targ_graftswap (l1v, psv, l2v);
-        }
-
-        if (this->conf->getBool ("retinal_graftswap", false)) {
-            std::cout << "WARNING: graft swap applied to retina, but axon centroids net was not updated with a prediction\n";
-        }
-
-        // Has tectum been rotated? If so, then modify the projected target - a
-        // patch at l1v of size psv is rotated.
-        unsigned int rots = 0;
-        if ((rots = this->conf->getUInt ("tectal_rotations", 0)) > 0) {
-            this->ax_centroids.targ_graftrotate (l1v, psv[0], rots);
-        }
-
-        if ((rots = this->conf->getUInt ("retinal_rotations", 0)) > 0) {
-            throw std::runtime_error("WARNING: graft rotation applied to retina, but axon centroids net was not updated with a prediction");
-        }
-
-        if (this->conf->getBool ("compound_retina", false)) {
-            // copy tissue::compound_tissue
-            this->ax_centroids.targ_compound_tissue();
-        }
-
-        if (this->conf->getBool ("reber", false)) {
-            this->ax_centroids.targ_reber();
-        }
-
-        // Don't have a brown-specific target yet
-        if (this->conf->getBool ("brown", false)) {
-            this->ax_centroids.targ_reber();
-        }
-
-        if (conf->getBool ("singleaxon", false)) {
-            // Now put the selected axon's expected final location in.
-            if (!ax_centroids.targ.empty()) {
-                ax_centroids.targ[0] = this->ret->posn[singleaxon_idx].plus_one_dim();
-            }
-        }
-
-        if (this->conf->getBool ("ablate_ret_left", false)) {
-            // expected layout has half as many locations, but they're stretched out into the full area?
-            this->ax_centroids.targ_expand_topdown();
-        }
-
-        if (this->conf->getBool ("ablate_tec_top", false)) {
-            this->ax_centroids.targ_squish_topdown();
-        }
+        this->setup_pending_branches();
+        this->setup_expt_suggests();
 
         /*
          * Now initialise the Visualisation code
