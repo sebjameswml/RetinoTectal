@@ -12,7 +12,9 @@
 #include <morph/tools.h>
 #include <morph/Config.h>
 #include <morph/NM_Simplex.h>
-#include <morph/rng_single.h>
+#define RANDSINGLE 1
+#define NO_RANDDOUBLE 1
+#include <morph/rng.h>
 #include "agent1.h"
 
 // Objective function involves running the agent based model
