@@ -528,22 +528,44 @@ struct Agent1
         return function_forms;
     }
 
+    bool randomly_seeded = true;
     void setup_pending_branches()
     {
-        // Axon initial positions x and y can be uniformly randomly selected...
-        morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
-        morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
-        //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
-        // ...or set from the ideal position plus a random perturbation
-        morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
-        // A normally distributed perturbation is added for each branch. SD=0.1.
-        morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
-        // Generate random number sequences all at once
-        size_t axc_sz = this->ax_centroids.p.size();
-        std::vector<T> rn_x = rng_x.get (axc_sz); // ax_centroids size?
-        std::vector<T> rn_y = rng_y.get (axc_sz);
-        std::vector<T> rn_p = rng_p.get (axc_sz * 2 * this->bpa);
-        std::vector<T> rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
+        std::vector<T> rn_x;
+        std::vector<T> rn_y;
+        std::vector<T> rn_p;
+        std::vector<T> rn_p0;
+        if (randomly_seeded) {
+            // Axon initial positions x and y can be uniformly randomly selected...
+            morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
+            morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
+            //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
+            // ...or set from the ideal position plus a random perturbation
+            morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
+            // A normally distributed perturbation is added for each branch. SD=0.1.
+            morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
+            // Generate random number sequences all at once
+            size_t axc_sz = this->ax_centroids.p.size();
+            rn_x = rng_x.get (axc_sz); // ax_centroids size?
+            rn_y = rng_y.get (axc_sz);
+            rn_p = rng_p.get (axc_sz * 2 * this->bpa);
+            rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
+        } else {
+            // Axon initial positions x and y can be uniformly randomly selected...
+            morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0}, 1000);
+            morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}, 2000); // S&G
+            //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
+            // ...or set from the ideal position plus a random perturbation
+            morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1}, 3000);
+            // A normally distributed perturbation is added for each branch. SD=0.1.
+            morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1}, 4000);
+            // Generate random number sequences all at once
+            size_t axc_sz = this->ax_centroids.p.size();
+            rn_x = rng_x.get (axc_sz); // ax_centroids size?
+            rn_y = rng_y.get (axc_sz);
+            rn_p = rng_p.get (axc_sz * 2 * this->bpa);
+            rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
+        }
         bool totally_random = this->mconf->getBool ("totally_random_init", true);
         std::string branch_model = this->mconf->getString ("branch_model", "james_agent");
 

@@ -135,8 +135,8 @@ int main (int argc, char **argv)
     }
 
     morph::NM_Simplex<float> simp(i_vertices);
-    //simp.termination_threshold = std::numeric_limits<float>::epsilon();
-    simp.termination_threshold = 0.001f; // Needs to be matched to (or obtained from) e_*.json file
+    simp.termination_threshold = sconf->getFloat ("nm_threshold", 0.001f);
+    simp.too_many_operations = sconf->getUInt ("nm_toomany", 0); // 0 means go on for ever
 
     if (num_guiders == 4) {
 
@@ -149,6 +149,7 @@ int main (int argc, char **argv)
         Agent1<float, 4, branch<float, 4>> model (econf, mconf);
         model.title = std::string("j4_") + m_id + std::string("_s_") + s_id;
         model.immediate_exit = true;
+        model.randomly_seeded = false;
 
         AgentMetrics<float> metrics1;
         AgentMetrics<float> metrics2;
