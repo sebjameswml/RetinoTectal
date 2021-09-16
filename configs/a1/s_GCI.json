@@ -1,6 +1,6 @@
 {
     "desc_params" : "An array of paramter names to optimise. May include: m_g, m_c, m_i, m_j, r_c, r_i, r_j, s",
-    "params" : ["m_g", "m_c", "m_i", "r_i"],
+    "params" : ["m_g", "m_c", "m_i", "r_i", "r_c"],
     "desc_nm_threshold" : "Nelder-Mead stopping threshold and 'too many' loops",
     "nm_threshold" : 0.01,
     "nm_toomany" : 1000
