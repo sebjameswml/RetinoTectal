@@ -129,7 +129,7 @@ int main (int argc, char **argv)
         i_vertices[j].resize(np);
         for (size_t i = 0; i < np; ++i) {
             float pv = param_values[i];
-            pv = pv + (pv/10)*(morph::randSingle()-0.5f);
+            pv = pv + (pv/2)*(morph::randSingle()-0.5f);
             i_vertices[j][i] = pv;
         }
     }
