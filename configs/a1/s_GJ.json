@@ -1,4 +1,7 @@
 {
     "desc_params" : "An array of paramter names to optimise",
-    "params" : ["m_g", "m_j"] // Want to add r_j to opt.
+    "params" : ["m_g", "m_j", "r_j"],
+    "desc_nm_threshold" : "Nelder-Mead stopping threshold and 'too many' loops",
+    "nm_threshold" : 0.01,
+    "nm_toomany" : 1000
 }
