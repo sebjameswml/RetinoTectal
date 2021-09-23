@@ -118,7 +118,7 @@ int main (int argc, char **argv)
     }
 
     // NM Search parameters
-    std::vector<std::vector<float>> i_vertices(nv);
+    morph::vVector<morph::vVector<float>> i_vertices(nv);
     // First vertex set from config file
     i_vertices[0].resize(np);
     for (size_t i = 0; i < np; ++i) {
