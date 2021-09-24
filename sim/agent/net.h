@@ -11,6 +11,15 @@
 #include <morph/MathAlgo.h>
 #include "tissue.h"
 
+// Comparison for std::set of Vectors
+struct ncmp
+{
+    bool operator() (morph::Vector<size_t, 2> a, morph::Vector<size_t, 2> b) const
+    {
+        return a.lexical_lessthan(b);
+    }
+};
+
 template<typename T>
 struct net
 {
@@ -63,13 +72,13 @@ struct net
         size_t cc = 0;
 
         // Have to iterate the std::set
-        std::set<morph::Vector<size_t, 2>>::iterator ci = this->c.begin();
+        typename std::set<morph::Vector<size_t, 2>, ncmp>::iterator ci = this->c.begin();
 
-        std::set< std::set<morph::Vector<size_t, 2>>> pairs_tested;
+        typename std::set< std::set<morph::Vector<size_t, 2>, ncmp>> pairs_tested;
 
         // Can this be OpenMPed?
         while (ci != this->c.end()) {
-            std::set<morph::Vector<size_t, 2>>::iterator cj = this->c.begin();
+            typename std::set<morph::Vector<size_t, 2>, ncmp>::iterator cj = this->c.begin();
             while (cj != this->c.end()) {
 
                 if (cj == ci) { // then skip
@@ -89,7 +98,7 @@ struct net
                 }
 
                 // Have we already considered ci, cj as cj, ci?
-                std::set<morph::Vector<size_t, 2>> linepair;
+                std::set<morph::Vector<size_t, 2>, ncmp> linepair;
                 linepair.insert (*ci);
                 linepair.insert (*cj);
                 if (pairs_tested.count (linepair)) { // skip this pair as we already considered it in another order
@@ -130,8 +139,10 @@ struct net
     morph::vVector<morph::Vector<T, 3>> p;
     //! Colours of the vertices of the net
     std::vector<std::array<float, 3>> clr;
+
     //! Connections of the net. The indices into p that are the ends of line segments
-    std::set<morph::Vector<size_t, 2>> c;
+    std::set<morph::Vector<size_t, 2>, ncmp> c;
+
     //! Target positions of the net, to allow the net to be used to provide a SOS metric for how close the pattern is to ideal
     morph::vVector<morph::Vector<T, 3>> targ;
 };
