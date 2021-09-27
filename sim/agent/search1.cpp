@@ -24,26 +24,27 @@ unsigned int model_sim_count = 0;
 template <typename T=float, size_t N=4>
 T objfn (Agent1<T, N, branch<T, N>>& model1,
          morph::Config* mconf,
-         std::vector<std::string>& params,
-         std::vector<T>& param_values)
+         std::vector<std::string>& param_names,
+         morph::vVector<T>& param_values)
 {
+    std::cout << "......................................................Sim count: "
+              << ++model_sim_count << std::endl;
+
     // Set params in model(s)
     model1.reset();
-    for (size_t i = 0; i < params.size(); ++i) {
-        mconf->set (params[i], param_values[i]);
+    for (size_t i = 0; i < param_names.size(); ++i) {
+        mconf->set (param_names[i], param_values[i]);
+        std::cout << param_names[i] << " = " << param_values[i] << std::endl;
     }
     model1.update_m();
 
     // Run model and then get metrics
     model1.run();
-    ++model_sim_count;
     AgentMetrics<T> m1m = model1.get_metrics();
 
-    // Here's a combination of the sos differences between the expected map and the actual map, plus a cross count.
-    std::cout << "wt expt sos: " << m1m.sos << std::endl;
-    std::cout << "Sim count: " << model_sim_count << std::endl;
-    T rtn = m1m.sos;
-
+    // The length of the objective vector
+    T rtn = std::sqrt(1000*m1m.rms * 1000*m1m.rms + m1m.crosscount * m1m.crosscount);
+    std::cout << "Objective = sqrt(" << (1000*m1m.rms) << "^2 + " << m1m.crosscount << "^2) = " << rtn << std::endl;
     return rtn;
 }
 
@@ -112,19 +113,19 @@ int main (int argc, char **argv)
     size_t num_guiders = mconf->getInt("num_guiders", 4);
 
     // Open s_*.json and get the array "params".
-    std::vector<std::string> params;
+    std::vector<std::string> param_names;
     std::vector<float> param_values;
     Json::Value params_j = sconf->getArray ("params");
     for (auto p : params_j) {
-        params.push_back (p.asString());
+        param_names.push_back (p.asString());
         param_values.push_back (mconf->getFloat(p.asString(), 0));
     }
 
     std::cout << "Optimisable parameters:\n";
-    size_t np = params.size(); // num params
+    size_t np = param_names.size(); // num params
     size_t nv = np+1;          // num vertices
     for (size_t i = 0; i < np; ++i) {
-        std::cout << params[i] << " = " << param_values[i] << std::endl;
+        std::cout << param_names[i] << " = " << param_values[i] << std::endl;
     }
 
     // NM Search parameters
@@ -150,30 +151,23 @@ int main (int argc, char **argv)
 
     if (num_guiders == 4) {
 
-        // for (each expt) {
-
         // Create/use an expt config
-        std::string paramsfile_expt = "./configs/a1/e_wt.json";
+        //std::string paramsfile_expt = "./configs/a1/e_wt.json";
+        std::string paramsfile_expt = "./configs/a1/e_retablate.json";
         morph::Config* econf1 = new morph::Config (paramsfile_expt);
         Agent1<float, 4, branch<float, 4>> model1 (econf1, mconf);
         model1.title = std::string("j4_") + m_id + std::string("_1_s_") + s_id;
         model1.immediate_exit = true;
+        model1.showevery = 500;
         model1.randomly_seeded = false;
 
         while (simp.state != morph::NM_Simplex_State::ReadyToStop) {
 
-            std::cout << "During optimization:\n";
-            morph::vVector<float> final_params = simp.best_vertex();
-            if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
-            for (size_t i = 0; i < np; ++i) {
-                std::cout << params[i] << " = " << final_params[i] << std::endl;
-            }
-
             if (simp.state == morph::NM_Simplex_State::NeedToComputeThenOrder) {
                 // 1. apply objective to each vertex
                 for (unsigned int i = 0; i <= simp.n; ++i) {
-                    simp.values[i] = objfn (model1, mconf, params, simp.vertices[i]);
-                    std::cout << "Vertex " << i << " returns objective " << simp.values[i] << std::endl;
+                    simp.values[i] = objfn (model1, mconf, param_names, simp.vertices[i]);
+                    //std::cout << "Vertex " << i << " returns objective " << simp.values[i] << std::endl;
                 }
                 simp.order();
 
@@ -181,28 +175,22 @@ int main (int argc, char **argv)
                 simp.order();
 
             } else if (simp.state == morph::NM_Simplex_State::NeedToComputeReflection) {
-                float val = objfn (model1, mconf, params, simp.xr);
-                std::cout << "Before apply_reflection, objective is " << val << std::endl;
+                float val = objfn (model1, mconf, param_names, simp.xr);
+                //std::cout << "Before apply_reflection, objective is " << val << std::endl;
                 simp.apply_reflection (val);
 
             } else if (simp.state == morph::NM_Simplex_State::NeedToComputeExpansion) {
-                float val = objfn (model1, mconf, params, simp.xe);
-                std::cout << "Before apply_expansion, objective is " << val << std::endl;
+                float val = objfn (model1, mconf, param_names, simp.xe);
+                //std::cout << "Before apply_expansion, objective is " << val << std::endl;
                 simp.apply_expansion (val);
 
             } else if (simp.state == morph::NM_Simplex_State::NeedToComputeContraction) {
-                float val = objfn (model1, mconf, params, simp.xc);
-                std::cout << "Before apply_contraction, objective is " << val << std::endl;
+                float val = objfn (model1, mconf, param_names, simp.xc);
+                //std::cout << "Before apply_contraction, objective is " << val << std::endl;
                 simp.apply_contraction (val);
             }
         }
-
-        std::cout << "After optimization (simulated " << model_sim_count << " times):\n";
-        morph::vVector<float> final_params = simp.best_vertex();
-        if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
-        for (size_t i = 0; i < np; ++i) {
-            std::cout << params[i] << " = " << final_params[i] << std::endl;
-        }
+        std::cout << "Optimization ended after " << model_sim_count << " objective evaluations.\n";
 
         std::string mdl_conf_out("./m_");
         mdl_conf_out += m_id + "_fin.json";
@@ -212,6 +200,13 @@ int main (int argc, char **argv)
         } else {
             std::cerr << "Failed to write optimised model to file " << mdl_conf_out << std::endl;
         }
+
+        // One last run to show the final model
+        std::cout << "Last model run...\n";
+        model1.immediate_exit = false;
+        morph::vVector<float> best = simp.best_vertex();
+        objfn (model1, mconf, param_names, best);
+
         delete econf1;
 
     } else if (num_guiders == 2) {

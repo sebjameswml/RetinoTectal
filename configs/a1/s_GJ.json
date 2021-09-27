@@ -3,5 +3,5 @@
     "params" : ["m_g", "m_j", "r_j"],
     "desc_nm_threshold" : "Nelder-Mead stopping threshold and 'too many' loops",
     "nm_threshold" : 0.01,
-    "nm_toomany" : 1000
+    "nm_toomany" : 100
 }

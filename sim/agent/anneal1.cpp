@@ -13,6 +13,7 @@
 #include <morph/Config.h>
 #include <morph/Anneal.h>
 #include "agent1.h"
+#include <csignal>
 
 // A count of the number of sims.
 unsigned int model_sim_count = 0;
@@ -37,16 +38,34 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
     AgentMetrics<T> m1m = model1.get_metrics();
 
     // Here's a combination of the sos differences between the expected map and the actual map, plus a cross count.
-    std::cout << "wt expt sos: " << m1m.sos << std::endl;
-    std::cout << "Sim count: " << model_sim_count << std::endl;
+    std::cout << "wt expt sos: " << m1m.sos << " for parameters: ";
+    for (size_t i = 0; i < params.size(); ++i) {
+        std::cout << params[i] << " = " << param_values[i] << ", ";
+    }
+    std::cout << " (Sim count: " << model_sim_count << ")\n";
     T rtn = m1m.sos;
 
     return rtn;
 }
 
+// To allow the signal handler to close the optimiser, make it a global pointer.
+morph::Anneal<double>* optimiser;
+
+// A signal handler for optimiser.
+void signalHandler( int signum )
+{
+    std::cout << "Optimisation interrupted. Saving data...\n";
+    optimiser->save ("anneal1.h5");
+    std::cout << "Best objective so far was " << optimiser->f_x_best << " for params " << optimiser->x_best << std::endl;
+    exit(signum);
+}
+
 // E.g.: pbm && ./build/sim/agent/search1c configs/a1/m_eE_GCI.json configs/a1/s_GCI.json
 int main (int argc, char **argv)
 {
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+
     // Set up config objects
     std::string paramsfile_mdl("");
     std::string paramsfile_srch("");
@@ -137,16 +156,16 @@ int main (int argc, char **argv)
         }
     }
 
-    morph::Anneal<double> optimiser (param_values, param_ranges);
+    optimiser = new morph::Anneal<double>(param_values, param_ranges);
     // Anneal ASA params from sconf:
-    optimiser.temperature_ratio_scale = sconf->getDouble ("temperature_ratio_scale", 1e-4);
-    optimiser.temperature_anneal_scale = sconf->getDouble ("temperature_anneal_scale", 200.0);
-    optimiser.cost_parameter_scale_ratio = sconf->getDouble ("cost_parameter_scale_ratio", 1.5);
-    optimiser.acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 0.3);
-    optimiser.partials_samples = sconf->getUInt ("partials_samples", 4);
-    optimiser.f_x_best_repeat_max = sconf->getUInt ("f_x_best_repeat_max", 15);
-    optimiser.reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 100);
-    optimiser.init();
+    optimiser->temperature_ratio_scale = sconf->getDouble ("temperature_ratio_scale", 1e-4);
+    optimiser->temperature_anneal_scale = sconf->getDouble ("temperature_anneal_scale", 200.0);
+    optimiser->cost_parameter_scale_ratio = sconf->getDouble ("cost_parameter_scale_ratio", 1.5);
+    optimiser->acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 0.3);
+    optimiser->partials_samples = sconf->getUInt ("partials_samples", 4);
+    optimiser->f_x_best_repeat_max = sconf->getUInt ("f_x_best_repeat_max", 15);
+    optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 100);
+    optimiser->init();
 
     if (num_guiders == 4) {
 
@@ -161,25 +180,31 @@ int main (int argc, char **argv)
         model1.randomly_seeded = false;
 
         // ASA optimisation
-        while (optimiser.state != morph::Anneal_State::ReadyToStop) {
-            if (optimiser.state == morph::Anneal_State::NeedToCompute) {
-                //std::vector<float> xc = static_cast<std::vector<float>>(optimiser.x_cand.as_float());
-                morph::vVector<float> xc = optimiser.x_cand.as_float();
-                optimiser.f_x_cand = objfn (model1, mconf, params, xc);
+        while (optimiser->state != morph::Anneal_State::ReadyToStop) {
+            if (optimiser->state == morph::Anneal_State::NeedToCompute) {
+                //std::vector<float> xc = static_cast<std::vector<float>>(optimiser->x_cand.as_float());
+                morph::vVector<float> xc = optimiser->x_cand.as_float();
+                optimiser->f_x_cand = objfn (model1, mconf, params, xc);
 
-            } else if (optimiser.state == morph::Anneal_State::NeedToComputeSet) {
-                for (unsigned int i = 0; i < optimiser.partials_samples; ++i) {
-                    optimiser.f_x_set[i] = objfn (model1, mconf, params, optimiser.x_set[i].as_float());
+            } else if (optimiser->state == morph::Anneal_State::NeedToComputeSet) {
+                for (unsigned int i = 0; i < optimiser->partials_samples; ++i) {
+                    optimiser->f_x_set[i] = objfn (model1, mconf, params, optimiser->x_set[i].as_float());
                 }
             } else {
                 throw std::runtime_error ("Unexpected state for anneal object.");
             }
-            optimiser.step();
+
+            // Add to optimization visualisation, which could be a scatter plot.
+
+            // Every 100 steps save out data from optimiser? Or do it at and and catch
+            // TERM signal and save data before exit? Probably that.
+
+            optimiser->step();
         }
 
         std::cout << "After optimization (simulated " << model_sim_count << " times):\n";
 
-        morph::vVector<double> final_params = optimiser.x_best;
+        morph::vVector<double> final_params = optimiser->x_best;
         if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
         for (size_t i = 0; i < params.size(); ++i) {
             std::cout << params[i] << " = " << final_params[i] << std::endl;
@@ -201,5 +226,6 @@ int main (int argc, char **argv)
 
     delete sconf;
     delete mconf;
+    delete optimiser;
     return 0;
 }

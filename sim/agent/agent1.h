@@ -97,7 +97,7 @@ struct Agent1
         delete this->tectum;
     }
 
-    static constexpr unsigned int showevery = 100;
+    unsigned int showevery = 1000;
     static constexpr unsigned int visevery = 5;
 
 #ifdef VISUALISE
@@ -179,9 +179,13 @@ struct Agent1
 
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
-                std::cout << "step " << i << ". Per step: "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery << " ms\n";
-                //std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
+                std::cout << "Step " << i << ".";
+                if (i) {
+                    std::cout << " Step duration: "
+                              << std::chrono::duration_cast<std::chrono::milliseconds>(since).count()/showevery
+                              << " ms\n";
+                    //std::cout << "RMS error of axon centroids: " << this->ax_centroids.rms() << std::endl;
+                }
                 laststep = std::chrono::steady_clock::now();
             }
         }
