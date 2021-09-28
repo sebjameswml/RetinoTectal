@@ -15,8 +15,14 @@
 #include "agent1.h"
 #include <csignal>
 
-// A count of the number of sims.
+// A count of the number of sims used in objfn() for text output
 unsigned int model_sim_count = 0;
+// To allow the signal handler to close the optimiser, make it a global pointer.
+morph::Anneal<double>* optimiser = (morph::Anneal<double>*)0;
+// The name of the model and search files are added to "anneal1" for saving data out.
+// The 'model id' and 'search id' are derived from their JSON files' names
+std::string s_id("");
+std::string m_id("");
 
 // Objective function involves running the agent based model
 template <typename T=float, size_t N=4>
@@ -48,16 +54,20 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
     return rtn;
 }
 
-// To allow the signal handler to close the optimiser, make it a global pointer.
-morph::Anneal<double>* optimiser;
-
 // A signal handler for optimiser.
-void signalHandler( int signum )
+void signalHandler (int signum)
 {
     std::cout << "Optimisation interrupted. Saving data...\n";
-    optimiser->save ("anneal1.h5");
-    std::cout << "Best objective so far was " << optimiser->f_x_best << " for params " << optimiser->x_best << std::endl;
-    exit(signum);
+    if (optimiser != (morph::Anneal<double>*)0) {
+        morph::Tools::createDirIf ("log/anneal1");
+        std::string fname = "log/anneal1/anneal1_" + m_id + std::string("_")
+        + morph::Tools::filenameTimestamp() + std::string(".h5");
+        std::cout << " to file "<< fname << std::endl;
+        optimiser->save (fname);
+        std::cout << "...saved. Best objective so far was " << optimiser->f_x_best
+                  << " for params " << optimiser->x_best << std::endl;
+    }
+    exit (signum);
 }
 
 // E.g.: pbm && ./build/sim/agent/search1c configs/a1/m_eE_GCI.json configs/a1/s_GCI.json
@@ -69,9 +79,6 @@ int main (int argc, char **argv)
     // Set up config objects
     std::string paramsfile_mdl("");
     std::string paramsfile_srch("");
-    // The 'model id' and 'search id' are derived from their JSON files' names
-    std::string m_id("");
-    std::string s_id("");
 
     static constexpr size_t expected_args = 2;
     if (argc == (expected_args+1)) {
