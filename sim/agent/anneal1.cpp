@@ -169,7 +169,6 @@ int main (int argc, char **argv)
     optimiser->temperature_anneal_scale = sconf->getDouble ("temperature_anneal_scale", 200.0);
     optimiser->cost_parameter_scale_ratio = sconf->getDouble ("cost_parameter_scale_ratio", 1.5);
     optimiser->acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 0.3);
-    optimiser->partials_samples = sconf->getUInt ("partials_samples", 4);
     optimiser->f_x_best_repeat_max = sconf->getUInt ("f_x_best_repeat_max", 15);
     optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 100);
     optimiser->init();
@@ -194,9 +193,7 @@ int main (int argc, char **argv)
                 optimiser->f_x_cand = objfn (model1, mconf, params, xc);
 
             } else if (optimiser->state == morph::Anneal_State::NeedToComputeSet) {
-                for (unsigned int i = 0; i < optimiser->partials_samples; ++i) {
-                    optimiser->f_x_set[i] = objfn (model1, mconf, params, optimiser->x_set[i].as_float());
-                }
+                optimiser->f_x_plusdelta = objfn (model1, mconf, params, optimiser->x_plusdelta.as_float());
             } else {
                 throw std::runtime_error ("Unexpected state for anneal object.");
             }
