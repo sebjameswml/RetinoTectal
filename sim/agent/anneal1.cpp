@@ -168,9 +168,9 @@ int main (int argc, char **argv)
     optimiser->temperature_ratio_scale = sconf->getDouble ("temperature_ratio_scale", 1e-4);
     optimiser->temperature_anneal_scale = sconf->getDouble ("temperature_anneal_scale", 200.0);
     optimiser->cost_parameter_scale_ratio = sconf->getDouble ("cost_parameter_scale_ratio", 1.5);
-    optimiser->acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 0.3);
+    optimiser->acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 1e-6);
     optimiser->f_x_best_repeat_max = sconf->getUInt ("f_x_best_repeat_max", 15);
-    optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 100);
+    optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 1000);
     optimiser->init();
 
     if (num_guiders == 4) {
@@ -202,7 +202,8 @@ int main (int argc, char **argv)
 
             // Every 100 steps save out data from optimiser? Or do it at and and catch
             // TERM signal and save data before exit? Probably that.
-
+            std::cout << "Current x_best: " << optimiser->x_best
+                      << " (objective: " << optimiser->f_x_best << ")\n";
             optimiser->step();
         }
 
