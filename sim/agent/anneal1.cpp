@@ -171,6 +171,9 @@ int main (int argc, char **argv)
     optimiser->acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 1e-6);
     optimiser->f_x_best_repeat_max = sconf->getUInt ("f_x_best_repeat_max", 15);
     optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 1000);
+    for (auto pn : params) {
+        optimiser->param_names.push_back (pn);
+    }
     optimiser->init();
 
     if (num_guiders == 4) {
