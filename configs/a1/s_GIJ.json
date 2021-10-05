@@ -1,0 +1,16 @@
+{
+    "desc_params" : "An array of paramter names to optimise. May include: m_g, m_c, m_i, m_j, r_c, r_i, r_j, s",
+    "params" : ["m_g", "m_i", "m_j", "r_i", "r_j"],
+    "desc_nm_threshold" : "Nelder-Mead stopping threshold and 'too many' loops",
+    "nm_threshold" : 0.01,
+    "nm_toomany" : 1000,
+
+    "desc_asa_params" : "Adaptive simulated annealing paramters",
+    "temperature_ratio_scale" : 1e-5,
+    "temperature_anneal_scale" : 200,
+    "cost_parameter_scale_ratio" : 1.5,
+    "acc_gen_reanneal_ratio" : 1e-2,
+    "partials_samples" : 4,
+    "f_x_best_repeat_max" : 15,
+    "reanneal_after_steps" : 200
+}
