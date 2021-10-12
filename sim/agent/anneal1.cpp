@@ -15,6 +15,12 @@
 #include "agent1.h"
 #include <csignal>
 
+// Do we visualise the optimization itself with graphs?
+#ifdef OPTVIS
+# include <morph/Visual.h>
+# include <morph/GraphVisual.h>
+#endif
+
 // A count of the number of sims used in objfn() for text output
 unsigned int model_sim_count = 0;
 // To allow the signal handler to close the optimiser, make it a global pointer.
@@ -66,6 +72,7 @@ void signalHandler (int signum)
         optimiser->save (fname);
         std::cout << "...saved. Best objective so far was " << optimiser->f_x_best
                   << " for params " << optimiser->x_best << std::endl;
+        // Perhaps also graph1->save (hdffile, "graph1"); graph2->save(hdffile, "graph2") etc ??
     }
     exit (signum);
 }
@@ -165,16 +172,75 @@ int main (int argc, char **argv)
 
     optimiser = new morph::Anneal<double>(param_values, param_ranges);
     // Anneal ASA params from sconf:
-    optimiser->temperature_ratio_scale = sconf->getDouble ("temperature_ratio_scale", 1e-4);
-    optimiser->temperature_anneal_scale = sconf->getDouble ("temperature_anneal_scale", 200.0);
+    optimiser->temperature_ratio_scale = sconf->getDouble ("temperature_ratio_scale", 1e-2);
+    optimiser->temperature_anneal_scale = sconf->getDouble ("temperature_anneal_scale", 100.0);
     optimiser->cost_parameter_scale_ratio = sconf->getDouble ("cost_parameter_scale_ratio", 1.5);
     optimiser->acc_gen_reanneal_ratio = sconf->getDouble ("acc_gen_reanneal_ratio", 1e-6);
+    optimiser->objective_repeat_precision = sconf->getDouble ("objective_repeat_precision", 1e-1);
     optimiser->f_x_best_repeat_max = sconf->getUInt ("f_x_best_repeat_max", 15);
-    optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 1000);
+    optimiser->reanneal_after_steps = sconf->getUInt ("reanneal_after_steps", 100);
     for (auto pn : params) {
         optimiser->param_names.push_back (pn);
     }
     optimiser->init();
+
+#ifdef OPTVIS
+    // Set up the visualisation
+    morph::Visual v (1920, 1080, "Optimization progress");
+    v.zNear = 0.001;
+    v.setSceneTransZ (-3.0f);
+    v.lightingEffects (true);
+    morph::Vector<float, 3> offset = { -0.7, 0.0, 0.0 };
+    // Add a graph to track T_i and T_cost
+    morph::GraphVisual<double>* graph1 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
+    graph1->twodimensional = true;
+    graph1->setlimits (0, 1000, -10, 1);
+    graph1->policy = morph::stylepolicy::lines;
+    graph1->ylabel = "log(T)";
+    graph1->xlabel = "Anneal time";
+    graph1->prepdata ("Tparam");
+    graph1->prepdata ("Tcost");
+    graph1->finalize();
+    v.addVisualModel (graph1);
+
+    offset[0] += 1.4f;
+    morph::GraphVisual<double>* graph2 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
+    graph2->twodimensional = true;
+    graph2->setlimits (0, 1000, 0.0f, 2.0f);
+    graph2->policy = morph::stylepolicy::lines;
+    graph2->ylabel = "obj value";
+    graph2->xlabel = "Anneal time";
+    graph2->prepdata ("f_x");
+    graph2->prepdata ("f_x_best");
+    graph2->finalize();
+    v.addVisualModel (graph2);
+
+    offset[0] += 1.4f;
+    morph::GraphVisual<double>* graph3 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
+    graph3->twodimensional = true;
+    graph3->setlimits (0, 1000, -1.0f, 100.0f);
+    graph3->policy = morph::stylepolicy::lines;
+    graph3->ylabel = "obj value";
+    graph3->xlabel = "Anneal time";
+    graph3->prepdata ("f_x_cand");
+    graph3->finalize();
+    v.addVisualModel (graph3);
+
+    // Plus a scatter plot that can be updated. Create Graph3Visual? Or just use ScatterVisual?
+
+    // Text labels to show additional information that might update
+    morph::VisualTextModel* fps_tm;
+    v.addLabel ("Unset", {-0.05f, 0.0f, 0.0f}, fps_tm);
+
+    // Fixed text labels
+    std::stringstream ss;
+    ss << "reanneal_after_steps = " << optimiser->reanneal_after_steps;
+    v.addLabel (ss.str(), {-0.05f, -0.02f, 0.0f});
+    ss.str("");
+    ss << "temperature_ratio_scale = " << optimiser->temperature_ratio_scale;
+    v.addLabel (ss.str(), {-0.05f, -0.04f, 0.0f});
+
+#endif
 
     if (num_guiders == 4) {
 
@@ -201,8 +267,20 @@ int main (int argc, char **argv)
                 throw std::runtime_error ("Unexpected state for anneal object.");
             }
 
+#ifdef OPTVIS
             // Add to optimization visualisation, which could be a scatter plot.
+            // Append to the 2D graph of sums:
+            graph1->append ((float)optimiser->steps, std::log(optimiser->T_k.mean()), 0);
+            graph1->append ((float)optimiser->steps, std::log(optimiser->T_cost.mean()), 1);
+            graph2->append ((float)optimiser->steps, optimiser->f_x, 0);
+            graph2->append ((float)optimiser->steps, optimiser->f_x_best, 1);
+            graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
 
+            fps_tm->setupText ("Updated");
+
+            glfwWaitEventsTimeout (0.0166);
+            v.render();
+#endif
             // Every 100 steps save out data from optimiser? Or do it at and and catch
             // TERM signal and save data before exit? Probably that.
             std::cout << "Current x_best: " << optimiser->x_best
