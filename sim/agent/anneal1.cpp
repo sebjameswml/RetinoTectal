@@ -19,6 +19,7 @@
 #ifdef OPTVIS
 # include <morph/Visual.h>
 # include <morph/GraphVisual.h>
+# include <morph/ScatterVisual.h>
 #endif
 
 // A count of the number of sims used in objfn() for text output
@@ -226,7 +227,21 @@ int main (int argc, char **argv)
     graph3->finalize();
     v.addVisualModel (graph3);
 
+    offset[0] += 1.4f;
     // Plus a scatter plot that can be updated. Create Graph3Visual? Or just use ScatterVisual?
+    morph::Scale<double, float> scale;
+    scale.setParams (1.0, 0.0);
+    std::vector<morph::Vector<float, 3>> points(1);
+    points[0] = {0,0,0};
+    std::vector<double> data(1, 0);
+    morph::ScatterVisual<double>* sv = new morph::ScatterVisual<double> (v.shaderprog, offset);
+    sv->setDataCoords (&points);
+    sv->setScalarData (&data);
+    sv->radiusFixed = 0.03f;
+    sv->colourScale = scale;
+    sv->cm.setType (morph::ColourMapType::Plasma);
+    sv->finalize();
+    v.addVisualModel (sv);
 
     // Text labels to show additional information that might update
     morph::VisualTextModel* fps_tm;
@@ -275,6 +290,8 @@ int main (int argc, char **argv)
             graph2->append ((float)optimiser->steps, optimiser->f_x, 0);
             graph2->append ((float)optimiser->steps, optimiser->f_x_best, 1);
             graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
+            morph::Vector<float> coord = { optimiser->x_cand[0], optimiser->x_cand[1], optimiser->x_cand[2] };
+            sv->add (coord, optimiser->f_x_cand);
 
             fps_tm->setupText ("Updated");
 
