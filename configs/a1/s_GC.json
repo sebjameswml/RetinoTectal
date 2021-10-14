@@ -6,5 +6,12 @@
     "nm_threshold" : 0.01,
     "nm_toomany" : 60,
 
-    "desc_asa_params" : "Adaptive simulated annealing paramters"
+    "desc_asa_params" : "Adaptive simulated annealing parameters",
+    "temperature_ratio_scale" : 1e-2,
+    "temperature_anneal_scale" : 100.0,
+    "cost_parameter_scale_ratio" : 1.5,
+    "acc_gen_reanneal_ratio" : 1e-6,
+    "objective_repeat_precision" : 1e-1,
+    "f_x_best_repeat_max" : 15,
+    "reanneal_after_steps" : 100
 }
