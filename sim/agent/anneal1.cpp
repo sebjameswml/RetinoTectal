@@ -20,6 +20,8 @@
 # include <morph/Visual.h>
 # include <morph/GraphVisual.h>
 # include <morph/ScatterVisual.h>
+// Global access to the visual object
+morph::Visual* pv = (morph::Visual*)0;
 #endif
 
 // A count of the number of sims used in objfn() for text output
@@ -75,6 +77,10 @@ void signalHandler (int signum)
                   << " for params " << optimiser->x_best << std::endl;
         // Perhaps also graph1->save (hdffile, "graph1"); graph2->save(hdffile, "graph2") etc ??
     }
+#ifdef OPTVIS
+    std::cout << "Saved data. Leaving optimisation visualisation window open...\n";
+    if (pv != (morph::Visual*)0) { pv->keepOpen(); }
+#endif
     exit (signum);
 }
 
@@ -170,6 +176,10 @@ int main (int argc, char **argv)
             param_ranges.push_back ({0.00001, 0.001});
         }
     }
+    morph::vVector<float> one_over_param_maxes(param_ranges.size(), float{0});
+    for (size_t i = 0; i < param_ranges.size(); ++i) {
+        one_over_param_maxes[i] = static_cast<float>(1.0/param_ranges[i][1]);
+    }
 
     optimiser = new morph::Anneal<double>(param_values, param_ranges);
     // Anneal ASA params from sconf:
@@ -191,7 +201,23 @@ int main (int argc, char **argv)
     v.zNear = 0.001;
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
+    pv = &v;
     morph::Vector<float, 3> offset = { -0.7, 0.0, 0.0 };
+
+    // First a scatter plot that can be updated. Just using a ScatterVisual for this.
+    //std::vector<morph::Vector<float, 3>> points(1);
+    //points[0] = {-0.1,-0.1,0};
+    //std::vector<double> data(1, 0);
+    morph::ScatterVisual<double>* sv = new morph::ScatterVisual<double> (v.shaderprog, offset);
+    //sv->setDataCoords (&points);
+    //sv->setScalarData (&data);
+    sv->radiusFixed = 0.002f;
+    sv->colourScale.compute_autoscale (0, 30); // Fails.
+    sv->cm.setType (morph::ColourMapType::Plasma);
+    sv->finalize();
+    v.addVisualModel (sv);
+
+    offset[0] += 1.4f;
     // Add a graph to track T_i and T_cost
     morph::GraphVisual<double>* graph1 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
     graph1->twodimensional = true;
@@ -226,22 +252,6 @@ int main (int argc, char **argv)
     graph3->prepdata ("f_x_cand");
     graph3->finalize();
     v.addVisualModel (graph3);
-
-    offset[0] += 1.4f;
-    // Plus a scatter plot that can be updated. Create Graph3Visual? Or just use ScatterVisual?
-    morph::Scale<double, float> scale;
-    scale.setParams (1.0, 0.0);
-    std::vector<morph::Vector<float, 3>> points(1);
-    points[0] = {0,0,0};
-    std::vector<double> data(1, 0);
-    morph::ScatterVisual<double>* sv = new morph::ScatterVisual<double> (v.shaderprog, offset);
-    sv->setDataCoords (&points);
-    sv->setScalarData (&data);
-    sv->radiusFixed = 0.03f;
-    sv->colourScale = scale;
-    sv->cm.setType (morph::ColourMapType::Plasma);
-    sv->finalize();
-    v.addVisualModel (sv);
 
     // Text labels to show additional information that might update
     morph::VisualTextModel* fps_tm;
@@ -290,8 +300,9 @@ int main (int argc, char **argv)
             graph2->append ((float)optimiser->steps, optimiser->f_x, 0);
             graph2->append ((float)optimiser->steps, optimiser->f_x_best, 1);
             graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
-            morph::Vector<float> coord = { optimiser->x_cand[0], optimiser->x_cand[1], optimiser->x_cand[2] };
-            sv->add (coord, optimiser->f_x_cand);
+            // Add parameter set to the scattervisual. Scale coords by param_maxes
+            morph::vVector<float> coord = one_over_param_maxes * optimiser->x_cand;
+            sv->add ({coord[0], coord[1], coord[2]}, optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
 
             fps_tm->setupText ("Updated");
 
