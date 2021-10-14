@@ -17,6 +17,7 @@
 
 // Do we visualise the optimization itself with graphs?
 #ifdef OPTVIS
+# include <sstream>
 # include <morph/Visual.h>
 # include <morph/GraphVisual.h>
 # include <morph/ScatterVisual.h>
@@ -217,10 +218,10 @@ int main (int argc, char **argv)
     sv->finalize();
     v.addVisualModel (sv);
 
-    offset[0] += 1.4f;
+    offset[0] += 2.0f;
     // Add a graph to track T_i and T_cost
     morph::GraphVisual<double>* graph1 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
-    graph1->twodimensional = true;
+    graph1->twodimensional = false;
     graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
     graph1->ylabel = "log(T)";
@@ -232,7 +233,7 @@ int main (int argc, char **argv)
 
     offset[0] += 1.4f;
     morph::GraphVisual<double>* graph2 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
-    graph2->twodimensional = true;
+    graph2->twodimensional = false;
     graph2->setlimits (0, 1000, 0.0f, 2.0f);
     graph2->policy = morph::stylepolicy::lines;
     graph2->ylabel = "obj value";
@@ -244,7 +245,7 @@ int main (int argc, char **argv)
 
     offset[0] += 1.4f;
     morph::GraphVisual<double>* graph3 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
-    graph3->twodimensional = true;
+    graph3->twodimensional = false;
     graph3->setlimits (0, 1000, -1.0f, 100.0f);
     graph3->policy = morph::stylepolicy::lines;
     graph3->ylabel = "obj value";
@@ -254,18 +255,41 @@ int main (int argc, char **argv)
     v.addVisualModel (graph3);
 
     // Text labels to show additional information that might update
+    morph::Vector<float> lpos = {-0.08f, 0.03f, 0.0f};
     morph::VisualTextModel* fps_tm;
-    v.addLabel ("Unset", {-0.05f, 0.0f, 0.0f}, fps_tm);
+    v.addLabel ("Unset", lpos, fps_tm);
 
     // Fixed text labels
     std::stringstream ss;
+    lpos[1] -= 0.02f;
     ss << "reanneal_after_steps = " << optimiser->reanneal_after_steps;
-    v.addLabel (ss.str(), {-0.05f, -0.02f, 0.0f});
-    ss.str("");
-    ss << "temperature_ratio_scale = " << optimiser->temperature_ratio_scale;
-    v.addLabel (ss.str(), {-0.05f, -0.04f, 0.0f});
+    v.addLabel (ss.str(), lpos);
 
-#endif
+    lpos[1] -= 0.02f; ss.str("");
+    ss << "temperature_ratio_scale = " << optimiser->temperature_ratio_scale;
+    v.addLabel (ss.str(), lpos);
+
+    lpos[1] -= 0.02f; ss.str("");
+    ss << "temperature_anneal_scale = " << optimiser->temperature_anneal_scale;
+    v.addLabel (ss.str(), lpos);
+
+    lpos[1] -= 0.02f; ss.str("");
+    ss << "cost_parameter_scale_ratio = " << optimiser->cost_parameter_scale_ratio;
+    v.addLabel (ss.str(), lpos);
+
+    lpos[1] -= 0.02f; ss.str("");
+    ss << "acc_gen_reanneal_ratio = " << optimiser->acc_gen_reanneal_ratio;
+    v.addLabel (ss.str(), lpos);
+
+    lpos[1] -= 0.02f; ss.str("");
+    ss << "objective_repeat_precision = " << optimiser->objective_repeat_precision;
+    v.addLabel (ss.str(), lpos);
+
+    lpos[1] -= 0.02f; ss.str("");
+    ss << "f_x_best_repeat_max = " << optimiser->f_x_best_repeat_max;
+    v.addLabel (ss.str(), lpos);
+
+#endif // OPTVIS
 
     if (num_guiders == 4) {
 
@@ -295,8 +319,10 @@ int main (int argc, char **argv)
 #ifdef OPTVIS
             // Add to optimization visualisation, which could be a scatter plot.
             // Append to the 2D graph of sums:
-            graph1->append ((float)optimiser->steps, std::log(optimiser->T_k.mean()), 0);
-            graph1->append ((float)optimiser->steps, std::log(optimiser->T_cost.mean()), 1);
+            double tkmean = optimiser->T_k.mean();
+            double tcostmean = optimiser->T_cost.mean();
+            graph1->append ((float)optimiser->steps, std::log(tkmean), 0);
+            graph1->append ((float)optimiser->steps, std::log(tcostmean), 1);
             graph2->append ((float)optimiser->steps, optimiser->f_x, 0);
             graph2->append ((float)optimiser->steps, optimiser->f_x_best, 1);
             graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
@@ -304,7 +330,9 @@ int main (int argc, char **argv)
             morph::vVector<float> coord = one_over_param_maxes * optimiser->x_cand;
             sv->add ({coord[0], coord[1], coord[2]}, optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
 
-            fps_tm->setupText ("Updated");
+            std::stringstream ss;
+            ss << "T_k = " << tkmean << ", T_cost = " << tcostmean << ", current f_x_best=" << optimiser->f_x_best;
+            fps_tm->setupText (ss.str());
 
             glfwWaitEventsTimeout (0.0166);
             v.render();
