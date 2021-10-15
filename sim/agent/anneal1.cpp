@@ -331,7 +331,9 @@ int main (int argc, char **argv)
             sv->add ({coord[0], coord[1], coord[2]}, optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
 
             std::stringstream ss;
-            ss << "T_k = " << tkmean << ", T_cost = " << tcostmean << ", current f_x_best=" << optimiser->f_x_best;
+            ss << "T_k = " << tkmean << ", T_cost = " << tcostmean
+               << ", current f_x_best = " << optimiser->f_x_best
+               << ", f_x_best_repeats = " << optimiser->f_x_best_repeats;
             fps_tm->setupText (ss.str());
 
             glfwWaitEventsTimeout (0.0166);
