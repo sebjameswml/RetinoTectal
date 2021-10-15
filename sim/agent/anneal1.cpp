@@ -206,14 +206,9 @@ int main (int argc, char **argv)
     morph::Vector<float, 3> offset = { -0.7, 0.0, 0.0 };
 
     // First a scatter plot that can be updated. Just using a ScatterVisual for this.
-    //std::vector<morph::Vector<float, 3>> points(1);
-    //points[0] = {-0.1,-0.1,0};
-    //std::vector<double> data(1, 0);
     morph::ScatterVisual<double>* sv = new morph::ScatterVisual<double> (v.shaderprog, offset);
-    //sv->setDataCoords (&points);
-    //sv->setScalarData (&data);
     sv->radiusFixed = 0.002f;
-    sv->colourScale.compute_autoscale (0, 30); // Fails.
+    sv->colourScale.compute_autoscale (0, 30);
     sv->cm.setType (morph::ColourMapType::Plasma);
     sv->finalize();
     v.addVisualModel (sv);
@@ -306,7 +301,6 @@ int main (int argc, char **argv)
         // ASA optimisation
         while (optimiser->state != morph::Anneal_State::ReadyToStop) {
             if (optimiser->state == morph::Anneal_State::NeedToCompute) {
-                //std::vector<float> xc = static_cast<std::vector<float>>(optimiser->x_cand.as_float());
                 morph::vVector<float> xc = optimiser->x_cand.as_float();
                 optimiser->f_x_cand = objfn (model1, mconf, params, xc);
 
