@@ -33,35 +33,46 @@ int main (int argc, char** argv)
 
     // This code section just hacked in until I regenerate data with range_max/range_min in the code
     morph::vVector<morph::Vector<float,2>> param_ranges;
+    morph::Vector<float, 3> range_min;
     morph::Vector<float, 3> range_max;
+    std::vector<std::string> pnames;
     for (size_t i = 1; i <= 3; ++i) {
         std::string pn = std::string("/param_name_") + std::to_string(i);
         std::string pname("");
         data.read_string (pn.c_str(), pname);
         std::cout << "parameter name: " << pname << std::endl;
+        pnames.push_back (pname);
         if (pname == "r_c") {
             param_ranges.push_back ({0.001f, 0.5f});
+            range_min[i-1] =  (0.001f);
             range_max[i-1] =  (0.5f);
         } else if (pname == "r_i") {
             param_ranges.push_back ({0.001f, 0.5f});
+            range_min[i-1] =  (0.001f);
             range_max[i-1] =  (0.5f);
         } else if (pname == "r_j") {
             param_ranges.push_back ({0.001f, 0.5f});
+            range_min[i-1] =  (0.001f);
             range_max[i-1] =  (0.5f);
         } else if (pname == "s") {
             param_ranges.push_back ({0.01f, 0.99f});
+            range_min[i-1] =  (0.01f);
             range_max[i-1] =  (0.99f);
         } else if (pname == "m_g") {
             param_ranges.push_back ({0.0001f, 0.01f});
+            range_min[i-1] =  (0.0001f);
             range_max[i-1] =  (0.01f);
         } else if (pname == "m_c") {
             param_ranges.push_back ({0.01f, 0.1f});
+            range_min[i-1] =  (0.01f);
             range_max[i-1] =  (0.1f);
         } else if (pname == "m_i") {
             param_ranges.push_back ({0.01f, 0.8f});
+            range_min[i-1] =  (0.01f);
             range_max[i-1] =  (0.8f);
         } else if (pname == "m_j") {
             param_ranges.push_back ({0.00001f, 0.001f});
+            range_min[i-1] =  (0.00001f);
             range_max[i-1] =  (0.001f);
         }
     }
@@ -102,6 +113,11 @@ int main (int argc, char** argv)
     v.addVisualModel (sv2);
 
     morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
+    tav->input_min = range_min;
+    tav->input_max = range_max;
+    tav->xlabel = pnames[0];
+    tav->ylabel = pnames[1];
+    tav->zlabel = pnames[2];
     tav->finalize();
     v.addVisualModel (tav);
 
