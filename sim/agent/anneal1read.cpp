@@ -113,6 +113,7 @@ int main (int argc, char** argv)
     v.addVisualModel (sv2);
 
     morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
+    tav->axisstyle = morph::axisstyle::L;
     tav->input_min = range_min;
     tav->input_max = range_max;
     tav->xlabel = pnames[0];
