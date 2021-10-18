@@ -21,6 +21,7 @@
 # include <morph/Visual.h>
 # include <morph/GraphVisual.h>
 # include <morph/ScatterVisual.h>
+# include <morph/TriaxesVisual.h>
 // Global access to the visual object
 morph::Visual* pv = (morph::Visual*)0;
 #endif
@@ -177,9 +178,13 @@ int main (int argc, char **argv)
             param_ranges.push_back ({0.00001, 0.001});
         }
     }
+    morph::vVector<float> param_range_max(param_ranges.size(), float{0});
+    morph::vVector<float> param_range_min(param_ranges.size(), float{0});
     morph::vVector<float> one_over_param_maxes(param_ranges.size(), float{0});
     for (size_t i = 0; i < param_ranges.size(); ++i) {
         one_over_param_maxes[i] = static_cast<float>(1.0/param_ranges[i][1]);
+        param_range_min[i] = param_ranges[i][0];
+        param_range_max[i] = param_ranges[i][1];
     }
 
     optimiser = new morph::Anneal<double>(param_values, param_ranges);
@@ -212,6 +217,15 @@ int main (int argc, char **argv)
     sv->cm.setType (morph::ColourMapType::Plasma);
     sv->finalize();
     v.addVisualModel (sv);
+
+    morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
+    tav->input_min = {param_range_min[0], param_range_min[1], param_range_min[2]};
+    tav->input_max = {param_range_max[0], param_range_max[1], param_range_max[2]};
+    tav->xlabel = params[0];
+    tav->ylabel = params[1];
+    tav->zlabel = params[2];
+    tav->finalize();
+    v.addVisualModel (tav);
 
     offset[0] += 2.0f;
     // Add a graph to track T_i and T_cost
