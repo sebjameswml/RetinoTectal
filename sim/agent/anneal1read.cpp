@@ -13,6 +13,18 @@ int main (int argc, char** argv)
     // Load data, based on command line arg
     if (argc < 2) { throw std::runtime_error ("Provide path to data file"); }
 
+    // Filename something like: path/anneal1_ee_GJ_20211015_145811.h5
+    std::string fname(argv[1]);
+    morph::Tools::stripUnixPath (fname);
+    std::string::size_type strt = fname.find ("anneal1_") + 8;
+    std::string::size_type nd = fname.find ("_20");
+    std::string modelid = fname.substr (strt, nd-strt);
+    std::string model = std::string("configs/a1/m_") + modelid + std::string(".json");;
+    std::cout << "model is " << model << std::endl;
+
+    // Open JSON file (for later saving)
+    morph::Config mdl(model);
+
     morph::HdfData data(argv[1], morph::FileAccess::ReadOnly);
     morph::vVector<morph::Vector<float, 3>> param_hist_accepted;
     morph::vVector<float> f_param_hist_accepted;
@@ -22,6 +34,7 @@ int main (int argc, char** argv)
     morph::vVector<float> T_cost_hist;
     morph::vVector<float> f_x_hist;
     morph::vVector<float> f_x_best_hist;
+    morph::vVector<float> x_best;
     data.read_contained_vals ("/param_hist_accepted", param_hist_accepted);
     data.read_contained_vals ("/f_param_hist_accepted", f_param_hist_accepted);
     data.read_contained_vals ("/param_hist_rejected", param_hist_rejected);
@@ -30,6 +43,7 @@ int main (int argc, char** argv)
     data.read_contained_vals ("/T_cost_hist", T_cost_hist);
     data.read_contained_vals ("/f_x_hist", f_x_hist);
     data.read_contained_vals ("/f_x_best_hist", f_x_best_hist);
+    data.read_contained_vals ("/x_best", x_best);
 
     // This code section just hacked in until I regenerate data with range_max/range_min in the code
     morph::vVector<morph::Vector<float,2>> param_ranges;
@@ -81,6 +95,13 @@ int main (int argc, char** argv)
     for (auto& pha : param_hist_accepted) { pha /= range_max; }
     //param_hist_rejected /= range_max;
 
+    // How about I write out JSON config files to run the agent for the best parameter set(s)?
+    std::cout << "Best params: " << x_best << std::endl;
+    mdl.set (pnames[0], x_best[0]);
+    mdl.set (pnames[1], x_best[1]);
+    mdl.set (pnames[2], x_best[2]);
+    mdl.write (modelid+std::string("_x_best.json"));
+
     morph::vVector<float> simtime (T_k_hist.size());
     simtime.linspace (0.0, (float)T_k_hist.size());
 
@@ -111,6 +132,16 @@ int main (int argc, char** argv)
     sv2->sizeFactor = sv->sizeFactor;
     sv2->finalize();
     v.addVisualModel (sv2);
+
+    morph::ScatterVisual<float>* sv3 = new morph::ScatterVisual<float> (v.shaderprog, offset);
+    sv3->radiusFixed = 0.01f;
+    sv3->colourScale.compute_autoscale (0, 1);
+    sv3->cm.setType (morph::ColourMapType::Jet);
+    sv3->finalize();
+    morph::vVector<float> coord = x_best / morph::vVector<float>({range_max[0], range_max[1], range_max[2]});
+    std::cout << "best coord in model space: " << coord << std::endl;
+    sv3->add ({coord[0], coord[1], coord[2]}, 1.0f, 0.05f);
+    v.addVisualModel (sv3);
 
     morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
     tav->axisstyle = morph::axisstyle::L;
