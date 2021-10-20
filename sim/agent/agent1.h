@@ -98,7 +98,7 @@ struct Agent1
     }
 
     unsigned int showevery = 1000;
-    static constexpr unsigned int visevery = 5;
+    unsigned int visevery = 5;
 
 #ifdef VISUALISE
     //! Just show the tissue. Don't use at same time as run()
@@ -114,6 +114,7 @@ struct Agent1
     void run()
     {
         if constexpr (visualise == true) {
+            this->visevery = this->conf->getUInt ("visevery", 5);
             if (this->visinit_done == false) {
                 // Get layout from config file. Default to 0 or 'a'
                 this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
@@ -175,7 +176,7 @@ struct Agent1
 
             this->step();
 
-            if constexpr (visualise == true) { if (i%visevery == 0) { this->vis(i); } }
+            if constexpr (visualise == true) { if (i%this->visevery == 0) { this->vis(i); } }
 
             if (i%showevery == 0) {
                 std::chrono::steady_clock::duration since = std::chrono::steady_clock::now() - laststep;
@@ -294,7 +295,7 @@ struct Agent1
     }
 #endif // VISUALISE
 
-    //! One step of the simulation in which branches postitions are randomly set
+    //! One step of the simulation in which branches positions are randomly set
     void steprandom()
     {
         morph::RandUniform<T, std::mt19937> rng(T{0}, T{1.0});
