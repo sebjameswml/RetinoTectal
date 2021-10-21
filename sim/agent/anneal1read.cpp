@@ -1,3 +1,7 @@
+/*
+ * Script-like program to read data from annealling runs and visualise the results
+ */
+
 #include <sstream>
 #include <string>
 #include <stdexcept>
@@ -8,6 +12,9 @@
 #include <morph/GraphVisual.h>
 #include <morph/ScatterVisual.h>
 #include <morph/TriaxesVisual.h>
+
+// Dimensionality
+#define D 3
 
 int main (int argc, char** argv)
 {
@@ -26,13 +33,14 @@ int main (int argc, char** argv)
     // Open JSON file (for later saving)
     morph::Config mdl(model);
 
+    // Read the HDF5 into data structures
     morph::HdfData data(argv[1], morph::FileAccess::ReadOnly);
-    morph::vVector<morph::Vector<float, 3>> param_hist_accepted;
+    morph::vVector<morph::Vector<float, D>> param_hist_accepted;
     // To hold param_hist_accepted parameters in VisualModel coordinates for plotting
-    morph::vVector<morph::Vector<float, 3>> param_hist_accepted_vm_coords;
+    morph::vVector<morph::Vector<float, D>> param_hist_accepted_vm_coords;
     morph::vVector<float> f_param_hist_accepted;
-    morph::vVector<morph::Vector<float, 3>> param_hist_rejected;
-    morph::vVector<morph::Vector<float, 3>> param_hist_rejected_vm_coords;
+    morph::vVector<morph::Vector<float, D>> param_hist_rejected;
+    morph::vVector<morph::Vector<float, D>> param_hist_rejected_vm_coords;
     morph::vVector<float> f_param_hist_rejected;
     morph::vVector<float> T_k_hist;
     morph::vVector<float> T_cost_hist;
@@ -51,21 +59,12 @@ int main (int argc, char** argv)
     data.read_contained_vals ("/f_x_best_hist", f_x_best_hist);
     data.read_contained_vals ("/x_best", x_best);
 
-    // To fill with all params (accepted and rejected)
-    std::map<float, morph::Vector<float, 3>> mapped_params;
-    for (size_t i = 0; i < param_hist_accepted.size(); ++i) {
-        mapped_params[f_param_hist_accepted[i]] = param_hist_accepted[i];
-    }
-    for (size_t i = 0; i < param_hist_rejected.size(); ++i) {
-        mapped_params[f_param_hist_rejected[i]] = param_hist_rejected[i];
-    }
-
     // This code section just hacked in until I regenerate data with range_max/range_min in the hdf data
     morph::vVector<morph::Vector<float,2>> param_ranges;
-    morph::Vector<float, 3> range_min;
-    morph::Vector<float, 3> range_max;
+    morph::Vector<float, D> range_min;
+    morph::Vector<float, D> range_max;
     std::vector<std::string> pnames;
-    for (size_t i = 1; i <= 3; ++i) {
+    for (size_t i = 1; i <= D; ++i) {
         std::string pn = std::string("/param_name_") + std::to_string(i);
         std::string pname("");
         data.read_string (pn.c_str(), pname);
@@ -109,6 +108,63 @@ int main (int argc, char** argv)
     // This converts param_hist_rejected to model coords.
     for (auto& phr : param_hist_rejected_vm_coords) { phr /= range_max; }
     for (auto& pha : param_hist_accepted_vm_coords) { pha /= range_max; }
+
+    // Use a map to order all rejected and accepted parameter sets
+    std::map<float, morph::Vector<float, D>> mapped_params; // Parameter space
+    std::map<float, morph::Vector<float, D>> mapped_params_vm_coords; // Scaled parameter space
+    for (size_t i = 0; i < param_hist_accepted.size(); ++i) {
+        mapped_params[f_param_hist_accepted[i]] = param_hist_accepted[i];
+        mapped_params_vm_coords[f_param_hist_accepted[i]] = param_hist_accepted_vm_coords[i];
+    }
+    for (size_t i = 0; i < param_hist_rejected.size(); ++i) {
+        mapped_params[f_param_hist_rejected[i]] = param_hist_rejected[i];
+        mapped_params_vm_coords[f_param_hist_rejected[i]] = param_hist_rejected_vm_coords[i];
+    }
+
+    // Now, for each of the n best param sets, find the worse parameter set within a
+    // certain radius *in scaled space*. Record the
+    float r = 0.1f;
+    std::map<float, morph::Vector<float, D>>::const_iterator pi = mapped_params_vm_coords.begin();
+    size_t j = 0;
+    // container for the 'biggest within range', keyed by the objective of the *good* parameters
+    std::map<float, std::pair<float, morph::Vector<float, D>>> biggest_nearby;
+
+    while (pi != mapped_params_vm_coords.end() && j++ < 5) {
+        morph::Vector<float, D> smallparam = pi->second;
+        float smallobj = pi->first;
+        // Run though the params finding the largest one within radius
+        float maxg = std::numeric_limits<float>::lowest();
+        morph::Vector<float, D> maxgparams;
+        float maxgobj = 0.0f;
+        maxgparams.zero();
+        for (size_t i = 0; i < param_hist_accepted_vm_coords.size(); ++i) {
+            morph::Vector<float, D> testparam = param_hist_accepted_vm_coords[i];
+            float testobj = f_param_hist_accepted[i];
+            float d = (testparam-smallparam).length();
+            if (d < r) {
+                // Close enough to consider. What's the gradient?
+                float g = std::abs(testobj - smallobj) / d;
+                maxgparams = g > maxg ? testparam : maxgparams;
+                maxgobj = g > maxg ? testobj : maxgobj;
+                maxg = g > maxg ? g : maxg;
+            }
+        }
+        for (size_t i = 0; i < param_hist_rejected_vm_coords.size(); ++i) {
+            morph::Vector<float, D> testparam = param_hist_rejected_vm_coords[i];
+            float testobj = f_param_hist_rejected[i];
+            float d = (testparam-smallparam).length();
+            if (d < r) {
+                // Close enough to consider. What's the gradient?
+                float g = std::abs(testobj - smallobj) / d;
+                maxgparams = g > maxg ? testparam : maxgparams;
+                maxgobj = g > maxg ? testobj : maxgobj;
+                maxg = g > maxg ? g : maxg;
+            }
+        }
+        // Write maxgparams into container using smallobj as key
+        biggest_nearby[smallobj] = std::make_pair(maxgobj, maxgparams);
+        ++pi;
+    }
 
     // How about I write out JSON config files to run the agent for the best parameter set(s)?
     std::cout << "Best params: " << x_best << std::endl;
@@ -166,14 +222,37 @@ int main (int argc, char** argv)
     sv2->finalize();
     v.addVisualModel (sv2);
 
+    // Show the best one or best few:
     morph::ScatterVisual<float>* sv3 = new morph::ScatterVisual<float> (v.shaderprog, offset);
     sv3->radiusFixed = 0.01f;
     sv3->colourScale.compute_autoscale (0, 1);
     sv3->cm.setType (morph::ColourMapType::Jet);
     sv3->finalize();
-    morph::vVector<float> coord = x_best / morph::vVector<float>({range_max[0], range_max[1], range_max[2]});
-    std::cout << "best coord in model space: " << coord << std::endl;
-    sv3->add ({coord[0], coord[1], coord[2]}, 1.0f, 0.05f);
+    // Show the 5 best and their neighbouring biggest gradient partners
+    j = 1;
+    for (auto bn : biggest_nearby) {
+        // bn.first = obj/key, bn.second.second is partner bn.second.first is partner objective
+        morph::Vector<float, D> coord = mapped_params_vm_coords[bn.first];
+        std::cout << "Best objective: " << bn.first << ", neighbour obj: " << bn.second.first << std::endl;
+        sv3->add (coord, 1.0f, bn.first/100.0f); // one of the best
+        sv3->add (bn.second.second, 0.0f, bn.second.first/100.0f); // the most changed params nearby
+
+        // Also write out jsons. One for the 'best' value
+        coord *= range_max;
+        mdl.set (pnames[0], coord[0]);
+        mdl.set (pnames[1], coord[1]);
+        mdl.set (pnames[2], coord[2]);
+        mdl.write (modelid+("_best_")+std::to_string(j)+(".json"));
+        // And one for the params that are near to the 'best' value and have the greatest change/distance from it
+        morph::Vector<float, D> coord2 = bn.second.second * range_max;
+        mdl.set (pnames[0], coord2[0]);
+        mdl.set (pnames[1], coord2[1]);
+        mdl.set (pnames[2], coord2[2]);
+        mdl.write (modelid+("_nearby_")+std::to_string(j)+(".json"));
+
+        ++j;
+    }
+
     v.addVisualModel (sv3);
 
     morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
