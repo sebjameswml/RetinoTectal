@@ -1225,6 +1225,55 @@ struct Agent1
             this->gv->finalize();
             v->addVisualModel (this->gv);
 
+            // A 'text' only visual model to list the parameters
+            offset[0] += 1.4f;
+            morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
+            float ty = 1.0f; // text y position
+            float th = 0.1f; // text height
+            float cw = 0.17f;
+            jtvm->addLabel ("Parameters", {0.0f, ty, 0.0f});
+            ty -= th;
+
+            if (this->m[0] > 0) {
+                jtvm->addLabel ("m_g", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->m[0]), {cw, ty, 0.0f});
+                ty -= th;
+            }
+            if (this->m[1] > 0) {
+                jtvm->addLabel ("m_j", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->m[1]), {cw, ty, 0.0f});
+                ty -= th;
+            }
+            if (this->m[2] > 0) {
+                jtvm->addLabel ("m_i", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->m[2]), {cw, ty, 0.0f});
+                ty -= th;
+            }
+            if (this->m[3] > 0) {
+                jtvm->addLabel ("m_c", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->m[3]), {cw, ty, 0.0f});
+                ty -= th;
+            }
+
+            // r parameters
+            if (this->m[1] > 0) {
+                jtvm->addLabel ("r_j", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_j", 0.0f)), {cw, ty, 0.0f});
+                ty -= th;
+            }
+            if (this->m[2] > 0) {
+                jtvm->addLabel ("r_i", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_i", 0.0f)), {cw, ty, 0.0f});
+                ty -= th;
+            }
+            if (this->m[3] > 0) {
+                jtvm->addLabel ("r_c", {0.0f, ty, 0.0f});
+                jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_c", 0.0f)), {cw, ty, 0.0f});
+                ty -= th;
+            }
+
+            v->addVisualModel (jtvm);
+
         } else if (this->layout == graph_layout::b) { // A pared down layout with just 3 graphs
 
             // Experiment: Another NetVisual view showing the target locations
