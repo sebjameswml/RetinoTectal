@@ -1,6 +1,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <map>
 #include <morph/vVector.h>
 #include <morph/HdfData.h>
 #include <morph/Visual.h>
@@ -27,8 +28,11 @@ int main (int argc, char** argv)
 
     morph::HdfData data(argv[1], morph::FileAccess::ReadOnly);
     morph::vVector<morph::Vector<float, 3>> param_hist_accepted;
+    // To hold param_hist_accepted parameters in VisualModel coordinates for plotting
+    morph::vVector<morph::Vector<float, 3>> param_hist_accepted_vm_coords;
     morph::vVector<float> f_param_hist_accepted;
     morph::vVector<morph::Vector<float, 3>> param_hist_rejected;
+    morph::vVector<morph::Vector<float, 3>> param_hist_rejected_vm_coords;
     morph::vVector<float> f_param_hist_rejected;
     morph::vVector<float> T_k_hist;
     morph::vVector<float> T_cost_hist;
@@ -36,8 +40,10 @@ int main (int argc, char** argv)
     morph::vVector<float> f_x_best_hist;
     morph::vVector<float> x_best;
     data.read_contained_vals ("/param_hist_accepted", param_hist_accepted);
+    data.read_contained_vals ("/param_hist_accepted", param_hist_accepted_vm_coords);
     data.read_contained_vals ("/f_param_hist_accepted", f_param_hist_accepted);
     data.read_contained_vals ("/param_hist_rejected", param_hist_rejected);
+    data.read_contained_vals ("/param_hist_rejected", param_hist_rejected_vm_coords);
     data.read_contained_vals ("/f_param_hist_rejected", f_param_hist_rejected);
     data.read_contained_vals ("/T_k_hist", T_k_hist);
     data.read_contained_vals ("/T_cost_hist", T_cost_hist);
@@ -45,7 +51,16 @@ int main (int argc, char** argv)
     data.read_contained_vals ("/f_x_best_hist", f_x_best_hist);
     data.read_contained_vals ("/x_best", x_best);
 
-    // This code section just hacked in until I regenerate data with range_max/range_min in the code
+    // To fill with all params (accepted and rejected)
+    std::map<float, morph::Vector<float, 3>> mapped_params;
+    for (size_t i = 0; i < param_hist_accepted.size(); ++i) {
+        mapped_params[f_param_hist_accepted[i]] = param_hist_accepted[i];
+    }
+    for (size_t i = 0; i < param_hist_rejected.size(); ++i) {
+        mapped_params[f_param_hist_rejected[i]] = param_hist_rejected[i];
+    }
+
+    // This code section just hacked in until I regenerate data with range_max/range_min in the hdf data
     morph::vVector<morph::Vector<float,2>> param_ranges;
     morph::Vector<float, 3> range_min;
     morph::Vector<float, 3> range_max;
@@ -91,9 +106,9 @@ int main (int argc, char** argv)
         }
     }
 
-    for (auto& phr : param_hist_rejected) { phr /= range_max; }
-    for (auto& pha : param_hist_accepted) { pha /= range_max; }
-    //param_hist_rejected /= range_max;
+    // This converts param_hist_rejected to model coords.
+    for (auto& phr : param_hist_rejected_vm_coords) { phr /= range_max; }
+    for (auto& pha : param_hist_accepted_vm_coords) { pha /= range_max; }
 
     // How about I write out JSON config files to run the agent for the best parameter set(s)?
     std::cout << "Best params: " << x_best << std::endl;
@@ -101,6 +116,24 @@ int main (int argc, char** argv)
     mdl.set (pnames[1], x_best[1]);
     mdl.set (pnames[2], x_best[2]);
     mdl.write (modelid+std::string("_x_best.json"));
+
+    // How about the next best one?
+#if 0
+    for (auto ps : mapped_params) {
+        std::cout << "params " << ps.second << " gave objective value " << ps.first << std::endl;
+    }
+#endif
+    auto mp = mapped_params.begin(); // Should be the best
+    mp++; // Next best
+    mdl.set (pnames[0], mp->second[0]);
+    mdl.set (pnames[1], mp->second[1]);
+    mdl.set (pnames[2], mp->second[2]);
+    mdl.write (modelid+std::string("_x_2nd.json"));
+    mp++; // Next best
+    mdl.set (pnames[0], mp->second[0]);
+    mdl.set (pnames[1], mp->second[1]);
+    mdl.set (pnames[2], mp->second[2]);
+    mdl.write (modelid+std::string("_x_3rd.json"));
 
     morph::vVector<float> simtime (T_k_hist.size());
     simtime.linspace (0.0, (float)T_k_hist.size());
@@ -117,7 +150,7 @@ int main (int argc, char** argv)
     sv->radiusFixed = 0.002f;
     sv->colourScale.compute_autoscale (0, 30);
     sv->cm.setType (morph::ColourMapType::Jet);
-    sv->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_accepted);
+    sv->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_accepted_vm_coords);
     sv->setScalarData ((std::vector<float>*)&f_param_hist_accepted);
     sv->sizeFactor = 0.05f;//1.0f/300.0f;
     sv->finalize();
@@ -127,7 +160,7 @@ int main (int argc, char** argv)
     sv2->radiusFixed = 0.002f;
     sv2->colourScale.compute_autoscale (0, 30);
     sv2->cm.setType (morph::ColourMapType::Plasma);
-    sv2->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_rejected);
+    sv2->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_rejected_vm_coords);
     sv2->setScalarData ((std::vector<float>*)&f_param_hist_rejected);
     sv2->sizeFactor = sv->sizeFactor;
     sv2->finalize();

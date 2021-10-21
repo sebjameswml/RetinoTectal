@@ -227,6 +227,8 @@ struct Agent1
             nss << "./paper/images/" << this->title << ".png";
             this->v->saveImage (nss.str());
             this->vis(this->conf->getUInt ("steps", 1000));
+            AgentMetrics<T> am = this->get_metrics();
+            std::cout << "Final SOS: " << am.sos << " and crosscount = " << am.crosscount << std::endl;
             if (this->immediate_exit == false) { this->v->keepOpen(); }
         }
     }
