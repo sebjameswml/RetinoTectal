@@ -168,17 +168,7 @@ int main (int argc, char** argv)
 
     // How about I write out JSON config files to run the agent for the best parameter set(s)?
     std::cout << "Best params: " << x_best << std::endl;
-    mdl.set (pnames[0], x_best[0]);
-    mdl.set (pnames[1], x_best[1]);
-    mdl.set (pnames[2], x_best[2]);
-    mdl.write (modelid+std::string("_x_best.json"));
 
-    // How about the next best one?
-#if 0
-    for (auto ps : mapped_params) {
-        std::cout << "params " << ps.second << " gave objective value " << ps.first << std::endl;
-    }
-#endif
     auto mp = mapped_params.begin(); // Should be the best
     mp++; // Next best
     mdl.set (pnames[0], mp->second[0]);
@@ -235,19 +225,21 @@ int main (int argc, char** argv)
         morph::Vector<float, D> coord = mapped_params_vm_coords[bn.first];
         std::cout << "Best objective: " << bn.first << ", neighbour obj: " << bn.second.first << std::endl;
         sv3->add (coord, 1.0f, bn.first/100.0f); // one of the best
-        sv3->add (bn.second.second, 0.0f, bn.second.first/100.0f); // the most changed params nearby
+        sv3->add (bn.second.second, 0.0f, bn.second.first/1000.0f); // the most changed params nearby
 
         // Also write out jsons. One for the 'best' value
         coord *= range_max;
         mdl.set (pnames[0], coord[0]);
         mdl.set (pnames[1], coord[1]);
         mdl.set (pnames[2], coord[2]);
+        mdl.set ("fobj", bn.first);
         mdl.write (modelid+("_best_")+std::to_string(j)+(".json"));
         // And one for the params that are near to the 'best' value and have the greatest change/distance from it
         morph::Vector<float, D> coord2 = bn.second.second * range_max;
         mdl.set (pnames[0], coord2[0]);
         mdl.set (pnames[1], coord2[1]);
         mdl.set (pnames[2], coord2[2]);
+        mdl.set ("fobj", bn.second.first);
         mdl.write (modelid+("_nearby_")+std::to_string(j)+(".json"));
 
         ++j;

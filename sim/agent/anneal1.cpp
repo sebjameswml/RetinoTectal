@@ -43,11 +43,11 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
          const morph::vVector<T>& param_values)
 {
     // Set params in model(s)
-    model1.reset();
     for (size_t i = 0; i < params.size(); ++i) {
         mconf->set (params[i], param_values[i]);
     }
     model1.update_m();
+    model1.reset(); // Updates initial positions based on r_i, r_j etc
 
     // Run model and then get metrics
     model1.run();
@@ -77,7 +77,6 @@ void signalHandler (int signum)
         optimiser->save (fname);
         std::cout << "...saved. Best objective so far was " << optimiser->f_x_best
                   << " for params " << optimiser->x_best << std::endl;
-        // Perhaps also graph1->save (hdffile, "graph1"); graph2->save(hdffile, "graph2") etc ??
     }
 #ifdef OPTVIS
     std::cout << "Saved data. Leaving optimisation visualisation window open...\n";
@@ -317,6 +316,11 @@ int main (int argc, char **argv)
             if (optimiser->state == morph::Anneal_State::NeedToCompute) {
                 morph::vVector<float> xc = optimiser->x_cand.as_float();
                 optimiser->f_x_cand = objfn (model1, mconf, params, xc);
+                // Save model params and objective into json for analysis
+                mconf->set ("f_x", optimiser->f_x_cand);
+                std::string jspath = "log/anneal1/" + m_id + std::string("_")
+                + std::to_string(optimiser->steps) + std::string(".json");
+                mconf->write (jspath);
 
             } else if (optimiser->state == morph::Anneal_State::NeedToComputeSet) {
                 optimiser->f_x_plusdelta = objfn (model1, mconf, params, optimiser->x_plusdelta.as_float());
