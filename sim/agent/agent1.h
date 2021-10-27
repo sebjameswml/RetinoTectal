@@ -292,6 +292,9 @@ struct Agent1
         }
         if (this->layout == graph_layout::f) {
             this->sim_time_txt->setupText (std::to_string(stepnum));
+            AgentMetrics<T> am = this->get_metrics();
+            this->sos_txt->setupText (std::to_string(am.sos));
+            this->crossings_txt->setupText (std::to_string((int)am.crosscount));
         }
 
         this->v->render();
@@ -1121,7 +1124,9 @@ struct Agent1
     }
 
     // Updatable simulation time text
-    morph::VisualTextModel* sim_time_txt;
+    morph::VisualTextModel* sim_time_txt = (morph::VisualTextModel*)0;
+    morph::VisualTextModel* sos_txt = (morph::VisualTextModel*)0;
+    morph::VisualTextModel* crossings_txt = (morph::VisualTextModel*)0;
 
     // Set up the simulation visualisation scene. This depends on whether this->layout
     // is graph_layout::a, ::b or ::c, etc.
@@ -1403,7 +1408,7 @@ struct Agent1
             // A 'text' only visual model to display the sim time
             offset[0] += 1.05f;
             morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
-            float ty = 1.0f; // text y position
+            float ty = 1.1f; // text y position
             float th = 0.1f; // text height
             float l_x = 0.0f;
             float cw = 0.1f;
@@ -1413,10 +1418,10 @@ struct Agent1
             jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
             ty -= th;
             jtvm->addLabel ("sos: ", {l_x, ty, 0.0f});
-            jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sos_txt);
-            ty -= th;
+            jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+            ty -= 2*th;
             jtvm->addLabel ("crossings: ", {l_x, ty, 0.0f});
-            jtvm->addLabel ("0", {l_x+2*cw, ty, 0.0f}, this->sos_txt);
+            jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->crossings_txt);
             v->addVisualModel (jtvm);
 
         } else if (this->layout == graph_layout::c) { // Layout with diff. time end points
