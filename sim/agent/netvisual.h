@@ -67,22 +67,23 @@ public:
         morph::Vector<float,3> puckthick = { 0, 0, 0.002 };
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
             this->computeTube (idx,
-                               this->locations->p[i]+puckthick,
-                               this->locations->p[i]-puckthick,
+                               (this->locations->p[i]+puckthick)*zoom,
+                               (this->locations->p[i]-puckthick)*zoom,
                                morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
                                this->locations->clr[i], this->locations->clr[i],
-                               this->radiusFixed, 16);
+                               this->radiusFixed*zoom, 16);
         }
         // Connection lines
         if (this->viewmode == netvisual_viewmode::actual) {
             for (auto c : this->locations->c) {
-                morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
-                morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
+                morph::Vector<Flt, 3> c1 = this->locations->p[c[0]] * zoom;
+                morph::Vector<Flt, 3> c2 = this->locations->p[c[1]] * zoom;
                 std::array<float, 3> clr1 = this->locations->clr[c[0]];
                 std::array<float, 3> clr2 = this->locations->clr[c[1]];
                 if ((c1-c2).length() < maxlen) {
                     // omit long lines for a bit more clarity
-                    this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
+                    this->computeLine (idx, c1, c2, this->uz, clr1, clr2,
+                                       this->linewidth*zoom, this->linewidth/4*zoom);
                 }
             }
         }
@@ -96,20 +97,20 @@ public:
 
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
             this->computeTube (idx,
-                               this->locations->targ[i]+puckthick,
-                               this->locations->targ[i]-puckthick,
+                               (this->locations->targ[i]+puckthick)*zoom,
+                               (this->locations->targ[i]-puckthick)*zoom,
                                morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
                                this->locations->clr[i], this->locations->clr[i],
-                               this->radiusFixed, 16);
+                               this->radiusFixed*zoom, 16);
         }
         // Connections
         for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]];
-            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]];
+            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]] * zoom;
+            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             //if ((c1-c2).length() < Flt{0.2}) {
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
+            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
             //}
         }
 
@@ -126,36 +127,36 @@ public:
 
             // The puck for the target position
             this->computeTube (idx,
-                               this->locations->targ[i]+puckthick,
-                               this->locations->targ[i]-puckthick,
+                               (this->locations->targ[i]+puckthick)*zoom,
+                               (this->locations->targ[i]-puckthick)*zoom,
                                morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
                                this->locations->clr[i], this->locations->clr[i],
-                               this->radiusFixed, 16);
+                               this->radiusFixed*zoom, 16);
 
             if (this->draw_actual == true) {
                 // A line (cyl. tube) from target to actual position
                 this->computeTube (idx,
-                                   this->locations->targ[i],
-                                   this->locations->p[i]+actualpuckoffs,
+                                   this->locations->targ[i]*zoom,
+                                   (this->locations->p[i]+actualpuckoffs)*zoom,
                                    this->locations->clr[i], this->locations->clr[i],
-                                   this->puckthick[2], 8);
+                                   this->puckthick[2]*zoom, 8);
 
                 // A slightly smaller puck for actual position
                 this->computeTube (idx,
-                                   this->locations->p[i]+actualpuckoffs+puckthick,
-                                   this->locations->p[i]+actualpuckoffs-puckthick,
+                                   (this->locations->p[i]+actualpuckoffs+puckthick)*zoom,
+                                   (this->locations->p[i]+actualpuckoffs-puckthick)*zoom,
                                    morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
                                    this->locations->clr[i], this->locations->clr[i],
-                                   this->radiusFixed*0.667, 16);
+                                   this->radiusFixed*0.667*zoom, 16);
             }
         }
         // Connections
         for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]];
-            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]];
+            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]] * zoom;
+            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/4);
+            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
         }
 
         // Finally, draw a square around the domain
@@ -165,19 +166,20 @@ public:
     void drawBoundary (VBOint& idx)
     {
         std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
-        float w = 1, h = 1;
+        float w = zoom, h = zoom;
         if (this->locations->p.size() > 1) {
-            w = (this->locations->domain_w-1) * this->locations->dx[0];
-            h = (this->locations->domain_h-1) * this->locations->dx[1];
+            w *= (this->locations->domain_w-1) * this->locations->dx[0];
+            h *= (this->locations->domain_h-1) * this->locations->dx[1];
         }
-        this->computeLine (idx, morph::Vector<Flt, 3>({0, 0, 0}), morph::Vector<Flt, 3>({w, 0, 0}),
-                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
-        this->computeLine (idx, morph::Vector<Flt, 3>({w, 0, 0}), morph::Vector<Flt, 3>({w, h, 0}),
-                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
-        this->computeLine (idx, morph::Vector<Flt, 3>({w, h, 0}), morph::Vector<Flt, 3>({0, h, 0}),
-                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
-        this->computeLine (idx, morph::Vector<Flt, 3>({0, h, 0}), morph::Vector<Flt, 3>({0, 0, 0}),
-                           this->uz, gry, gry, this->linewidth, this->linewidth/4);
+        float _z = puckthick[2]*float{0.5001}; // Ensure boundary is visible above rest of drawing
+        this->computeLine (idx, morph::Vector<Flt, 3>({0, 0, _z}), morph::Vector<Flt, 3>({w, 0, _z}),
+                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
+        this->computeLine (idx, morph::Vector<Flt, 3>({w, 0, _z}), morph::Vector<Flt, 3>({w, h, _z}),
+                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
+        this->computeLine (idx, morph::Vector<Flt, 3>({w, h, _z}), morph::Vector<Flt, 3>({0, h, _z}),
+                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
+        this->computeLine (idx, morph::Vector<Flt, 3>({0, h, _z}), morph::Vector<Flt, 3>({0, 0, _z}),
+                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
@@ -191,6 +193,8 @@ public:
     net<Flt>* locations = (net<Flt>*)0;
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.004;
+    //! Zoom the size of the netvisual
+    float zoom = float{1};
     //! If true, draw small pucks and lines showing actual position imposed on the 'expt suggests' view
     bool draw_actual = false;
     //! The maximum length of a line betwen two vertices for it to be visualised

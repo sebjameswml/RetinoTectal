@@ -55,7 +55,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 find_package(jsoncpp REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(Armadillo REQUIRED)
-find_package(LAPACK REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)

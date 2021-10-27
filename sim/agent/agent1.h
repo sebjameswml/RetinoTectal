@@ -53,6 +53,8 @@ template<typename T> std::ostream& operator<< (std::ostream& os, const AgentMetr
 template<typename T>
 struct AgentMetrics
 {
+    // An identifier
+    std::string id = std::string("");
     // The number of agents
     size_t n_agents = 0;
     // Sum of squared errors
@@ -80,7 +82,7 @@ std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am)
 }
 
 // A selection of possible graph layouts to show when running the program
-enum class graph_layout { a, b, c, d, e };
+enum class graph_layout { a, b, c, d, e, f };
 
 template<typename T, size_t N, typename B=branch<T, N>>
 struct Agent1
@@ -224,14 +226,16 @@ struct Agent1
 
             // Save final image based on config file names
             std::stringstream nss;
-            nss << "./paper/images/" << this->title << ".png";
+            nss << this->imagedir << "/" << this->title << ".png";
             this->v->saveImage (nss.str());
+            std::cout << "Saved image: " << nss.str() << std::endl;
             this->vis(this->conf->getUInt ("steps", 1000));
             AgentMetrics<T> am = this->get_metrics();
             std::cout << "Final SOS: " << am.sos << " and crosscount = " << am.crosscount << std::endl;
             if (this->immediate_exit == false) { this->v->keepOpen(); }
         }
     }
+    std::string imagedir = std::string("./paper/images");
 
     //! Compute SOS, crossings count etc and return info
     AgentMetrics<T> get_metrics()
@@ -266,7 +270,9 @@ struct Agent1
             glfwPollEvents();
         }
 
-        this->bv->reinit(); // Branches
+        if (this->layout != graph_layout::f) {
+            this->bv->reinit(); // Branches
+        }
 
         // Centroids that should show up to a certain time
         if (this->layout == graph_layout::c) {
@@ -274,7 +280,7 @@ struct Agent1
         }
         this->cv->reinit(); // Centroids to end
 
-        if (this->layout != graph_layout::e) {
+        if (this->layout != graph_layout::e && this->layout != graph_layout::f) {
             this->tcv->reinit(); // Experiment
             this->av->reinit(); // Selected axons
         }
@@ -284,6 +290,10 @@ struct Agent1
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
         }
+        if (this->layout == graph_layout::f) {
+            this->sim_time_txt->setupText (std::to_string(stepnum));
+        }
+
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
@@ -1110,6 +1120,9 @@ struct Agent1
         }
     }
 
+    // Updatable simulation time text
+    morph::VisualTextModel* sim_time_txt;
+
     // Set up the simulation visualisation scene. This depends on whether this->layout
     // is graph_layout::a, ::b or ::c, etc.
     void visinit()
@@ -1119,12 +1132,17 @@ struct Agent1
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { wdefault = 1920; }
         if (this->layout == graph_layout::b || this->layout == graph_layout::e) { wdefault = 2480; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
+        if (this->layout == graph_layout::f) { wdefault = 675; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { hdefault = 1200; }
         if (this->layout == graph_layout::b || this->layout == graph_layout::e) { hdefault = 700; }
         if (this->layout == graph_layout::c) { hdefault = 1180; }
+        if (this->layout == graph_layout::f) { hdefault = 550; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
+        if (ww != wdefault || wh != hdefault) {
+            std::cout << "visinit() with win height: " << wh << ", and win width: " << ww << " (from json)."<< std::endl;
+        }
 
         std::string tt("Agent based retinotectal model: ");
         tt += this->title;
@@ -1138,6 +1156,8 @@ struct Agent1
             this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::c) {
             this->v->setSceneTrans (-0.943763f, 0.800606f, -5.9f);
+        } else if (this->layout == graph_layout::f) {
+            this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
         }
 
         if constexpr (use_ortho) {
@@ -1354,6 +1374,45 @@ struct Agent1
             this->gv->xlabel = "N ---------- retina ---------> T";
             //this->gv->finalize();
             v->addVisualModel (this->gv);
+
+        } else if (this->layout == graph_layout::f) { // Just centroids. Used by agent1_eval.cpp
+
+            // Axon centroids: Centroids of branches viewed with a NetVisual
+            this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+            this->cv->viewmode = netvisual_viewmode::actual;
+            if (this->layout == graph_layout::b) {
+                this->cv->radiusFixed = 0.02;
+            }
+            this->cv->finalize();
+            this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+            this->addOrientationLabels (this->cv, std::string("Tectal"));
+            v->addVisualModel (this->cv);
+
+            // Experiment: Another NetVisual view showing the target locations
+            offset[0] += 0.8f;
+            offset[1] -= 0.2f;
+            this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+            this->tcv->viewmode = netvisual_viewmode::targetplus;
+            this->tcv->zoom = 0.5f;
+            this->tcv->finalize();
+            this->tcv->addLabel ("Experiment", {0.32f, 0.55f, 0.0f},
+                                 morph::colour::black, morph::VisualFont::Vera, 0.03, 24);
+            v->addVisualModel (this->tcv);
+            offset[0] -= 0.8f;
+            offset[1] += 0.2f;
+
+            // A 'text' only visual model to display the sim time
+            offset[0] += 1.05f;
+            morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
+            float ty = 1.0f; // text y position
+            float th = 0.1f; // text height
+            float l_x = 0.0f;
+            float cw = 0.1f;
+            jtvm->addLabel ("Sim time", {l_x, ty, 0.0f});
+            ty -= th;
+            jtvm->addLabel ("t = ", {l_x, ty, 0.0f});
+            jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
+            v->addVisualModel (jtvm);
 
         } else if (this->layout == graph_layout::c) { // Layout with diff. time end points
 

@@ -233,14 +233,14 @@ int main (int argc, char** argv)
         mdl.set (pnames[1], coord[1]);
         mdl.set (pnames[2], coord[2]);
         mdl.set ("fobj", bn.first);
-        mdl.write (modelid+("_best_")+std::to_string(j)+(".json"));
+        mdl.write (std::string("m_")+modelid+("_best_")+std::to_string(j)+(".json"));
         // And one for the params that are near to the 'best' value and have the greatest change/distance from it
         morph::Vector<float, D> coord2 = bn.second.second * range_max;
         mdl.set (pnames[0], coord2[0]);
         mdl.set (pnames[1], coord2[1]);
         mdl.set (pnames[2], coord2[2]);
         mdl.set ("fobj", bn.second.first);
-        mdl.write (modelid+("_nearby_")+std::to_string(j)+(".json"));
+        mdl.write (std::string("m_")+modelid+("_nearby_")+std::to_string(j)+(".json"));
 
         ++j;
     }

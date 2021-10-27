@@ -34,6 +34,8 @@ morph::Anneal<double>* optimiser = (morph::Anneal<double>*)0;
 // The 'model id' and 'search id' are derived from their JSON files' names
 std::string s_id("");
 std::string m_id("");
+// If true, output a json config representing every single parameter set computed
+static constexpr bool debug_json_config_on_every_step = false;
 
 // Objective function involves running the agent based model
 template <typename T=float, size_t N=4>
@@ -316,11 +318,13 @@ int main (int argc, char **argv)
             if (optimiser->state == morph::Anneal_State::NeedToCompute) {
                 morph::vVector<float> xc = optimiser->x_cand.as_float();
                 optimiser->f_x_cand = objfn (model1, mconf, params, xc);
-                // Save model params and objective into json for analysis
-                mconf->set ("f_x", optimiser->f_x_cand);
-                std::string jspath = "log/anneal1/" + m_id + std::string("_")
-                + std::to_string(optimiser->steps) + std::string(".json");
-                mconf->write (jspath);
+                if constexpr (debug_json_config_on_every_step ==  true) {
+                    // Save model params and objective into json for analysis
+                    mconf->set ("f_x", optimiser->f_x_cand);
+                    std::string jspath = "log/anneal1/" + m_id + std::string("_")
+                    + std::to_string(optimiser->steps) + std::string(".json");
+                    mconf->write (jspath);
+                }
 
             } else if (optimiser->state == morph::Anneal_State::NeedToComputeSet) {
                 optimiser->f_x_plusdelta = objfn (model1, mconf, params, optimiser->x_plusdelta.as_float());
