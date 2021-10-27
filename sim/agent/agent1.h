@@ -1389,8 +1389,8 @@ struct Agent1
             v->addVisualModel (this->cv);
 
             // Experiment: Another NetVisual view showing the target locations
-            offset[0] += 0.8f;
-            offset[1] -= 0.2f;
+            morph::Vector<float> expoff = {0.8f, -0.2f, 0.01f};
+            offset += expoff;
             this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
             this->tcv->viewmode = netvisual_viewmode::targetplus;
             this->tcv->zoom = 0.5f;
@@ -1398,8 +1398,7 @@ struct Agent1
             this->tcv->addLabel ("Experiment", {0.32f, 0.55f, 0.0f},
                                  morph::colour::black, morph::VisualFont::Vera, 0.03, 24);
             v->addVisualModel (this->tcv);
-            offset[0] -= 0.8f;
-            offset[1] += 0.2f;
+            offset -= expoff;
 
             // A 'text' only visual model to display the sim time
             offset[0] += 1.05f;
@@ -1412,6 +1411,12 @@ struct Agent1
             ty -= th;
             jtvm->addLabel ("t = ", {l_x, ty, 0.0f});
             jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
+            ty -= th;
+            jtvm->addLabel ("sos: ", {l_x, ty, 0.0f});
+            jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sos_txt);
+            ty -= th;
+            jtvm->addLabel ("crossings: ", {l_x, ty, 0.0f});
+            jtvm->addLabel ("0", {l_x+2*cw, ty, 0.0f}, this->sos_txt);
             v->addVisualModel (jtvm);
 
         } else if (this->layout == graph_layout::c) { // Layout with diff. time end points

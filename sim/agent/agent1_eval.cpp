@@ -58,6 +58,9 @@ int main (int argc, char **argv)
     e_manips.push_back ("configs/a1/e_tecrot180.json");
     e_manips.push_back ("configs/a1/e_tecablate.json");
     e_manips.push_back ("configs/a1/e_tecswap.json");
+    e_manips.push_back ("configs/a1/e_mismatch.json");
+    e_manips.push_back ("configs/a1/e_reber.json");
+    e_manips.push_back ("configs/a1/e_brown.json");
 
     for (unsigned int i = 0; i < e_manips.size(); ++i) {
 
@@ -79,7 +82,6 @@ int main (int argc, char **argv)
         model.imagedir = std::string ("./log/agent1_eval");
         model.title = std::string("j4_") + m_id + std::string("_") + e_id;
         model.run();
-        //model.save (outfile);
         AgentMetrics<float> am = model.get_metrics();
         am.id = e_id;
         std::cout << "For manipulation " << am.id << ", SOS: " << am.sos << " and crosscount = " << am.crosscount << std::endl;

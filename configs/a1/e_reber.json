@@ -20,8 +20,6 @@
     "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
     "lighting" : true,
 
-    "win_width" : 1920,
-
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
 

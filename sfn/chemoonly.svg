@@ -10,9 +10,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="824.94275mm"
-   height="158.34976mm"
-   viewBox="0 0 824.94275 158.34976"
+   width="671.35791mm"
+   height="332.67258mm"
+   viewBox="0 0 671.35791 332.67257"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
@@ -30,8 +30,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="1465.1317"
-     inkscape:cy="-62.533345"
+     inkscape:cx="1307.657"
+     inkscape:cy="964.0201"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -41,9 +41,9 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:window-width="2262"
-     inkscape:window-height="1533"
-     inkscape:window-x="865"
-     inkscape:window-y="98"
+     inkscape:window-height="1320"
+     inkscape:window-x="290"
+     inkscape:window-y="41"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata5">
@@ -61,7 +61,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(301.86383,-31.501606)">
+     transform="translate(302.42725,-43.261467)">
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_retablate.png"
        y="44.330544"
@@ -73,8 +73,8 @@
        width="178.59375" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecablate.png"
-       y="31.501606"
-       x="344.4852"
+       y="230.41322"
+       x="-138.17253"
        id="image971"
        xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecablate.png"
        preserveAspectRatio="none"
@@ -101,9 +101,36 @@
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecswap.png"
        y="43.261467"
-       x="-301.86383"
+       x="-302.42725"
        id="image1004"
        xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecswap.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_mismatch.png"
+       y="230.41322"
+       x="-302.42725"
+       id="image1116"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_mismatch.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_reber.png"
+       y="230.41322"
+       x="26.08217"
+       id="image1178"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_reber.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_brown.png"
+       y="230.41322"
+       x="190.33693"
+       id="image1224"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_brown.png"
        preserveAspectRatio="none"
        height="145.52083"
        width="178.59375" />
