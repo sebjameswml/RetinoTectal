@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="1386.2178"
-     inkscape:cy="524.63738"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="1082.6598"
+     inkscape:cy="655.53618"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -40,11 +40,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="2262"
-     inkscape:window-height="1320"
-     inkscape:window-x="290"
-     inkscape:window-y="41"
-     inkscape:window-maximized="0" />
+     inkscape:window-width="3768"
+     inkscape:window-height="2096"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -62,24 +62,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(302.42725,-35.807232)">
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_retablate.png"
-       y="44.330544"
-       x="-136.1339"
-       id="image893"
-       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_retablate.png"
-       preserveAspectRatio="none"
-       height="145.52083"
-       width="178.59375" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecablate.png"
-       y="230.41322"
-       x="-138.17253"
-       id="image971"
-       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_tecablate.png"
-       preserveAspectRatio="none"
-       height="145.52083"
-       width="178.59375" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecrot90.png"
        y="44.330544"
@@ -99,38 +81,11 @@
        height="145.52083"
        width="178.59375" />
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecswap.png"
-       y="43.261467"
-       x="-302.42725"
-       id="image1004"
-       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_tecswap.png"
-       preserveAspectRatio="none"
-       height="145.52083"
-       width="178.59375" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_mismatch.png"
-       y="230.41322"
-       x="-302.42725"
-       id="image1116"
-       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_mismatch.png"
-       preserveAspectRatio="none"
-       height="145.52083"
-       width="178.59375" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_reber.png"
-       y="230.41322"
-       x="26.08217"
-       id="image1178"
-       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_reber.png"
-       preserveAspectRatio="none"
-       height="145.52083"
-       width="178.59375" />
-    <image
        sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_brown.png"
        y="230.41322"
        x="190.33693"
        id="image1224"
-       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_brown.png"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_reber.png"
        preserveAspectRatio="none"
        height="145.52083"
        width="178.59375" />
@@ -144,7 +99,7 @@
          id="tspan4984"
          x="-97.879318"
          y="230.42557"
-         style="font-size:8.46666622px;stroke-width:0.26458332">F. Tectal ablation</tspan></text>
+         style="font-size:8.46666622px;stroke-width:0.26458332">F. MIsmatch ablation</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -155,7 +110,7 @@
          id="tspan4984-6"
          x="-264.55557"
          y="230.42557"
-         style="font-size:8.46666622px;stroke-width:0.26458332">E. Mismatch ablation</tspan></text>
+         style="font-size:8.46666622px;stroke-width:0.26458332">E. Tectal ablation</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -166,7 +121,7 @@
          id="tspan4984-5"
          x="-97.879318"
          y="42.239914"
-         style="font-size:8.46666622px;stroke-width:0.26458332">B. Retinal ablation</tspan></text>
+         style="font-size:8.46666622px;stroke-width:0.26458332">B. Tectal graft swap</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:8.46666622px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -177,7 +132,7 @@
          id="tspan4984-5-5"
          x="-264.55557"
          y="42.239914"
-         style="font-size:8.46666622px;stroke-width:0.26458332">A. Tectal graft swap</tspan></text>
+         style="font-size:8.46666622px;stroke-width:0.26458332">A. Retinal ablation</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -210,7 +165,7 @@
          id="tspan4984-7"
          x="65.931084"
          y="230.42557"
-         style="font-size:8.46666622px;stroke-width:0.26458332">G. Reber et al. misexpression</tspan></text>
+         style="font-size:8.46666622px;stroke-width:0.26458332">G. Brown et al. knockin</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -221,6 +176,51 @@
          id="tspan4984-7-9"
          x="228.55502"
          y="230.42557"
-         style="font-size:8.46666622px;stroke-width:0.26458332">H. Brown et al. misexpression</tspan></text>
+         style="font-size:8.46666622px;stroke-width:0.26458332">H. Reber et al. knock-in/down</tspan></text>
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_retablate.png"
+       y="44.330544"
+       x="-136.1339"
+       id="image893"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_tecswap.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecswap.png"
+       y="43.261467"
+       x="-302.42725"
+       id="image1004"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_retablate.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_reber.png"
+       y="230.41322"
+       x="26.08217"
+       id="image1178"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_brown.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_tecablate.png"
+       y="230.41322"
+       x="-138.17253"
+       id="image971"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_mismatch.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/log/agent1_eval/j4_ee_G_mismatch.png"
+       y="230.41322"
+       x="-302.42725"
+       id="image1116"
+       xlink:href="file:///home/seb/models/RetinoTectal/log/agent1_eval/j4_eE_G_tecablate.png"
+       preserveAspectRatio="none"
+       height="145.52083"
+       width="178.59375" />
   </g>
 </svg>
