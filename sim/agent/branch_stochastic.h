@@ -1,44 +1,63 @@
 #include "branch.h"
 
+// Stochastic branches which estimate ligand gradient based on Mortimer paper.
+
 // \tparam T floating point type for the numbers
 // \tparam N number of receptor-ligand pairs in the system
 // \tparam R The number of locations at which to sample the ligand gradient.
-//           For realism, select R=1000 or so
+//           For realism, select R=1001 or so
 template<typename T, size_t N, size_t R>
 struct branch_stochastic : public branch<T,N>
 {
     // Params for the receptor binding model
     static constexpr T gc_width = T{1}; // growth cone width. 10 um is 1e-5 and is a realistic value
 
+    // Integrate estimates of the ligand gradient in which this branch is moving
+    static constexpr size_t gh_size = 30;
+    morph::Vector<morph::Vector<T, 2*N>, gh_size> gradient_history;
+    size_t gh_i = 0;
+
     // Estimate the ligand gradient, given the true ligand gradient and receptor noise
+    // \param mu true ligand gradient
+    // \param gamma true ligand expression
+    // \return Estimate of ligand gradient
     virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& mu,
                                                             morph::Vector<T,N>& gamma)
     {
+        // Compile-time assertion that R is odd
+        static_assert (R%2 == 1);
+
         // Choose a set of R locations across the growth cone.
         morph::Vector<T, R> r; // The positions, r across the growth cone. Must be -ve to +ve
         morph::Vector<T, R> c; // The concentration of ligand, c
         morph::Vector<T, R> p; // The probability of binding, p
         morph::Vector<bool, R> b; // The state of binding
-        morph::Vector<T, 2*N> lg; // rtn container
+        morph::Vector<T, 2*N> lg; // Current ligand gradient estimate container
 
-        morph::RandUniform<T, std::mt19937> rng;
+        //morph::RandUniform<T, std::mt19937> rng;
         morph::Vector<T, R> rns;
 
         static constexpr bool debug_stochastic = false;
+        static constexpr bool debug_stochastic2 = false;
+
+        // Used to compute prob. of binding
+        T kp = T{1};
+        // Artificially amplify the concentration gradient
+        T amplify = T{100};
 
         for (size_t i = 0; i < N; ++i) { // For each receptor-ligand pairing
             for (size_t d = 0; d < 2; ++d) { // For each dimension
 
                 morph::vVector<T> bound; // posns of bound receptors
-                rng.get(rns);
+                brng::i()->get(rns);
 
                 for (size_t ir = 0; ir < R; ++ir) { // For each of R evenly spaced samples
 
                     // Long winded for now, until it's sorted
-                    r[ir] = gc_width / T{R} * ir - gc_width / T{R} * (R/2) ; // position
-                    c[ir] = gamma[i] * (1 + mu[2*i+d] * r[ir]); // concentration
-                    p[ir] = c[ir] / (T{1} + c[ir]); // probability of binding
-                    b[ir] = (rns[ir] < p[ir]) ? true : false; // sampled state of binding
+                    r[ir] = gc_width / T{R} * (T{0.5}+ir) - gc_width / T{R} * (T{R}/T{2}) ; // position
+                    c[ir] = gamma[i] * (1 + mu[2*i+d] * r[ir] * amplify); // concentration
+                    p[ir] = c[ir] / (kp + c[ir]);               // probability of binding
+                    b[ir] = (rns[ir] < p[ir]) ? true : false;   // sampled state of binding
 
                     if (b[ir] == true) { bound.push_back (r[ir]); }
                 }
@@ -59,15 +78,19 @@ struct branch_stochastic : public branch<T,N>
                     std::pair<T,T> mc = morph::MathAlgo::linregr (bound, bound_w);
                     lg[2*i+d] = mc.first;
                 }
-                if constexpr (debug_stochastic) {
+                if constexpr (debug_stochastic2) {
                     std::cout << "Gradient " << mu[2*i+d] << " estimated as: " << lg[2*i+d] << "; bound size: " << bound.size() << std::endl;
+                    std::cout << "c[0] - c[end] = " << (c.front() - c.back()) << std::endl;
                 }
             }
         }
 
         //std::cout << "Ligand gradient is " << mu << "\nEstimate gradient is " << lg << std::endl;
+        this->gradient_history[gh_i] = lg;
+        //std::cout << "\n\n\ngh_i = " << gh_i << std::endl << std::endl << std::endl;
+        gh_i = (gh_i+1)%gh_size;
 
-        return lg;
+        return gradient_history.mean();
     }
 
     // This function is duplicated (cf struct branch) so I can pass in a vector<branch_stochastic<T, N, R>&
@@ -99,18 +122,24 @@ struct branch_stochastic : public branch<T,N>
             n_ki += cij_added[1] ? T{1} : T{0};
             n_kj += cij_added[2] ? T{1} : T{0};
         }
+
         // Do the 1/|B_b| multiplication to normalize C and I(!!)
         if (n_k > T{0}) { C = C/n_k; } // else C will be {0,0} still
         I = n_ki > T{0} ? I/n_ki : I;
-        J = n_kj > T{0} ? I/n_kj : J;
-        //std::cout << "C=" << C << std::endl;
+        J = n_kj > T{0} ? J/n_kj : J;
 
+        if constexpr (this->store_interaction_history == true) {
+            // Add I to history & rotate, reducing effect by 90% due to one time step passing
+            for (size_t i = 0; i>this->ihs-2; ++i) {
+                this->Ihist[i] = this->Ihist[i+1] * T{0.98};
+            }
+            this->Ihist[this->ihs-1] = I;
+            // Reset I and then sum Ihist to get effective I
+            I = {0,0};
+            for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
+        }
         // Collected non-border movement components
-#if 0
-        morph::Vector<T, 2> R = {0, 0}; // A little random movement, too
-        brng::i()->get(R);
-#endif
-        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3]; // + R * m[5];
+        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);

@@ -19,7 +19,10 @@ public:
         return brng::pInstance_brng;
     }
     float get() { return this->rng->get(); }
-    void get(morph::Vector<float,2>& ar) { return this->rng->get(ar); }
+
+    template<size_t arraysz = 2>
+    void get(morph::Vector<float,arraysz>& ar) { return this->rng->get(ar); }
+
     morph::RandUniform<float>* rng;
 };
 // Globally initialise brng instance pointer to NULL. Wherever you know what T is

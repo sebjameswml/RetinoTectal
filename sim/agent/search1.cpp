@@ -7,6 +7,9 @@
  * known locations.
  */
 
+// Uniform random number generator, for branches
+#include "branch_rng_float.h"
+
 #include <string>
 #include <vector>
 #include <morph/tools.h>

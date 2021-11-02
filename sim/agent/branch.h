@@ -36,8 +36,7 @@ protected:
     T r_i = T{0.04}; // receptor-receptor interaction distance for axon-axon interactions
     T two_r_i = T{2}*r;
 public:
-    // Signalling ratio parameter for S&G-type interaction (but on 4 receptors, not 1)
-    static constexpr bool s_g_interaction = false; // (unused)
+    // Signalling ratio parameter for S&G-type (relative receptor levels) interaction (but on 4 receptors, not 1)
     T s = T{0.3};
     // Track rcpt-rcpt interaction sizes
     morph::Vector<T, N> minses;
@@ -54,12 +53,22 @@ public:
     // zero out the interaction history in init
     virtual void init() { this->Ihist.zero(); }
 
+    static constexpr bool add_unrealistic_gradient_noise = false; // Compare with branch_stochastic.h
+    morph::Vector<T, 2*N> rn;
     // Estimate the ligand gradient, given the true ligand gradient
     virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& true_lgnd_grad,
                                                             morph::Vector<T,N>& true_lgnd_exp)
     {
-        // This is the non-stochastic implementation
+        // This is the non-stochastic implementation...
         morph::Vector<T, 2*N> lg = true_lgnd_grad;
+        // ...unless this if is entered into
+        if (add_unrealistic_gradient_noise == true) {
+            T proportion = T{1};
+            this->rn.randomize(); // 0->1
+            this->rn -= T{0.5};  // symmetric about 0
+            this->rn *= T{2};   // +- 1
+            lg += this->rn * (proportion * lg);
+        }
         return lg;
     }
 
@@ -94,6 +103,7 @@ public:
             + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
             + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
             + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
+
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
             G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
@@ -104,6 +114,10 @@ public:
 
         return G;
     }
+
+    // if true use relative receptor-receptor interactions as in Simpson & Goodhill
+    // paper. If false, use a mass-action scheme.
+    static constexpr bool rcptrcpt_interactions_relative = true;
 
     // A subroutine of compute_next
     //
@@ -137,41 +151,40 @@ public:
         // QI/J collects the overall signal transmitted by ligands binding to
         // receptors. Repulsive interactions add to Q; attractive interactions make Q
         // more negative.
-#define SIMPSON_GOODHILL_LIKE_RCPTRCPT_INTERACTIONS 1
-#ifdef SIMPSON_GOODHILL_LIKE_RCPTRCPT_INTERACTIONS
-        // The S & G axon-axon interaction is based on the receptor expression only and
-        // (guided by Reber) looks at the relative levels
-        morph::Vector<T,N> QI;
-        QI.zero();
-        W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
-        QI = this->rcpt/kp->rcpt;
-        if constexpr (branch_min_maxes == true && branch_min_max_i == true) {
-            if (W > T{0}) {
-                for (size_t i = 0; i < N; ++i) {
-                    maxes[i] = QI[i] > maxes[i] ? QI[i] : maxes[i];
-                    minses[i] = QI[i] < minses[i] ? QI[i] : minses[i];
+        if constexpr (this->rcptrcpt_interactions_relative == true) {
+            // The S & G axon-axon interaction is based on the receptor expression only and
+            // (guided by Reber) looks at the relative levels
+            morph::Vector<T,N> QI;
+            QI.zero();
+            W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
+            QI = this->rcpt/kp->rcpt;
+            if constexpr (branch_min_maxes == true && branch_min_max_i == true) {
+                if (W > T{0}) {
+                    for (size_t i = 0; i < N; ++i) {
+                        maxes[i] = QI[i] > maxes[i] ? QI[i] : maxes[i];
+                        minses[i] = QI[i] < minses[i] ? QI[i] : minses[i];
+                    }
                 }
             }
-        }
-        rtn[1] = false;
-        for (size_t i = 0; i < N; ++i) {
-            if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
-                I += kb * W;
-                rtn[1] = true;
-                break;
+            rtn[1] = false;
+            for (size_t i = 0; i < N; ++i) {
+                if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
+                    I += kb * W;
+                    rtn[1] = true;
+                    break;
+                }
             }
+        } else {
+            // Use a mass-action receptor-receptor axon-axon interaction
+            T QI = T{0};
+            for (size_t i = 0; i < N; ++i) {
+                QI += kp->rcpt[i] * this->rcpt[i] * (source_tissue->rcptrcpt_interactions[i] == interaction::repulsion ? T{1} :
+                                                     (source_tissue->rcptrcpt_interactions[i] == interaction::attraction ? T{-1} : T{0}));
+            }
+            QI /= N;
+            I += kb * QI * (d <= this->two_r_i ? T{1} : T{0});
+            rtn[1] = (d <= this->two_r_i && QI > T{0}) ? true : false;
         }
-#else
-        // Mass-action receptor-receptor axon-axon interaction
-        T QI = T{0};
-        for (size_t i = 0; i < N; ++i) {
-            QI += kp->rcpt[i] * this->rcpt[i] * (source_tissue->rcptrcpt_interactions[i] == interaction::repulsion ? T{1} :
-                                                 (source_tissue->rcptrcpt_interactions[i] == interaction::attraction ? T{-1} : T{0}));
-        }
-        QI /= N;
-        I += kb * QI * (d <= this->two_r_i ? T{1} : T{0});
-        rtn[1] = (d <= this->two_r_i && QI > T{0}) ? true : false;
-#endif
         // Mass action receptor-ligand axon-axon interaction, J
         morph::Vector<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
@@ -254,7 +267,7 @@ public:
         I = n_ki > T{0} ? I/n_ki : I;
         J = n_kj > T{0} ? J/n_kj : J;
 
-        if constexpr (store_interaction_history == true) {
+        if constexpr (this->store_interaction_history == true) {
             // Add I to history & rotate, reducing effect by 90% due to one time step passing
             for (size_t i = 0; i>this->ihs-2; ++i) {
                 this->Ihist[i] = this->Ihist[i+1] * T{0.98};

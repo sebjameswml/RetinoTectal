@@ -108,7 +108,7 @@ int main (int argc, char **argv)
             model.run();
             model.save (outfile);
         } else if (branch_model == "stochastic") {
-            Agent1<float, 4, branch_stochastic<float, 4, 10>> model (conf, mconf);
+            Agent1<float, 4, branch_stochastic<float, 4, 11>> model (conf, mconf);
             model.title = std::string("stoc_") + m_id + std::string("_") + e_id;
             model.run();
             model.save (outfile);
