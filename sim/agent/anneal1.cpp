@@ -204,6 +204,7 @@ int main (int argc, char **argv)
         optimiser->param_names.push_back (pn);
     }
     optimiser->init();
+    std::cout << "optimiser's objective_repeat_precision is " << optimiser->objective_repeat_precision << std::endl;
 
 #ifdef OPTVIS
     // Set up the visualisation
