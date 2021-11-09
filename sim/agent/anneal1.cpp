@@ -349,8 +349,19 @@ int main (int argc, char **argv)
             graph2->append ((float)optimiser->steps, optimiser->f_x, 0);
             graph2->append ((float)optimiser->steps, optimiser->f_x_best, 1);
             graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
+
             // Add parameter set to the scattervisual. Scale coords by param_maxes
             morph::vVector<float> coord = one_over_param_maxes * optimiser->x_cand;
+            // Deal with < 3 coords
+            size_t sz = coord.size();
+            if (sz < 3) {
+                coord.resize (3);
+                for (size_t i = sz; i < 3; ++i) { coord[i] = float{0}; }
+            }
+            // FIXME: If there are >3 coords, then have a 'start' n and show 3 of
+            // them. Allow user to swich the 'start' so they can show 0,1,2 or 1,2,3, or
+            // 2,3,4 etc, looping back to 0 as necessary. If start changes, then Scatter
+            // would need to be re-constructed.
             sv->add ({coord[0], coord[1], coord[2]}, optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
 
             max_repeats_so_far = max_repeats_so_far < optimiser->f_x_best_repeats ? optimiser->f_x_best_repeats : max_repeats_so_far;
