@@ -318,6 +318,9 @@ int main (int argc, char **argv)
         model1.randomly_seeded = false;
 
         // ASA optimisation
+#ifdef OPTVIS
+        unsigned int max_repeats_so_far = 0;
+#endif
         while (optimiser->state != morph::Anneal_State::ReadyToStop) {
             if (optimiser->state == morph::Anneal_State::NeedToCompute) {
                 morph::vVector<float> xc = optimiser->x_cand.as_float();
@@ -350,10 +353,12 @@ int main (int argc, char **argv)
             morph::vVector<float> coord = one_over_param_maxes * optimiser->x_cand;
             sv->add ({coord[0], coord[1], coord[2]}, optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
 
+            max_repeats_so_far = max_repeats_so_far < optimiser->f_x_best_repeats ? optimiser->f_x_best_repeats : max_repeats_so_far;
             std::stringstream ss;
             ss << "T_k = " << tkmean << ", T_cost = " << tcostmean
                << ", current f_x_best = " << optimiser->f_x_best
-               << ", f_x_best_repeats = " << optimiser->f_x_best_repeats;
+               << ", f_x_best_repeats = " << optimiser->f_x_best_repeats
+               << " (highest num repeats so far: " << max_repeats_so_far << ")";
             fps_tm->setupText (ss.str());
 
             glfwWaitEventsTimeout (0.0166);
@@ -367,6 +372,15 @@ int main (int argc, char **argv)
         }
 
         std::cout << "After optimization (simulated " << model_sim_count << " times):\n";
+
+        std::cout << "Optimisation finished. Saving data...\n";
+        morph::Tools::createDirIf ("log/anneal1");
+        std::string fname = "log/anneal1/anneal1_" + m_id + std::string("_")
+        + morph::Tools::filenameTimestamp() + std::string(".h5");
+        std::cout << " to file "<< fname << std::endl;
+        optimiser->save (fname);
+        std::cout << "...saved. Best objective was " << optimiser->f_x_best
+                  << " for params " << optimiser->x_best << std::endl;
 
         morph::vVector<double> final_params = optimiser->x_best;
         if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
