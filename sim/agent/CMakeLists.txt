@@ -31,13 +31,20 @@ add_executable(search1 search1.cpp)
 target_compile_definitions(search1 PUBLIC FLT=float VISUALISE=1)
 target_link_libraries(search1 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
+# Run anneal1, watching each individual simulation
 add_executable(anneal1 anneal1.cpp)
 target_compile_definitions(anneal1 PUBLIC FLT=float VISUALISE=1)
 target_link_libraries(anneal1 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
+# Run anneal1, watching the optimisation varables
 add_executable(anneal1c anneal1.cpp)
 target_compile_definitions(anneal1c PUBLIC FLT=float OPTVIS=1)
 target_link_libraries(anneal1c ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
+# Run anneal1 with no visuals at all
+#add_executable(anneal1cc anneal1.cpp)
+#target_compile_definitions(anneal1cc PUBLIC FLT=float)
+#target_link_libraries(anneal1cc ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 add_executable(anneal1read anneal1read.cpp)
 target_compile_definitions(anneal1read PUBLIC FLT=float)
