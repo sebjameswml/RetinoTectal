@@ -13,7 +13,7 @@
 #include <morph/ScatterVisual.h>
 #include <morph/TriaxesVisual.h>
 
-// Dimensionality
+// Dimensionality.
 #define D 3
 
 int main (int argc, char** argv)

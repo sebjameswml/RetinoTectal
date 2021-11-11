@@ -77,23 +77,34 @@ int main (int argc, char **argv)
         econf->set ("graph_layout", 5); // Choose a layout to view
         // Update simulation steps if user provided a number
         if (runtimesteps > 0) { econf->set ("steps", runtimesteps); }
-        std::string outfile = std::string("./log/agent/") + m_id + std::string("_") + e_id + std::string(".h5");
-        Agent1<float, 4, branch<float, 4>> model (econf, mconf);
-        model.imagedir = std::string ("./log/agent1_eval");
-        model.title = std::string("j4_") + m_id + std::string("_") + e_id;
-        model.run();
-        AgentMetrics<float> am = model.get_metrics();
+
+        // Run several times to get mean/SD of results.
+        AgentMetrics<float> am;
         am.id = e_id;
-        std::cout << "For manipulation " << am.id << ", SOS: " << am.sos << " and crosscount = " << am.crosscount << std::endl;
+        for (unsigned int ei = 0; ei < 10; ++ei) {
+            std::string outfile = std::string("./log/agent/") + m_id + std::string("_") + e_id + std::string("_r") + std::to_string(ei) +  std::string(".h5");
+            Agent1<float, 4, branch<float, 4>> model (econf, mconf);
+            model.imagedir = std::string ("./log/agent1_eval");
+            model.title = std::string("j4_") + m_id + std::string("_") + e_id;
+            model.run();
+            am += model.get_metrics();
+        }
+        std::cout << "For manipulation " << am.id << ": " << am << std::endl;
         e_manips_results.push_back (am);
+
         delete econf;
     }
 
     std::cout << "------------------------------------------\n";
-    std::cout << "Results for model " << m_id << std::endl;
+    std::cout << "Results for model " << m_id;
+    if (runtimesteps > 0) { std::cout << ", run for " << runtimesteps << " steps"; }
+    std::cout << std::endl;
     std::cout << "------------------------------------------\n";
     for (auto am : e_manips_results) {
-        std::cout << "For manipulation " << am.id << ", SOS: " << am.sos << " and crosscount = " << am.crosscount << std::endl;
+        std::cout << "For manipulation " << am.id
+                  << ", SOS: " << am.sos << " [" << am.sos.mean() << "(" << am.sos.std() << ")]"
+                  << " and crosscount = " << am.crosscount << " [" << am.crosscount.mean() << "(" << am.crosscount.std() << ")]"
+                  << std::endl;
     }
     std::cout << "------------------------------------------\n";
 

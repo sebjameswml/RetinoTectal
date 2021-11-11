@@ -26,13 +26,13 @@
 # include <morph/ScatterVisual.h>
 # include <morph/TriaxesVisual.h>
 // Global access to the visual object
-morph::Visual* pv = (morph::Visual*)0;
+morph::Visual* pv = nullptr;
 #endif
 
 // A count of the number of sims used in objfn() for text output
 unsigned int model_sim_count = 0;
 // To allow the signal handler to close the optimiser, make it a global pointer.
-morph::Anneal<double>* optimiser = (morph::Anneal<double>*)0;
+morph::Anneal<double>* optimiser = nullptr;
 // The name of the model and search files are added to "anneal1" for saving data out.
 // The 'model id' and 'search id' are derived from their JSON files' names
 std::string s_id("");
@@ -65,7 +65,7 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
         std::cout << params[i] << " = " << param_values[i] << ", ";
     }
     std::cout << " (Sim count: " << model_sim_count << ")\n";
-    T rtn = m1m.sos;
+    T rtn = m1m.sos.back();
 
     return rtn;
 }
@@ -74,7 +74,7 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
 void signalHandler (int signum)
 {
     std::cout << "Optimisation interrupted. Saving data...\n";
-    if (optimiser != (morph::Anneal<double>*)0) {
+    if (optimiser != nullptr) {
         morph::Tools::createDirIf ("log/anneal1");
         std::string fname = "log/anneal1/anneal1_" + m_id + std::string("_")
         + morph::Tools::filenameTimestamp() + std::string(".h5");
@@ -85,10 +85,53 @@ void signalHandler (int signum)
     }
 #ifdef OPTVIS
     std::cout << "Saved data. Leaving optimisation visualisation window open...\n";
-    if (pv != (morph::Visual*)0) { pv->keepOpen(); }
+    if (pv != nullptr) { pv->keepOpen(); }
 #endif
     exit (signum);
 }
+
+#ifdef OPTVIS
+void tav_setup (morph::TriaxesVisual<float>* tav, const size_t start_idx, const size_t dimensions,
+                const morph::vVector<float>& param_range_min, const morph::vVector<float>& param_range_max,
+                const std::vector<std::string>& params)
+{
+    size_t _0 = start_idx % dimensions;
+    size_t _1 = (start_idx+1) % dimensions;
+    size_t _2 = (start_idx+2) % dimensions;
+    std::cout << "index _0:" << _0 << ", _1:" << _1 << ", _2:" << _2 << std::endl;
+    tav->input_min = {param_range_min[_0], param_range_min[_1], param_range_min[_2]};
+    tav->input_max = {param_range_max[_0], param_range_max[_1], param_range_max[_2]};
+    std::cout << "tav->input_min: " << tav->input_min << "; tav->input_max: " << tav->input_max << std::endl;
+    tav->xlabel = params[_0];
+    tav->ylabel = params[_1];
+    tav->zlabel = params[_2];
+    tav->finalize();
+}
+#endif
+
+// Specialise AnnealVisual to have an extra keybind and a 'start index' attribute
+class AnnealVisual : public morph::Visual
+{
+public:
+    AnnealVisual (int width, int height, const std::string& title) : morph::Visual (width, height, title) {}
+    //! Dimension view start index
+    size_t start_idx = 0;
+    size_t dimensions = 1;
+protected:
+    //! Act on keys and toggle 'start index' for the relevant VisualModels
+    virtual void key_callback_extra (GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+            std::cout << "Changing start index from " << start_idx << " to " << (start_idx + 1) << std::endl;
+            start_idx = (start_idx+1) % dimensions;
+        }
+
+        if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+            std::cout << "AnnealVisual help:\n";
+            std::cout << "d: cycle start index\n";
+        }
+    }
+};
 
 // E.g.: pbm && ./build/sim/agent/search1c configs/a1/m_eE_GCI.json configs/a1/s_GCI.json
 int main (int argc, char **argv)
@@ -208,7 +251,8 @@ int main (int argc, char **argv)
 
 #ifdef OPTVIS
     // Set up the visualisation
-    morph::Visual v (1920, 1080, "Optimization progress");
+    AnnealVisual v (1920, 1080, "Optimization progress");
+    v.dimensions = param_range_max.size();
     v.zNear = 0.001;
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
@@ -216,6 +260,7 @@ int main (int argc, char **argv)
     morph::Vector<float, 3> offset = { -0.7, 0.0, 0.0 };
 
     // First a scatter plot that can be updated. Just using a ScatterVisual for this.
+    size_t sv_start_idx_last = v.start_idx;
     morph::ScatterVisual<double>* sv = new morph::ScatterVisual<double> (v.shaderprog, offset);
     sv->radiusFixed = 0.002f;
     sv->colourScale.compute_autoscale (0, 30);
@@ -224,12 +269,7 @@ int main (int argc, char **argv)
     v.addVisualModel (sv);
 
     morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
-    tav->input_min = {param_range_min[0], param_range_min[1], param_range_min[2]};
-    tav->input_max = {param_range_max[0], param_range_max[1], param_range_max[2]};
-    tav->xlabel = params[0];
-    tav->ylabel = params[1];
-    tav->zlabel = params[2];
-    tav->finalize();
+    tav_setup (tav, v.start_idx, v.dimensions, param_range_min, param_range_max, params);
     v.addVisualModel (tav);
 
     offset[0] += 2.0f;
@@ -358,11 +398,36 @@ int main (int argc, char **argv)
                 coord.resize (3);
                 for (size_t i = sz; i < 3; ++i) { coord[i] = float{0}; }
             }
-            // FIXME: If there are >3 coords, then have a 'start' n and show 3 of
-            // them. Allow user to swich the 'start' so they can show 0,1,2 or 1,2,3, or
-            // 2,3,4 etc, looping back to 0 as necessary. If start changes, then Scatter
-            // would need to be re-constructed.
-            sv->add ({coord[0], coord[1], coord[2]}, optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
+            // If there are >3 coords, then have a 'start index' and show 3 of
+            // them. Allow user to swich the 'start index' so they can show dimensions
+            // 0,1,2 or 1,2,3, or 2,3,4 etc, looping back to 0 as necessary. If start
+            // changes, then Scatter needs to be re-constructed.
+            if (v.start_idx != sv_start_idx_last) {
+                std::cout << "Rebuilding the scatter plot!\n";
+                // rebuild the scatter, start by clearing it
+                sv->clear();
+                // Make a single container of params from the Anneal object
+                morph::vVector<morph::vVector<double>> param_hist = optimiser->param_hist_rejected;
+                morph::vVector<float> f_param_hist = optimiser->f_param_hist_rejected.as_float();
+                std::cout << "param_hist from rejected size is " << param_hist.size() << std::endl;
+                param_hist.insert (param_hist.end(), optimiser->param_hist_accepted.begin(), optimiser->param_hist_accepted.end());
+                f_param_hist.insert (f_param_hist.end(), optimiser->f_param_hist_accepted.begin(), optimiser->f_param_hist_accepted.end());
+                std::cout << "param_hist with accepted size is " << param_hist.size() << std::endl;
+                // Now add all the points
+                for (size_t i = 0; i < param_hist.size(); ++i) {
+                    morph::vVector<float> c = one_over_param_maxes * param_hist[i].as_float();
+                    std::cout << "coordinate c = " << c << " has obj f value " << f_param_hist[i] << std::endl;
+                    sv->add ({c[v.start_idx%v.dimensions], c[(v.start_idx+1)%v.dimensions], c[(v.start_idx+2)%v.dimensions]},
+                             f_param_hist[i], f_param_hist[i]/600.0f);
+                }
+                // Change the Triaxes visual
+                tav->clear();
+                tav->idx = 0;
+                tav_setup (tav, v.start_idx, v.dimensions, param_range_min, param_range_max, params);
+                sv_start_idx_last = v.start_idx;
+            }
+            sv->add ({coord[v.start_idx%v.dimensions], coord[(v.start_idx+1)%v.dimensions], coord[(v.start_idx+2)%v.dimensions]},
+                     optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
 
             max_repeats_so_far = max_repeats_so_far < optimiser->f_x_best_repeats ? optimiser->f_x_best_repeats : max_repeats_so_far;
             std::stringstream ss;

@@ -49,7 +49,7 @@ static constexpr bool visualise = false;
 template<typename T> struct AgentMetrics;
 // Declare operator<< function
 template<typename T> std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am);
-// Define class. To hold information about an Agent1 model.
+// Define class. To hold information about an Agent1 model. Single run or multiple runs?
 template<typename T>
 struct AgentMetrics
 {
@@ -58,18 +58,35 @@ struct AgentMetrics
     // The number of agents
     size_t n_agents = 0;
     // Sum of squared errors
-    T sos = T{0};
+    morph::vVector<T> sos;
     // RMS error = sqrt(sos/n_agents)
-    T rms = T{0};
+    morph::vVector<T> rms;
     // Number of crossings
-    T crosscount = T{0};
+    morph::vVector<T> crosscount;
     // Output a string
     std::string str() const
     {
         std::stringstream ss;
-        ss << "SOS: " << this->sos << " RMS: " << this->rms << " #X: " << this->crosscount;
+        if (sos.empty()) {
+            ss << "No metrics to report.";
+        } else if (sos.size() == 1) {
+            ss << "SOS: " << this->sos.back() << " RMS: " << this->rms.back() << " #X: " << this->crosscount.back();
+        } else {
+            ss << "SOS mean(std): " << this->sos.mean() << "(" << this->sos.std() <<  ") RMS: "
+               << this->rms.mean() << "(" << this->rms.std() << ") #X: "
+               << this->crosscount.mean() << "(" << this->crosscount.std() << ")";
+        }
         return ss.str();
     }
+    // operator +=
+    void operator+= (const AgentMetrics<T>& rhs)
+    {
+        // Adding means combinding sos, rms and crosscount
+        this->sos.insert (this->sos.end(), rhs.sos.begin(), rhs.sos.end());
+        this->rms.insert (this->rms.end(), rhs.rms.begin(), rhs.rms.end());
+        this->crosscount.insert (this->crosscount.end(), rhs.crosscount.begin(), rhs.crosscount.end());
+    }
+
     // Overload the stream output operator
     friend std::ostream& operator<< <> (std::ostream& os, const AgentMetrics<T>& am);
 };
@@ -97,6 +114,9 @@ struct Agent1
     {
         delete this->ret;
         delete this->tectum;
+#ifdef VISUALISE
+        if (this->v != nullptr) { delete this->v; }
+#endif
     }
 
     unsigned int showevery = 1000;
@@ -242,9 +262,9 @@ struct Agent1
     {
         AgentMetrics<T> am;
         am.n_agents = this->ax_centroids.targ.size();
-        am.sos = this->ax_centroids.sos();
-        am.rms = this->ax_centroids.rms();
-        am.crosscount = this->ax_centroids.crosscount();
+        am.sos.emplace_back (this->ax_centroids.sos());
+        am.rms.emplace_back (this->ax_centroids.rms());
+        am.crosscount.emplace_back (this->ax_centroids.crosscount());
         return am;
     }
 
@@ -293,8 +313,8 @@ struct Agent1
         if (this->layout == graph_layout::f) {
             this->sim_time_txt->setupText (std::to_string(stepnum));
             AgentMetrics<T> am = this->get_metrics();
-            this->sos_txt->setupText (std::to_string(am.sos));
-            this->crossings_txt->setupText (std::to_string((int)am.crosscount));
+            this->sos_txt->setupText (am.sos.str());
+            this->crossings_txt->setupText (am.crosscount.str());
         }
 
         this->v->render();
@@ -1588,30 +1608,30 @@ struct Agent1
     std::string title = "";
 #ifdef VISUALISE
     // A visual environment for the sim
-    morph::Visual* v;
+    morph::Visual* v = nullptr;
     // A visual environment specifically for the tissue visualisation
-    morph::Visual* tvv;
+    morph::Visual* tvv = nullptr;
     // Has visualisation been done already?
     bool visinit_done = false;
     // Specialised visualization of agents as spheres with a little extra colour patch on top
-    BranchVisual<T, N, B>* bv;
+    BranchVisual<T, N, B>* bv = nullptr;
     // Another visualization to show axon paths with only a few axons
-    BranchVisual<T, N, B>* av;
+    BranchVisual<T, N, B>* av = nullptr;
     // Centroid visual
-    NetVisual<T>* cv;
+    NetVisual<T>* cv = nullptr;
     // Centroid visuals at different time points
-    NetVisual<T>* cv0;
-    NetVisual<T>* cv1;
-    NetVisual<T>* cv2;
-    NetVisual<T>* cv3;
+    NetVisual<T>* cv0 = nullptr;
+    NetVisual<T>* cv1 = nullptr;
+    NetVisual<T>* cv2 = nullptr;
+    NetVisual<T>* cv3 = nullptr;
     // Simulation times to stop updating graphs (see graph_layout::c)
     morph::Vector<size_t, 4> freeze_times;
     // crosscount_from - how early to start showing the crossings count metric?
     unsigned int crosscount_from = 1000;
     // Centroid visual for targets
-    NetVisual<T>* tcv;
+    NetVisual<T>* tcv = nullptr;
     // A graph for the SOS metric
-    morph::GraphVisual<T>* gv = (morph::GraphVisual<T>*)0;
+    morph::GraphVisual<T>* gv = nullptr;
     // Make a couple of options for the graph layout for different figure types
     graph_layout layout = graph_layout::c;
 #endif // VISUALISE

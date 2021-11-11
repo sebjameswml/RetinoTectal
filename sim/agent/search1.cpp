@@ -46,8 +46,8 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
     AgentMetrics<T> m1m = model1.get_metrics();
 
     // The length of the objective vector
-    T rtn = std::sqrt(1000*m1m.rms * 1000*m1m.rms + m1m.crosscount * m1m.crosscount);
-    std::cout << "Objective = sqrt(" << (1000*m1m.rms) << "^2 + " << m1m.crosscount << "^2) = " << rtn << std::endl;
+    T rtn = std::sqrt(1000*m1m.rms.back() * 1000*m1m.rms.back() + m1m.crosscount.back() * m1m.crosscount.back());
+    std::cout << "Objective = sqrt(" << (1000*m1m.rms.back()) << "^2 + " << m1m.crosscount.back() << "^2) = " << rtn << std::endl;
     return rtn;
 }
 

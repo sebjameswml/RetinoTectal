@@ -54,7 +54,7 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
     // Here's a combination of the sos differences between the expected map and the actual map, plus a cross count.
     std::cout << "wt expt sos: " << m1m.sos << ", retablate sos: " << m2m.sos << std::endl;
     std::cout << "Sim count: " << model_sim_count << std::endl;
-    T rtn = m1m.sos * m2m.sos;
+    T rtn = m1m.sos.back() * m2m.sos.back();
 
     return rtn;
 }
