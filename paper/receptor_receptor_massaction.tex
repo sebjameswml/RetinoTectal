@@ -1,0 +1,32 @@
+\subsection*{Receptor-receptor axon-axon interactions}
+
+We model interactions between axon growth cones due to signalling between
+receptors of the same type. For these interactions, repulsion causes a
+movement of branch $b$ along a unit vector, $\hat{\mathbf{x}}_{kb}$, from
+branch $k$ to branch $b$ causing them to move further apart; attraction causes
+the opposite movement. The interaction, $\mathbf{I}_b$, acting on branch $b$,
+is given by
+
+\textbf{FIXME} In the code, I'm mostly using the Reber-like ratio based
+interaction, as described in Simpson and Goodhill.
+
+%
+\begin{equation}
+% No \frac{1}{|B_b|} in this one. Really?
+\mathbf{I}_b = \sum_k \hat{\mathbf{x}}_{kb}\,Q_I(d_{kb})
+\end{equation}
+%
+where $Q_I(d_{kb})$ is the signalling strength between two growth cones of
+receptor-receptor interaction radius $r_i$ a distance $d_{kb}$ from one
+another, given by
+%
+\begin{equation}
+Q_I(d_{kb}) = \begin{cases}
+     \sum_i^N E_i\,r_{i,b}\,r_{i,k}    & d_{kb} \leq 2r_i \\
+     0 & d_{kb} > 2r_i
+     \end{cases}
+\end{equation}
+%
+The sign of $Q_I$ is dependent on the values of $E_i$, which determines
+whether the receptor-receptor interaction, $\mathbf{I}_b$, is repulsive or
+attractive. $r_{i,k}$ is the expression of receptor $i$ on branch $k$.
