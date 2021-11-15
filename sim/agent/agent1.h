@@ -271,7 +271,7 @@ struct Agent1
     //! Save any relevant results of the simulation to an HdfData object.
     void save (const std::string& outfile)
     {
-        std::cout << "save...\n";
+        std::cout << "save results (sos=" << this->ax_centroids.sos() << ")\n";
         morph::HdfData d(outfile, morph::FileAccess::TruncateWrite);
         d.add_val ("/sos", this->ax_centroids.sos());
         d.add_val ("/rms", this->ax_centroids.rms());
