@@ -27,27 +27,33 @@ unsigned int model_sim_count = 0;
 template <typename T=float, size_t N=4>
 T objfn (Agent1<T, N, branch<T, N>>& model1,
          morph::Config* mconf,
-         std::vector<std::string>& param_names,
+         std::vector<std::string>& params,
          morph::vVector<T>& param_values)
 {
     std::cout << "......................................................Sim count: "
               << ++model_sim_count << std::endl;
 
     // Set params in model(s)
-    model1.reset();
-    for (size_t i = 0; i < param_names.size(); ++i) {
-        mconf->set (param_names[i], param_values[i]);
-        std::cout << param_names[i] << " = " << param_values[i] << std::endl;
+    for (size_t i = 0; i < params.size(); ++i) {
+        mconf->set (params[i], param_values[i]);
     }
     model1.update_m();
+    model1.reset(); // Updates initial positions based on r_i, r_j etc
 
     // Run model and then get metrics
     model1.run();
+    ++model_sim_count;
     AgentMetrics<T> m1m = model1.get_metrics();
 
-    // The length of the objective vector
-    T rtn = std::sqrt(1000*m1m.rms.back() * 1000*m1m.rms.back() + m1m.crosscount.back() * m1m.crosscount.back());
-    std::cout << "Objective = sqrt(" << (1000*m1m.rms.back()) << "^2 + " << m1m.crosscount.back() << "^2) = " << rtn << std::endl;
+    // Here's a combination of the sos differences between the expected map and the
+    // actual map, plus a cross count.
+    std::cout << "wt expt sos: " << m1m.sos << " for parameters: ";
+    for (size_t i = 0; i < params.size(); ++i) {
+        std::cout << params[i] << " = " << param_values[i] << ", ";
+    }
+    std::cout << " (Sim count: " << model_sim_count << ")\n";
+    T rtn = m1m.sos.back();
+
     return rtn;
 }
 
