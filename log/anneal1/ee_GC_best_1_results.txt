@@ -1,0 +1,42 @@
+------------------------------------------
+Results for model ee_GC_best_1
+------------------------------------------
+For manipulation retablate, SOS: 2.71952 and crosscount = 3
+For manipulation tecrot90, SOS: 19.6303 and crosscount = 1372
+For manipulation tecrot180, SOS: 44.0942 and crosscount = 5491
+For manipulation tecablate, SOS: 7.60207 and crosscount = 16
+For manipulation tecswap, SOS: 39.6371 and crosscount = 1042
+For manipulation mismatch, SOS: 7.04717 and crosscount = 10
+For manipulation reber, SOS: 37.7285 and crosscount = 478
+For manipulation brown, SOS: 32.4176 and crosscount = 174
+------------------------------------------
+
+------------------------------------------
+Results for model ee_GC_best_1, 1000 steps
+------------------------------------------
+For manipulation retablate, SOS: (2.70217252,2.70547009,2.68923616,2.73471045,2.68843198,2.73617506,2.75214314,2.69266534,2.72153902,2.77270031) [2.71952(0.0288824)] and crosscount = (3,2,2,3,6,3,5,5,3,9) [4.1(2.18327)]
+For manipulation tecrot90, SOS: (20.9303074,19.9416618,19.8023758,20.752512,19.5237522,19.1293697,19.5252495,20.6303082,17.2097683,20.4955139) [19.7941(1.08978)] and crosscount = (1293,1300,1491,1020,1088,1188,1227,1282,924,1209) [1202.2(160.582)]
+For manipulation tecrot180, SOS: (38.5080681,43.4096947,43.8268356,39.3161316,43.3986168,42.3145256,42.3923874,42.1168442,46.6935921,43.7051468) [42.5682(2.32506)] and crosscount = (5455,5044,6372,6256,4950,6761,5623,5748,6780,5762) [5875.1(650.741)]
+For manipulation tecablate, SOS: (7.4888134,7.55976915,7.56168699,7.52542162,7.58031416,7.51367044,7.56302691,7.52949858,7.52500677,7.55037689) [7.53976(0.027858)] and crosscount = (7,9,5,6,10,5,8,9,7,12) [7.8(2.25093)]
+For manipulation tecswap, SOS: (40.0079002,39.474823,38.3107491,39.3412247,37.0280037,38.1360321,38.6558838,38.9110374,37.0015907,40.3320084) [38.7199(1.13421)] and crosscount = (1103,1079,1058,977,966,1171,1101,1192,1093,1175) [1091.5(77.2848)]
+For manipulation mismatch, SOS: (7.10987568,7.09654045,7.06298065,7.2200861,7.21267128,7.13933849,7.05861855,7.09508848,7.09517813,7.11333466) [7.12037(0.0557082)] and crosscount = (6,12,9,13,8,6,10,6,12,8) [9(2.66667)]
+For manipulation reber, SOS: (43.4538651,39.9116669,40.8875427,41.588829,40.7367172,40.4082565,45.2053146,40.7703362,41.4378166,41.0780182) [41.5478(1.59578)] and crosscount = (484,499,503,489,503,520,545,466,462,456) [492.7(27.536)]
+For manipulation brown, SOS: (32.2902451,32.427681,32.2311745,32.5838699,32.6645966,31.6990967,32.6070251,32.446888,32.2832375,32.8398933) [32.4074(0.314122)] and crosscount = (135,149,148,194,157,153,159,152,162,179) [158.8(16.7319)]
+------------------------------------------
+For manipulation retablate, [2.71952(0.0288824)]
+For manipulation tecrot90,  [19.7941(1.08978)]
+For manipulation tecrot180, [42.5682(2.32506)]
+For manipulation tecablate, [7.53976(0.027858)]
+For manipulation tecswap,   [38.7199(1.13421)]
+For manipulation mismatch,  [7.12037(0.0557082)]
+For manipulation reber,     [41.5478(1.59578)]
+For manipulation brown,     [32.4074(0.314122)]
+
+For manipulation retablate, [2.72(0.03)]
+For manipulation tecrot90,  [19.8(1.1)]
+For manipulation tecrot180, [42.6(2.3)]
+For manipulation tecablate, [7.54(0.03)]
+For manipulation tecswap,   [38.7(1.1)]
+For manipulation mismatch,  [7.12(0.06)]
+For manipulation reber,     [41.5(1.6)]
+For manipulation brown,     [32.4(0.3)]
