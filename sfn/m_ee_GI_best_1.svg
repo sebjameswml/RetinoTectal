@@ -18,8 +18,8 @@
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="m_ee_GI_best_1.svg"
    inkscape:export-filename="/home/seb/models/RetinoTectal/sfn/m_ee_GI_best_1.png"
-   inkscape:export-xdpi="149.97812"
-   inkscape:export-ydpi="149.97812">
+   inkscape:export-xdpi="199.98776"
+   inkscape:export-ydpi="199.98776">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -30,7 +30,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="712.39382"
+     inkscape:cx="826.67953"
      inkscape:cy="435.91618"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -53,7 +53,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
