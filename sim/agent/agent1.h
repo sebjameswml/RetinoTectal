@@ -152,6 +152,7 @@ struct Agent1
 
                 // How early to start showing the crossings metric?
                 this->crosscount_from = this->conf->getUInt ("crosscount_from", 1000);
+                this->crosscount_every = this->conf->getUInt ("crosscount_every", 50);
 
                 this->visinit();
             }
@@ -306,7 +307,7 @@ struct Agent1
         }
         if (this->layout == graph_layout::a || this->layout == graph_layout::c) {
             this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0);
-            if (stepnum > this->crosscount_from && stepnum%50 == 0) {
+            if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
         }
@@ -1626,8 +1627,10 @@ struct Agent1
     NetVisual<T>* cv3 = nullptr;
     // Simulation times to stop updating graphs (see graph_layout::c)
     morph::Vector<size_t, 4> freeze_times;
-    // crosscount_from - how early to start showing the crossings count metric?
+    // How early to start showing the crossings count metric.
     unsigned int crosscount_from = 1000;
+    // How often to show the crossings count metric.
+    unsigned int crosscount_every = 50;
     // Centroid visual for targets
     NetVisual<T>* tcv = nullptr;
     // A graph for the SOS metric

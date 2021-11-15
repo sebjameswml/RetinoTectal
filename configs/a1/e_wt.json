@@ -8,7 +8,8 @@
 
     "freeze_time1" : 40,
     "freeze_time2" : 200,
-    "crosscount_from" : 0,
+    "crosscount_from" : 40,
+    "crosscount_every" : 10,
 
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
@@ -24,5 +25,5 @@
     "desc_steps" : "How many simulation steps should be computed?",
     "steps" : 1000,
 
-    "graph_ymax" : 500
+    "graph_ymax" : 200
 }
