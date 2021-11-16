@@ -1175,7 +1175,7 @@ struct Agent1
         this->v = new morph::Visual (ww, wh, tt);
 
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) {
-            this->v->setSceneTrans (-0.413126f, 0.6811f, -5.0f);
+            this->v->setSceneTrans (-0.3762f, 0.6880f, -5.3f);
         } else if (this->layout == graph_layout::b) {
             this->v->setSceneTrans (-0.948019743f, -0.00213310868f, -2.69999981f);
         } else if (this->layout == graph_layout::e) {
@@ -1196,13 +1196,19 @@ struct Agent1
 
         // Offset for visuals
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
+        morph::Vector<float> offset0 = { -1.5f, -0.5f, 0.0f };
 
         // Adding to the Main Visual second
         this->v->setCurrent();
 
-        if (this->layout == graph_layout::a // Standard layout for investigations
+        if (this->layout == graph_layout::a // 2 rows, 3 cols. Standard layout for investigations
             || this->layout == graph_layout::d) { // Standard layout tweaked with graphs like in Brown et al
 
+            offset = offset0;
+            // Top left
+            v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
+
+            offset[1] -= 1.4f;
             // Branches: Visualise the branches with a custom VisualModel
             this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
             this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
@@ -1215,10 +1221,6 @@ struct Agent1
             this->addOrientationLabels (this->bv, std::string("Tectal"));
             v->addVisualModel (this->bv);
 
-            offset[1] -= 1.4f;
-            v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
-            offset[1] += 1.4f;
-
             // Axon centroids: Centroids of branches viewed with a NetVisual
             offset[0] += 1.3f;
             this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
@@ -1230,7 +1232,7 @@ struct Agent1
             v->addVisualModel (this->cv);
 
             // Experiment: Another NetVisual view showing the target locations
-            offset[1] -= 1.4f;
+            offset[1] += 1.4f;
             this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
             this->tcv->viewmode = netvisual_viewmode::targetplus;
             this->tcv->finalize();
@@ -1248,7 +1250,7 @@ struct Agent1
             this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
             v->addVisualModel (this->av);
 
-            offset[1] += 1.4f;
+            offset[1] -= 1.4f;
 
             // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
             this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);

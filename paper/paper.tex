@@ -427,7 +427,7 @@ other modelling
 studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
 We adopt the same precise form for the retinal receptor expression
 as \citet{simpson_simple_2011} which is
-\begin{equation}
+\begin{equation} \label{e:retrcpt}
 r_i(x,y) = 1.05 + 0.26 \exp(2.3 x)
 \end{equation}
 
@@ -439,7 +439,7 @@ expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for ligand expression is more ambiguous (Supp. Fig
 \textbf{X}). Correspondingly, we leave open the possibility that tectal ligand
 expression may be modelled by exponential, linear or logarithmic functions:
-\begin{equation} \label{e:tecexp}
+\begin{equation} \label{e:tecligexp}
 L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 x)
 \end{equation}
 or
@@ -657,24 +657,61 @@ tectal surface. Unless stated otherwise, we assumed that \textbf{i)} All
 receptor-ligand signalled interactions are repulsive, as for EphA-ephrinA
 coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996};
 and \textbf{ii)} all tectal ligand expressions vary exponentially along a
-given axis, following Eq.\,\ref{e:tecexp}.
+given axis, following Eq.\,\ref{e:tecligexp}.
 
 In all simulations, the border effect, $B_b$, had the same magnitude with
 $m_5=0.5$. The number of branches per axon was 4 unless otherwise stated.
 
 \section{Results}
 
-The first question we tried to answer was whether chemoaffinity alone,
-implemented as gradient following, is sufficient to pattern the tectum. We set
-$m_1=0.002$ and $m_2=m_3=m_4=0$ and ran the model for 300 steps.
-
-% ./build/sim/agent/agent1 configs/a1/m_ee_G.json  configs/a1/e_wt.json 300
+% ./build/sim/agent/agent1 configs/simpler/m_ee_G.json  configs/simpler/e_wt_fig1.json
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_G_wt.png}
+\includegraphics[width=\linewidth]{./images/j4_ee_G_wt_fig2.png}
 \caption{The pure gradient-following model.}
 \label{f:chemo}
 \end{figure}
 
+The first question we tried to answer was whether chemoaffinity alone,
+implemented as gradient following, is sufficient to pattern the tectum. We set
+$m_1=0.002$ and $m_2=m_3=m_4=0$ and ran the model for 300
+steps. Fig.\,\ref{f:chemo}A indicates the colour code used for retinal cell
+position; dorsal retinal cells are indicated by green, nasal cells by
+red. Lightness gives position along the relevant axis so that cells at the
+dorsal-nasal corner are yellow and those at the ventral-transverse corner are
+black. Fig.\,\ref{f:chemo}B shows the expected layout of retinal ganglion cell
+axons on the tectum. The axons retain the colour of their originating cell on
+the retina, as shown in Fig.\,\ref{f:chemo}A. Nasal cell axons should be
+arranged caudally; dorsal axons laterally; axons should be evenly spaced and
+the pattern should span the entire tectum. Figs.\,\ref{f:chemo}C
+and \ref{f:chemo}D show, respectively, the positions of branches (i.e.~growth
+cones) and axon centroids at $t=300$. Topographic ordering is
+correct. Opposing gradients have sorted the axons along the two axes to form a
+grid of cells. However, the arrangement does not span the full
+tectum. Fig.\,\ref{f:chemo}E shows selected axons (one from the centre and one
+from each corner of the retina) and their position history.
+Fig.\,\ref{f:chemo}F shows two pattern metrics; the sum of squared distance
+errors of the axon centroids and the number of crossings in the 'fish net'
+plot of Fig.\,\ref{f:chemo}D which gives an indication of the disorder in the
+arrangement. The expected number of crossings is 0, as in
+Fig.\,\ref{f:chemo}B.
+
+The form of the retinal receptor expression (Eq.\,\ref{e:retrcpt}) is based on
+empirical measurement, but the tectal ligand expression
+(Eq.\,\ref{e:tecligexp}) was chosen arbitrarily. To expand the pattern in
+Fig.\,\ref{f:chemo}D so that it covers the entire tectum, we needed only to
+adjust the tectal ligand expression, substituting the alternative exponential
+expression:
+%
+\begin{equation} \label{e:tecligexp2}
+L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.2 x)
+\end{equation}
+
+% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_wt_fig3.json
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_eE_G_wt_fig2.png}
+\caption{The pure gradient-following model.}
+\label{f:chemo}
+\end{figure}
 
 
 \begin{figure}
@@ -692,7 +729,7 @@ surface. We assume that i) All receptor-ligand signalled interactions are
 repulsive, as for EphA-ephrinA
 coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}; and ii)
 all tectal ligand expressions vary exponentially along a given axis, following
-Eq.\,\ref{e:tecexp}. The results of running such a system are presented in
+Eq.\,\ref{e:tecligexp}. The results of running such a system are presented in
 Fig.\,\ref{f:wt}.
 %
 Fig.\,\ref{f:wt}Ai shows a dual-colour map of retinal ganglion cell positions
@@ -856,7 +893,7 @@ chemoaffinity effect and no axon-axon interaction or border effect
 receptor-ligand signals induced repulsive interactions (i.e.~gradient
 descent). Receptor and ligand expressions were as shown in Fig.\,\ref{f:ex},
 noting that tectal ligand expression was of exponential form
-(Eq.\,\ref{e:tecexp}). Fig.\,\ref{f:ch}A gives a colour map of retinal
+(Eq.\,\ref{e:tecligexp}). Fig.\,\ref{f:ch}A gives a colour map of retinal
 ganglion cell soma locations, with the colour red encoding $x$ position on the
 temporal-nasal axis (with red signifying nasal positions). Green encodes $y$
 position on the dorso-ventral axis.

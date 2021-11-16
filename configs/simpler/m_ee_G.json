@@ -1,0 +1,77 @@
+{
+    "num_guiders": 4,
+    "totally_random_init": true,
+    "intro_every": 0,
+    "ret_receptor_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "ret_ligand_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "tectum_ligand_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "tectum_receptor_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "ret_receptor_directions": [
+        "-x",
+        "-y",
+        "+x",
+        "+y"
+    ],
+    "ret_ligand_directions": [
+        "+x",
+        "+y",
+        "-x",
+        "-y"
+    ],
+    "tectum_ligand_directions": [
+        "+y",
+        "+x",
+        "-y",
+        "-x"
+    ],
+    "ret_forward_interactions": [
+        -1,
+        -1,
+        -1,
+        -1
+    ],
+    "ret_rcptrcpt_interactions": [
+        -1,
+        -1,
+        -1,
+        -1
+    ],
+    "tectum_receptor_directions": [
+        "x",
+        "+y",
+        "-x",
+        "-y"
+    ],
+    "rgcside": 20,
+    "bpa": 4,
+    "r": 0.015,
+    "r_c": 0.05,
+    "r_i": 0.05,
+    "r_j": 0.05,
+    "s": 1.1,
+    "m_g": 0.002,
+    "m_c": 0.0,
+    "m_i": 0.0,
+    "m_j": 0.0,
+    "mborder": 0.5
+}
