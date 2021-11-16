@@ -437,7 +437,7 @@ struct guidingtissue : public tissue<T>
     T linear_expression (const T& x) const { return T{1.31} + T{2.3333} * x; }
     T quadratic_expression (const T& x) const { return T{1.31} + T{2.3333} * x * x; }
     T exponential_expression (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{2.3} * x); }
-    T exponential_expression2 (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{1.2} * x); }
+    T exponential_expression2 (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{1.1} * x); }
     T logarithmic_expression (const T& x) const { return T{2.32} + T{1.29} * std::log (T{2.3} * (x+T{0.2})); }
 
     T expression_function (const T& x, const expression_form& ef) const
