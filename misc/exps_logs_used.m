@@ -4,7 +4,7 @@
 x = [0:0.05:1];
 
 _exp = 0.26 .* exp (2.3.*x) + 1.05;
-_exp2 = 0.26 .* exp (1.2.*x) + 1.05;
+_exp2 = 0.26 .* exp (1.1.*x) + 1.05;
 _log = 2.32 + 1.29 .* log (2.3 .* (x+0.2));
 _quad = 1.31 + 2.333 .* x .* x;
 _lin = 1.31 + 2.333 .* x;
@@ -60,6 +60,14 @@ hold on;
 plot (x, flip(_exp)); % ligands
 plot (x, _exp .* flip(_exp));
 lg = legend (['rcpt';'lgnd';'rcpt*lgnd interaction'],'Location','North');
+
+% with alt exp
+figure(14); clf;
+plot (x, _exp); % exp for receptors on retina
+hold on;
+plot (x, _exp2); % exp2 for ligands
+plot (x, _exp .* _exp2);
+lg = legend (['rcpt';'tec lgnd';'rcpt*lgnd interaction'],'Location','North');
 
 % The I effect (relative)
 figure(5); clf;

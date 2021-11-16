@@ -1154,12 +1154,12 @@ struct Agent1
     // Set up the simulation visualisation scene. This depends on whether this->layout
     // is graph_layout::a, ::b or ::c, etc.
     //
-    // a: 2x3
-    // b: 1x4 (or 1x3?)
-    // c:
-    // d:
-    // e:
-    // f:
+    // 0 a: 2x3
+    // 1 b: 1x4 (or 1x3?)
+    // 2 c: 2x4 layout with staggered time "snapshots"
+    // 3 d: 2x3 like standard but with final DV-NT graph for e.g. Reber result
+    // 4 e: 1x3 Branches, centroids and the DV-NT graph
+    // 5 f: 1x1 with inset (just centroids and expt inset)
     void visinit()
     {
         // morph::Visual init
