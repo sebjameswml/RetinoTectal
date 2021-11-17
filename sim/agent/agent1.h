@@ -1186,7 +1186,7 @@ struct Agent1
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) {
             this->v->setSceneTrans (-0.3762f, 0.6880f, -5.3f);
         } else if (this->layout == graph_layout::b) {
-            this->v->setSceneTrans (-0.948019743f, -0.00213310868f, -2.69999981f);
+            this->v->setSceneTrans (-0.2375f, -0.03f, -2.8f);
         } else if (this->layout == graph_layout::e) {
             this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::c) {
@@ -1329,52 +1329,8 @@ struct Agent1
 
             v->addVisualModel (jtvm);
 
-        } else if (this->layout == graph_layout::b) { // A pared down layout with 3 or 4 graphs (expt, branches, centroids, selected) (but decide 3 or 4)
-#if 0
-            // Experiment: Another NetVisual view showing the target locations
-            this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->tcv->viewmode = netvisual_viewmode::targetplus;
-            this->tcv->finalize();
-            this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
-            v->addVisualModel (this->tcv);
-
-            offset[0] += 1.3f;
-#endif
-            // Branches: Visualise the branches with a custom VisualModel
-            this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-            this->bv->target_scale.compute_autoscale (0, 1);
-            this->bv->view = branchvisual_view::discs;
-            this->bv->finalize();
-            this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->bv, std::string("Tectal"));
-            v->addVisualModel (this->bv);
-
-            // Axon centroids: Centroids of branches viewed with a NetVisual
-            offset[0] += 1.3f;
-            this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-            //this->cv->viewmode = netvisual_viewmode::actual_nolines;
-            this->cv->viewmode = netvisual_viewmode::actual;
-            if (this->layout == graph_layout::b) {
-                this->cv->radiusFixed = 0.02;
-            }
-            this->cv->finalize();
-            this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->cv, std::string("Tectal"));
-            v->addVisualModel (this->cv);
-
-            offset[0] += 1.3f;
-            // Selected axons: This one gives an 'axon view'
-            this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->av->view = branchvisual_view::axonview;
-            for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-            this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-            this->av->target_scale.compute_autoscale (0, 1);
-            this->av->finalize();
-            this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
-            v->addVisualModel (this->av);
-
+        } else if (this->layout == graph_layout::b) {
+            this->graph_layout_b (offset);
         } else if (this->layout == graph_layout::c) { // Layout with diff. time end points
             this->graph_layout_c (offset);
 
@@ -1461,6 +1417,57 @@ struct Agent1
             throw std::runtime_error ("Unknown layout");
         }
         this->visinit_done = true;
+    }
+
+    void graph_layout_b (const morph::Vector<float>& offset0)
+    {
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
+
+        // A pared down layout with 3 or 4 graphs (expt, branches, centroids, selected) (but decide 3 or 4)
+        // Branches: Visualise the branches with a custom VisualModel
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
+        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->bv->target_scale.compute_autoscale (0, 1);
+        this->bv->view = branchvisual_view::discs;
+        this->bv->finalize();
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->bv, std::string("Tectal"));
+        v->addVisualModel (this->bv);
+
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
+        //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        //this->cv->viewmode = netvisual_viewmode::actual_nolines;
+        this->cv->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) {
+            this->cv->radiusFixed = 0.02;
+        }
+        this->cv->finalize();
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        v->addVisualModel (this->cv);
+
+        // Selected axons: This one gives an 'axon view'
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_C, &this->branches, &this->ax_history);
+        this->av->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->av->target_scale.compute_autoscale (0, 1);
+        this->av->finalize();
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        v->addVisualModel (this->av);
+
+        // Figure letters
+        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        float lfs = 0.08f; // letter font size
+        int lpts = 36; // letter point resolution
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("C", g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        this->v->addVisualModel (jtvm);
     }
 
     // Create a layout with diff. time end points

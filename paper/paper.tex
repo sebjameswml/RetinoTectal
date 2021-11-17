@@ -646,7 +646,7 @@ range $[p,q)$. Each of the $n$ branches per RGC axon was given its parent
 axon's initial position, plus a randomly generated offset with coordinates
 derived from a normal distribution of mean 0 and standard deviation 0.1.
 
-\subsection*{Simulation}
+\subsection*{Assumptions}
 
 % All the extra bits of info required to specify the simulation
 To enable a simulation of the model described above it is necessary to make
@@ -665,34 +665,37 @@ $m_5=0.5$. The number of branches per axon was 4 unless otherwise stated.
 
 \section{Results}
 
+\subsection*{Chemoaffinity alone}
+
 The first question we tried to answer was whether chemoaffinity alone,
 implemented as gradient following, is sufficient to pattern the tectum. We set
 $m_1=0.002$ and $m_2=m_3=m_4=0$ and ran the model for 300
 steps.
 
-Fig.\,\ref{f:ch}A indicates the colour code used for retinal cell position;
-dorsal retinal cells are indicated by green, nasal cells by red. Lightness
-gives position along the relevant axis so that cells at the dorsal-nasal
-corner are yellow and those at the ventral-transverse corner are
-black. Fig.\,\ref{f:ch}E shows the expected layout of retinal ganglion cell
-axons on the tectum. The axons retain the colour of their originating cell on
-the retina, as shown in Fig.\,\ref{f:ch}A. Nasal cell axons should be arranged
-caudally; dorsal axons laterally; axons should be evenly spaced and the
-pattern should span the entire tectum.  Fig.\,\ref{f:ch}B--D show `fish net'
-plots of the centroid of the branches of each axon at three timepoints. In
-these plots, lines are drawn between axons that are expected to arrange
-themselves adjacently to one another. The number of line crossings in this
-plot gives an indication of the disorder in the arrangement. Fig.\,\ref{f:ch}G
-shows the positions of the individual branches (i.e.~growth cones) at $t=300$
-that contribute to the the plot in Fig.\,\ref{f:ch}D. By this time, the
-topological order matches that shown in Fig.\,\ref{f:ch}E. Opposing gradients
-have sorted the axons along the two axes to form a grid of cells. However, the
-arrangement does not span the full tectum. Fig.\,\ref{f:ch}F shows two pattern
-metrics; the sum of squared distance errors of the axon centroids and the
-number of crossings in the fish net plot of Fig.\,\ref{f:ch}D. The expected
-number of crossings is 0, as in Fig.\,\ref{f:ch}E. Fig.\,\ref{f:ch}H shows
-selected axons (one from the centre and one from each corner of the retina)
-and their position history.
+Results are shown in Fig.\,\ref{f:ch}. Fig.\,\ref{f:ch}A indicates the colour
+code used for retinal cell position; dorsal retinal cells are indicated by
+green, nasal cells by red. Lightness gives position along the relevant axis so
+that cells at the dorsal-nasal corner are yellow and those at the
+ventral-transverse corner are black. Fig.\,\ref{f:ch}E shows the expected
+layout of retinal ganglion cell axons on the tectum. The axons retain the
+colour of their originating cell on the retina, as shown in
+Fig.\,\ref{f:ch}A. Nasal cell axons should be arranged caudally; dorsal axons
+laterally; axons should be evenly spaced and the pattern should span the
+entire tectum.  Fig.\,\ref{f:ch}B--D show `fish net' plots of the axon
+centroids at three timepoints. An axon's centroid is the average location of
+its 4 branches. In these plots, lines are drawn between axons that are
+expected to arrange themselves adjacently to one another by the end of the
+simulation. The number of line crossings in this plot gives an indication of
+the disorder in the arrangement. Fig.\,\ref{f:ch}G shows the positions of the
+individual branches (i.e.~growth cones) at $t=300$ that contribute to the the
+plot in Fig.\,\ref{f:ch}D. By this time, the topological order matches that
+shown in Fig.\,\ref{f:ch}E. Opposing gradients have sorted the axons along the
+two axes to form a grid of cells. However, the arrangement does not span the
+full tectum. Fig.\,\ref{f:ch}F shows two pattern metrics; the sum of squared
+distance errors of the axon centroids and the number of crossings in the fish
+net plot of Fig.\,\ref{f:ch}D. The expected number of crossings is 0, as in
+Fig.\,\ref{f:ch}E. Fig.\,\ref{f:ch}H shows selected axons (one from the centre
+and one from each corner of the retina) and their position history.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_G.json configs/simpler/e_wt_fig2.json
 \begin{figure}
@@ -712,13 +715,18 @@ expression:
 L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 x)
 \end{equation}
 
+for the tectal ligand expression.
+
 The result at $t=300$ is shown in Fig.\,\ref{f:chalt}A and B. The axon
 centroids are arranged across the full tectal surface.  The arrangement is
 slightly disordered around the middle of the tectum. This is caused by
 numerical artefacts from the discretization of the ligand expression and the
 fact that in the centre, the difference between the opposing receptor-ligand
-signals is very small.  Fig .\,\ref{f:chalt}C shows the error metric, which is
-closer to 0 with the new ligand expression.
+signals is very small. Nevertheless, it is demonstrated that a modified form
+for the tectal ligand expression (which was found easily by hand tuning)
+allows a well ordered map to form for the wildtype system. Fig
+.\,\ref{f:chalt}C shows the error metric, which is closer to 0 with the new
+ligand expression.
 
 % ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_wt_fig2.json
 \begin{figure}
@@ -727,6 +735,8 @@ closer to 0 with the new ligand expression.
 \label{f:chalt}
 \end{figure}
 
+The `chemoaffinity only' model begins to encounter problems when we introduce
+simulations of experimental manipulations.
 
 %\begin{figure}
 %\includegraphics[width=\linewidth]{./images/j4_eE_GJ_wt_fig.png}
