@@ -1,7 +1,7 @@
 {
     "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
     "graph_layout" : 6,
-    "startletter" : "U",
+    "startletter" : "F",
 
     "ablate_ret_left" : true,
     "ablate_tec_top" : true,
@@ -22,5 +22,5 @@
     "exit" : true,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 1500
+    "steps" : 1000
 }

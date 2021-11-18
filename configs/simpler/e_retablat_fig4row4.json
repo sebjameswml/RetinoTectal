@@ -1,7 +1,7 @@
 {
     "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
     "graph_layout" : 6,
-    "startletter" : "M",
+    "startletter" : "D",
 
     "ablate_ret_left" : true,
 
@@ -18,8 +18,8 @@
     "goslow" : false,
 
     "desc_exit" : "If true, then exit at the end to allow running in scripts",
-    "exit" : false,
+    "exit" : true,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 800
+    "steps" : 1000
 }

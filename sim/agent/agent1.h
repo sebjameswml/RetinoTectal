@@ -1652,9 +1652,9 @@ struct Agent1
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel (std::string({sl+1}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel (std::string({sl+2}), g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel (std::string({sl+3}), g_D, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        //jtvm->addLabel (std::string({sl+1}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        //jtvm->addLabel (std::string({sl+2}), g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        //jtvm->addLabel (std::string({sl+3}), g_D, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
     }
 
