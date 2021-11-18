@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1058.3334mm"
+   height="238.125mm"
+   viewBox="0 0 1058.3334 238.125"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="expressions_manipulations.svg"
+   inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/expressions_manipulations.png"
+   inkscape:export-xdpi="149.978"
+   inkscape:export-ydpi="149.978">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="2018.5189"
+     inkscape:cy="192.85719"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="2560"
+     inkscape:window-height="1323"
+     inkscape:window-x="0"
+     inkscape:window-y="41"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(361.34528,38.26487)">
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_tecrot180.png"
+       xlink:href="tectal_expr_tecrot180.png"
+       width="211.66667"
+       height="238.125"
+       preserveAspectRatio="none"
+       id="image909"
+       x="-361.34528"
+       y="-38.26487" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_tecswap.png"
+       xlink:href="tectal_expr_tecswap.png"
+       width="211.66667"
+       height="238.125"
+       preserveAspectRatio="none"
+       id="image971"
+       x="-149.6786"
+       y="-38.26487" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/retinal_expr_retablate.png"
+       xlink:href="retinal_expr_retablate.png"
+       width="211.66667"
+       height="238.125"
+       preserveAspectRatio="none"
+       id="image1033"
+       x="61.988068"
+       y="-38.26487" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_tecablate.png"
+       xlink:href="tectal_expr_tecablate.png"
+       width="211.66667"
+       height="238.125"
+       preserveAspectRatio="none"
+       id="image1095"
+       x="273.65472"
+       y="-38.26487" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_mismatch.png"
+       xlink:href="tectal_expr_mismatch.png"
+       width="211.66667"
+       height="238.125"
+       preserveAspectRatio="none"
+       id="image1157"
+       x="485.32141"
+       y="-38.26487" />
+  </g>
+</svg>

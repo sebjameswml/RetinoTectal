@@ -99,7 +99,7 @@ std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am)
 }
 
 // A selection of possible graph layouts to show when running the program
-enum class graph_layout { a, b, c, d, e, f, g };
+enum class graph_layout { a, b, c, d, e, f, g, h };
 
 // Agent1 coordinates an agent based simulation of axon branches of type B. This class
 // also incorporates the visualisation code that displays the state of the simulation as
@@ -129,6 +129,8 @@ struct Agent1
     void showtissue()
     {
         if constexpr (visualise == true) {
+            // Get layout from config
+            this->layout = (graph_layout)this->conf->getUInt ("tissue_layout", 0);
             this->tvisinit();
             this->tvv->render();
             this->tvv->keepOpen();
@@ -1105,6 +1107,10 @@ struct Agent1
     {
         if (this->layout == graph_layout::a) {
             this->tvislayout_a();
+        } else if (this->layout == graph_layout::g) {
+            this->tvislayout_g();
+        } else if (this->layout == graph_layout::h) {
+            this->tvislayout_h();
         } else {
             this->tvislayout_b();
         }
@@ -1250,6 +1256,29 @@ struct Agent1
             tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
 #endif
         }
+    }
+
+    // Alt layout for tectal ligand expression 0/1 only. 1x1
+    void tvislayout_g()
+    {
+        const unsigned int ww = this->conf->getUInt ("win_width", 800);
+        const unsigned int wh = this->conf->getUInt ("win_height", 900);
+        this->tvv = new morph::Visual (ww, wh, "Tissuevisg");
+        this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
+        this->tvv->setCurrent();
+        morph::Vector<float> offset = { 0.0f, 0.0f, 0.0f };
+        tvv->addVisualModel (this->createTissueVisual (offset, tectum, "Tectal", expression_view::ligand_exp, 0));
+    }
+
+    void tvislayout_h()
+    {
+        const unsigned int ww = this->conf->getUInt ("win_width", 800);
+        const unsigned int wh = this->conf->getUInt ("win_height", 900);
+        this->tvv = new morph::Visual (ww, wh, "Tissuevish");
+        this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
+        this->tvv->setCurrent();
+        morph::Vector<float> offset = { 0.0f, 0.0f, 0.0f };
+        tvv->addVisualModel (this->createTissueVisual (offset, ret, "Retinal", expression_view::receptor_exp, 0));
     }
 
     // Updatable simulation time text
