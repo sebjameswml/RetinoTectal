@@ -457,6 +457,9 @@ struct Agent1
                                          offset, gtissue, tag, exview, pair_to_view, alt_cmap);
     }
 
+    //! Show x/y gradients in an alternative colour map (Twilight)?
+    static constexpr bool grads_in_jet = false;
+
     //! Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
     tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
                                                 morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
@@ -467,24 +470,28 @@ struct Agent1
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         if (exview == expression_view::ligand_grad_x_single || exview == expression_view::ligand_grad_y_single) {
-            tv->cm.setType (morph::ColourMapType::Monochrome);
-            // Hue from pair_to_view.
-            switch (pair_to_view) {
-            case 0:
-                tv->cm.setHue (1.0f);   // red
-                break;
-            case 1:
-                tv->cm.setHue (0.333f); // green
-                break;
-            case 2:
-                tv->cm.setHue (0.833f); // magenta?
-                break;
-            case 3:
-                tv->cm.setHue (0.5f);   // cyan?
-                break;
-            default:
-                tv->cm.setHue (0.15f);  // something else
-                break;
+            if constexpr (grads_in_jet == false) {
+                tv->cm.setType (morph::ColourMapType::Monochrome);
+                // Hue from pair_to_view.
+                switch (pair_to_view) {
+                case 0:
+                    tv->cm.setHue (1.0f);   // red
+                    break;
+                case 1:
+                    tv->cm.setHue (0.333f); // green
+                    break;
+                case 2:
+                    tv->cm.setHue (0.833f); // magenta?
+                    break;
+                case 3:
+                    tv->cm.setHue (0.5f);   // cyan?
+                    break;
+                default:
+                    tv->cm.setHue (0.15f);  // something else
+                    break;
+                }
+            } else {
+                tv->cm.setType (morph::ColourMapType::Twilight);
             }
         } else {
             tv->cm.setType (morph::ColourMapType::Duochrome);

@@ -736,19 +736,49 @@ ligand expression.
 \end{figure}
 
 The `chemoaffinity only' model begins to encounter problems when we introduce
-simulations of experimental manipulations. Fig\,\ref{f:chsurg} shows the
-results of 6 simulated surgical manipulations. In row A, a patch of tectal
-tissue has been cut out and rotated by a quarter turn. This is achieved in
-simulation by rotating a square region of the tectal region
+simulations of experimental surgical manipulations. Simulated surgery is
+performed by manipulating the maps shown in
+Fig.\,\ref{f:ex}. Fig.\,\ref{f:trot90} shows the expression maps and the
+resulting gradients that result from the surgical manipulation in which a
+graft of the tectum is rotated by a quarter turn and replaced. We rotate an
+8x8 square of the tectum and then recompute the gradients. As the expression
+is discretized, we also discretize the gradient, with the gradient in
+direction $x$ computed as the difference between the expression of the two
+neighbouring elements divided by twice the element distance. As there are four
+ligands expressed on the tectum, there are four pairs of gradient maps, all of
+which are shown in Fig.\,\ref{f:trot90}.
 
 % Visualisation of ligand expression and gradients on the tectum for the
 % graft-rotate 90 degrees simulated surgical manipulation
+% ./build/sim/agent/tissuevis configs/simpler/m_eE_G.json configs/simpler/e_tecrot90_fig4row1.json
+%
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/Tissuevisb.png}
 \caption{Visualisation of ligand expression and gradients on the tectum for the
 graft-rotate 90 degrees simulated surgical manipulation}
-\label{f:tvrot90}
+\label{f:trot90}
 \end{figure}
+
+Fig.\,\ref{f:tmanip} shows the tectal ligand expression for ligands $L_1$ and
+$L_2$ for the five other surgical manipulations applied in this work. These
+are a 180\degree rotation (Fig\,\ref{f:tmanip}A), a graft-swap manipulation
+(Fig\,\ref{f:tmanip}B), ablation of half the retina  (Fig\,\ref{f:tmanip}C),
+ablation of half the tectum (Fig\,\ref{f:tmanip}D) and a mismatch ablation in
+which half of the retina is removed along with the half of the tectum to which
+the remaining retina would project (Fig\,\ref{f:tmanip}E).
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/TissueManips.png}
+\caption{Visualisation of ligand expression and gradients on the tectum for the
+other simulated surgical manipulations}
+\label{f:tmanip}
+\end{figure}
+
+Fig\,\ref{f:chsurg} shows the
+results of 6 simulated surgical manipulations. In row A, a patch of tectal
+tissue has been cut out and rotated by a quarter turn. This is achieved in
+simulation by rotating a square region of the tectal region.
+
 
 % The chemo manipulations figure is made up from 4 figures generated with
 % graph_layout::g

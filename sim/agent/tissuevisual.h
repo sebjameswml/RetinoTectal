@@ -57,6 +57,9 @@ public:
         // Note: VisualModel::finalize() should be called before rendering
     }
 
+    //! If true, then for ligand_grad_x/y_single, plot depth.
+    static constexpr bool plot_depth = false;
+
     //! Initialize as a rectangle made of 4 triangles for each rect, with z position
     //! of each of the 4 outer edges of the triangles interpolated, but a single colour
     //! for each rectangle. Gives a smooth surface in which you can see the pixels.
@@ -146,6 +149,13 @@ public:
 
             std::array<float, 3> clr = this->setColour (ri);
 
+            if constexpr (plot_depth == true) {
+                if (this->view == expression_view::ligand_grad_x_single
+                    || this->view == expression_view::ligand_grad_y_single) {
+                    // Optionally show z as depth
+                    z = this->dcolour[ri] / 5.0f;
+                }
+            }
             // First push the 5 positions of the triangle vertices, starting with the centre. All at z=0
             this->vertex_push (this->gtissue->posn[ri][0], this->gtissue->posn[ri][1], z, this->vertexPositions);
             // Use the centre position as the first location for finding the normal vector
