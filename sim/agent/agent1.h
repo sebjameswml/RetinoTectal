@@ -99,8 +99,11 @@ std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am)
 }
 
 // A selection of possible graph layouts to show when running the program
-enum class graph_layout { a, b, c, d, e, f };
+enum class graph_layout { a, b, c, d, e, f, g };
 
+// Agent1 coordinates an agent based simulation of axon branches of type B. This class
+// also incorporates the visualisation code that displays the state of the simulation as
+// it progresses.
 template<typename T, size_t N, typename B=branch<T, N>>
 struct Agent1
 {
@@ -1155,23 +1158,26 @@ struct Agent1
     // is graph_layout::a, ::b or ::c, etc.
     //
     // 0 a: 2x3
-    // 1 b: 1x4 (or 1x3?)
+    // 1 b: 1x3 branches, centroids, selected
     // 2 c: 2x4 layout with staggered time "snapshots"
     // 3 d: 2x3 like standard but with final DV-NT graph for e.g. Reber result
     // 4 e: 1x3 Branches, centroids and the DV-NT graph
     // 5 f: 1x1 with inset (just centroids and expt inset)
+    // 6 g: 1x4 expt, branches, centroids, selected
     void visinit()
     {
         // morph::Visual init
         unsigned int wdefault = 1200;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { wdefault = 1920; }
-        if (this->layout == graph_layout::b || this->layout == graph_layout::e) { wdefault = 2480; }
+        if (this->layout == graph_layout::b || this->layout == graph_layout::e
+            || this->layout == graph_layout::g) { wdefault = 2480; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
         if (this->layout == graph_layout::f) { wdefault = 675; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { hdefault = 1200; }
-        if (this->layout == graph_layout::b || this->layout == graph_layout::e) { hdefault = 700; }
+        if (this->layout == graph_layout::b || this->layout == graph_layout::e
+            || this->layout == graph_layout::g) { hdefault = 700; }
         if (this->layout == graph_layout::c) { hdefault = 1180; }
         if (this->layout == graph_layout::f) { hdefault = 550; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
@@ -1193,6 +1199,8 @@ struct Agent1
             this->v->setSceneTrans (-0.91053f, 0.7895f, -6.1f);
         } else if (this->layout == graph_layout::f) {
             this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
+        } else if (this->layout == graph_layout::g) {
+            this->v->setSceneTrans (-0.865482569f,-0.0471459851f,-2.79999995f);
         }
 
         if constexpr (use_ortho) {
@@ -1203,230 +1211,163 @@ struct Agent1
 
         if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
 
-        // Offset for visuals
+        this->v->setCurrent(); // Don't have 2 windows, so this probably unnecessary
+        this->set_graph_layout();
+        this->visinit_done = true;
+    }
+
+    // This chooses which graph_layout function to call
+    void set_graph_layout()
+    {
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
-
-        // Adding to the Main Visual second
-        this->v->setCurrent();
-
-        if (this->layout == graph_layout::a // 2 rows, 3 cols. Standard layout for investigations
-            || this->layout == graph_layout::d) { // Standard layout tweaked with graphs like in Brown et al
-
-            // Top left
-            v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
-
-            offset[1] -= 1.4f;
-            // Branches: Visualise the branches with a custom VisualModel
-            this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-            this->bv->target_scale.compute_autoscale (0, 1);
-            //this->bv->view = branchvisual_view::detail;
-            this->bv->view = branchvisual_view::discs;
-            //this->bv->view = branchvisual_view::discint;
-            this->bv->finalize();
-            this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->bv, std::string("Tectal"));
-            v->addVisualModel (this->bv);
-
-            // Axon centroids: Centroids of branches viewed with a NetVisual
-            offset[0] += 1.3f;
-            this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-            this->cv->viewmode = netvisual_viewmode::actual;
-            this->cv->finalize();
-            this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->cv, std::string("Tectal"));
-            v->addVisualModel (this->cv);
-
-            // Experiment: Another NetVisual view showing the target locations
-            offset[1] += 1.4f;
-            this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->tcv->viewmode = netvisual_viewmode::targetplus;
-            this->tcv->finalize();
-            this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
-            v->addVisualModel (this->tcv);
-
-            // Selected axons: This one gives an 'axon view'
-            offset[0] += 1.5f;
-            this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->av->view = branchvisual_view::axonview;
-            for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-            this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-            this->av->target_scale.compute_autoscale (0, 1);
-            this->av->finalize();
-            this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
-            v->addVisualModel (this->av);
-
-            offset[1] -= 1.4f;
-
-            // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
-            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
-            this->gv->twodimensional = false;
-            if (this->layout == graph_layout::a) {
-                this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                                     0, this->conf->getFloat("graph_ymax", 200.0f));
-                this->gv->policy = morph::stylepolicy::lines;
-                this->gv->ylabel = "SOS";
-                this->gv->xlabel = "Sim time";
-                this->gv->prepdata ("SOS");
-                this->gv->prepdata ("Crossings");
-            } else {
-                this->gv->setlimits (0, 1, 0, 1);
-                this->gv->policy = morph::stylepolicy::markers;
-                this->gv->ylabel = "R ---------- tectum ---------> C";
-                this->gv->xlabel = "N ---------- retina ---------> T";
-                //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
-            }
-            this->gv->finalize();
-            v->addVisualModel (this->gv);
-
-            // A 'text' only visual model to list the parameters and incorporate figure letters
-            offset[0] += 1.4f;
-            morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
-            float ty = 1.0f; // text y position
-            float th = 0.1f; // text height
-            float cw = 0.17f;
-            jtvm->addLabel ("Parameters", {0.0f, ty, 0.0f});
-            ty -= th;
-
-            if (this->m[0] > 0) {
-                jtvm->addLabel ("m_g", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->m[0]), {cw, ty, 0.0f});
-                ty -= th;
-            }
-            if (this->m[1] > 0) {
-                jtvm->addLabel ("m_j", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->m[1]), {cw, ty, 0.0f});
-                ty -= th;
-            }
-            if (this->m[2] > 0) {
-                jtvm->addLabel ("m_i", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->m[2]), {cw, ty, 0.0f});
-                ty -= th;
-            }
-            if (this->m[3] > 0) {
-                jtvm->addLabel ("m_c", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->m[3]), {cw, ty, 0.0f});
-                ty -= th;
-            }
-
-            // r parameters
-            if (this->m[1] > 0) {
-                jtvm->addLabel ("r_j", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_j", 0.0f)), {cw, ty, 0.0f});
-                ty -= th;
-            }
-            if (this->m[2] > 0) {
-                jtvm->addLabel ("r_i", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_i", 0.0f)), {cw, ty, 0.0f});
-                ty -= th;
-            }
-            if (this->m[3] > 0) {
-                jtvm->addLabel ("r_c", {0.0f, ty, 0.0f});
-                jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_c", 0.0f)), {cw, ty, 0.0f});
-                ty -= th;
-            }
-
-            v->addVisualModel (jtvm);
-
-        } else if (this->layout == graph_layout::b) {
+        if (this->layout == graph_layout::a           // 2 rows, 3 cols. Standard layout for investigations
+            || this->layout == graph_layout::d) {     // Standard layout tweaked with graphs like in Brown et al
+            this->graph_layout_ad (offset);
+        } else if (this->layout == graph_layout::b) { // 1x3; branches, centroids, selected
             this->graph_layout_b (offset);
-        } else if (this->layout == graph_layout::c) { // Layout with diff. time end points
+        } else if (this->layout == graph_layout::c) { // 2x4 layout with diff. time end points
             this->graph_layout_c (offset);
-
         } else if (this->layout == graph_layout::e) { // Branches, centroids and the position graph
+            this->graph_layout_e (offset);
+        } else if (this->layout == graph_layout::f) { // Just centroids. Used by agent1_eval.cpp
+            this->graph_layout_f (offset);
+        } else if (this->layout == graph_layout::g) { // 1x4; expt, branches, centroids, selected
+            const std::string sl = this->conf->getString ("startletter", "A");
+            this->graph_layout_g (offset, sl);
+        } else {
+            throw std::runtime_error ("Unknown layout");
+        }
+    }
 
-            // Branches: Visualise the branches with a custom VisualModel
-            this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-            this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-            this->bv->target_scale.compute_autoscale (0, 1);
-            this->bv->view = branchvisual_view::discs;
-            this->bv->finalize();
-            this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->bv, std::string("Tectal"));
-            v->addVisualModel (this->bv);
+    // 2 rows, 3 cols. Standard layout for investigations, or similar, tweaked with graphs for Reber/Brown
+    void graph_layout_ad (const morph::Vector<float>& offset0)
+    {
+        morph::Vector<float> offset = offset0;
+        // Top left
+        v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
 
-            // Axon centroids: Centroids of branches viewed with a NetVisual
-            offset[0] += 1.3f;
-            this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->cv->viewmode = netvisual_viewmode::actual;
-            if (this->layout == graph_layout::b) {
-                this->cv->radiusFixed = 0.02;
-            }
-            this->cv->finalize();
-            this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->cv, std::string("Tectal"));
-            v->addVisualModel (this->cv);
+        offset[1] -= 1.4f;
+        // Branches: Visualise the branches with a custom VisualModel
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->bv->target_scale.compute_autoscale (0, 1);
+        //this->bv->view = branchvisual_view::detail;
+        this->bv->view = branchvisual_view::discs;
+        //this->bv->view = branchvisual_view::discint;
+        this->bv->finalize();
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->bv, std::string("Tectal"));
+        v->addVisualModel (this->bv);
 
-            offset[0] += 1.4f;
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        offset[0] += 1.3f;
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        this->cv->viewmode = netvisual_viewmode::actual;
+        this->cv->finalize();
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        v->addVisualModel (this->cv);
 
-            // The position graph, like Brown/Reber and S&G papers
-            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
-            this->gv->twodimensional = false;
+        // Experiment: Another NetVisual view showing the target locations
+        offset[1] += 1.4f;
+        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->tcv->viewmode = netvisual_viewmode::targetplus;
+        this->tcv->finalize();
+        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        v->addVisualModel (this->tcv);
+
+        // Selected axons: This one gives an 'axon view'
+        offset[0] += 1.5f;
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->av->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->av->target_scale.compute_autoscale (0, 1);
+        this->av->finalize();
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        v->addVisualModel (this->av);
+
+        offset[1] -= 1.4f;
+
+        // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
+        this->gv->twodimensional = false;
+        if (this->layout == graph_layout::a) {
+            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                                 0, this->conf->getFloat("graph_ymax", 200.0f));
+            this->gv->policy = morph::stylepolicy::lines;
+            this->gv->ylabel = "SOS";
+            this->gv->xlabel = "Sim time";
+            this->gv->prepdata ("SOS");
+            this->gv->prepdata ("Crossings");
+        } else {
             this->gv->setlimits (0, 1, 0, 1);
             this->gv->policy = morph::stylepolicy::markers;
             this->gv->ylabel = "R ---------- tectum ---------> C";
             this->gv->xlabel = "N ---------- retina ---------> T";
-            v->addVisualModel (this->gv);
-
-        } else if (this->layout == graph_layout::f) { // Just centroids. Used by agent1_eval.cpp
-
-            // Axon centroids: Centroids of branches viewed with a NetVisual
-            this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->cv->viewmode = netvisual_viewmode::actual;
-            if (this->layout == graph_layout::b) {
-                this->cv->radiusFixed = 0.02;
-            }
-            this->cv->finalize();
-            this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
-            this->addOrientationLabels (this->cv, std::string("Tectal"));
-            v->addVisualModel (this->cv);
-
-            // Experiment: Another NetVisual view showing the target locations
-            morph::Vector<float> expoff = {0.8f, -0.2f, 0.01f};
-            offset += expoff;
-            this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-            this->tcv->viewmode = netvisual_viewmode::targetplus;
-            this->tcv->zoom = 0.5f;
-            this->tcv->finalize();
-            this->tcv->addLabel ("Experiment", {0.32f, 0.55f, 0.0f},
-                                 morph::colour::black, morph::VisualFont::Vera, 0.03, 24);
-            v->addVisualModel (this->tcv);
-            offset -= expoff;
-
-            // A 'text' only visual model to display the sim time
-            offset[0] += 1.05f;
-            morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
-            float ty = 1.1f; // text y position
-            float th = 0.1f; // text height
-            float l_x = 0.0f;
-            float cw = 0.1f;
-            jtvm->addLabel ("Sim time", {l_x, ty, 0.0f});
-            ty -= th;
-            jtvm->addLabel ("t = ", {l_x, ty, 0.0f});
-            jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
-            ty -= th;
-            jtvm->addLabel ("sos: ", {l_x, ty, 0.0f});
-            jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
-            ty -= 2*th;
-            jtvm->addLabel ("crossings: ", {l_x, ty, 0.0f});
-            jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->crossings_txt);
-            v->addVisualModel (jtvm);
-
-        } else {
-            throw std::runtime_error ("Unknown layout");
+            //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
         }
-        this->visinit_done = true;
+        this->gv->finalize();
+        v->addVisualModel (this->gv);
+
+        // A 'text' only visual model to list the parameters and incorporate figure letters
+        offset[0] += 1.4f;
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
+        float ty = 1.0f; // text y position
+        float th = 0.1f; // text height
+        float cw = 0.17f;
+        jtvm->addLabel ("Parameters", {0.0f, ty, 0.0f});
+        ty -= th;
+
+        if (this->m[0] > 0) {
+            jtvm->addLabel ("m_g", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->m[0]), {cw, ty, 0.0f});
+            ty -= th;
+        }
+        if (this->m[1] > 0) {
+            jtvm->addLabel ("m_j", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->m[1]), {cw, ty, 0.0f});
+            ty -= th;
+        }
+        if (this->m[2] > 0) {
+            jtvm->addLabel ("m_i", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->m[2]), {cw, ty, 0.0f});
+            ty -= th;
+        }
+        if (this->m[3] > 0) {
+            jtvm->addLabel ("m_c", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->m[3]), {cw, ty, 0.0f});
+            ty -= th;
+        }
+
+        // r parameters
+        if (this->m[1] > 0) {
+            jtvm->addLabel ("r_j", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_j", 0.0f)), {cw, ty, 0.0f});
+            ty -= th;
+        }
+        if (this->m[2] > 0) {
+            jtvm->addLabel ("r_i", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_i", 0.0f)), {cw, ty, 0.0f});
+            ty -= th;
+        }
+        if (this->m[3] > 0) {
+            jtvm->addLabel ("r_c", {0.0f, ty, 0.0f});
+            jtvm->addLabel (std::to_string(this->mconf->getFloat ("r_c", 0.0f)), {cw, ty, 0.0f});
+            ty -= th;
+        }
+
+        v->addVisualModel (jtvm);
     }
 
+    // 1x3 graphs (branches, centroids, selected)
     void graph_layout_b (const morph::Vector<float>& offset0)
     {
         morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
         morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
         morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
 
-        // A pared down layout with 3 or 4 graphs (expt, branches, centroids, selected) (but decide 3 or 4)
-        // Branches: Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->bv->target_scale.compute_autoscale (0, 1);
@@ -1470,7 +1411,7 @@ struct Agent1
         this->v->addVisualModel (jtvm);
     }
 
-    // Create a layout with diff. time end points
+    // Create a layout with diff. time end points. 2x4.
     void graph_layout_c (const morph::Vector<float>& offset0)
     {
         // This is a 2x4 layout
@@ -1573,6 +1514,150 @@ struct Agent1
         jtvm->addLabel ("H", g_H, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
     }
+
+    void graph_layout_e (const morph::Vector<float>& offset0)
+    {
+        morph::Vector<float> offset = offset0;
+        // Branches: Visualise the branches with a custom VisualModel
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->bv->target_scale.compute_autoscale (0, 1);
+        this->bv->view = branchvisual_view::discs;
+        this->bv->finalize();
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->bv, std::string("Tectal"));
+        v->addVisualModel (this->bv);
+
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        offset[0] += 1.3f;
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) {
+            this->cv->radiusFixed = 0.02;
+        }
+        this->cv->finalize();
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        v->addVisualModel (this->cv);
+
+        offset[0] += 1.4f;
+
+        // The position graph, like Brown/Reber and S&G papers
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
+        this->gv->twodimensional = false;
+        this->gv->setlimits (0, 1, 0, 1);
+        this->gv->policy = morph::stylepolicy::markers;
+        this->gv->ylabel = "R ---------- tectum ---------> C";
+        this->gv->xlabel = "N ---------- retina ---------> T";
+        v->addVisualModel (this->gv);
+    }
+
+    void graph_layout_f (const morph::Vector<float>& offset0)
+    {
+        morph::Vector<float> offset = offset0;
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) {
+            this->cv->radiusFixed = 0.02;
+        }
+        this->cv->finalize();
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        v->addVisualModel (this->cv);
+
+        // Experiment: Another NetVisual view showing the target locations
+        morph::Vector<float> expoff = {0.8f, -0.2f, 0.01f};
+        offset += expoff;
+        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->tcv->viewmode = netvisual_viewmode::targetplus;
+        this->tcv->zoom = 0.5f;
+        this->tcv->finalize();
+        this->tcv->addLabel ("Experiment", {0.32f, 0.55f, 0.0f},
+                             morph::colour::black, morph::VisualFont::Vera, 0.03, 24);
+        v->addVisualModel (this->tcv);
+        offset -= expoff;
+
+        // A 'text' only visual model to display the sim time
+        offset[0] += 1.05f;
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
+        float ty = 1.1f; // text y position
+        float th = 0.1f; // text height
+        float l_x = 0.0f;
+        float cw = 0.1f;
+        jtvm->addLabel ("Sim time", {l_x, ty, 0.0f});
+        ty -= th;
+        jtvm->addLabel ("t = ", {l_x, ty, 0.0f});
+        jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
+        ty -= th;
+        jtvm->addLabel ("sos: ", {l_x, ty, 0.0f});
+        jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        ty -= 2*th;
+        jtvm->addLabel ("crossings: ", {l_x, ty, 0.0f});
+        jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->crossings_txt);
+        v->addVisualModel (jtvm);
+    }
+
+    // 1x4 graphs (expt, branches, centroids, selected)
+    void graph_layout_g (const morph::Vector<float>& offset0, const std::string& startletter)
+    {
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
+        morph::Vector<float> g_D = offset0 + morph::Vector<float>({3.9f, 0.0f, 0.0f});
+
+        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
+        this->tcv->viewmode = netvisual_viewmode::targetplus;
+        this->tcv->finalize();
+        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        this->v->addVisualModel (this->tcv);
+
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_B, &this->branches, &this->ax_history);
+        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->bv->target_scale.compute_autoscale (0, 1);
+        this->bv->view = branchvisual_view::discs;
+        this->bv->finalize();
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->bv, std::string("Tectal"));
+        this->v->addVisualModel (this->bv);
+
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
+        //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        //this->cv->viewmode = netvisual_viewmode::actual_nolines;
+        this->cv->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) {
+            this->cv->radiusFixed = 0.02;
+        }
+        this->cv->finalize();
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        this->v->addVisualModel (this->cv);
+
+        // Selected axons: This one gives an 'axon view'
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_D, &this->branches, &this->ax_history);
+        this->av->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->av->target_scale.compute_autoscale (0, 1);
+        this->av->finalize();
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        this->v->addVisualModel (this->av);
+
+        // Figure letters
+        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        float lfs = 0.08f; // letter font size
+        int lpts = 36; // letter point resolution
+        char sl = 'A';
+        if (!startletter.empty()) { sl = startletter[0]; }
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl+1}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl+2}), g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl+3}), g_D, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        this->v->addVisualModel (jtvm);
+    }
+
 #endif // VISUALISE
 
     // The axons to see - these will have their path information stored
