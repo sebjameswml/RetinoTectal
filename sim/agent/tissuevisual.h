@@ -25,7 +25,9 @@ enum class expression_view
     ligand_exp,
     ligand_grad_x,
     ligand_grad_y,
-    cell_positions
+    cell_positions,
+    ligand_grad_x_single,
+    ligand_grad_y_single
 };
 
 /*!
@@ -96,11 +98,22 @@ public:
                 this->dcolour[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view];
                 this->dcolour2[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+2];
             }
+        } else if (this->view == expression_view::ligand_grad_x_single) {
+            for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view];
+                this->dcolour2[i] = 0;
+            }
         } else if (this->view == expression_view::ligand_grad_y) {
             for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
                 this->dcolour[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+1];
                 this->dcolour2[i] = this->gtissue->lgnd_grad[i][4*this->pair_to_view+3];
             }
+        } else if (this->view == expression_view::ligand_grad_y_single) {
+            for (unsigned int i = 0; i < this->gtissue->lgnd_grad.size(); ++i) {
+                this->dcolour[i] = this->gtissue->lgnd_grad[i][2*this->pair_to_view+1];
+                this->dcolour2[i] = 0;
+            }
+
         } else if (this->view == expression_view::cell_positions) {
            for (unsigned int i = 0; i < this->gtissue->posn.size(); ++i) {
                 this->dcolour[i] = this->gtissue->posn[i][0];

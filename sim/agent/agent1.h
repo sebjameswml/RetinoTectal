@@ -466,13 +466,35 @@ struct Agent1
         tissuevisual<float, N>* tv = new tissuevisual<float, N>(shad_prog, tshad_prog, gtissue, offset);
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
-        tv->cm.setType (morph::ColourMapType::Duochrome);
-        if (alt_cmap == 1) {
-            tv->cm.setHueCM();
-        } else if (alt_cmap == 2) {
-            tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
+        if (exview == expression_view::ligand_grad_x_single || exview == expression_view::ligand_grad_y_single) {
+            tv->cm.setType (morph::ColourMapType::Monochrome);
+            // Hue from pair_to_view.
+            switch (pair_to_view) {
+            case 0:
+                tv->cm.setHue (1.0f);   // red
+                break;
+            case 1:
+                tv->cm.setHue (0.333f); // green
+                break;
+            case 2:
+                tv->cm.setHue (0.833f); // magenta?
+                break;
+            case 3:
+                tv->cm.setHue (0.5f);   // cyan?
+                break;
+            default:
+                tv->cm.setHue (0.15f);  // something else
+                break;
+            }
         } else {
-            tv->cm.setHueRG(); // WAS setHueRB, but when mixed you get magenta, so need RG for these maps still
+            tv->cm.setType (morph::ColourMapType::Duochrome);
+            if (alt_cmap == 1) {
+                tv->cm.setHueCM();
+            } else if (alt_cmap == 2) {
+                tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
+            } else {
+                tv->cm.setHueRG(); // WAS setHueRB, but when mixed you get magenta, so need RG for these maps still
+            }
         }
         std::stringstream ss;
         if (exview == expression_view::receptor_exp) {
@@ -485,8 +507,12 @@ struct Agent1
             ss << tag << " ligand expression "   << (pair_to_view*2) << "/" << (1+pair_to_view*2);
         } else if (exview == expression_view::ligand_grad_x) {
             ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " x";
+        } else if (exview == expression_view::ligand_grad_x_single) {
+            ss << tag << " ligand gradient "     << (pair_to_view) << " x";
         } else if (exview == expression_view::ligand_grad_y) {
             ss << tag << " ligand gradient "     << (pair_to_view*2) << "/" << (1+pair_to_view*2) << " y";
+        } else if (exview == expression_view::ligand_grad_y_single) {
+            ss << tag << " ligand gradient "     << (pair_to_view) << " y";
         } else if (exview == expression_view::cell_positions) {
             ss << tag << " cell positions";
         }
@@ -1070,6 +1096,16 @@ struct Agent1
     // Initialise tissue visualisation
     void tvisinit()
     {
+        if (this->layout == graph_layout::a) {
+            this->tvislayout_a();
+        } else {
+            this->tvislayout_b();
+        }
+    }
+
+    // 2x3 graphs
+    void tvislayout_a()
+    {
         const unsigned int ww = this->conf->getUInt ("win_width", 1800);
         const unsigned int wh = this->conf->getUInt ("win_height", 1200);
         this->tvv = new morph::Visual (ww, wh, "Retinal and Tectal expression");
@@ -1146,6 +1182,66 @@ struct Agent1
             offset2[1] += sqside;
             tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
             offset2[1] -= sqside;
+        }
+    }
+
+    // Alt layout for ligand expression only. 2x5. expression and gradients
+    void tvislayout_b()
+    {
+        const unsigned int ww = this->conf->getUInt ("win_width", 1200);
+        const unsigned int wh = this->conf->getUInt ("win_height", 600);
+        this->tvv = new morph::Visual (ww, wh, "Tissuevisb");
+        this->tvv->setSceneTransXY(-0.405548,-0.139761);
+        this->tvv->setSceneTransZ(-5.1);
+        this->tvv->setCurrent();
+
+        morph::Vector<float> offset = { -1.5f, 0.0f, 0.0f };
+        morph::Vector<float> offset2 = offset;
+        size_t show_pair = 0; // 0 means show gradients for ligands 0 and 1.
+        float sqside = 1.4f;
+
+        // Tectal expression for 0/1
+        //offset2[1] -= sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        // Tectal gradients for 0/1
+        offset2[0] += sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 0));
+        offset2[0] += sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 1));
+        if constexpr (N>2) {
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 2));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 3));
+        }
+
+        offset2 = offset;
+        offset2[1] -= sqside;
+        if constexpr (N>2) {
+            show_pair = 1; // 1 means show for ligands 2 and 3.
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+        }
+        offset2[0] += sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 0));
+        offset2[0] += sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 1));
+        if constexpr (N>2) {
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 2));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 3));
+        }
+
+        if constexpr (N>2) {
+#if 0
+            show_pair = 1; // 1 means show for ligands 2 and 3.
+            offset2 = offset;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, show_pair));
+            offset2[0] += sqside;
+            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+#endif
         }
     }
 
