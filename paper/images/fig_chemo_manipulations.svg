@@ -11,8 +11,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="205.2411mm"
-   height="220.57478mm"
-   viewBox="0 0 205.2411 220.57478"
+   height="336.43665mm"
+   viewBox="0 0 205.2411 336.43664"
    version="1.1"
    id="svg2959"
    inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/fig_chemo_manipulations.png"
@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="259.40044"
-     inkscape:cy="351.34063"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="-108.60109"
+     inkscape:cy="669.86962"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -89,13 +89,31 @@
        x="2.4568934"
        y="109.47388" />
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_mismatch_fig4row4.png"
-       xlink:href="j4_eE_G_mismatch_fig4row4.png"
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_retablat_fig4row4.png"
+       xlink:href="j4_eE_G_retablat_fig4row4.png"
        width="205.24106"
-       height="57.930943"
+       height="57.930939"
        preserveAspectRatio="none"
-       id="image4616"
+       id="image4729"
        x="2.4568934"
        y="217.90311" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecablat_fig4row5.png"
+       xlink:href="j4_eE_G_tecablat_fig4row5.png"
+       width="205.24106"
+       height="57.930939"
+       preserveAspectRatio="none"
+       id="image4791"
+       x="2.4568934"
+       y="275.83405" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_mismatch_fig4row6.png"
+       xlink:href="j4_eE_G_mismatch_fig4row6.png"
+       width="205.24106"
+       height="57.930939"
+       preserveAspectRatio="none"
+       id="image4853"
+       x="2.4568934"
+       y="333.76498" />
   </g>
 </svg>

@@ -714,7 +714,7 @@ expression:
 \begin{equation} \label{e:tecligexp2}
 L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 x)
 \end{equation}
-
+%
 for the tectal ligand expression.
 
 The result at $t=300$ is shown in Fig.\,\ref{f:chalt}A and B. The axon
@@ -738,11 +738,18 @@ ligand expression.
 The `chemoaffinity only' model begins to encounter problems when we introduce
 simulations of experimental manipulations.
 
-% The chemo manipulations figure is made up from 4 figures generated with graph_layout::?
+% The chemo manipulations figure is made up from 4 figures generated with
+% graph_layout::g
+%
+% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecrot90_fig4row1.json
+% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecrot180_fig4row2.json
+% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecswap_fig4row3.json
+% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_mismatch_fig4row4.json
+%
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_chemo_manipulations.png}
-\caption{Surgical manipulations in the chemoaffinity-only model. Row A: wildtype. Row B: 90 degree
-rotation. Row C: 180 degree rotation. Row D: Graft swap}
+\includegraphics[width=0.8\linewidth]{./images/fig_chemo_manipulations.png}
+\caption{Surgical manipulations in the chemoaffinity-only model. Row A: 90 degree
+rotation. Row B: 180 degree rotation. Row C: Graft swap. Row D: mismatch ablation}
 \label{f:chsurg}
 \end{figure}
 
