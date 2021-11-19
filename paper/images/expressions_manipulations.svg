@@ -10,9 +10,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1058.3334mm"
+   width="846.66669mm"
    height="238.125mm"
-   viewBox="0 0 1058.3334 238.125"
+   viewBox="0 0 846.66671 238.125"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
@@ -30,13 +30,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="2018.5189"
+     inkscape:cx="1329.9475"
      inkscape:cy="192.85719"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="2560"
-     inkscape:window-height="1323"
+     inkscape:window-width="3840"
+     inkscape:window-height="2043"
      inkscape:window-x="0"
      inkscape:window-y="41"
      inkscape:window-maximized="1"
@@ -64,47 +64,38 @@
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_tecrot180.png"
        xlink:href="tectal_expr_tecrot180.png"
-       width="211.66667"
-       height="238.125"
-       preserveAspectRatio="none"
-       id="image909"
+       y="-38.26487"
        x="-361.34528"
-       y="-38.26487" />
+       id="image909"
+       preserveAspectRatio="none"
+       height="238.125"
+       width="211.66667" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_tecswap.png"
        xlink:href="tectal_expr_tecswap.png"
-       width="211.66667"
-       height="238.125"
-       preserveAspectRatio="none"
-       id="image971"
+       y="-38.26487"
        x="-149.6786"
-       y="-38.26487" />
+       id="image971"
+       preserveAspectRatio="none"
+       height="238.125"
+       width="211.66667" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/retinal_expr_retablate.png"
        xlink:href="retinal_expr_retablate.png"
-       width="211.66667"
-       height="238.125"
-       preserveAspectRatio="none"
-       id="image1033"
+       y="-38.26487"
        x="61.988068"
-       y="-38.26487" />
+       id="image1033"
+       preserveAspectRatio="none"
+       height="238.125"
+       width="211.66667" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_tecablate.png"
        xlink:href="tectal_expr_tecablate.png"
-       width="211.66667"
-       height="238.125"
-       preserveAspectRatio="none"
-       id="image1095"
+       y="-38.26487"
        x="273.65472"
-       y="-38.26487" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/tectal_expr_mismatch.png"
-       xlink:href="tectal_expr_mismatch.png"
-       width="211.66667"
-       height="238.125"
+       id="image1095"
        preserveAspectRatio="none"
-       id="image1157"
-       x="485.32141"
-       y="-38.26487" />
+       height="238.125"
+       width="211.66667" />
   </g>
 </svg>

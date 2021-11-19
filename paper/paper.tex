@@ -691,11 +691,24 @@ individual branches (i.e.~growth cones) at $t=300$ that contribute to the the
 plot in Fig.\,\ref{f:ch}D. By this time, the topological order matches that
 shown in Fig.\,\ref{f:ch}E. Opposing gradients have sorted the axons along the
 two axes to form a grid of cells. However, the arrangement does not span the
-full tectum. Fig.\,\ref{f:ch}F shows two pattern metrics; the sum of squared
-distance errors of the axon centroids and the number of crossings in the fish
-net plot of Fig.\,\ref{f:ch}D. The expected number of crossings is 0, as in
-Fig.\,\ref{f:ch}E. Fig.\,\ref{f:ch}H shows selected axons (one from the centre
-and one from each corner of the retina) and their position history.
+full tectum. Fig.\,\ref{f:ch}F shows two pattern metrics. The first metric,
+$\epsilon$, is the sum of squared distance errors of the axon centroids, with
+$\mathbf{x}_{k}$, the location of the centroid of the branches of axon $k$ and
+$\mathbf{x}'_{k}$ the target tectal location for axon $k$:
+%
+\begin{equation}\label{e:eps}
+\epsilon = \sum_k |\mathbf{x}_{k} - \mathbf{x}'_{k}|^2.
+\end{equation}
+%
+$\epsilon$ tends to 0 as the pattern approaches the target layout. However,
+two patterns may have the same non-zero value for $\epsilon$, despite one
+being qualitatively more disordered than the other. For this reason, we also
+use the number of crossings in the fish net plot of Fig.\,\ref{f:ch}D as a
+second metric, called $\eta$. The expected number of crossings in the wildtype
+pattern is 0, as in Fig.\,\ref{f:ch}E, although note that in some patterns,
+the expected number of crossings is non-zero. Fig.\,\ref{f:ch}H shows selected
+axons (one from the centre and one from each corner of the retina) and their
+position history.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_G.json configs/simpler/e_wt_fig2.json
 \begin{figure}
@@ -717,16 +730,16 @@ L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 x)
 %
 for the tectal ligand expression.
 
-The result at $t=300$ is shown in Fig.\,\ref{f:chalt}A and B. The axon
-centroids are arranged across the full tectal surface.  The arrangement is
-slightly disordered around the middle of the tectum. This is caused by
+The result at $t=300$ is shown in Figs.\,\ref{f:chalt}A and \ref{f:chalt}B. The
+axon centroids are arranged across the full tectal surface.  The arrangement
+is slightly disordered around the middle of the tectum. This is caused by
 numerical artefacts from the discretization of the ligand expression and the
 fact that in the centre, the difference between the opposing receptor-ligand
-signals is very small. Nevertheless, it is demonstrated that a modified form
-for the tectal ligand expression (which was found easily by hand tuning)
+signals is very small. Nevertheless, the result demonstrates that a modified
+form for the tectal ligand expression (which was found easily by hand tuning)
 allows a well ordered map to form for the wildtype system. Fig
-.\,\ref{f:chalt}C shows the error metric, which is closer to 0 with the new
-ligand expression.
+.\,\ref{f:chalt}C shows the error metric (\textbf{FIXIMAGE}), $\epsilon$,
+which is much closer to 0 with the new ligand expression.
 
 % ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_wt_fig2.json
 \begin{figure}
@@ -735,18 +748,18 @@ ligand expression.
 \label{f:chalt}
 \end{figure}
 
-The `chemoaffinity only' model begins to encounter problems when we introduce
+This `chemoaffinity only' model begins to encounter problems when we introduce
 simulations of experimental surgical manipulations. Simulated surgery is
 performed by manipulating the maps shown in
 Fig.\,\ref{f:ex}. Fig.\,\ref{f:trot90} shows the expression maps and the
 resulting gradients that result from the surgical manipulation in which a
 graft of the tectum is rotated by a quarter turn and replaced. We rotate an
-8x8 square of the tectum and then recompute the gradients. As the expression
-is discretized, we also discretize the gradient, with the gradient in
-direction $x$ computed as the difference between the expression of the two
-neighbouring elements divided by twice the element distance. As there are four
-ligands expressed on the tectum, there are four pairs of gradient maps, each of
-which is shown in Fig.\,\ref{f:trot90}.
+8x8 square of the tectum and then recompute the gradients. As the ligand
+expression is discretize rather than continuous, we compute the gradient
+numerically, with the gradient in direction $x$ computed as the difference
+between the expression of the two neighbouring elements divided by twice the
+element distance. As there are four ligands expressed on the tectum, there are
+four pairs of gradient maps, each of which is shown in Fig.\,\ref{f:trot90}.
 
 % Visualisation of ligand expression and gradients on the tectum for the
 % graft-rotate 90 degrees simulated surgical manipulation
@@ -761,11 +774,11 @@ graft-rotate 90 degrees simulated surgical manipulation}
 
 Fig.\,\ref{f:tmanip} shows the tectal ligand expression for ligands $L_1$ and
 $L_2$ for the five other surgical manipulations applied in this work. These
-are a 180\degree rotation (Fig\,\ref{f:tmanip}A), a graft-swap manipulation
-(Fig\,\ref{f:tmanip}B), ablation of half the retina  (Fig\,\ref{f:tmanip}C),
-ablation of half the tectum (Fig\,\ref{f:tmanip}D) and a mismatch ablation in
-which half of the retina is removed along with the half of the tectum to which
-the remaining retina would project (Fig\,\ref{f:tmanip}E).
+are a 180\degree~rotation (Fig\,\ref{f:tmanip}A), a graft-swap manipulation
+(Fig\,\ref{f:tmanip}B), ablation of half the retina (Fig\,\ref{f:tmanip}C),
+and ablation of half the tectum (Fig\,\ref{f:tmanip}D). A mismatch
+manipulation was also performed in which which half of the retina is removed
+along with the half of the tectum to which the remaining retina would project.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_manipulations.png}
@@ -774,11 +787,43 @@ other simulated surgical manipulations}
 \label{f:tmanip}
 \end{figure}
 
-Fig\,\ref{f:chsurg} shows the
-results of 6 simulated surgical manipulations. In row A, a patch of tectal
-tissue has been cut out and rotated by a quarter turn. This is achieved in
-simulation by rotating a square region of the tectal region.
+Fig\,\ref{f:chsurg} shows the results of 6 simulated surgical
+manipulations. In row A, a patch of tectal tissue has been cut out and rotated
+by a quarter turn, as in Fig.\,\ref{f:trot90}. From left to right, graphs show
+i) the expected final layout of the tectum, according to the results of
+experimental work, with the colour code giving the origin location of the
+axon's soma on the retina, ii) The locations of individual axon branches at
+simulation end, iii) the centroids of each axons' branches and iv) a rather
+useless selected axons box \textbf{FIXME}. Simulation time was 1000 time steps. The final
+locations of branches and axon centroids indicates that a qualitative rotation
+of the graft patch has occurred, with red branches inside the patch being
+located at the lateral-caudal corner rather than the medial-caudal corner. A
+portion of the graft region (the medial side, after rotation) is free of
+branches, indicating that the pattern is partial. A similar result is seen for
+the 180\degree~example in row B, in whcih the caudal half of the rotated patch
+is free of branches, but the rostral half contains branches with the correctly
+rotated orientations.
 
+Fig.\,\ref{f:chsurg}C shows the result of the patch swap manipulation, in
+which 12x4 element grafts, one from the caudal side of the tectum and one from
+the rostral side are swapped. This simulation is unsuccessful in patterning
+the caudal half of the tectum. The large gradients, both positive and
+negative, caused by the discontinuities along the long edges of the grafts
+attracts almost all the branches (whose initial position is the rostral edge)
+and very few pass through to the caudal side.
+
+The retinal ablation shown in Fig.\,\ref{f:chsurg}D is also unsuccessful, with
+the axons from the surviving nasal retina (the transverse half was removed)
+failing to arrange themselves across the entire tectum, due to the pure
+`position specification' which the dual gradient model achieves. Similarly,
+the tectal ablation simulation fails to reproduce experimentally observed
+results in which the retinal map `squashes up' within the remaining tectal
+region. Instead, axons from the transverse retina arrange with normal spacing
+and axons from the nasal retina are pushd to the caudal-most side of the
+remaining tectum (Fig.\,\ref{f:chsurg}E). A similar result occurs in the
+mismatch experiment (Fig.\,\ref{f:chsurg}F), but in this case there are no
+axons from teh transverse retina, which was been ablated and only the axons
+from the nasal retina are present, arranged in a line.
 
 % The chemo manipulations figure is made up from 4 figures generated with
 % graph_layout::g
@@ -791,23 +836,24 @@ simulation by rotating a square region of the tectal region.
 % ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_mismatch_fig4row6.json
 %
 \begin{figure}
-\includegraphics[width=0.8\linewidth]{./images/fig_chemo_manipulations.png}
-\caption{Surgical manipulations in the chemoaffinity-only model. Row A: 90 degree
-rotation. Row B: 180 degree rotation. Row C: Graft swap. Row D: mismatch ablation}
+\includegraphics[width=0.95\linewidth]{./images/fig_chemo_manipulations.png}
+\caption{Surgical manipulations in the chemoaffinity-only model. \textbf{A} 90 degree
+rotation. textbf{B} 180 degree rotation. \textbf{C} Graft swap. \textbf{D}
+Retinal ablation \textbf{E} Tectal ablation \textbf{F} mismatch ablation}
 \label{f:chsurg}
 \end{figure}
 
+Together, these results show that, while a pure gradient-following
+implementation of Sperry's chemoaffinity theory is able to reproduce the
+wildtype tectal arrangement of retinal ganglion cell axons, it cannot account
+for the results of surgical manipulation experiments.
+
+\subsection*{Competition}
+
+\section{ZEROTH DRAFT/NOTES}
+
 \subsection*{Normal development}
 
-To enable a simulation it is necessary to make assumptions about the nature of
-the receptor-ligand signalled interactions (i.e. whether they are attractive
-or repulsive) and about the pattern of ligand expression on the tectal
-surface. We assume that i) All receptor-ligand signalled interactions are
-repulsive, as for EphA-ephrinA
-coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}; and ii)
-all tectal ligand expressions vary exponentially along a given axis, following
-Eq.\,\ref{e:tecligexp}. The results of running such a system are presented in
-Fig.\,\ref{f:wt}.
 %
 Fig.\,\ref{f:wt}Ai shows a dual-colour map of retinal ganglion cell positions
 on the square retina, with red encoding position on the $x$ axis (temporal to
