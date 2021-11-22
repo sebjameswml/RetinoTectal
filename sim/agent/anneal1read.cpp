@@ -59,6 +59,9 @@ int main (int argc, char** argv)
     data.read_contained_vals ("/f_x_best_hist", f_x_best_hist);
     data.read_contained_vals ("/x_best", x_best);
 
+    std::cout << "Total parameter sets examined: "
+              << (param_hist_accepted.size() + param_hist_rejected.size()) << std::endl;
+
     // This code section just hacked in until I regenerate data with range_max/range_min in the hdf data
     morph::vVector<morph::Vector<float,2>> param_ranges;
     morph::Vector<float, D> range_min;
