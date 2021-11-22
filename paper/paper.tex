@@ -767,7 +767,7 @@ four pairs of gradient maps, each of which is shown in Fig.\,\ref{f:trot90}.
 %
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/Tissuevisb.png}
-\caption{Visualisation of ligand expression and gradients on the tectum for the
+\caption{Ligand expression and gradients on the tectum for the
 graft-rotate 90 degrees simulated surgical manipulation}
 \label{f:trot90}
 \end{figure}
@@ -782,7 +782,7 @@ along with the half of the tectum to which the remaining retina would project.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_manipulations.png}
-\caption{Visualisation of ligand expression and gradients on the tectum for the
+\caption{Ligand expression and gradients on the tectum for the
 other simulated surgical manipulations}
 \label{f:tmanip}
 \end{figure}
@@ -843,12 +843,111 @@ Retinal ablation \textbf{E} Tectal ablation \textbf{F} mismatch ablation}
 \label{f:chsurg}
 \end{figure}
 
-Together, these results show that, while a pure gradient-following
+Together, these results confirm that, while a pure gradient-following
 implementation of Sperry's chemoaffinity theory is able to reproduce the
 wildtype tectal arrangement of retinal ganglion cell axons, it cannot account
 for the results of surgical manipulation experiments.
 
 \subsection*{Competition}
+
+Previous work has shown that competition can contribute to the correct layout
+of the retinotectal system \citep{stuff} and to the patterning of other
+systems including the murine cortical whisker
+barrels\citep{james_modelling_2020} \textbf{(FIXME owt else?)}.
+
+\citet{simpson_simple_2011} showed that repulsive interactions combined with a
+chemoaffinity-like effect could account for the surgical manipulations shown
+in Figs.\,\ref{f:trot90}--\ref{f:chsurg}. To confirm that a competitive
+mechanism could operate successfully in combination with the
+gradient-following chemoaffinity mechanism described above, we introduced
+three competition mechanisms and investigated their behaviour.
+
+These were: space-based competition (`$\mathbf{C}$'), as described
+in \citet{simpson_simple_2011}; a receptor-receptor signalling mechanism
+(`$\mathbf{I}$'), similar to that described in \citet{simpson_simple_2011},
+and a receptor-ligand mass-action signalling model
+(`$\mathbf{J}$'). \citet{simpson_simple_2011} found that both a space based
+competition and a receptor-receptor signalling mechanism were required to
+reproduce the full range of surgical and genetic manipulations explored in
+that work. The first of these, space-based competition, offers no mechanism by
+which axon growth cones are able to communicate and the second mechanism
+explored by \citet{simpson_simple_2011} was implemented only for a single axis
+in the model (EphA receptors, expressed in a gradient along the XX retinal
+axis). We wondered whether a single signalling mechanism could provide a
+suitable competitive, repulsive effect. To investigate, we compared both of
+the \citet{simpson_simple_2011} effects along with a third possible signalling
+mechanism involving the same receptor-ligand interactions employed by the
+gradient following mechansim, because the ligands expressed on the tectum are
+also expressed by the retinal ganglion cells.
+
+\subsection*{Space based (or self-other) competition}
+
+Space based competition is a repulsive effect which acts between any two
+branches, whether they originate from different retinal ganglion cells or from
+the same cell. It assumes that there is some kind of self-other signal which
+acts to discourage two cells from approaching each other.
+%
+\begin{equation}
+\mathbf{C}_b = \frac{1}{|B_{b,c}|} \sum_k \hat{\mathbf{x}}_{kb} W
+\end{equation}
+where the distance-dependent weight $W_c$ is given by
+\begin{equation}
+W_c(d_{kb}) = \begin{cases}
+      1 - \frac{d_{kb}}{2r_c}   & d_{kb} \leq 2r_c \\
+     0 & d_{kb} > 2r_c
+     \end{cases}
+\end{equation}
+for two growth cones of interaction radius $r_c$ separated by a distance
+$d_{kb}$. $B_{b,c}$ is the set of growth cones within a distance $2r_c$ of
+branch $b$.
+
+\subsection*{Receptor-receptor axon-axon interactions}
+
+We modelled interactions between axon growth cones due to signalling between
+receptors of the same type. For these interactions, repulsion caused a
+movement of branch $b$ along a unit vector, $\hat{\mathbf{x}}_{kb}$, from
+branch $k$ to branch $b$ causing them to move further apart; attraction caused
+the opposite movement. This interaction, $\mathbf{I}_b$, acting on branch $b$,
+is given by
+%
+\begin{equation}
+\mathbf{I}_b
+= \frac{1}{|B_{b,I}|} \sum_k \sum_i \hat{\mathbf{x}}_{kb}\,W_I \qquad \mathrm{if}~r_{i,b}
+/ r_{i,k} < 1.1
+\end{equation}
+%
+the weight here is defined as a function of $r_I$:
+%
+\begin{equation}
+W_I(d_{kb}) = \begin{cases}
+      1 - \frac{d_{kb}}{2r_I}   & d_{kb} \leq 2r_I \\
+     0 & d_{kb} > 2r_I
+     \end{cases}
+\end{equation}
+$r_{i,k}$ is the expression of receptor $i$ on branch $k$.
+
+\subsection*{Receptor-ligand axon-axon interactions}
+
+%
+\begin{equation}
+% No \frac{1}{|B_b|} in this one. Really?
+\mathbf{J}_b = \sum_k \hat{\mathbf{x}}_{kb}\,Q_J(d_{kb})
+\end{equation}
+%
+where $Q_J(d_{kb})$ is the signalling strength between two growth cones of
+receptor-ligand interaction radius $r_j$ a distance $d_{kb}$ from one another,
+given by
+%
+\begin{equation}
+Q_J(d_{kb}) = \begin{cases}
+     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r_j \\
+     0 & d_{kb} > 2r_j
+     \end{cases}
+\end{equation}
+%
+The sign of $Q_J$ (which is dependent on the values of $F_i$) determines whether
+the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
+expression of ligand $i$ on branch $k$.
 
 \section{ZEROTH DRAFT/NOTES}
 
