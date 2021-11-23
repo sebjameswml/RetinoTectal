@@ -783,6 +783,7 @@ for two growth cones of interaction radius $r_c$ separated by a distance
 $d_{kb}$. $B_{b,c}$ is the set of growth cones within a distance $2r_c$ of
 branch $b$.
 
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/j4_ee_GC_best_1_wt_figcomp1.png}
 \caption{$\mathbf{GC}$ model}
@@ -796,9 +797,8 @@ these parameters, we reasoned that evolution would optimize the arrangement of
 the wildtype pattern. We performed a simulated annealing optimization to
 minimize the error metric, $\epsilon$, for the wildtype pattern
 (Fig.\,\ref{f:ch}E) at simulation time 1000. The parameters returned were
-$m_c$ = 0.09959, $m_{\!_G}$ = 0.003841 and $r_c$ =
-0.39918. Fig.\,\ref{f:nonexistent_yet} shows the $\mathbf{GC}$ simulation with
-these parameters.
+$m_{\!_G}$ = 0.003841, $m_c$ = 0.09959 and $r_c$ = 0.39918. Fig.\,\ref{f:GC}
+shows the $\mathbf{GC}$ simulation with these parameters.
 
 \subsection*{Receptor-receptor axon-axon interactions (GI)}
 
@@ -825,6 +825,13 @@ W_{\!_I}(d_{kb}) = \begin{cases}
 \end{equation}
 $r_{i,k}$ is the expression of receptor $i$ on branch $k$.
 
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_GI_best_1_wt_figcomp2.png}
+\caption{$\mathbf{GI}$ model}
+\label{f:GI}
+\end{figure}
+
 \subsection*{Receptor-ligand axon-axon interactions (GJ)}
 
 %
@@ -847,6 +854,13 @@ Q_{\!_J}(d_{kb}) = \begin{cases}
 The sign of $Q_J$ (which is dependent on the values of $F_i$) determines whether
 the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
 expression of ligand $i$ on branch $k$.
+
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_figcomp3.png}
+\caption{$\mathbf{GJ}$ model}
+\label{f:GJ}
+\end{figure}
 
 \section{Discussion}
 Discussion goes here.
