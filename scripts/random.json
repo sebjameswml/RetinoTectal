@@ -1,7 +1,0 @@
-{
-    "models" : ["random"],
-    "expts" : ["wt", "tecswap", "tecrot90", "tecrot180",
-             "tecablate", "single", "retablate",
-             "reber", "mismatch", "knockout1",
-             "knockin1", "compound"]
-}

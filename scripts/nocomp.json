@@ -1,7 +1,0 @@
-{
-    "models" : ["el_nocomp", "lin_nocomp", "ee_nocomp"],
-    "expts" : ["wt", "tecswap", "tecrot90", "tecrot180",
-             "tecablate", "single", "retablate",
-             "reber", "mismatch", "knockout1",
-             "knockin1", "compound"]
-}
