@@ -248,6 +248,24 @@ struct Agent1
                 this->gv->setdata (nt_m, rc_m, ss.str());
                 this->gv->reinit();
                 this->v->render();
+
+            } else if (this->layout == graph_layout::h) {
+                // Graph layout h shows the nt vs rc (for the mid band of the retina/central column of the tectum?).
+                morph::vVector<T>nt;
+                morph::vVector<T>rc;
+                morph::vVector<T>rc_expt;
+                size_t ii = 0;
+                for (ii = 0; ii < this->ret->posn.size(); ++ii) {
+                    nt.push_back(1-this->ret->posn[ii][0]);
+                    rc.push_back(this->ax_centroids.p[ii][1]);
+                    rc_expt.push_back(this->ax_centroids.targ[ii][1]);
+                }
+                // Also show expt. version.
+
+                this->gv->setdata (nt, rc_expt, "Expt");
+                this->gv->setdata (nt, rc, "Sim");
+                this->gv->reinit();
+                this->v->render();
             }
 
             // Save final image based on config file names
@@ -306,7 +324,7 @@ struct Agent1
         }
         this->cv->reinit(); // Centroids to end
 
-        if (this->layout != graph_layout::e && this->layout != graph_layout::f) {
+        if (this->layout != graph_layout::e && this->layout != graph_layout::f && this->layout != graph_layout::h) {
             if (this->layout != graph_layout::b) {
                 this->tcv->reinit(); // Experiment
             }
@@ -1302,14 +1320,14 @@ struct Agent1
         unsigned int wdefault = 1200;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { wdefault = 1920; }
         if (this->layout == graph_layout::b || this->layout == graph_layout::e
-            || this->layout == graph_layout::g) { wdefault = 2480; }
+            || this->layout == graph_layout::g || this->layout == graph_layout::h) { wdefault = 2480; }
         if (this->layout == graph_layout::c) { wdefault = 2200; }
         if (this->layout == graph_layout::f) { wdefault = 675; }
         const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { hdefault = 1200; }
         if (this->layout == graph_layout::b || this->layout == graph_layout::e
-            || this->layout == graph_layout::g) { hdefault = 700; }
+            || this->layout == graph_layout::g || this->layout == graph_layout::h ) { hdefault = 700; }
         if (this->layout == graph_layout::c) { hdefault = 1180; }
         if (this->layout == graph_layout::f) { hdefault = 550; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
@@ -1332,6 +1350,8 @@ struct Agent1
         } else if (this->layout == graph_layout::f) {
             this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
         } else if (this->layout == graph_layout::g) {
+            this->v->setSceneTrans (-0.865482569f,-0.0471459851f,-2.79999995f);
+        } else if (this->layout == graph_layout::h) {
             this->v->setSceneTrans (-0.865482569f,-0.0471459851f,-2.79999995f);
         }
 
@@ -1366,6 +1386,9 @@ struct Agent1
         } else if (this->layout == graph_layout::g) { // 1x4; expt, branches, centroids, selected
             const std::string sl = this->conf->getString ("startletter", "A");
             this->graph_layout_g (offset, sl);
+        } else if (this->layout == graph_layout::h) { // 1x4; expt, branches, centroids, ret NT vs tec RC
+            const std::string sl = this->conf->getString ("startletter", "A");
+            this->graph_layout_h (offset, sl);
         } else {
             throw std::runtime_error ("Unknown layout");
         }
@@ -1787,6 +1810,63 @@ struct Agent1
         //jtvm->addLabel (std::string({sl+1}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         //jtvm->addLabel (std::string({sl+2}), g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         //jtvm->addLabel (std::string({sl+3}), g_D, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        this->v->addVisualModel (jtvm);
+    }
+
+    // 1x4 graphs (expt, branches, centroids, ret NT vs tec RC)
+    void graph_layout_h (const morph::Vector<float>& offset0, const std::string& startletter)
+    {
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
+        morph::Vector<float> g_D = offset0 + morph::Vector<float>({3.9f, 0.0f, 0.0f});
+
+        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
+        this->tcv->viewmode = netvisual_viewmode::targetplus;
+        this->tcv->finalize();
+        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        this->v->addVisualModel (this->tcv);
+
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_B, &this->branches, &this->ax_history);
+        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->bv->target_scale.compute_autoscale (0, 1);
+        this->bv->view = branchvisual_view::discs;
+        this->bv->finalize();
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->bv, std::string("Tectal"));
+        this->v->addVisualModel (this->bv);
+
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
+        //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        //this->cv->viewmode = netvisual_viewmode::actual_nolines;
+        this->cv->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) {
+            this->cv->radiusFixed = 0.02;
+        }
+        this->cv->finalize();
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        this->v->addVisualModel (this->cv);
+
+        // NT vs RC graph here
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
+        this->gv->twodimensional = false;
+        this->gv->setlimits (0, 1, 0, 1);
+        this->gv->policy = morph::stylepolicy::markers;
+        this->gv->ylabel = "R ---------- tectum ---------> C";
+        this->gv->xlabel = "N ---------- retina ---------> T";
+        this->gv->finalize();
+        v->addVisualModel (this->gv);
+
+        // Figure letters
+        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        float lfs = 0.08f; // letter font size
+        int lpts = 36; // letter point resolution
+        char sl = 'A';
+        if (!startletter.empty()) { sl = startletter[0]; }
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
     }
 
