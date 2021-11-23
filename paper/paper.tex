@@ -719,7 +719,7 @@ implementation of Sperry's chemoaffinity theory is able to reproduce the
 wildtype tectal arrangement of retinal ganglion cell axons, it cannot account
 for the results of surgical manipulation experiments.
 
-\subsection*{Competition}
+\subsection*{Combining chemoaffinity with competition}
 
 Previous work has shown that competition can contribute to the correct layout
 of the retinotectal system \citep{stuff} and to the patterning of other
@@ -751,23 +751,27 @@ mechanism was implemented only for a single axis in the model (EphA receptors,
 expressed in a gradient along the XX retinal axis). We wondered whether a
 \emph{single} signalling mechanism working alongside the `untuned'
 chemoaffinity with ligand expression given by Eq.\,\ref{e:tecligexp} could
-successfully reproduce the wildtype and manipulation results. To investigate,
-we studied each competitive mechanism alongside chemoaffinity in turn, setting
-$m_{\!_I}=m_{\!_J}=0$ to give a `$\mathbf{GC}$' model, $m_c=m_{\!_J}=0$ to
-give a `$\mathbf{GI}$' model or $m_c=m_{\!_I}=0$ to give a `$\mathbf{GJ}$'
-model.
+successfully reproduce the wildtype and manipulation results. Alongside the
+same chemoaffinity mechanism, we studied each competitive mechanism in turn,
+setting $m_{\!_I}=m_{\!_J}=0$ to give a `$\mathbf{GC}$' model,
+$m_c=m_{\!_J}=0$ to give a `$\mathbf{GI}$' model or $m_c=m_{\!_I}=0$ to give a
+`$\mathbf{GJ}$' model.
 
 \subsection*{Chemoaffinity plus space-based competition (GC)}
 
-Space based competition is a repulsive effect which acts between any two
-branches, whether they originate from different retinal ganglion cells or from
-the same cell. It assumes that there is some kind of self-other signal which
-acts to discourage two cells from approaching each other.
+Space based competition was implemented as a repulsive effect acting between
+any two branches, whether they originated from different retinal ganglion
+cells or from the same cell. An assumption is that there is some kind of
+self-other signal which acts to discourage two cells from approaching each
+other. A competition movement vector, $\mathbf{C}_b$, acting on branch $b$,
+which is a proximity-weighted sum of the repulsion due to all nearby branches
+is defined as:
 %
 \begin{equation}
-\mathbf{C}_b = \frac{1}{|B_{b,c}|} \sum_k \hat{\mathbf{x}}_{kb} W
+\mathbf{C}_b = \frac{1}{|B_{b,c}|} \sum_k \hat{\mathbf{x}}_{kb} W_c
 \end{equation}
-where the distance-dependent weight $W_c$ is given by
+where $\hat{\mathbf{x}}_{kb}$ is the unit vector from branch $k$ to branch
+$b$. The distance-dependent weight $W_c$ is given by
 \begin{equation}
 W_c(d_{kb}) = \begin{cases}
       1 - \frac{d_{kb}}{2r_c}   & d_{kb} \leq 2r_c \\
@@ -784,9 +788,10 @@ free parameters; $m_{\!_G}$, $m_c$ and $r_c$. To find the best combination of
 these parameters, we reasoned that evolution would optimize the arrangement of
 the wildtype pattern. We performed a simulated annealing optimization to
 minimize the error metric, $\epsilon$, for the wildtype pattern
-(Fig.\,\ref{f:ch}E) at simulation time 1000. The parameters returned were $m_c$
-= 0.09959, $m_{\!_G}$ = 0.003841 and $r_c$ =
-0.39918. Fig.\,\ref{f:nonexistent_yet} shows a simulation with these parameters.
+(Fig.\,\ref{f:ch}E) at simulation time 1000. The parameters returned were
+$m_c$ = 0.09959, $m_{\!_G}$ = 0.003841 and $r_c$ =
+0.39918. Fig.\,\ref{f:nonexistent_yet} shows the $\mathbf{GC}$ simulation with
+these parameters.
 
 \subsection*{Receptor-receptor axon-axon interactions (GI)}
 
