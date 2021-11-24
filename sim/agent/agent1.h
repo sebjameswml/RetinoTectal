@@ -314,17 +314,96 @@ struct Agent1
             glfwPollEvents();
         }
 
+        switch (this->layout) {
+        case graph_layout::a:
+        {
+            this->bv->reinit();  // Branches
+            this->cv->reinit();  // Centroids to end
+            this->tcv->reinit(); // Experiment
+            this->av->reinit();  // Selected axons
+            this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0); // SOS/Crossings
+            if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
+                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+            }
+            break;
+        }
+        case graph_layout::b:
+        {
+            this->bv->reinit(); // Branches
+            this->cv->reinit(); // Centroids
+            this->av->reinit(); // Selected axons
+            break;
+        }
+        case graph_layout::c:
+        {
+            this->bv->reinit();  // Branches
+            if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); } // Time freeze branches
+            this->cv->reinit();  // Centroids
+            this->tcv->reinit(); // Experiment
+            this->av->reinit();  // Selected axons
+            this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0); // SOS/Crossings
+            if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
+                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+            }
+            break;
+        }
+        case graph_layout::d:
+        {
+            this->bv->reinit();  // Branches
+            this->cv->reinit();  // Centroids
+            this->tcv->reinit(); // Experiment
+            this->av->reinit();  // Selected axons
+            break;
+        }
+        case graph_layout::e:
+        {
+            this->bv->reinit(); // Branches
+            this->cv->reinit(); // Centroids
+            break;
+        }
+        case graph_layout::f:
+        {
+            this->cv->reinit(); // Centroids
+            this->sim_time_txt->setupText (std::to_string(stepnum)); // Text
+            AgentMetrics<T> am = this->get_metrics();
+            this->sos_txt->setupText (am.sos.str());
+            this->crossings_txt->setupText (am.crosscount.str());
+            break;
+        }
+        case graph_layout::g:
+        {
+            this->bv->reinit(); // Branches
+            this->cv->reinit(); // Centroids
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // SOS (whole)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // SOS (surround)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // SOS (patch)
+            break;
+        }
+        case graph_layout::h:
+        {
+            this->bv->reinit(); // Branches
+            this->cv->reinit(); // Centroids
+            break;
+        }
+        default:
+            std::cerr << "Warning: Unknown graph_layout\n";
+            break;
+        }
+#if 0 // Delete when the above is reasonably well tested
         if (this->layout != graph_layout::f) {
             this->bv->reinit(); // Branches
         }
-
         // Centroids that should show up to a certain time
         if (this->layout == graph_layout::c) {
             if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); }
         }
         this->cv->reinit(); // Centroids to end
 
-        if (this->layout != graph_layout::e && this->layout != graph_layout::f && this->layout != graph_layout::h) {
+        if (this->layout != graph_layout::e
+            && this->layout != graph_layout::f
+            && this->layout != graph_layout::g
+            && this->layout != graph_layout::h) {
+
             if (this->layout != graph_layout::b) {
                 this->tcv->reinit(); // Experiment
             }
@@ -336,12 +415,13 @@ struct Agent1
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
         }
-        if (this->layout == graph_layout::f) {
+        if (this->layout == graph_layout::f || this->layout == graph_layout::g) {
             this->sim_time_txt->setupText (std::to_string(stepnum));
             AgentMetrics<T> am = this->get_metrics();
             this->sos_txt->setupText (am.sos.str());
             this->crossings_txt->setupText (am.crosscount.str());
         }
+#endif
 
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
@@ -1327,7 +1407,7 @@ struct Agent1
         unsigned int hdefault = 800;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) { hdefault = 1200; }
         if (this->layout == graph_layout::b || this->layout == graph_layout::e
-            || this->layout == graph_layout::g || this->layout == graph_layout::h ) { hdefault = 700; }
+            || this->layout == graph_layout::g || this->layout == graph_layout::h ) { hdefault = 630; }
         if (this->layout == graph_layout::c) { hdefault = 1180; }
         if (this->layout == graph_layout::f) { hdefault = 550; }
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
@@ -1350,9 +1430,9 @@ struct Agent1
         } else if (this->layout == graph_layout::f) {
             this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
         } else if (this->layout == graph_layout::g) {
-            this->v->setSceneTrans (-0.865482569f,-0.0471459851f,-2.79999995f);
+            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
         } else if (this->layout == graph_layout::h) {
-            this->v->setSceneTrans (-0.865482569f,-0.0471459851f,-2.79999995f);
+            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
         }
 
         if constexpr (use_ortho) {
@@ -1757,16 +1837,18 @@ struct Agent1
     void graph_layout_g (const morph::Vector<float>& offset0, const std::string& startletter)
     {
         morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
-        morph::Vector<float> g_D = offset0 + morph::Vector<float>({3.9f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({3.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_D = offset0 + morph::Vector<float>({4.5f, 0.0f, 0.0f});
 
+        // Expt net
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
         this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
         this->v->addVisualModel (this->tcv);
 
+        // Branches
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_B, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->bv->target_scale.compute_autoscale (0, 1);
@@ -1778,8 +1860,6 @@ struct Agent1
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
-        //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        //this->cv->viewmode = netvisual_viewmode::actual_nolines;
         this->cv->viewmode = netvisual_viewmode::actual;
         if (this->layout == graph_layout::b) {
             this->cv->radiusFixed = 0.02;
@@ -1789,15 +1869,19 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
-        // Selected axons: This one gives an 'axon view'
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_D, &this->branches, &this->ax_history);
-        this->av->view = branchvisual_view::axonview;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
-        this->v->addVisualModel (this->av);
+        // A graph of the SOS diffs between axon position centroids and target positions from retina
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
+        this->gv->twodimensional = false;
+        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                             0, this->conf->getFloat("graph_ymax", 200.0f));
+        this->gv->policy = morph::stylepolicy::lines;
+        this->gv->ylabel = "Error";
+        this->gv->xlabel = "Sim time";
+        this->gv->prepdata ("rms all");
+        this->gv->prepdata ("rms surr.");
+        this->gv->prepdata ("rms patch");
+        this->gv->finalize();
+        this->v->addVisualModel (this->gv);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -1807,9 +1891,6 @@ struct Agent1
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        //jtvm->addLabel (std::string({sl+1}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        //jtvm->addLabel (std::string({sl+2}), g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        //jtvm->addLabel (std::string({sl+3}), g_D, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
     }
 
@@ -1817,9 +1898,9 @@ struct Agent1
     void graph_layout_h (const morph::Vector<float>& offset0, const std::string& startletter)
     {
         morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
-        morph::Vector<float> g_D = offset0 + morph::Vector<float>({3.9f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({3.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_D = offset0 + morph::Vector<float>({4.5f, 0.0f, 0.0f});
 
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
@@ -1838,12 +1919,7 @@ struct Agent1
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
-        //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        //this->cv->viewmode = netvisual_viewmode::actual_nolines;
         this->cv->viewmode = netvisual_viewmode::actual;
-        if (this->layout == graph_layout::b) {
-            this->cv->radiusFixed = 0.02;
-        }
         this->cv->finalize();
         this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
         this->addOrientationLabels (this->cv, std::string("Tectal"));

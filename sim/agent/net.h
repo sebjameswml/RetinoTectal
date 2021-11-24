@@ -131,9 +131,70 @@ struct net
     }
 
     //! Return sum of squared distances between p and targ
-    T sos() { return ((p-targ).sos()[0]); }
+    T sos() const { return ((p-targ).sos()[0]); }
+
+    //! Return sum of squared distances between p and targ for a patch inside the (2D) square defined by 2 corners
+    T sos_inside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    {
+        morph::vVector<T> mask (p.size());
+        for (unsigned int i = 0; i < p.size(); ++i) {
+            // Mask set to 1 for targets inside the corners
+            mask[i] = (targ[i][0] >= corner1[0]
+                       && targ[i][1] >= corner1[1]
+                       && targ[i][0] <= corner2[0]
+                       && targ[i][1] <= corner2[1]) ? T{1} : T{0};
+        }
+        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        return (p_minus_targ.sos()[0]);
+    }
+
+    //! Return sum of squared distances between p and targ for a patch outside the (2D) square defined by 2 corners
+    T sos_outside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    {
+        morph::vVector<T> mask (p.size());
+        for (unsigned int i = 0; i < p.size(); ++i) {
+            // Mask set to 1 for targets outside the corners
+            mask[i] = (targ[i][0] < corner1[0]
+                       || targ[i][1] < corner1[1]
+                       || targ[i][0] > corner2[0]
+                       || targ[i][1] > corner2[1]) ? T{1} : T{0};
+        }
+        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        return (p_minus_targ.sos()[0]);
+    }
+
     //! Return RMS error of each agent from its target
-    T rms() { return std::sqrt(((p-targ).sos()[0]) / this->targ.size()); }
+    T rms() const { return std::sqrt(((p-targ).sos()[0]) / this->targ.size()); }
+
+    //! Return mean distances between p and targ for a patch inside the (2D) square defined by 2 corners
+    T rms_inside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    {
+        morph::vVector<T> mask (p.size());
+        for (unsigned int i = 0; i < p.size(); ++i) {
+            // Mask set to 1 for targets inside the corners
+            mask[i] = (targ[i][0] >= corner1[0]
+                       && targ[i][1] >= corner1[1]
+                       && targ[i][0] <= corner2[0]
+                       && targ[i][1] <= corner2[1]) ? T{1} : T{0};
+        }
+        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        return std::sqrt((p_minus_targ.sos()[0])/mask.sum());
+    }
+
+    //! Return mean distances between p and targ for a patch outside the (2D) square defined by 2 corners
+    T rms_outside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    {
+        morph::vVector<T> mask (p.size());
+        for (unsigned int i = 0; i < p.size(); ++i) {
+            // Mask set to 1 for targets outside the corners
+            mask[i] = (targ[i][0] < corner1[0]
+                       || targ[i][1] < corner1[1]
+                       || targ[i][0] > corner2[0]
+                       || targ[i][1] > corner2[1]) ? T{1} : T{0};
+        }
+        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        return std::sqrt((p_minus_targ.sos()[0])/mask.sum());
+    }
 
     //! Positions of the vertices of the net
     morph::vVector<morph::Vector<T, 3>> p;

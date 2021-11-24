@@ -1,6 +1,7 @@
 {
     "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
-    "graph_layout" : 7,
+    "graph_ymax" : 0.75,
+    "graph_layout" : 6,
     "startletter" : "B",
 
     "graftswap_coords" : { "locn1" : [6,6], "locn2" : [10,10], "patchsize" : [8,8] },
