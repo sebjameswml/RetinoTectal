@@ -58,6 +58,33 @@ public:
     void drawBoundary (VBOint& idx)
     {
         std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
+        float w = 1.0f, h = 1.0f;
+        float _z = float{0.001};
+
+        this->computeFlatDashedLine (idx,
+                                     morph::Vector<Flt, 3>({0, 0, _z}),
+                                     morph::Vector<Flt, 3>({w, 0, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->blinewidth, 0.0f,
+                                     this->blinewidth*5.0f, 0.4f);
+        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({w, 0, _z}), morph::Vector<Flt, 3>({w, h, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->blinewidth, 0.0f,
+                                     this->blinewidth*5.0f, 0.4f);
+        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({w, h, _z}), morph::Vector<Flt, 3>({0, h, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->blinewidth, 0.0f,
+                                     this->blinewidth*5.0f, 0.4f);
+        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({0, h, _z}), morph::Vector<Flt, 3>({0, 0, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->blinewidth, 0.0f,
+                                     this->blinewidth*5.0f, 0.4f);
+#if 0
+        std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
         float w = 1, h = 1;
         this->computeLine (idx, morph::Vector<Flt, 3>({0, 0, 0}), morph::Vector<Flt, 3>({w, 0, 0}),
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
@@ -67,6 +94,7 @@ public:
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
         this->computeLine (idx, morph::Vector<Flt, 3>({0, h, 0}), morph::Vector<Flt, 3>({0, 0, 0}),
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
+#endif
     }
 
     void initializeVertices()
@@ -129,6 +157,7 @@ public:
                 }
             }
         }
+        this->drawBoundary (idx);
     }
 
     // A special puck/disc with colours to show receptor and ligand expression

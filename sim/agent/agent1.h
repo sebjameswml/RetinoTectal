@@ -99,7 +99,7 @@ std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am)
 }
 
 // A selection of possible graph layouts to show when running the program
-enum class graph_layout { a, b, c, d, e, f, g, h };
+enum class graph_layout { a, b, c, d, e, f, g, h, i };
 
 // Agent1 coordinates an agent based simulation of axon branches of type B. This class
 // also incorporates the visualisation code that displays the state of the simulation as
@@ -146,14 +146,12 @@ struct Agent1
                 // Get layout from config file. Default to 0 or 'a'
                 this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
 
-                if (this->layout == graph_layout::c) {
-                    // Set up (from config file if necssary) the times at which the various
-                    // graphs will be frozen (i.e. no longer updated from the sim)
-                    this->freeze_times[0] = 0;
-                    this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
-                    this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
-                    this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
-                }
+                // Set up (from config file if necssary) the times at which the various
+                // graphs will be frozen (i.e. no longer updated from the sim)
+                this->freeze_times[0] = 0;
+                this->freeze_times[1] = this->conf->getUInt ("freeze_time1", 20);
+                this->freeze_times[2] = this->conf->getUInt ("freeze_time2", 80);
+                this->freeze_times[3] = this->conf->getUInt ("freeze_time3", 120);
 
                 // How early to start showing the crossings metric?
                 this->crosscount_from = this->conf->getUInt ("crosscount_from", 1000);
@@ -389,6 +387,17 @@ struct Agent1
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
             this->sos_txt->setupText (std::to_string(am.rms[0]));
+            break;
+        }
+        case graph_layout::i:
+        {
+            if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); } // Time freeze branches
+            this->cv->reinit();  // Centroids
+            this->av->reinit();  // Selected axons
+            this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0); // SOS/Crossings
+            if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
+                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+            }
             break;
         }
         default:
@@ -1404,18 +1413,41 @@ struct Agent1
     {
         // morph::Visual init
         unsigned int wdefault = 1200;
-        if (this->layout == graph_layout::a || this->layout == graph_layout::d) { wdefault = 1920; }
-        if (this->layout == graph_layout::b || this->layout == graph_layout::e
-            || this->layout == graph_layout::g || this->layout == graph_layout::h) { wdefault = 2480; }
-        if (this->layout == graph_layout::c) { wdefault = 2200; }
-        if (this->layout == graph_layout::f) { wdefault = 675; }
-        const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         unsigned int hdefault = 800;
-        if (this->layout == graph_layout::a || this->layout == graph_layout::d) { hdefault = 1200; }
-        if (this->layout == graph_layout::b || this->layout == graph_layout::e
-            || this->layout == graph_layout::g || this->layout == graph_layout::h ) { hdefault = 630; }
-        if (this->layout == graph_layout::c) { hdefault = 1180; }
-        if (this->layout == graph_layout::f) { hdefault = 550; }
+        switch (this->layout) {
+        case graph_layout::a:
+        case graph_layout::d:
+        {
+            // 2x3
+            wdefault = 1920; hdefault = 1200;
+            break;
+        }
+        case graph_layout::b:
+        case graph_layout::e:
+        case graph_layout::g:
+        case graph_layout::h:
+        case graph_layout::i:
+        {
+            // 1x4
+            wdefault = 2480; hdefault = 630;
+            break;
+        }
+        case graph_layout::c:
+        {
+            wdefault = 2200; hdefault = 1180;
+            break;
+        }
+        case graph_layout::f:
+        {
+            // 1x1
+            wdefault = 675; hdefault = 550;
+            break;
+        }
+        default:
+            break;
+        }
+
+        const unsigned int ww = this->conf->getUInt ("win_width", wdefault);
         const unsigned int wh = this->conf->getUInt ("win_height", hdefault);
         if (ww != wdefault || wh != hdefault) {
             std::cout << "visinit() with win height: " << wh << ", and win width: " << ww << " (from json)."<< std::endl;
@@ -1429,15 +1461,17 @@ struct Agent1
             this->v->setSceneTrans (-0.3762f, 0.6880f, -5.3f);
         } else if (this->layout == graph_layout::b) {
             this->v->setSceneTrans (-0.2375f, -0.03f, -2.8f);
-        } else if (this->layout == graph_layout::e) {
-            this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::c) {
             this->v->setSceneTrans (-0.91053f, 0.7895f, -6.1f);
+        } else if (this->layout == graph_layout::e) {
+            this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
         } else if (this->layout == graph_layout::f) {
             this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
         } else if (this->layout == graph_layout::g) {
             this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
         } else if (this->layout == graph_layout::h) {
+            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
+        } else if (this->layout == graph_layout::i) {
             this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
         }
 
@@ -1475,6 +1509,8 @@ struct Agent1
         } else if (this->layout == graph_layout::h) { // 1x4; expt, branches, centroids, ret NT vs tec RC
             const std::string sl = this->conf->getString ("startletter", "A");
             this->graph_layout_h (offset, sl);
+        } else if (this->layout == graph_layout::i) {
+            this->graph_layout_i (offset);
         } else {
             throw std::runtime_error ("Unknown layout");
         }
@@ -1970,6 +2006,59 @@ struct Agent1
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
+    }
+
+    void graph_layout_i (const morph::Vector<float>& offset0)
+    {
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({3.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_D = offset0 + morph::Vector<float>({4.5f, 0.0f, 0.0f});
+
+        // Axon centroids: Centroids of branches viewed with a NetVisual
+        this->cv1 = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
+        this->cv1->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        this->cv1->viewmode = netvisual_viewmode::actual;
+        this->cv1->finalize();
+        std::stringstream ss1;
+        ss1 << "t=" << this->freeze_times[1];
+        this->cv1->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv1, std::string("Tectal"));
+        this->v->addVisualModel (this->cv1);
+
+        // Axon centroids, final positions
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
+        this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        this->cv->viewmode = netvisual_viewmode::actual;
+        this->cv->finalize();
+        std::stringstream ssf;
+        ssf << "t=" << this->conf->getInt("steps", -1);
+        this->cv->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (this->cv, std::string("Tectal"));
+        this->v->addVisualModel (this->cv);
+
+        // Selected axons: This one gives an 'axon view'
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_C, &this->branches, &this->ax_history);
+        this->av->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->av->target_scale.compute_autoscale (0, 1);
+        this->av->finalize();
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        this->v->addVisualModel (this->av);
+
+        // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
+        this->gv->twodimensional = false;
+        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                             0, this->conf->getFloat("graph_ymax", 200.0f));
+        this->gv->policy = morph::stylepolicy::lines;
+        this->gv->ylabel = "SOS";
+        this->gv->xlabel = "Sim time";
+        this->gv->prepdata ("SOS");
+        this->gv->prepdata ("Crossings");
+        this->gv->finalize();
+        this->v->addVisualModel (this->gv);
     }
 
 #endif // VISUALISE

@@ -163,6 +163,7 @@ public:
         this->drawBoundary (idx);
     }
 
+    // The tissue boundary, indicated by dashed lines
     void drawBoundary (VBOint& idx)
     {
         std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
@@ -172,14 +173,29 @@ public:
             h *= (this->locations->domain_h-1) * this->locations->dx[1];
         }
         float _z = puckthick[2]*float{0.5001}; // Ensure boundary is visible above rest of drawing
-        this->computeLine (idx, morph::Vector<Flt, 3>({0, 0, _z}), morph::Vector<Flt, 3>({w, 0, _z}),
-                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
-        this->computeLine (idx, morph::Vector<Flt, 3>({w, 0, _z}), morph::Vector<Flt, 3>({w, h, _z}),
-                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
-        this->computeLine (idx, morph::Vector<Flt, 3>({w, h, _z}), morph::Vector<Flt, 3>({0, h, _z}),
-                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
-        this->computeLine (idx, morph::Vector<Flt, 3>({0, h, _z}), morph::Vector<Flt, 3>({0, 0, _z}),
-                           this->uz, gry, gry, this->linewidth*zoom, this->linewidth/4*zoom);
+
+        this->computeFlatDashedLine (idx,
+                                     morph::Vector<Flt, 3>({0, 0, _z}),
+                                     morph::Vector<Flt, 3>({w, 0, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->linewidth*zoom, 0.0f,
+                                     this->linewidth*5.0f, 0.4f);
+        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({w, 0, _z}), morph::Vector<Flt, 3>({w, h, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->linewidth*zoom, 0.0f,
+                                     this->linewidth*5.0f, 0.4f);
+        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({w, h, _z}), morph::Vector<Flt, 3>({0, h, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->linewidth*zoom, 0.0f,
+                                     this->linewidth*5.0f, 0.4f);
+        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({0, h, _z}), morph::Vector<Flt, 3>({0, 0, _z}),
+                                     this->uz,
+                                     gry,
+                                     this->linewidth*zoom, 0.0f,
+                                     this->linewidth*5.0f, 0.4f);
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
