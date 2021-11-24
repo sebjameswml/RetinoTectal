@@ -11,8 +11,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="205.2411mm"
-   height="315.26965mm"
-   viewBox="0 0 205.2411 315.26965"
+   height="336.43665mm"
+   viewBox="0 0 205.2411 336.43664"
    version="1.1"
    id="svg2959"
    inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/fig_chemo_manipulations.png"
@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="337.20996"
-     inkscape:cy="627.12297"
+     inkscape:zoom="1.4"
+     inkscape:cx="15.481773"
+     inkscape:cy="726.40676"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -52,7 +52,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -60,7 +60,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-2.4568477,-55.25927)">
+     transform="translate(-2.4568019,-55.25927)">
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecrot90_fig4row1.png"
        xlink:href="j4_eE_G_tecrot90_fig4row1.png"
@@ -77,8 +77,8 @@
        height="54.214607"
        preserveAspectRatio="none"
        id="image3765"
-       x="2.4568934"
-       y="102.59473" />
+       x="2.4568477"
+       y="109.47388" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecswap_fig4row3.png"
        xlink:href="j4_eE_G_tecswap_fig4row3.png"
@@ -86,8 +86,8 @@
        height="54.214615"
        preserveAspectRatio="none"
        id="image3703"
-       x="2.4568934"
-       y="149.93034" />
+       x="2.4568019"
+       y="163.68848" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_retablat_fig4row4.png"
        xlink:href="j4_eE_G_retablat_fig4row4.png"
@@ -95,8 +95,8 @@
        height="57.930939"
        preserveAspectRatio="none"
        id="image4729"
-       x="2.4568934"
-       y="197.26588" />
+       x="2.4568019"
+       y="217.90309" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecablat_fig4row5.png"
        xlink:href="j4_eE_G_tecablat_fig4row5.png"
@@ -104,8 +104,8 @@
        height="57.930939"
        preserveAspectRatio="none"
        id="image4791"
-       x="2.4568934"
-       y="248.31718" />
+       x="2.4568019"
+       y="275.83405" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_mismatch_fig4row6.png"
        xlink:href="j4_eE_G_mismatch_fig4row6.png"
@@ -113,7 +113,7 @@
        height="57.930939"
        preserveAspectRatio="none"
        id="image4853"
-       x="2.4568934"
-       y="299.36862" />
+       x="2.4568019"
+       y="333.76498" />
   </g>
 </svg>

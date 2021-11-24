@@ -377,12 +377,18 @@ struct Agent1
             this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // SOS (whole)
             this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // SOS (surround)
             this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // SOS (patch)
+            // Show RMS error
+            AgentMetrics<T> am = this->get_metrics();
+            this->sos_txt->setupText (std::to_string(am.rms[0]));
             break;
         }
         case graph_layout::h:
         {
             this->bv->reinit(); // Branches
             this->cv->reinit(); // Centroids
+            // Show RMS error
+            AgentMetrics<T> am = this->get_metrics();
+            this->sos_txt->setupText (std::to_string(am.rms[0]));
             break;
         }
         default:
@@ -461,7 +467,7 @@ struct Agent1
     }
 
     //! RNG for adding noise to gradient sampling
-    morph::RandNormal<T, std::mt19937>* gradient_rng = (morph::RandNormal<T, std::mt19937>*)0;
+    morph::RandNormal<T, std::mt19937>* gradient_rng = nullptr;
 
     //! Perform one step of the simulation
     void step()
@@ -951,7 +957,7 @@ struct Agent1
         this->setup_expt_suggests();
 #ifdef VISUALISE
         this->ax_history.clear();
-        if (this->gv != (morph::GraphVisual<T>*)0) { this->gv->clear(); }
+        if (this->gv != nullptr) { this->gv->clear(); }
 #endif
     }
 
@@ -1380,9 +1386,9 @@ struct Agent1
     }
 
     // Updatable simulation time text
-    morph::VisualTextModel* sim_time_txt = (morph::VisualTextModel*)0;
-    morph::VisualTextModel* sos_txt = (morph::VisualTextModel*)0;
-    morph::VisualTextModel* crossings_txt = (morph::VisualTextModel*)0;
+    morph::VisualTextModel* sim_time_txt = nullptr;
+    morph::VisualTextModel* sos_txt = nullptr;
+    morph::VisualTextModel* crossings_txt = nullptr;
 
     // Set up the simulation visualisation scene. This depends on whether this->layout
     // is graph_layout::a, ::b or ::c, etc.
@@ -1875,13 +1881,23 @@ struct Agent1
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 200.0f));
         this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "Error";
+        this->gv->ylabel = "RMS Error";
         this->gv->xlabel = "Sim time";
-        this->gv->prepdata ("rms all");
-        this->gv->prepdata ("rms surr.");
-        this->gv->prepdata ("rms patch");
+        this->gv->prepdata ("All");
+        this->gv->prepdata ("Surround");
+        this->gv->prepdata ("Graft");
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
+
+        // A 'text' only visual model to display the RMS error
+        morph::VisualModel* sosvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
+        float ty = 0.87f; // text y position
+        float l_x = 0.55f; // text x pos
+        float th = 0.1f; // text height
+        sosvm->addLabel ("All: ", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        ty -= 2*th;
+        v->addVisualModel (sosvm);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -1934,6 +1950,16 @@ struct Agent1
         this->gv->xlabel = "N ---------- retina ---------> T";
         this->gv->finalize();
         v->addVisualModel (this->gv);
+
+        // A 'text' only visual model to display the RMS error
+        morph::VisualModel* sosvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
+        float ty = 0.87f; // text y position
+        float l_x = 0.55f; // text x pos
+        float th = 0.1f; // text height
+        sosvm->addLabel ("Error: ", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        ty -= 2*th;
+        v->addVisualModel (sosvm);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
