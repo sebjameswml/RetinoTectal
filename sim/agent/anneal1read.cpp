@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <map>
 #include <morph/vVector.h>
+#include <morph/Config.h>
 #include <morph/HdfData.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>

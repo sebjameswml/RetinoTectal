@@ -92,6 +92,7 @@ int main (int argc, char **argv)
             Agent1<float, 4, branch_geb<float, 4>> model (conf, mconf);
             model.showtissue();
         } else {
+            std::cout << "branch_model: " << branch_model << std::endl;
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
             model.showtissue();
         }

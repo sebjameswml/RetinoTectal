@@ -643,10 +643,10 @@ struct Agent1
     {
         morph::Vector<expression_direction, N> dirns;
         for (auto& dd : dirns) { dd = expression_direction::x_increasing; }
-        Json::Value arr = this->mconf->getArray (dirns_tag);
+        nlohmann::json arr = this->mconf->get (dirns_tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
-                std::string d = arr[i].asString();
+                std::string d = arr[i].get<std::string>();
                 if (d == "+x" || d == "x") {
                     dirns[i] = expression_direction::x_increasing;
                 } else if (d == "-x") {
@@ -673,10 +673,10 @@ struct Agent1
     {
         morph::Vector<interaction, N> interactions;
         for (auto& ii : interactions) { ii = interaction::null; }
-        Json::Value arr = this->mconf->getArray (interactions_tag);
+        nlohmann::json arr = this->mconf->get (interactions_tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
-                int ai = arr[i].asInt();
+                int ai = arr[i];
                 if (ai < 0) {
                     interactions[i] = interaction::repulsion;
                 } else if (ai > 0) {
@@ -695,10 +695,10 @@ struct Agent1
     {
         morph::Vector<expression_form, N> function_forms;
         for (auto& ff : function_forms) { ff = expression_form::lin; }
-        Json::Value arr = this->mconf->getArray (tag);
+        nlohmann::json arr = this->mconf->get (tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
-                function_forms[i] = (expression_form)arr[i].asUInt();
+                function_forms[i] = (expression_form)arr[i].get<unsigned int>();
             }
         } else {
             std::stringstream ee;
@@ -1041,11 +1041,16 @@ struct Agent1
         bool manipulated = false;
 
         // Graft swap manipulation
-        Json::Value gs_coords = this->conf->getValue ("graftswap_coords");
-        //std::cout << gs_coords << std::endl;
-        Json::Value l1 = gs_coords.get ("locn1", "[0,0]");
-        Json::Value l2 = gs_coords.get ("locn2", "[0,0]");
-        Json::Value ps = gs_coords.get ("patchsize", "[0,0]");
+        nlohmann::json gs_coords = this->conf->root["graftswap_coords"];
+        std::cout << gs_coords << std::endl;
+        nlohmann::json l1;
+        if (gs_coords.contains("locn")) {
+            l1 = gs_coords["locn1"]; // def [0,0]
+        } else {
+            l1.push_back (0); l1.push_back (0);
+        }
+        nlohmann::json l2 = gs_coords["locn2"]; //gs_coords.get ("locn2", "[0,0]");
+        nlohmann::json ps = gs_coords["patchsize"];// gs_coords.get ("patchsize", "[0,0]");
         // now, those are only used for rotation and graftswap, so only error on that combination
         if ((this->conf->getBool ("tectal_graftswap", false)
              || this->conf->getBool ("retinal_graftswap", false)
@@ -1059,9 +1064,9 @@ struct Agent1
             || this->conf->getBool ("retinal_graftswap", false)
             || (this->conf->getUInt ("retinal_rotations", 0) > 0)
             || (this->conf->getUInt ("tectal_rotations", 0) > 0) ) {
-            l1v = { l1[0].asUInt(), l1[1].asUInt() };
-            l2v = { l2[0].asUInt(), l2[1].asUInt() };
-            psv = { ps[0].asUInt(), ps[1].asUInt() };
+            l1v = { l1[0].get<unsigned int>(), l1[1].get<unsigned int>() };
+            l2v = { l2[0].get<unsigned int>(), l2[1].get<unsigned int>() };
+            psv = { ps[0].get<unsigned int>(), ps[1].get<unsigned int>() };
             std::cout << "Location 1: " << l1v << " Location 2: " << l2v << " patch size: " << psv << std::endl;
         }
 
@@ -1078,8 +1083,8 @@ struct Agent1
 
         // Graft and rotate manipulation
         if (l1.size() > 1 && ps.size() > 1) {
-            l1v = { l1[0].asUInt(), l1[1].asUInt() };
-            psv = { ps[0].asUInt(), ps[1].asUInt() };
+            l1v = { l1[0].get<unsigned int>(), l1[1].get<unsigned int>() };
+            psv = { ps[0].get<unsigned int>(), ps[1].get<unsigned int>() };
             if (this->conf->getUInt ("retinal_rotations", 0) > 0) {
                 if (psv[0] != psv[1]) {
                     throw std::runtime_error ("patch size has to be square for rotations");
@@ -1181,11 +1186,11 @@ struct Agent1
         std::cout << "Receptor expression range: " << rcpt_min << " to " << rcpt_max << std::endl;
 
         // Which axons to see?
-        Json::Value seelist = this->conf->getArray ("seeaxons");
+        nlohmann::json seelist = this->conf->get ("seeaxons");
         if (seelist.size() > 0) {
             seeaxons.clear();
             for (unsigned int i = 0; i < seelist.size(); ++i) {
-                seeaxons.insert (seelist[i].asUInt());
+                seeaxons.insert (seelist[i].get<unsigned int>());
             }
         }
 

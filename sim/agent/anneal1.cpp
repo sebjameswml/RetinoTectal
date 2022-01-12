@@ -202,10 +202,10 @@ int main (int argc, char **argv)
     std::vector<std::string> params;
     morph::vVector<double> param_values;
     morph::vVector<morph::Vector<double,2>> param_ranges;
-    Json::Value params_j = sconf->getArray ("params");
+    nlohmann::json params_j = sconf->get("params");
     for (auto p : params_j) {
-        params.push_back (p.asString());
-        param_values.push_back (mconf->getFloat(p.asString(), 0));
+        params.push_back (p.get<std::string>());
+        param_values.push_back (mconf->getFloat(p.get<std::string>(), 0));
         // Set ranges for the params
         if (params.back() == "r_c") {
             param_ranges.push_back ({0.001, 0.5});

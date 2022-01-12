@@ -193,7 +193,7 @@ int main (int argc, char **argv)
     DBG ("steps to simulate: " << steps);
 
     // Guidance molecule array of parameters:
-    const Json::Value guid = conf.getArray("guidance");
+    auto guid = conf.get ("guidance");
     unsigned int M_GUID = static_cast<unsigned int>(guid.size());
 
 #ifdef COMPILE_PLOTTING
@@ -287,9 +287,10 @@ int main (int argc, char **argv)
 
     // Index through guidance molecule parameters:
     for (unsigned int j = 0; j < guid.size(); ++j) {
-        Json::Value v = guid[j];
+        auto v = guid[j];
         // What guidance molecule method will we use?
-        std::string rmeth = v.get ("shape", "Sigmoid1D").asString();
+        std::string rmeth = v["shape"].get<std::string>();
+        if (rmeth.empty()) { rmeth = "Sigmoid1D"; }
         DBG ("guidance molecule shape: " << rmeth);
         if (rmeth == "Sigmoid1D") {
             RD.rhoMethod[j] = FieldShape::Sigmoid1D;
@@ -305,12 +306,12 @@ int main (int argc, char **argv)
             RD.rhoMethod[j] = FieldShape::CircLinear2D;
         }
         // Set up guidance molecule method parameters
-        RD.guidance_gain.push_back (v.get("gain", 1.0).asDouble());
+        RD.guidance_gain.push_back (v.contains("gain") ? v["gain"].get<FLT>() : FLT{1});
         DBG2 ("guidance modelecule gain: " << RD.guidance_gain.back());
-        RD.guidance_phi.push_back (v.get("phi", 1.0).asDouble());
-        RD.guidance_width.push_back (v.get("width", 1.0).asDouble());
-        RD.guidance_offset.push_back (v.get("offset", 1.0).asDouble());
-        RD.guidance_time_onset.push_back (v.get("time_onset", 0).asUInt());
+        RD.guidance_phi.push_back (v.contains("phi") ? v["phi"].get<FLT>() : FLT{1});
+        RD.guidance_width.push_back (v.contains("width") ? v["width"].get<FLT>() : FLT{1});
+        RD.guidance_offset.push_back (v.contains("offset") ? v["offset"].get<FLT>() : FLT{1});
+        RD.guidance_time_onset.push_back (v.contains("time_onset") ? v["time_onset"].get<unsigned int>() : 0);
     }
 
     // Now have the guidance molecule densities/gradients computed, call init()
