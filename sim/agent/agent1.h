@@ -1044,7 +1044,7 @@ struct Agent1
         nlohmann::json gs_coords = this->conf->root["graftswap_coords"];
         std::cout << gs_coords << std::endl;
         nlohmann::json l1;
-        if (gs_coords.contains("locn")) {
+        if (gs_coords.contains("locn1")) {
             l1 = gs_coords["locn1"]; // def [0,0]
         } else {
             l1.push_back (0); l1.push_back (0);
