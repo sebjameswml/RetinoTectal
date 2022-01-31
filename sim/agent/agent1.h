@@ -319,7 +319,7 @@ struct Agent1
             this->cv->reinit();  // Centroids to end
             this->tcv->reinit(); // Experiment
             this->av->reinit();  // Selected axons
-            this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0); // SOS/Crossings
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
             if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
@@ -339,7 +339,7 @@ struct Agent1
             this->cv->reinit();  // Centroids
             this->tcv->reinit(); // Experiment
             this->av->reinit();  // Selected axons
-            this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0); // SOS/Crossings
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
             if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
@@ -364,7 +364,7 @@ struct Agent1
             this->cv->reinit(); // Centroids
             this->sim_time_txt->setupText (std::to_string(stepnum)); // Text
             AgentMetrics<T> am = this->get_metrics();
-            this->sos_txt->setupText (am.sos.str());
+            this->emetric_txt->setupText (am.rms.str());
             this->crossings_txt->setupText (am.crosscount.str());
             break;
         }
@@ -377,7 +377,7 @@ struct Agent1
             this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // SOS (patch)
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
-            this->sos_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(am.rms[0]));
             break;
         }
         case graph_layout::h:
@@ -386,7 +386,7 @@ struct Agent1
             this->cv->reinit(); // Centroids
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
-            this->sos_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(am.rms[0]));
             break;
         }
         case graph_layout::i:
@@ -408,7 +408,7 @@ struct Agent1
             this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // SOS (patch)
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
-            this->sos_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(am.rms[0]));
             break;
         }
         case graph_layout::k:
@@ -416,7 +416,7 @@ struct Agent1
             this->cv->reinit(); // Centroids
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
-            this->sos_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(am.rms[0]));
             break;
         }
         default:
@@ -1387,7 +1387,7 @@ struct Agent1
 
     // Updatable simulation time text
     morph::VisualTextModel* sim_time_txt = nullptr;
-    morph::VisualTextModel* sos_txt = nullptr;
+    morph::VisualTextModel* emetric_txt = nullptr;
     morph::VisualTextModel* crossings_txt = nullptr;
 
     // Set up the simulation visualisation scene. This depends on whether this->layout
@@ -1582,15 +1582,17 @@ struct Agent1
             this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                                  0, this->conf->getFloat("graph_ymax", 200.0f));
             this->gv->policy = morph::stylepolicy::lines;
-            this->gv->ylabel = "SOS";
+            this->gv->ylabel = "Error metric";
             this->gv->xlabel = "Sim time";
-            this->gv->prepdata ("SOS");
-            this->gv->prepdata ("Crossings");
+            this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::epsilon));
+            this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::eta));
         } else {
             this->gv->setlimits (0, 1, 0, 1);
             this->gv->policy = morph::stylepolicy::markers;
-            this->gv->ylabel = "R ---------- tectum ---------> C";
-            this->gv->xlabel = "N ---------- retina ---------> T";
+            this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+            + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
+            this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+            + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
             //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
         }
         this->gv->finalize();
@@ -1757,10 +1759,10 @@ struct Agent1
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 200.0f));
         this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "SOS";
+        this->gv->ylabel = "Error metric";
         this->gv->xlabel = "Sim time";
-        this->gv->prepdata ("SOS");
-        this->gv->prepdata ("Crossings");
+        this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::epsilon));
+        this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::eta));
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
 
@@ -1832,8 +1834,10 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R ---------- tectum ---------> C";
-        this->gv->xlabel = "N ---------- retina ---------> T";
+        this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+        + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
+        this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+        + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
         v->addVisualModel (this->gv);
     }
 
@@ -1876,7 +1880,7 @@ struct Agent1
         jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
         ty -= th;
         jtvm->addLabel ("sos: ", {l_x, ty, 0.0f});
-        jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         jtvm->addLabel ("crossings: ", {l_x, ty, 0.0f});
         jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->crossings_txt);
@@ -1939,7 +1943,7 @@ struct Agent1
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
         sosvm->addLabel ("All: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -1990,8 +1994,10 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R ---------- tectum ---------> C";
-        this->gv->xlabel = "N ---------- retina ---------> T";
+        this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+        + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
+        this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+        + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
         this->gv->finalize();
         v->addVisualModel (this->gv);
 
@@ -2001,7 +2007,7 @@ struct Agent1
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
         sosvm->addLabel ("Error: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -2061,9 +2067,9 @@ struct Agent1
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 200.0f));
         this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "SOS";
+        this->gv->ylabel = "Error metric";
         this->gv->xlabel = "Sim time";
-        this->gv->prepdata ("SOS");
+        this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::epsilon));
         this->gv->prepdata ("Crossings");
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
@@ -2106,7 +2112,7 @@ struct Agent1
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
         sosvm->addLabel ("All: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -2140,8 +2146,11 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R ---------- tectum ---------> C";
-        this->gv->xlabel = "N ---------- retina ---------> T";
+        this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+        + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
+        this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
+        + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
+
         this->gv->finalize();
         v->addVisualModel (this->gv);
 
@@ -2151,7 +2160,7 @@ struct Agent1
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
         sosvm->addLabel ("Error: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->sos_txt);
+        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
