@@ -1939,7 +1939,7 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 1.0f));
-        this->gv->policy = morph::stylepolicy::lines;unicode::toUtf8(unicode::epsilon) + "=";
+        this->gv->policy = morph::stylepolicy::lines;
         this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
         this->gv->xlabel = "t";
         this->gv->prepdata ("All");
@@ -1953,8 +1953,8 @@ struct Agent1
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x +0.1f, ty/*-0.8f*th*/, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "[All]=", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -2015,8 +2015,8 @@ struct Agent1
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        sosvm->addLabel ("Error: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -2125,8 +2125,8 @@ struct Agent1
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        sosvm->addLabel ("All: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "[All]=", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -2170,8 +2170,8 @@ struct Agent1
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        sosvm->addLabel ("Error: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
