@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="337.20996"
-     inkscape:cy="576.61715"
+     inkscape:zoom="1.4"
+     inkscape:cx="703.49049"
+     inkscape:cy="562.12373"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,11 +39,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="3840"
-     inkscape:window-height="2043"
-     inkscape:window-x="0"
-     inkscape:window-y="41"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="1903"
+     inkscape:window-height="1868"
+     inkscape:window-x="1798"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata2956">
     <rdf:RDF>
@@ -52,7 +52,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,58 +62,58 @@
      id="layer1"
      transform="translate(-2.4568477,-55.25927)">
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecrot90_fig4row1.png"
-       xlink:href="j4_eE_G_tecrot90_fig4row1.png"
-       width="205.24106"
-       height="54.214615"
-       preserveAspectRatio="none"
-       id="image3625"
-       x="2.4568477"
-       y="55.25927" />
-    <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecrot180_fig4row2.png"
        xlink:href="j4_eE_G_tecrot180_fig4row2.png"
-       width="205.24101"
-       height="54.214607"
-       preserveAspectRatio="none"
+       y="106.82537"
+       x="2.4421077"
        id="image3765"
-       x="2.4568934"
-       y="102.59473" />
+       preserveAspectRatio="none"
+       height="47.468567"
+       width="205.09067" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecswap_fig4row3.png"
        xlink:href="j4_eE_G_tecswap_fig4row3.png"
-       width="205.24106"
-       height="54.214615"
-       preserveAspectRatio="none"
+       y="156.52579"
+       x="2.4421077"
        id="image3703"
-       x="2.4568934"
-       y="149.93034" />
+       preserveAspectRatio="none"
+       height="47.468567"
+       width="205.09067" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_retablat_fig4row4.png"
        xlink:href="j4_eE_G_retablat_fig4row4.png"
-       width="205.24106"
-       height="57.930939"
-       preserveAspectRatio="none"
+       y="203.99435"
+       x="2.4421077"
        id="image4729"
-       x="2.4568934"
-       y="197.26588" />
+       preserveAspectRatio="none"
+       height="47.468567"
+       width="205.09067" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecablat_fig4row5.png"
        xlink:href="j4_eE_G_tecablat_fig4row5.png"
-       width="205.24106"
-       height="57.930939"
-       preserveAspectRatio="none"
+       y="298.93149"
+       x="2.4421077"
        id="image4791"
-       x="2.4568934"
-       y="248.31718" />
+       preserveAspectRatio="none"
+       height="47.468567"
+       width="205.09067" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_mismatch_fig4row6.png"
        xlink:href="j4_eE_G_mismatch_fig4row6.png"
-       width="205.24106"
-       height="57.930939"
-       preserveAspectRatio="none"
+       y="251.46292"
+       x="2.4421077"
        id="image4853"
-       x="2.4568934"
-       y="299.36862" />
+       preserveAspectRatio="none"
+       height="47.468567"
+       width="205.09067" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_eE_G_tecrot90_fig4row1.png"
+       xlink:href="j4_eE_G_tecrot90_fig4row1.png"
+       width="205.09067"
+       height="47.468567"
+       preserveAspectRatio="none"
+       id="image4580"
+       x="2.4421077"
+       y="57.077175" />
   </g>
 </svg>
