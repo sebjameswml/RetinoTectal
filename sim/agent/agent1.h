@@ -45,6 +45,10 @@ static constexpr bool visualise = true;
 static constexpr bool visualise = false;
 #endif
 
+// Permit one using directive, to shorten morph::unicode
+#include <morph/unicode.h>
+using morph::unicode;
+
 // Declare class
 template<typename T> struct AgentMetrics;
 // Declare operator<< function
@@ -394,7 +398,7 @@ struct Agent1
             if (stepnum <= this->freeze_times[1]) { this->cv1->reinit(); } // Time freeze branches
             this->cv->reinit();  // Centroids
             this->av->reinit();  // Selected axons
-            this->gv->append ((float)stepnum, this->ax_centroids.sos(), 0); // SOS/Crossings
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
             if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
                 this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
             }
@@ -1420,7 +1424,7 @@ struct Agent1
         case graph_layout::i:
         {
             // 1x4
-            wdefault = 2480; hdefault = 630;
+            wdefault = 2480; hdefault = 574;
             break;
         }
         case graph_layout::c:
@@ -1466,11 +1470,11 @@ struct Agent1
         } else if (this->layout == graph_layout::f) {
             this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
         } else if (this->layout == graph_layout::g) {
-            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
+            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.60000014);
         } else if (this->layout == graph_layout::h) {
-            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
+            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.60000014);
         } else if (this->layout == graph_layout::i) {
-            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.79999995);
+            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.60000014);
         } else if (this->layout == graph_layout::j) {
             this->v->setSceneTrans (0.309693903,-0.021264188,-2.8000021);
         } else if (this->layout == graph_layout::k) {
@@ -1579,20 +1583,23 @@ struct Agent1
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
         this->gv->twodimensional = false;
         if (this->layout == graph_layout::a) {
+            this->gv->axisstyle = morph::axisstyle::twinax;
+            this->gv->setsize (0.9f, 1.0f);
             this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                                 0, this->conf->getFloat("graph_ymax", 200.0f));
+                                 0, this->conf->getFloat("graph_ymax", 1.0f),
+                                 0, this->conf->getFloat("graph_ymax2", 200.0f));
+            this->gv->axislabelgap = 0.03f;
             this->gv->policy = morph::stylepolicy::lines;
-            this->gv->ylabel = "Error metric";
-            this->gv->xlabel = "Sim time";
-            this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::epsilon));
-            this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::eta));
+            this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
+            this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
+            this->gv->xlabel = "t";
+            this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
+            this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
         } else {
             this->gv->setlimits (0, 1, 0, 1);
             this->gv->policy = morph::stylepolicy::markers;
-            this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-            + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
-            this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-            + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
+            this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+            this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
             //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
         }
         this->gv->finalize();
@@ -1754,15 +1761,21 @@ struct Agent1
         this->v->addVisualModel (this->cv);
 
         // A graph of the SOS diffs between axon position centroids and target positions from retina
+        // SEB working on this one
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F);
+        this->gv->axisstyle = morph::axisstyle::twinax;
         this->gv->twodimensional = false;
+        this->gv->setsize (0.9f, 1.0f);
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 200.0f));
+                             0, this->conf->getFloat("graph_ymax", 1.0f),
+                             0, this->conf->getFloat("graph_ymax2", 200.0f));
+        this->gv->axislabelgap = 0.03f;
         this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "Error metric";
-        this->gv->xlabel = "Sim time";
-        this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::epsilon));
-        this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::eta));
+        this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
+        this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
+        this->gv->xlabel = "t";
+        this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
+        this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
 
@@ -1834,10 +1847,8 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-        + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-        + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
+        this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
         v->addVisualModel (this->gv);
     }
 
@@ -1874,7 +1885,7 @@ struct Agent1
         float th = 0.1f; // text height
         float l_x = 0.0f;
         float cw = 0.1f;
-        jtvm->addLabel ("Sim time", {l_x, ty, 0.0f});
+        jtvm->addLabel ("t", {l_x, ty, 0.0f});
         ty -= th;
         jtvm->addLabel ("t = ", {l_x, ty, 0.0f});
         jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
@@ -1927,10 +1938,10 @@ struct Agent1
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 200.0f));
-        this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "RMS Error";
-        this->gv->xlabel = "Sim time";
+                             0, this->conf->getFloat("graph_ymax", 1.0f));
+        this->gv->policy = morph::stylepolicy::lines;unicode::toUtf8(unicode::epsilon) + "=";
+        this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
+        this->gv->xlabel = "t";
         this->gv->prepdata ("All");
         this->gv->prepdata ("Surround");
         this->gv->prepdata ("Graft");
@@ -1942,8 +1953,8 @@ struct Agent1
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        sosvm->addLabel ("All: ", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
+        sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
+        sosvm->addLabel ("0", {l_x +0.1f, ty/*-0.8f*th*/, 0.0f}, this->emetric_txt);
         ty -= 2*th;
         v->addVisualModel (sosvm);
 
@@ -1994,10 +2005,8 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-        + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-        + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
+        this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
         this->gv->finalize();
         v->addVisualModel (this->gv);
 
@@ -2063,14 +2072,19 @@ struct Agent1
 
         // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
+        this->gv->axisstyle = morph::axisstyle::twinax;
         this->gv->twodimensional = false;
+        this->gv->setsize (0.9f, 1.0f);
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 200.0f));
+                             0, this->conf->getFloat("graph_ymax", 1.0f),
+                             0, this->conf->getFloat("graph_ymax2", 200.0f));
+        this->gv->axislabelgap = 0.03f;
         this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "Error metric";
-        this->gv->xlabel = "Sim time";
-        this->gv->prepdata (morph::unicode::toUtf8 (morph::unicode::epsilon));
-        this->gv->prepdata ("Crossings");
+        this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
+        this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
+        this->gv->xlabel = "t";
+        this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
+        this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
     }
@@ -2096,10 +2110,10 @@ struct Agent1
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 200.0f));
+                             0, this->conf->getFloat("graph_ymax", 1.0f));
         this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = "RMS Error";
-        this->gv->xlabel = "Sim time";
+        this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
+        this->gv->xlabel = "t";
         this->gv->prepdata ("All");
         this->gv->prepdata ("Surround");
         this->gv->prepdata ("Graft");
@@ -2146,11 +2160,8 @@ struct Agent1
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-        + " tectum " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + morph::unicode::toUtf8 (morph::unicode::longrightarrow)
-        + " retina " + morph::unicode::toUtf8 (morph::unicode::longrightarrow) + " Y";
-
+        this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
         this->gv->finalize();
         v->addVisualModel (this->gv);
 
