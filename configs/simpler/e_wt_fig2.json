@@ -27,5 +27,6 @@
     "desc_steps" : "How many simulation steps should be computed?",
     "steps" : 300,
 
-    "graph_ymax" : 200
+    "graph_ymax" : 0.75,
+    "graph_ymax2" : 150
 }

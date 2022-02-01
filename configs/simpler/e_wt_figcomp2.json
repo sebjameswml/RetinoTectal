@@ -23,7 +23,8 @@
     "goslow" : false,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 500,
+    "steps" : 1000,
 
-    "graph_ymax" : 200
+    "graph_ymax" : 0.75,
+    "graph_ymax2" : 150
 }
