@@ -207,6 +207,7 @@ Time to stop; agent-based modelling of chemoaffinity with competition
 \vspace{-1.8cm} % HACK bring the introduction up towards the title. It
                 % would be better to do this with titling in \maketitle
 
+\color{grey}
 % Note this is the SfN draft abstract, and will need rewriting.
 \emph{In the classic Chemoaffinity theory, the retinotectal axon projection is
 thought to use pairs of orthogonal signalling gradients in the retina to
@@ -246,6 +247,30 @@ attraction (gradient ascent). Thus, we find that a model analogous to the one
 we presented in \citet{james_modelling_2020} that accounts for murine barrel
 patterning is also a candidate mechanism for the arrangement of the more
 continuous retinotectal system.}
+\color{black}
+
+\emph{The development of the axonal projection from the retina to the tectum
+is an important model for the study of how the brain organises its
+connectivity during development. In fish, amphibians and mammals, retinal
+ganglion cells grow their axons into the brain and make topographically
+ordered connections on the tectum.
+%
+Computational models seeking to provide a plausible mechanism by which this
+system can order itself have existed since the 1970s. However, most of these
+have been phenomenological, some only possible with the invokation of a global
+supervising process that provides the state of the entire system to each
+axonal agent.
+%
+Here, we investigated whether a purely self-organising model based on receptor
+and ligand interactions could be found, that would successfully reproduce both
+the normal development of the projection and its behaviour under the many
+experimental manipulations carried out by neurobiologists.
+%
+We show that a model based on gradient following (via receptor-ligand
+interactions) combined with receptor-receptor mediated axonal repulsion can
+account for a broad range of experimental results, with information only being
+transferred by nearest-neighbour interactions.
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -256,32 +281,38 @@ into functional networks. This projection connects the light-gathering cells
 in the retina to movement-related cells in the optic tectum (known as the
 superior colliculus in mammals). Light sources originating close to each other
 in the environment tend to activate retinal ganglion cells (either
-directly \cite{iRGC_citation} or indirectly via rods and cones) situated close
-together in the eye so that an image of the environment is formed on the
-retinal surface. It has been discovered that the topography of the retina is
-preserved within brain regions that process this information such that cells
-which are adjacent within the retina primarily excite cells adjacent in the
-tectum. This indicates that during development there must exist a mechanism
-which ensures the correct arrangement of the axons which leave the retina and
-connect to cells in the tectum.
+directly \cite{iRGC_citation} or indirectly via rods and
+cones \cite{rods_cones_citations}) situated close together in the eye so that
+an image of the environment is formed on the retinal surface. It has been
+discovered that the topography of the retina is preserved within brain regions
+that process this information such that cells which are adjacent within the
+retina primarily excite cells adjacent in the tectum. This indicates that
+during development there must exist a mechanism which ensures the correct
+arrangement of the axons which leave the retina and connect to cells in the
+tectum.
 
 One reason for the success of the study of the retinotectal projection is its
 capacity to be experimentally manipulated. In some non-mammalian species, both
 the retina and the tectum can be partially ablated, or even physically
 reorganised in-vivo, after which axons regrow to restore the order and
-function of the system for the individual animal. This manipulability was
-exploited in influential work by R. W. Sperry and co-workers during the
-mid-twentieth century, leading to Sperry's 1963 summary of
-the \emph{chemoaffinity theory} \citep{sperry_chemoaffinity_1963} which
-proposes the existence of morphogenetic gradients that guide axons to their
-destination. The chemoaffinity theory was given robust support by the
-discovery of the ephrin ligands and their receptors \citep{cheng_complementary_1995,drescher_vitro_1995}
-which have been shown to form into graded expression fields in the
-retina \citep{braisted_graded_1997}, tectum \citep{braisted_graded_1997,feldheim_genetic_2000} as well as in other
+function of the system for the individual animal. Influential work by
+R. W. Sperry and co-workers during the mid-twentieth century exploited this
+manipulability, leading to Sperry's 1963 summary of the \emph{chemoaffinity
+theory} \citep{sperry_chemoaffinity_1963} which proposes the existence of
+morphogenetic gradients that guide axons to their destination. The
+chemoaffinity theory was given robust support by the discovery of the ephrin
+ligands and their
+receptors \citep{cheng_complementary_1995,drescher_vitro_1995} which have been
+shown to form into graded expression fields in the
+retina \citep{braisted_graded_1997},
+tectum \citep{braisted_graded_1997,feldheim_genetic_2000} as well as in other
 sensory systems, such as the somatosensory
 system \citep{vanderhaeghen_mapping_2000}. The Ephrin ligands have a clear
-effect on axonal outgrowth, as shown in in-vitro \citep{cheng_complementary_1995,drescher_vitro_1995,hansen_retinal_2004} and
-in-vivo \citep{frisen_ephrin-a5_1998,rodger_transient_2000,mann_topographic_2002,hindges_ephb_2002} studies.
+effect on axonal outgrowth, as shown
+in-vitro \citep{cheng_complementary_1995,drescher_vitro_1995,hansen_retinal_2004}
+and by
+in-vivo \citep{frisen_ephrin-a5_1998,rodger_transient_2000,mann_topographic_2002,hindges_ephb_2002}
+studies. However, a gradient fo
 %
 % A-P:
 %
@@ -300,16 +331,16 @@ in-vivo \citep{frisen_ephrin-a5_1998,rodger_transient_2000,mann_topographic_2002
 % Ryk/Fz (retina) and Wnt3 (tectum) (Flanahan, 2006)
 %
 
-It is tempting to consider the retinotectal projection well understood. With a
-comprehensive theory supported by a biochemical mechanism, is there anything
-left to understand? That question can be answered by reviewing retinotectal
-modelling papers.
+%It is tempting to consider the retinotectal projection well understood. With a
+%comprehensive theory supported by a biochemical mechanism, is there anything
+%left to understand? That question can be answered by reviewing retinotectal
+%modelling papers.
 
-Mini-review here, which contrasts some of the modelling papers. The upshot is
-that a central problem with models is not how the axons know how to get closer
-to their destination, but how they know they have \emph{arrived} at their true
-destination. Also make the point that many of the models are phenomenological
-in nature and do not elucidate the mechanisms behind the arrangement.
+%Mini-review here, which contrasts some of the modelling papers. The upshot is
+%that a central problem with models is not how the axons know how to get closer
+%to their destination, but how they know they have \emph{arrived} at their true
+%destination. Also make the point that many of the models are phenomenological
+%in nature and do not elucidate the mechanisms behind the arrangement.%
 
 In a recent paper, we proposed a self-organising mechanism, based on
 morphogenetic signalling gradients, which can arrange
@@ -652,7 +683,7 @@ element distance. As there are four ligands expressed on the tectum, there are
 four pairs of gradient maps, each of which is shown in Fig.\,\ref{f:trot90}.
 
 % Visualisation of ligand expression and gradients on the tectum for the
-% graft-rotate 90 degrees simulated surgical manipulation
+% graft-rotated 90 degrees simulated surgical manipulation
 % ./build/sim/agent/tissuevis configs/simpler/m_eE_G.json configs/simpler/e_tecrot90_fig4row1.json
 %
 \begin{figure}
@@ -669,13 +700,6 @@ are a 180\degree~rotation (Fig\,\ref{f:tmanip}A), a graft-swap manipulation
 and ablation of half the tectum (Fig\,\ref{f:tmanip}D). A mismatch
 manipulation was also performed in which which half of the retina is removed
 along with the half of the tectum to which the remaining retina would project.
-
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/expressions_manipulations.png}
-\caption{Ligand expression and gradients on the tectum for the
-other simulated surgical manipulations}
-\label{f:tmanip}
-\end{figure}
 
 Fig\,\ref{f:chsurg} shows the results of 6 simulated surgical
 manipulations. In row A, a patch of tectal tissue has been cut out and rotated
@@ -823,7 +847,7 @@ shows the $\mathbf{GC}$ simulation with these parameters.
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/fig_GC_surgical.png}
 \caption{$\mathbf{GC}$ model, surgical manipulations}
-\label{f:GC}
+\label{f:GCsurg}
 \end{figure}
 
 \subsection*{Receptor-receptor axon-axon interactions (GI)}
@@ -851,6 +875,8 @@ W_{\!_I}(d_{kb}) = \begin{cases}
 \end{equation}
 $r_{i,k}$ is the expression of receptor $i$ on branch $k$.
 
+See Fig.\,\ref{f:GI} and Fig.\,\ref{f:GIsurg}.
+
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/j4_ee_GI_best_1_wt_figcomp2.png}
@@ -862,7 +888,7 @@ $r_{i,k}$ is the expression of receptor $i$ on branch $k$.
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/fig_GI_surgical.png}
 \caption{$\mathbf{GI}$ model, surgical manipulations}
-\label{f:GI}
+\label{f:GIsurg}
 \end{figure}
 
 \subsection*{Receptor-ligand axon-axon interactions (GJ)}
@@ -888,19 +914,7 @@ The sign of $Q_J$ (which is dependent on the values of $F_i$) determines whether
 the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
 expression of ligand $i$ on branch $k$.
 
-% ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_figcomp3.png}
-\caption{$\mathbf{GJ}$ model}
-\label{f:GJ}
-\end{figure}
-
-% ./scripts/fig_GJ_surgical.sh
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_GJ_surgical.png}
-\caption{$\mathbf{GJ}$ model, surgical manipulations}
-\label{f:GJ}
-\end{figure}
+See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
 \subsection*{Single axon behaviour}
 
@@ -921,6 +935,39 @@ Discussion goes here.
 \selectlanguage{English}
 \bibliographystyle{apalike}
 \bibliography{RetinoTectal}
+
+
+%
+% Supplementary figures in an appendix
+%
+\appendix
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{figure}{0}
+
+\section*{Supplementary figures}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/expressions_manipulations.png}
+\caption{Ligand expression and gradients on the tectum for the
+other simulated surgical manipulations}
+\label{f:tmanip}
+\end{figure}
+
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_figcomp3.png}
+\caption{$\mathbf{GJ}$ model}
+\label{f:GJ}
+\end{figure}
+
+% ./scripts/fig_GJ_surgical.sh
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/fig_GJ_surgical.png}
+\caption{$\mathbf{GJ}$ model, surgical manipulations}
+\label{f:GJsurg}
+\end{figure}
+
 
 \end{document}
 

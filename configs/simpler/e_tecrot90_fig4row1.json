@@ -1,9 +1,21 @@
 {
-    "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
+    "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc. 0:a 1:b 2:c 3:d 4:e 5:f 6:g 7:h 8:i 9:j 10:k",
     "graph_ymax" : 0.75,
-    "graph_layout" : 6,
-    "win_height" : 574,
+    "graph_layout" : 5,
     "startletter" : "A",
+
+    "win_width" : 1942,
+    "win_height" : 982,
+    "st_x" : 0.1826,
+    "st_y" : -0.00947,
+    "st_z" : -3,
+    "fontsz_small" : 0.04,
+    "fontres" : 24,
+    "figlet_x" : -1.25, "figlet_y" : 1.15,
+    "expoff_x" : 1.05, "expoff_y" : -0.02,
+    "explabel_x" : 0.22, "explabel_y" : 0.5,
+    "tx" : 0.1, "ty" : 0.95, "th" : 0.1,
+    "graphb_x" : 1.8,
 
     "graftswap_coords" : { "locn1" : [6,6], "locn2" : [10,10], "patchsize" : [8,8] },
 

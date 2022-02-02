@@ -226,6 +226,7 @@ struct Agent1
 
             // Update retinal NT position vs tectal RC position graph for the 'd' layout:
             if (this->layout == graph_layout::d || this->layout == graph_layout::e) {
+
                 morph::vVector<T>nt;
                 morph::vVector<T>rc;
                 morph::vVector<T>nt_m; // manipulated
@@ -251,7 +252,8 @@ struct Agent1
                 this->gv->reinit();
                 this->v->render();
 
-            } else if (this->layout == graph_layout::h || this->layout == graph_layout::k) {
+            } else if (this->layout == graph_layout::h || this->layout == graph_layout::k ||
+                       (this->layout == graph_layout::f && this->conf->getBool("rc_vs_nt", false) == true)) {
                 // Graph layout h/k shows the nt vs rc (for the mid band of the retina/central column of the tectum?).
                 morph::vVector<T>nt;
                 morph::vVector<T>rc;
@@ -368,17 +370,28 @@ struct Agent1
             this->cv->reinit(); // Centroids
             this->sim_time_txt->setupText (std::to_string(stepnum)); // Text
             AgentMetrics<T> am = this->get_metrics();
-            this->emetric_txt->setupText (am.rms.str());
-            this->crossings_txt->setupText (am.crosscount.str());
+            std::stringstream amss, ccss;
+            amss.precision(4);
+            ccss.precision(4);
+            amss << am.rms[0];
+            ccss << am.crosscount[0];
+            this->emetric_txt->setupText (amss.str());
+            this->crossings_txt->setupText (ccss.str());
+            if (this->conf->getBool ("rc_vs_nt", false) == true) {
+            } else {
+                this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS (whole)
+                this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // RMS (surround)
+                this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // RMS (patch)
+            }
             break;
         }
         case graph_layout::g:
         {
             this->bv->reinit(); // Branches
             this->cv->reinit(); // Centroids
-            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // SOS (whole)
-            this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // SOS (surround)
-            this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // SOS (patch)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS (whole)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // RMS (surround)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // RMS (patch)
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
             this->emetric_txt->setupText (std::to_string(am.rms[0]));
@@ -407,9 +420,9 @@ struct Agent1
         case graph_layout::j:
         {
             this->cv->reinit(); // Centroids
-            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // SOS (whole)
-            this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // SOS (surround)
-            this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // SOS (patch)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS (whole)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // RMS (surround)
+            this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // RMS (patch)
             // Show RMS error
             AgentMetrics<T> am = this->get_metrics();
             this->emetric_txt->setupText (std::to_string(am.rms[0]));
@@ -1459,27 +1472,32 @@ struct Agent1
         tt += this->title;
         this->v = new morph::Visual (ww, wh, tt);
 
+        // Some code to choose the scenetrans defaults
+        float st_x = 0.0f;
+        float st_y = 0.0f;
+        float st_z = 0.0f;
         if (this->layout == graph_layout::a || this->layout == graph_layout::d) {
-            this->v->setSceneTrans (-0.3762f, 0.6880f, -5.3f);
+            st_x = -0.3762f; st_y = 0.6880f; st_z = -5.3f;
         } else if (this->layout == graph_layout::b) {
-            this->v->setSceneTrans (-0.2375f, -0.03f, -2.8f);
+            st_x = -0.2375f; st_y = -0.03f; st_z = -2.8f;
         } else if (this->layout == graph_layout::c) {
-            this->v->setSceneTrans (-0.91053f, 0.7895f, -6.1f);
+            st_x = -0.91053f; st_y = 0.7895f; st_z = -6.1f;
         } else if (this->layout == graph_layout::e) {
-            this->v->setSceneTrans (-0.890077f, -0.0236414f, -2.6f);
+            st_x = -0.890077f; st_y = -0.0236414f; st_z = -2.6f;
         } else if (this->layout == graph_layout::f) {
-            this->v->setSceneTrans (1.00190961f,0.0175217576f,-2.70000315f);
+            st_x = 1.00190961f; st_y = 0.0175217576f; st_z = -2.70000315f;
         } else if (this->layout == graph_layout::g) {
-            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.60000014);
+            st_x = -1.22557163; st_y = -0.0104022622; st_z = -2.60000014;
         } else if (this->layout == graph_layout::h) {
-            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.60000014);
+            st_x = -1.22557163; st_y = -0.0104022622; st_z = -2.60000014;
         } else if (this->layout == graph_layout::i) {
-            this->v->setSceneTrans (-1.22557163,-0.0104022622,-2.60000014);
+            st_x = -1.22557163; st_y = -0.0104022622; st_z = -2.60000014;
         } else if (this->layout == graph_layout::j) {
-            this->v->setSceneTrans (0.309693903,-0.021264188,-2.8000021);
+            st_x = 0.309693903; st_y = -0.021264188; st_z = -2.8000021;
         } else if (this->layout == graph_layout::k) {
-            this->v->setSceneTrans (0.309693903,-0.021264188,-2.8000021);
+            st_x = 0.309693903; st_y = -0.021264188; st_z = -2.8000021;
         }
+        this->v->setSceneTrans (this->conf->getFloat("st_x", st_x), this->conf->getFloat("st_y", st_y), this->conf->getFloat("st_z", st_z));
 
         if constexpr (use_ortho) {
             this->v->ptype = morph::perspective_type::orthographic;
@@ -1498,6 +1516,7 @@ struct Agent1
     void set_graph_layout()
     {
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
+        const std::string sl = this->conf->getString ("startletter", "A");
         if (this->layout == graph_layout::a           // 2 rows, 3 cols. Standard layout for investigations
             || this->layout == graph_layout::d) {     // Standard layout tweaked with graphs like in Brown et al
             this->graph_layout_ad (offset);
@@ -1508,20 +1527,16 @@ struct Agent1
         } else if (this->layout == graph_layout::e) { // Branches, centroids and the position graph
             this->graph_layout_e (offset);
         } else if (this->layout == graph_layout::f) { // Just centroids. Used by agent1_eval.cpp
-            this->graph_layout_f (offset);
+            this->graph_layout_f (offset, sl);
         } else if (this->layout == graph_layout::g) { // 1x4; expt, branches, centroids, selected
-            const std::string sl = this->conf->getString ("startletter", "A");
             this->graph_layout_g (offset, sl);
         } else if (this->layout == graph_layout::h) { // 1x4; expt, branches, centroids, ret NT vs tec RC
-            const std::string sl = this->conf->getString ("startletter", "A");
             this->graph_layout_h (offset, sl);
         } else if (this->layout == graph_layout::i) {
             this->graph_layout_i (offset);
         } else if (this->layout == graph_layout::j) { // 1x2; centroids, selected
-            const std::string sl = this->conf->getString ("startletter", "A");
             this->graph_layout_j (offset, sl);
         } else if (this->layout == graph_layout::k) { // 1x2; centroids, ret NT vs tec RC
-            const std::string sl = this->conf->getString ("startletter", "A");
             this->graph_layout_k (offset, sl);
         } else {
             throw std::runtime_error ("Unknown layout");
@@ -1579,7 +1594,7 @@ struct Agent1
 
         offset[1] -= 1.4f;
 
-        // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
+        // Graph: A graph of the RMS diffs between axon position centroids and target positions from retina
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
         this->gv->twodimensional = false;
         if (this->layout == graph_layout::a) {
@@ -1599,7 +1614,7 @@ struct Agent1
             this->gv->setlimits (0, 1, 0, 1);
             this->gv->policy = morph::stylepolicy::markers;
             this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-            this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
+            this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
             //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
         }
         this->gv->finalize();
@@ -1760,7 +1775,7 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
-        // A graph of the SOS diffs between axon position centroids and target positions from retina
+        // A graph of the RMS diffs between axon position centroids and target positions from retina
         // SEB working on this one
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F);
         this->gv->axisstyle = morph::axisstyle::twinax;
@@ -1848,15 +1863,18 @@ struct Agent1
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
         this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
+        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
         v->addVisualModel (this->gv);
     }
 
-    void graph_layout_f (const morph::Vector<float>& offset0)
+    // A single graph with an inset for the expt layout.
+    void graph_layout_f (const morph::Vector<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> offset = offset0;
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({this->conf->getFloat("graphb_x", 1.7f), 0.0f, 0.0f});
+
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->cv->viewmode = netvisual_viewmode::actual;
         if (this->layout == graph_layout::b) {
             this->cv->radiusFixed = 0.02;
@@ -1867,35 +1885,69 @@ struct Agent1
         v->addVisualModel (this->cv);
 
         // Experiment: Another NetVisual view showing the target locations
-        morph::Vector<float> expoff = {0.8f, -0.2f, 0.01f};
-        offset += expoff;
-        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        morph::Vector<float> expoff = {this->conf->getFloat("expoff_x", 1.05f), this->conf->getFloat("expoff_y", -0.15f), 0.01f};
+        morph::Vector<float> g_A_inset = g_A + expoff;
+        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A_inset, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
-        this->tcv->zoom = 0.5f;
+        this->tcv->zoom = 0.45f;
         this->tcv->finalize();
-        this->tcv->addLabel ("Experiment", {0.32f, 0.55f, 0.0f},
-                             morph::colour::black, morph::VisualFont::Vera, 0.03, 24);
+        this->tcv->addLabel ("Experiment", {this->conf->getFloat("explabel_x", 0.32f), this->conf->getFloat("explabel_y", 0.55f), 0.0f},
+                             morph::colour::black, morph::VisualFont::Vera,
+                             this->conf->getFloat("fontsz_small", 0.03),
+                             this->conf->getInt("fontres", 24));
         v->addVisualModel (this->tcv);
-        offset -= expoff;
 
         // A 'text' only visual model to display the sim time
-        offset[0] += 1.05f;
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
-        float ty = 1.1f; // text y position
-        float th = 0.1f; // text height
-        float l_x = 0.0f;
-        float cw = 0.1f;
-        jtvm->addLabel ("t", {l_x, ty, 0.0f});
+        g_A[0] += 1.05f;
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_A);
+        float ty = this->conf->getFloat("ty", 1.1f); // text y position
+        float th = this->conf->getFloat("th", 0.1f); // text height
+        float l_x = this->conf->getFloat("tx", 0.0f);
+        morph::TextGeometry lgm = jtvm->addLabel ("t=", {l_x, ty, 0.0f});
+        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->sim_time_txt);
         ty -= th;
-        jtvm->addLabel ("t = ", {l_x, ty, 0.0f});
-        jtvm->addLabel ("0", {l_x+cw, ty, 0.0f}, this->sim_time_txt);
+        lgm = jtvm->addLabel (unicode::toUtf8(unicode::epsilon)+"=", {l_x, ty, 0.0f});
+        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->emetric_txt);
         ty -= th;
-        jtvm->addLabel ("sos: ", {l_x, ty, 0.0f});
-        jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->emetric_txt);
-        ty -= 2*th;
-        jtvm->addLabel ("crossings: ", {l_x, ty, 0.0f});
-        jtvm->addLabel ("0", {l_x, ty-0.8f*th, 0.0f}, this->crossings_txt);
+        lgm = jtvm->addLabel (unicode::toUtf8(unicode::eta)+"=", {l_x, ty, 0.0f});
+        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->crossings_txt);
         v->addVisualModel (jtvm);
+
+        if (this->conf->getBool ("rc_vs_nt", false) == true) {
+            // The R--C vs N--T graph
+            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
+            this->gv->twodimensional = false;
+            this->gv->setlimits (0, 1, 0, 1);
+            this->gv->policy = morph::stylepolicy::markers;
+            this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+            this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+            this->gv->finalize();
+            v->addVisualModel (this->gv);
+        } else {
+            // A graph of the RMS diffs between axon position centroids and target positions from retina
+            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
+            this->gv->twodimensional = false;
+            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                                 0, this->conf->getFloat("graph_ymax", 1.0f));
+            this->gv->policy = morph::stylepolicy::lines;
+            this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
+            this->gv->xlabel = "t";
+            this->gv->prepdata ("All");
+            this->gv->prepdata ("Surround");
+            this->gv->prepdata ("Graft");
+            this->gv->finalize();
+            this->v->addVisualModel (this->gv);
+        }
+        // Figure letters
+        morph::Vector<float> ozero = {this->conf->getFloat ("figlet_x", -1.2f), this->conf->getFloat ("figlet_y", 1.1f), 0.0f};
+        float lfs = 0.08f; // letter font size
+        int lpts = 36; // letter point resolution
+        char sl = 'A';
+        if (!startletter.empty()) { sl = startletter[0]; }
+        morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        this->v->addVisualModel (jtvm2);
+
     }
 
     // 1x4 graphs (expt, branches, centroids, selected)
@@ -1934,7 +1986,7 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
-        // A graph of the SOS diffs between axon position centroids and target positions from retina
+        // A graph of the RMS diffs between axon position centroids and target positions from retina
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
@@ -1949,14 +2001,14 @@ struct Agent1
         this->v->addVisualModel (this->gv);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* sosvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
+        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "[All]=", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = errvm->addLabel (unicode::toUtf8(unicode::epsilon) + "[All]=", {l_x, ty, 0.0f});
+        errvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
-        v->addVisualModel (sosvm);
+        v->addVisualModel (errvm);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -2006,19 +2058,19 @@ struct Agent1
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
         this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
+        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
         this->gv->finalize();
         v->addVisualModel (this->gv);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* sosvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
+        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = errvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
+        errvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
-        v->addVisualModel (sosvm);
+        v->addVisualModel (errvm);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -2070,7 +2122,7 @@ struct Agent1
         this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
         this->v->addVisualModel (this->av);
 
-        // Graph: A graph of the SOS diffs between axon position centroids and target positions from retina
+        // Graph: A graph of the RMS diffs between axon position centroids and target positions from retina
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
         this->gv->axisstyle = morph::axisstyle::twinax;
         this->gv->twodimensional = false;
@@ -2106,7 +2158,7 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
-        // A graph of the SOS diffs between axon position centroids and target positions from retina
+        // A graph of the RMS diffs between axon position centroids and target positions from retina
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
@@ -2121,14 +2173,14 @@ struct Agent1
         this->v->addVisualModel (this->gv);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* sosvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_B);
+        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_B);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "[All]=", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = errvm->addLabel (unicode::toUtf8(unicode::epsilon) + "[All]=", {l_x, ty, 0.0f});
+        errvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
-        v->addVisualModel (sosvm);
+        v->addVisualModel (errvm);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -2161,19 +2213,19 @@ struct Agent1
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
         this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " Y";
+        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
         this->gv->finalize();
         v->addVisualModel (this->gv);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* sosvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_B);
+        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_B);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
-        morph::TextGeometry lgeom = sosvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
-        sosvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
+        morph::TextGeometry lgeom = errvm->addLabel (unicode::toUtf8(unicode::epsilon) + "=", {l_x, ty, 0.0f});
+        errvm->addLabel ("0", {l_x + lgeom.width(), ty, 0.0f}, this->emetric_txt);
         ty -= 2*th;
-        v->addVisualModel (sosvm);
+        v->addVisualModel (errvm);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -2257,7 +2309,7 @@ struct Agent1
     unsigned int crosscount_every = 50;
     // Centroid visual for targets
     NetVisual<T>* tcv = nullptr;
-    // A graph for the SOS metric
+    // A graph for the RMS metric
     morph::GraphVisual<T>* gv = nullptr;
     // Make a couple of options for the graph layout for different figure types
     graph_layout layout = graph_layout::c;
