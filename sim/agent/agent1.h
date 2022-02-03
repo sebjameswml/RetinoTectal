@@ -335,7 +335,10 @@ struct Agent1
         {
             this->bv->reinit(); // Branches
             this->cv->reinit(); // Centroids
-            this->av->reinit(); // Selected axons
+            this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
+            if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
+                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+            }
             break;
         }
         case graph_layout::c:
@@ -1670,12 +1673,12 @@ struct Agent1
         v->addVisualModel (jtvm);
     }
 
-    // 1x3 graphs (branches, centroids, selected)
+    // 1x3 graphs (branches, centroids, error)
     void graph_layout_b (const morph::Vector<float>& offset0)
     {
         morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
         morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.7f, 0.0f, 0.0f});
 
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
@@ -1700,14 +1703,23 @@ struct Agent1
         v->addVisualModel (this->cv);
 
         // Selected axons: This one gives an 'axon view'
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_C, &this->branches, &this->ax_history);
-        this->av->view = branchvisual_view::axonview;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
-        v->addVisualModel (this->av);
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_C);
+        this->gv->axisstyle = morph::axisstyle::twinax;
+        this->gv->twodimensional = false;
+        this->gv->setsize (0.9f, 1.0f);
+        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
+                             0, this->conf->getFloat("graph_ymax", 1.0f),
+                             0, this->conf->getFloat("graph_ymax2", 200.0f));
+        this->gv->axislabelgap = 0.03f;
+        this->gv->policy = morph::stylepolicy::lines;
+        this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
+        this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
+        this->gv->xlabel = "t";
+        this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
+        this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
+        this->gv->legend = false;
+        this->gv->finalize();
+        this->v->addVisualModel (this->gv);
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
@@ -1716,7 +1728,7 @@ struct Agent1
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("C", g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("C", g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
     }
 
@@ -1776,7 +1788,6 @@ struct Agent1
         this->v->addVisualModel (this->cv);
 
         // A graph of the RMS diffs between axon position centroids and target positions from retina
-        // SEB working on this one
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F);
         this->gv->axisstyle = morph::axisstyle::twinax;
         this->gv->twodimensional = false;
