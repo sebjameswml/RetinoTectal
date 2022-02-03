@@ -207,47 +207,48 @@ Time to stop; agent-based modelling of chemoaffinity with competition
 \vspace{-1.8cm} % HACK bring the introduction up towards the title. It
                 % would be better to do this with titling in \maketitle
 
-\color{grey}
-% Note this is the SfN draft abstract, and will need rewriting.
-\emph{In the classic Chemoaffinity theory, the retinotectal axon projection is
-thought to use pairs of orthogonal signalling gradients in the retina to
-specify the eventual location of synapses made on the surface of the
-tectum/superior colliculus. Similar orthogonal gradients in the tectum provide
-a coordinate system which allows the axons to match their prespecified
-destination with the correct location. Although the Ephrins have been shown to
-guide axons toward their destination, there has yet to emerge a complete
-account of the local interactions which halt the axonal growth cones in the
-correct locations to recreate the topography of the retinal cells. The model
-of \citet{simpson_simple_2011} provides an account of the basic topographic
-arrangement of cells on the tectum, as well as reproducing well known surgical
-and genetic manipulation experiments. However, it suffers from the absence of
-a local chemotactic guidance mechanism. Instead, each agent in that model is
-given instantaneous knowledge of the vector that would move it toward its
-pre-specified destination. In addition to the globally supervised
-chemoaffinity term, \citet{simpson_simple_2011} introduced a competitive
-interaction for space between growth cone agents and a receptor-receptor
-axon-axon interaction in order to account for the full set of experimental
-manipulations. Here, we propose the replacement of the chemoaffinity term with
-a gradient following model consisting of axonal growth cone agents which carry
-receptor molecule expression determined by their soma's location of origin on
-the retina. Growth cones move on the simulated tectum guided by two pairs of
-opposing, orthogonal signalling molecules representing the Ephrin ligands. We
-show that with only the receptor-ligand mediated chemoaffinity term and a
-receptor-receptor based axon-axon interaction term (meaning that all growth
-cone interactions are communicated by receptor signalling), a full range of
-experimental manipulations to the retinotectal system can be
-reproduced. Furthermore, we show that the observation that competition is not
-an essential requirement for axons to find their
-way \citep{gosse_retinotopic_2008} is also accounted for by the model, due to
-the opposing influences of signalling gradient pairs. Finally, we demonstrate
-that, assuming exponentially varying receptor expression in the retina, tectal
-ligand expression should either be exponential if the receptor-ligand signal
-induces repulsion (i.e. gradient descent) or logarithmic if the signal induces
-attraction (gradient ascent). Thus, we find that a model analogous to the one
-we presented in \citet{james_modelling_2020} that accounts for murine barrel
-patterning is also a candidate mechanism for the arrangement of the more
-continuous retinotectal system.}
-\color{black}
+%% \color{grey}
+%% % Note this is the SfN draft abstract, and will need rewriting
+%% % COULD go into the introduction, with some modification.
+%% \emph{In the classic Chemoaffinity theory, the retinotectal axon projection is
+%% thought to use pairs of orthogonal signalling gradients in the retina to
+%% specify the eventual location of synapses made on the surface of the
+%% tectum/superior colliculus. Similar orthogonal gradients in the tectum provide
+%% a coordinate system which allows the axons to match their prespecified
+%% destination with the correct location. Although the Ephrins have been shown to
+%% guide axons toward their destination, there has yet to emerge a complete
+%% account of the local interactions which halt the axonal growth cones in the
+%% correct locations to recreate the topography of the retinal cells. The model
+%% of \citet{simpson_simple_2011} provides an account of the basic topographic
+%% arrangement of cells on the tectum, as well as reproducing well known surgical
+%% and genetic manipulation experiments. However, it suffers from the absence of
+%% a local chemotactic guidance mechanism. Instead, each agent in that model is
+%% given instantaneous knowledge of the vector that would move it toward its
+%% pre-specified destination. In addition to the globally supervised
+%% chemoaffinity term, \citet{simpson_simple_2011} introduced a competitive
+%% interaction for space between growth cone agents and a receptor-receptor
+%% axon-axon interaction in order to account for the full set of experimental
+%% manipulations. Here, we propose the replacement of the chemoaffinity term with
+%% a gradient following model consisting of axonal growth cone agents which carry
+%% receptor molecule expression determined by their soma's location of origin on
+%% the retina. Growth cones move on the simulated tectum guided by two pairs of
+%% opposing, orthogonal signalling molecules representing the Ephrin ligands. We
+%% show that with only the receptor-ligand mediated chemoaffinity term and a
+%% receptor-receptor based axon-axon interaction term (meaning that all growth
+%% cone interactions are communicated by receptor signalling), a full range of
+%% experimental manipulations to the retinotectal system can be
+%% reproduced. Furthermore, we show that the observation that competition is not
+%% an essential requirement for axons to find their
+%% way \citep{gosse_retinotopic_2008} is also accounted for by the model, due to
+%% the opposing influences of signalling gradient pairs. Finally, we demonstrate
+%% that, assuming exponentially varying receptor expression in the retina, tectal
+%% ligand expression should either be exponential if the receptor-ligand signal
+%% induces repulsion (i.e. gradient descent) or logarithmic if the signal induces
+%% attraction (gradient ascent). Thus, we find that a model analogous to the one
+%% we presented in \citet{james_modelling_2020} that accounts for murine barrel
+%% patterning is also a candidate mechanism for the arrangement of the more
+%% continuous retinotectal system.}
+%% \color{black}
 
 \emph{The development of the axonal projection from the retina to the tectum
 is an important model for the study of how the brain organises its
@@ -261,15 +262,15 @@ have been phenomenological, some only possible with the invokation of a global
 supervising process that provides the state of the entire system to each
 axonal agent.
 %
-Here, we investigated whether a purely self-organising model based on receptor
-and ligand interactions could be found, that would successfully reproduce both
-the normal development of the projection and its behaviour under the many
+Here, we investigated whether, using only receptor and ligand interactions, a
+purely self-organising model could be found that would successfully reproduce
+both the normal development of the projection and its behaviour under the many
 experimental manipulations carried out by neurobiologists.
 %
 We show that a model based on gradient following (via receptor-ligand
-interactions) combined with receptor-receptor mediated axonal repulsion can
-account for a broad range of experimental results, with information only being
-transferred by nearest-neighbour interactions.
+interactions) combined with receptor-receptor mediated axonal repulsion, in
+which information is only transferred by nearest-neighbour interactions, can
+account for a broad range of experimental results.
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -286,17 +287,20 @@ cones \cite{rods_cones_citations}) situated close together in the eye so that
 an image of the environment is formed on the retinal surface. It has been
 discovered that the topography of the retina is preserved within brain regions
 that process this information such that cells which are adjacent within the
-retina primarily excite cells adjacent in the tectum. This indicates that
-during development there must exist a mechanism which ensures the correct
-arrangement of the axons which leave the retina and connect to cells in the
-tectum.
+retina primarily excite cells adjacent in the tectum. Of the retinal axons
+that project directly to the tectum, those originating in the temporal retina
+make connections in the rostral tectum; thoes originating in dorsal retina
+connect to lateral tectum (Fig.\,\ref{}A).  This pattern of connectivity
+establishes itself before activity \citep{something}, indicating that during
+development there must exist a mechanism which ensures the correct arrangement
+of the axons which leave the retina and connect to cells in the tectum.
 
 One reason for the success of the study of the retinotectal projection is its
 capacity to be experimentally manipulated. In some non-mammalian species, both
 the retina and the tectum can be partially ablated, or even physically
 reorganised in-vivo, after which axons regrow to restore the order and
 function of the system for the individual animal. Influential work by
-R. W. Sperry and co-workers during the mid-twentieth century exploited this
+R.~W.~Sperry and co-workers during the mid-twentieth century exploited this
 manipulability, leading to Sperry's 1963 summary of the \emph{chemoaffinity
 theory} \citep{sperry_chemoaffinity_1963} which proposes the existence of
 morphogenetic gradients that guide axons to their destination. The
@@ -312,7 +316,7 @@ effect on axonal outgrowth, as shown
 in-vitro \citep{cheng_complementary_1995,drescher_vitro_1995,hansen_retinal_2004}
 and by
 in-vivo \citep{frisen_ephrin-a5_1998,rodger_transient_2000,mann_topographic_2002,hindges_ephb_2002}
-studies. However, a gradient fo
+studies. \emph{Does this para need finishing?}
 %
 % A-P:
 %
@@ -388,7 +392,10 @@ The first question we tried to answer was whether a gradient following
 mechanism, acting alone, is sufficient to pattern the tectum. To do so, we
 simulated the retina and tectum as unit square regions and defined retinal
 receptor expression and tectal ligand expression across these squares
-(Fig.\,\ref{f:ex}).
+(Fig.\,\ref{f:ex}B-D). The simulated retina possessed $n$=400 (20$\times$20) retinal
+ganglion cells; the tectum was similarly arranged as 20$\times$20 discrete, square
+elements, with defined levels of expression for each ligand. One spatial unit
+corresponds to 2~mm on the retina or tectum for mouse \citep{reber_relative_2004}.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_fig.png}
@@ -407,21 +414,21 @@ form. $N$: nasal, $T$: temporal, $D$: dorsal, $V$: ventral.
 \textbf{B} Retinal ligand expression, $l_i$, is expressed in complimentary
 gradients \citep{hornberger_modulation_1999}.
 %
-\textbf{C} Tectal ligand expression $L_i$. Tectal ligand expression is shown in a linear form,
-as there is less evidence to determine whether ligand expression is
-exponential, linear or logarithmic on the tectum.
+\textbf{C} Tectal ligand expression $L_i$. Tectal ligand expression is shown
+in an exponential form,
+although there is less evidence to determine whether tectal expression is
+exponential, linear or logarithmic.
 $L$: lateral, $M$: medial, $C$: caudal, $R$: rostral.
 }
 \label{f:ex}
 \end{figure}
 
-Each retinal ganglion cell projects growth cones (referred to
+Each retinal ganglion cell (RGC) projects growth cones (referred to
 as \emph{branches}) which carry a set of 4 receptors, $r_i$ indexed by $i$ and
 expressed at levels determined by the cell soma's location on the
-retina. (Four ligands, $l_i$, are also expressed by RGCs, but these are not
-used by the chemoaffinity simulation.) The expression levels of the receptors
-vary with respect to the soma's position on the retinal surface. Each receptor
-varies only with respect to one dimension.  Receptor expression gradients are
+retinal grid. (Four ligands, $l_i$, are also expressed by RGCs, but these are not
+used by the chemoaffinity simulation.) The expression of each receptor
+varies only with respect to one spatial dimension.  Receptor expression gradients are
 arranged in orthogonal pairs with the gradient of $r_0$ being orthogonal to
 that of $r_1$. $r_2$, whose gradient is opposite to $r_0$, is orthogonal to
 $r_3$.
@@ -435,24 +442,26 @@ studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}
 We adopt the same precise form for the retinal receptor expression
 as \citet{simpson_simple_2011} which is
 \begin{equation} \label{e:retrcpt}
-r_i(x,y) = 1.05 + 0.26 \exp(2.3 x)
+r_i(x,y) = 1.05 + 0.26 \exp(2.3 u)
 \end{equation}
-for even values of $i$. The opposing expressions (for even values of $i$)
-are given by substituting $(1-x)$ for $x$.
+Where $u$ gives the direction with which the expression increases and is
+substituted by $1-x$ for $r_0$, $1-y$ for $r_1$, $x$ for $r_2$ and by $y$ for
+$r_3$ (Fig.\,\ref{1}B).
 
-The tectum expresses ligands, $L_i$, for the retinal receptors, also
-in orthogonal pairs of gradients. Although several studies model tectal ligand
+The tectum expresses ligands, $L_i$, for the retinal receptors, also in
+orthogonal pairs of gradients. Although several studies model tectal ligand
 expression with exponential functions \citep{koulakov_stochastic_2004}, the
-experimental evidence for ligand expression is more ambiguous than that for
-retinal receptor expression (Supp.~Fig
-\textbf{XXXXX}). We kept in mind the possibility that tectal ligand
-expression may be modelled by exponential, linear or logarithmic functions,
-but initially, we set it to the function
+experimental evidence for the form of tectal ligand expression is more ambiguous than that for
+retinal receptor expression (Fig.\,\ref{f:expressions} summarises results from
+the literature). We kept in mind the
+possibility that tectal ligand expression may be modelled by exponential,
+linear or logarithmic functions, but initially, we set it to the exponential function
 \begin{equation} \label{e:tecligexp}
-L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 x)
+L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 u)
 \end{equation}
-for odd values of $i$ and using the same substitution of $(1-x)$ for $x$ to
-obtain the opposing ligand expressions for $i$ even.
+and use the substitutions $y$, $x$, $(1-y)$ or $1-x$ in place of $u$ to obtain
+the ligand expression functions for $L_0$, $L_1$, $L_2$ and $L_3$
+(Fig.\,\ref{1}D).
 
 While we do not explicitly name $r_0$, $r_1$,
 etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes EphA,
@@ -460,12 +469,17 @@ EphB, Ryk \citep{schmitt_wntryk_2006} and
 Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $L$ includes the
 ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and
 RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a
-r\^ole in retinotectal map formation.
+r\^ole in retinotectal map formation. The fact that we have chosen opposing
+gradients is also guided by experimental observations that these exist in the
+brain \citep{opposing_gradients}. Without a system of opposing gradients, it
+would not be possible for axons to stop without an additional signal
+instructing them to do so.
 
-Figure~\ref{f:ex} shows colour maps of receptor and ligand
-expression. Coordinates within the simulated retina and tectum are normalised,
-with 1 corresponding to 2 mm on the tectum and on the retina for
-mouse \citep{reber_relative_2004}.
+%already said that:
+%Figure~\ref{f:ex} shows colour maps of receptor and ligand
+%expression. Coordinates within the simulated retina and tectum are normalised,
+%with 1 corresponding to 2 mm on the tectum and on the retina for
+%mouse \citep{reber_relative_2004}.
 
 \color{grey}
 This means that growth cones of approximate
@@ -482,7 +496,7 @@ area of the branches at 0.86 ($44000 \times \pi r^2$) (if there is one cone
 per axon) or 6.9 (if there are 8 cones per axon).
 
 \color{black}
-Each discrete element in Fig.\,\ref{f:ex}B projects one RGC axon with 4
+Each discrete, square element in Fig.\,\ref{f:ex}B projects one RGC axon with 4
 branches to the tectum, carrying the receptor expression at the retinal
 element's location.
 At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, at time
@@ -492,7 +506,7 @@ $t$ of each branch $b$ is updated according to
 \mathbf{x}_{b,t+1} = \mathbf{x}_{b,t} + \mathbf{M}_{b}
 \end{equation}
 %
-where $\mathbf{M}_{b}$, the movement vector, is the sum of a chemoaffinity
+where $\mathbf{M}_{b}$, the branch movement vector, is the sum of a chemoaffinity
 effect and a `border effect', $\mathbf{B}_b$, which acts to retain branches
 within the tectal region:
 %
@@ -525,16 +539,16 @@ where $r_{i,b}$ is the receptor expression on branch $b$ for ligand-receptor
 pair $i$, $\nabla L_i$ is the gradient of expression of ligand $i$ on the
 tectum and $F_i$ denotes the direction of the interaction induced when a
 molecule of ligand $i$ binds to a receptor $i$ molecule. $F_i$ takes the value
--1 for a repulsive interaction or 1 for an attractive interaction.
+$-1$ for a repulsive interaction or $1$ for an attractive interaction.
 %
 We assumed that all
 receptor-ligand signalled interactions are repulsive ($F_i=-1, \forall i$), as
 for EphA-ephrinA
 coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}.
 %
-$m_{\!_G}$ is a
+$m_{\!_G}$ in Eq.\,\ref{e:mv} is a
 scalar parameter which controls how much movement is generated for a given
-receptor-ligand signal.
+chemotactic movement vector, $\mathbf{G}_b$.
 % end chemoaffinity description
 
 % \subsection{Border effect} % border effect description
@@ -562,10 +576,10 @@ the boundary.
 
 % \subsection*{Initial conditions}
 Branches were initially randomly distributed in a stripe at the rostral side
-of the tectum at the start of each simulation. Each RGC axon was assigned a
+of the tectum at the start of each simulation. Each RGC axon $k$ was assigned a
 random initial position coordinate:
-\begin{equation}
-\mathbf{x}_{\text{axon},t=0} = (U(0,1), U(-0.2,0))
+\begin{equation}\label{e:ic}
+\mathbf{x}_{k,t=0} = (U(0,1), U(-0.2,0))
 \end{equation}
 where U(p,q) is a number selected from a random uniform distribution in the
 range $[p,q)$. Each of the 4 branches per RGC axon was given its parent
@@ -577,38 +591,42 @@ The results of running this simulation for 300 time steps are shown in
 Fig.\,\ref{f:ch}. Fig.\,\ref{f:ch}A indicates the colour code used for retinal
 cell position; dorsal retinal cells are indicated by green, nasal cells by
 red. Lightness gives position along the relevant axis so that cells at the
-dorsal-nasal corner are yellow and those at the ventral-transverse corner are
+dorsal-nasal corner are yellow and those at the ventral-temporal corner are
 black. Fig.\,\ref{f:ch}E shows the expected layout of retinal ganglion cell
 axons on the tectum. The axons retain the colour of their originating cell on
-the retina, as shown in Fig.\,\ref{f:ch}A. Nasal cell axons should be arranged
+the retina. Nasal cell axons should be arranged
 caudally; dorsal axons laterally; axons should be evenly spaced and the
-pattern should span the entire tectum.  Fig.\,\ref{f:ch}B--D show `fish net'
-plots of the axon centroids at three timepoints. An axon's centroid is the
-average location of its 4 branches. In these plots, lines are drawn between
+pattern should span the entire tectum.  Fig.\,\ref{f:ch}, panels B--D show
+`fish net' plots of the average location of the 4 branches of each axon (the
+axon's centroid) at three timepoints. Fig.\,\ref{f:ch}B indicates the
+randomised placement of axon branches at the rostral end of the tectum as
+specified by the initial conditions (Eq.\,\ref{e:ic}). In these plots, lines are drawn between
 axons that are expected to arrange themselves adjacently to one another by the
 end of the simulation. The number of line crossings in this plot gives an
-indication of the disorder in the arrangement. Fig.\,\ref{f:ch}G shows the
-positions of the individual branches (i.e.~growth cones) at $t=300$ that
-contribute to the the plot in Fig.\,\ref{f:ch}D. By this time, the topological
-order matches that shown in Fig.\,\ref{f:ch}E. Opposing gradients have sorted
-the axons along the two axes to form a grid of cells. However, the arrangement
-does not span the full tectum. Fig.\,\ref{f:ch}F shows two pattern
-metrics. The first metric, $\epsilon$, is the sum of squared distance errors
-of the axon centroids, with $\mathbf{x}_{k}$, the location of the centroid of
-the branches of axon $k$ and $\mathbf{x}'_{k}$ the target tectal location for
-axon $k$:
+indication of the disorder in the arrangement. Fig.\,\ref{f:ch}G shows the positions of the individual branches
+(i.e.~growth cones) at $t=300$ that contribute to the plot in
+Fig.\,\ref{f:ch}D. By this time, the topological order matches that shown in
+Fig.\,\ref{f:ch}E. Opposing gradients have sorted the axons along the two axes
+to form a grid of cells. However, the arrangement does not span the full
+tectum. Fig.\,\ref{f:ch}F shows two pattern metrics; $\epsilon$ is the mean
+distance error of the axon centroids, given by:
 %
 \begin{equation}\label{e:eps}
-\epsilon = \sum_k |\mathbf{x}_{k} - \mathbf{x}'_{k}|^2.
+\epsilon = \sqrt{\frac{\sum_k (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
 \end{equation}
+%
+where $\mathbf{x}_{k}$ is the location of the centroid of the
+branches of axon $k$ and $\mathbf{x}'_{k}$ the target tectal location for axon
+$k$. $n$ is the number of RGC axons in the system.
 %
 $\epsilon$ tends to 0 as the pattern approaches the target layout. However,
 two patterns may have the same non-zero value for $\epsilon$, despite one
 being qualitatively more disordered than the other. For this reason, we also
 use the number of crossings in the fish net plot of Fig.\,\ref{f:ch}D as a
-second metric, called $\eta$. The expected number of crossings in the wildtype
-pattern is 0, as in Fig.\,\ref{f:ch}E, although note that in some patterns,
-the expected number of crossings is non-zero. Fig.\,\ref{f:ch}H shows selected
+second metric, called $\eta$, which tends towards an expected target number of
+crossings, $\eta_t$ as the pattern approaches the target pattern.  For the wildtype
+pattern, $\eta_t=0$, as in Fig.\,\ref{f:ch}E, although note that in some patterns,
+$\eta_t$ is non-zero. Fig.\,\ref{f:ch}H shows selected
 axons (one from the centre and one from each corner of the retina) and their
 position history.
 
@@ -639,10 +657,10 @@ adjust the tectal ligand expression, substituting the alternative exponential
 expression:
 %
 \begin{equation} \label{e:tecligexp2}
-L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 x)
+L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 u)
 \end{equation}
 %
-for the tectal ligand expression.
+for Eq.\,\ref{e:tecligexp}.
 
 The result at $t=300$ is shown in Figs.\,\ref{f:chalt}A
 and \ref{f:chalt}B. The axon centroids are arranged across the full tectal
@@ -652,9 +670,8 @@ ligand expression and the fact that in the centre, the difference between the
 opposing receptor-ligand signals is very small. Nevertheless, the result
 demonstrates that a modified form for the tectal ligand expression (which was
 found easily by hand tuning) allows a well ordered map to form for the
-wildtype system. Fig.\,\ref{f:chalt}C shows the error metric
-(\textbf{FIXIMAGE}), $\epsilon$, which is much closer to 0 with the new ligand
-expression.
+wildtype system. Fig.\,\ref{f:chalt}C shows the error metric, $\epsilon$,
+which is much closer to 0 with the new ligand expression \textbf{Fix graph}.
 
 % ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_wt_fig3.json
 \begin{figure}
@@ -675,8 +692,8 @@ performed by manipulating the maps shown in
 Fig.\,\ref{f:ex}. Fig.\,\ref{f:trot90} shows the expression maps and the
 resulting gradients that result from the surgical manipulation in which a
 graft of the tectum is rotated by a quarter turn and replaced. We rotate an
-8x8 square of the tectum and then recompute the gradients. As the ligand
-expression is discretize rather than continuous, we compute the gradient
+8$\times$8 square of the tectum and then recompute the gradients. As the ligand
+expression is discretized rather than continuous, we compute the gradient
 numerically, with the gradient in direction $x$ computed as the difference
 between the expression of the two neighbouring elements divided by twice the
 element distance. As there are four ligands expressed on the tectum, there are
@@ -702,24 +719,24 @@ manipulation was also performed in which which half of the retina is removed
 along with the half of the tectum to which the remaining retina would project.
 
 Fig\,\ref{f:chsurg} shows the results of 6 simulated surgical
-manipulations. In row A, a patch of tectal tissue has been cut out and rotated
-by a quarter turn, as in Fig.\,\ref{f:trot90}. From left to right, graphs show
-i) the expected final layout of the tectum, according to the results of
-experimental work, with the colour code giving the origin location of the
-axon's soma on the retina, ii) The locations of individual axon branches at
-simulation end, iii) the centroids of each axons' branches and iv) a rather
-useless selected axons box \textbf{FIXME}. Simulation time was 1000 time steps. The final
-locations of branches and axon centroids indicates that a qualitative rotation
-of the graft patch has occurred, with red branches inside the patch being
-located at the lateral-caudal corner rather than the medial-caudal corner. A
-portion of the graft region (the medial side, after rotation) is free of
-branches, indicating that the pattern is partial. A similar result is seen for
-the 180\degree~example in row B, in which the caudal half of the rotated patch
-is free of branches, but the rostral half contains branches with the correctly
-rotated orientations.
+manipulations. In A, a patch of tectal tissue has been cut out and rotated by
+a quarter turn (the manipulation illustrated in Fig.\,\ref{f:trot90}). For
+this simulation, the figure shows i) The locations of the axon centroids at
+simulation end, ii) (inset) the expected final layout of the tectum, according
+to the results of experimental work, with the colour code giving the origin
+location of the axon's soma on the retina and iii) the error metric,
+$\epsilon$ plotted versus simulation time. Simulation time was 1000 time
+steps. The final locations of branches and axon centroids indicates that a
+qualitative rotation of the graft patch has occurred, with red branches inside
+the patch being located at the lateral-caudal corner rather than the
+medial-caudal corner. A portion of the graft region (the medial side, after
+rotation) is free of branches, indicating that the pattern is partial. A
+similar result is shown for the 180\degree~example in B, in which the caudal
+half of the rotated patch is free of branches, but the rostral half contains
+branches with the correctly rotated orientations.
 
 Fig.\,\ref{f:chsurg}C shows the result of the patch swap manipulation, in
-which 12x4 element grafts, one from the caudal side of the tectum and one from
+which 12$\times$4 element grafts, one from the caudal side of the tectum and one from
 the rostral side are swapped. This simulation is unsuccessful in patterning
 the caudal half of the tectum. The large gradients, both positive and
 negative, caused by the discontinuities along the long edges of the grafts
@@ -727,16 +744,18 @@ attracts almost all the branches (whose initial position is the rostral edge)
 and very few pass through to the caudal side.
 
 The retinal ablation shown in Fig.\,\ref{f:chsurg}D is also unsuccessful, with
-the axons from the surviving nasal retina (the transverse half was removed)
+the axons from the surviving nasal retina (the temporal half was removed)
 failing to arrange themselves across the entire tectum, due to the pure
-`position specification' which the dual gradient model achieves. Similarly,
+`position specification' which the dual gradient model achieves. Here, the
+average axon position on the rostral-caudal axis of the tectum is plotted versus the average
+nasal-temporal origin of the axon on the retina. Similarly,
 the tectal ablation simulation fails to reproduce experimentally observed
 results in which the retinal map `squashes up' within the remaining tectal
-region. Instead, axons from the transverse retina arrange with normal spacing
+region. Instead, axons from the temporal retina arrange with normal spacing
 and axons from the nasal retina are pushed to the caudal-most side of the
 remaining tectum (Fig.\,\ref{f:chsurg}E). A similar result occurs in the
 mismatch experiment (Fig.\,\ref{f:chsurg}F), but in this case there are no
-axons from the transverse retina, which was been ablated and only the axons
+axons from the temporal retina, which was been ablated and only the axons
 from the nasal retina are present, arranged in a line.
 
 % The chemo manipulations figure is made up from 4 figures generated with
@@ -946,6 +965,12 @@ Discussion goes here.
 \setcounter{figure}{0}
 
 \section*{Supplementary figures}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{../misc/expression_profiling/expression_profiles.png}
+\caption{Expression profiles from the literature.}
+\label{f:expressions}
+\end{figure}
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_manipulations.png}
