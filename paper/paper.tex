@@ -424,14 +424,30 @@ $L$: lateral, $M$: medial, $C$: caudal, $R$: rostral.
 \end{figure}
 
 Each retinal ganglion cell (RGC) projects growth cones (referred to
-as \emph{branches}) which carry a set of 4 receptors, $r_i$ indexed by $i$ and
+as \emph{branches}) which carry a set of $m$ receptors, $r_i$ indexed by $i$ and
 expressed at levels determined by the cell soma's location on the
-retinal grid. (Four ligands, $l_i$, are also expressed by RGCs, but these are not
+retinal grid. ($m$ ligands, $l_i$, are also expressed by RGCs, but these are not
 used by the chemoaffinity simulation.) The expression of each receptor
-varies only with respect to one spatial dimension.  Receptor expression gradients are
-arranged in orthogonal pairs with the gradient of $r_0$ being orthogonal to
-that of $r_1$. $r_2$, whose gradient is opposite to $r_0$, is orthogonal to
-$r_3$.
+varies only with respect to one spatial dimension.
+
+The minimum number of gradients required to provide a coordinate system on the
+surface of the tectum within which axons could find a target location is
+$m=2$, arranged in orthogonal directions. However if there are only two
+gradients, imagining that one guides axons laterally and the other guides
+axons in the caudal direction, then it is necessary for there to be an
+additional `stopping mechanism' to prevent all of the axons eventually being
+guided to the most lateral/caudal position. To avoid the need for a different
+stopping mechanism, we chose to model \emph{opposing pairs of orthogonal
+gradients} with $m=4$. With opposing gradients, an axon which interacts most
+strongly with a gradient in the caudal direction would be drawn to the caudal
+side of the tectum, whereas an axon whose strongest interaction was to climb a
+gradient in the rostral direction would be drawn to the rostral side. There is
+evidence that multiple gene expression gradients are found in the brain, with
+examples of opposing pairs including XX and YY.
+
+We defined 4 receptor expression gradients arranged in orthogonal pairs
+with the gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose
+gradient is opposite to $r_0$, was orthogonal to $r_3$.
 
 Because there is convincing evidence that EphA and EphB receptors are
 expressed in exponentially increasing
