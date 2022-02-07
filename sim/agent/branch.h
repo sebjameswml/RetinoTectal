@@ -18,11 +18,11 @@ template<typename T, size_t N>
 struct branch : public branch_base<T,N>
 {
     // Distance parameter r is used as 2r
-    void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
     T getr() { return this->r; }
     T getr_c() { return this->r_c; }
     T getr_j() { return this->r_j; }
     T getr_i() { return this->r_i; }
+    void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
     void setr_c (T _r) { this->r_c = _r; this->two_r_c = _r*T{2}; }
     void setr_j (T _r) { this->r_j = _r; this->two_r_j = _r*T{2}; }
     void setr_i (T _r) { this->r_i = _r; this->two_r_i = _r*T{2}; }
@@ -53,7 +53,9 @@ public:
     // zero out the interaction history in init
     virtual void init() { this->Ihist.zero(); }
 
-    static constexpr bool add_unrealistic_gradient_noise = false; // Compare with branch_stochastic.h
+    // Compile time decision as to whether to add small performance hit of random noise
+    static constexpr bool add_simple_gradient_noise = true;
+    // Storage for randomly generated numbers
     morph::Vector<T, 2*N> rn;
     // Estimate the ligand gradient, given the true ligand gradient
     virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& true_lgnd_grad,
@@ -62,12 +64,11 @@ public:
         // This is the non-stochastic implementation...
         morph::Vector<T, 2*N> lg = true_lgnd_grad;
         // ...unless this if is entered into
-        if (add_unrealistic_gradient_noise == true) {
-            T proportion = T{1};
+        if (add_simple_gradient_noise == true && this->noise_gain > T{0}) {
             this->rn.randomize(); // 0->1
             this->rn -= T{0.5};  // symmetric about 0
             this->rn *= T{2};   // +- 1
-            lg += this->rn * (proportion * lg);
+            lg += this->rn * (this->noise_gain * lg);
         }
         return lg;
     }

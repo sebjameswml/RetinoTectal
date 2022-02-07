@@ -791,6 +791,7 @@ struct Agent1
             this->pending_branches[i].setr_c (r_c_conf);
             this->pending_branches[i].setr_j (r_j_conf);
             this->pending_branches[i].setr_i (r_i_conf);
+            this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
