@@ -53,4 +53,6 @@ struct branch_base
     int id = 0;
     // An id for the parent axon (there are many branches per axon)
     int aid = 0; // this is id/bpa (computed with integer division)
+    // Noise gain if required
+    T noise_gain = T{1};
 };
