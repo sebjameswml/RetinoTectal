@@ -26,8 +26,7 @@ int main (int argc, char **argv)
     std::string m_id("");
     std::string e_id("");
 
-    int runtimesteps = -1;
-    if (argc >= 3) {
+    if (argc >= 2) {
         // If given two arguments, then the first is the model config and the second is the expt/sim config
         paramsfile_mdl = std::string(argv[1]);
         std::string fname = paramsfile_mdl; // e.g.: m_el.json
@@ -50,9 +49,6 @@ int main (int argc, char **argv)
             std::vector<std::string> two = morph::Tools::stringToVector (one[0], "e_");
             if (two.size() > 1) { e_id = two[1]; }
         }
-
-        // A 3rd arg is converted into a number to be simulation steps
-        if (argc > 3) { runtimesteps = std::stoi (argv[3]); }
 
     } else if (argc == 2) {
         // With one argument, we use the same file for both model and expt/sim config
@@ -90,13 +86,20 @@ int main (int argc, char **argv)
         return 1;
     }
 
-    // Update simulation steps if user provided a number
-    if (runtimesteps > 0) { conf->set ("steps", runtimesteps); }
+    // Cool idea! Use morph::Config to process cmd line args in standard way to override parameters. Nice!
+    mconf->process_args (argc, argv);
+    conf->process_args (argc, argv);
 
     morph::Tools::createDirIf ("./log/agent");
 
+    // Create an additional file identifier
+    std::stringstream coss;
+    for (auto co : conf->config_overrides) {
+        coss <<  "_" << co.first << "_" << co.second;
+    }
+
     std::string outfile = std::string("./log/agent/") + m_id
-    + std::string("_") + e_id + std::string(".h5");
+    + std::string("_") + e_id + coss.str() + std::string(".h5");
 
     std::string branch_model = mconf->getString ("branch_model", "james_agent");
 
@@ -106,28 +109,28 @@ int main (int argc, char **argv)
             Agent1<float, 4, branch_geb<float, 4>> model (conf, mconf);
             model.title = std::string("geb_") + m_id + std::string("_") + e_id;
             model.run();
-            model.save (outfile);
+            model.am.save (outfile);
         } else if (branch_model == "stochastic") {
             Agent1<float, 4, branch_stochastic<float, 4, 11>> model (conf, mconf);
             model.title = std::string("stoc_") + m_id + std::string("_") + e_id;
             model.run();
-            model.save (outfile);
+            model.am.save (outfile);
         } else {
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
             model.title = std::string("j4_") + m_id + std::string("_") + e_id;
             model.run();
-            model.save (outfile);
+            model.am.save (outfile);
         }
     } else if (num_guiders == 2) {
         Agent1<float, 2, branch<float, 2>> model (conf, mconf);
         model.title = std::string("j2_") + m_id + std::string("_") + e_id;
         model.run();
-        model.save (outfile);
+        model.am.save (outfile);
     }
 
     //std::cout << "conf:\n" << conf->str() << std::endl;
 
     delete conf;
-    if (argc > 2) { delete mconf; }
+    if (argc > 2) { /* mconf->write ("mconf.json"); */ delete mconf; }
     return 0;
 }

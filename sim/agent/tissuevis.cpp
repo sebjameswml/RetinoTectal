@@ -79,6 +79,9 @@ int main (int argc, char **argv)
         return 1;
     }
 
+    mconf->process_args (argc, argv);
+    conf->process_args (argc, argv);
+
     morph::Tools::createDirIf ("./log/agent");
 
     std::string outfile = std::string("./log/agent/") + m_id

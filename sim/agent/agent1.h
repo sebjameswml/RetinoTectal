@@ -67,6 +67,8 @@ struct AgentMetrics
     morph::vVector<T> rms;
     // Number of crossings
     morph::vVector<T> crosscount;
+    // Sim time
+    morph::vVector<unsigned int> t;
     // Output a string
     std::string str() const
     {
@@ -90,7 +92,17 @@ struct AgentMetrics
         this->rms.insert (this->rms.end(), rhs.rms.begin(), rhs.rms.end());
         this->crosscount.insert (this->crosscount.end(), rhs.crosscount.begin(), rhs.crosscount.end());
     }
-
+    // Save to HDF5
+    void save (const std::string outfile)
+    {
+        morph::HdfData d(outfile, morph::FileAccess::TruncateWrite);
+        d.add_contained_vals ("/t", this->t);
+        d.add_contained_vals ("/sos", this->sos);
+        d.add_contained_vals ("/rms", this->rms);
+        d.add_contained_vals ("/crosscount", this->crosscount);
+        d.add_string ("/id", this->id);
+        d.add_val ("/n_agents", static_cast<unsigned int>(this->n_agents));
+    }
     // Overload the stream output operator
     friend std::ostream& operator<< <> (std::ostream& os, const AgentMetrics<T>& am);
 };
@@ -126,10 +138,10 @@ struct Agent1
         }
     }
 
-    unsigned int showevery = 1000;
+    unsigned int showevery = 1000; // for info on stdout
     unsigned int visevery = 5;
 
-    //! Just show the tissue. Don't use at same time as run()
+    // Just show the tissue. Don't use at same time as run()
     void showtissue()
     {
         if constexpr (visualise == true) {
@@ -141,11 +153,11 @@ struct Agent1
         } // else do nothing
     }
 
-    //! Run this model!
+    // Run this model!
     void run()
     {
+        this->visevery = this->conf->getUInt ("visevery", 5);
         if constexpr (visualise == true) {
-            this->visevery = this->conf->getUInt ("visevery", 5);
             if (this->visinit_done == false) {
                 // Get layout from config file. Default to 0 or 'a'
                 this->layout = (graph_layout)this->conf->getUInt ("graph_layout", 0);
@@ -205,6 +217,15 @@ struct Agent1
             }
 
             this->step();
+
+            // Here, collect data and place in AgentMetrics object, do so in step with visualisation
+            if (i%this->visevery == 0) {
+                if (i > this->crosscount_from && i%this->crosscount_every == 0) {
+                    this->update_metrics (i, true);
+                } else {
+                    this->update_metrics (i, false);
+                }
+            }
 
             if constexpr (visualise == true) { if (i%this->visevery == 0) { this->vis(i); } }
 
@@ -272,31 +293,49 @@ struct Agent1
                 this->v->render();
             }
 
-            // Save final image based on config file names
+            // Save final image based on config file names and any overrides
+            std::stringstream coss;
+            for (auto co : this->conf->config_overrides) {
+                coss <<  "_" << co.first << "_" << co.second;
+            }
             std::stringstream nss;
-            nss << this->imagedir << "/" << this->title << ".png";
+            nss << this->imagedir << "/" << this->title << coss.str() << ".png";
             this->v->saveImage (nss.str());
             std::cout << "Saved image: " << nss.str() << std::endl;
             this->vis(this->conf->getUInt ("steps", 1000));
-            AgentMetrics<T> am = this->get_metrics();
-            std::cout << "Final SOS: " << am.sos << " and crosscount = " << am.crosscount << std::endl;
+            std::cout << "Final SOS: " << this->am.sos.back() << " and crosscount = " << this->am.crosscount.back() << std::endl;
             if (this->immediate_exit == false) { this->v->keepOpen(); }
         }
     }
     std::string imagedir = std::string("./paper/images");
 
-    //! Compute SOS, crossings count etc and return info
+    // To record data about the current run. For noise, want to average position error
+    AgentMetrics<T> am;
+    // Return an AgentMetrics with just the most recent info (used by Anneal code)
     AgentMetrics<T> get_metrics()
     {
-        AgentMetrics<T> am;
-        am.n_agents = this->ax_centroids.targ.size();
-        am.sos.emplace_back (this->ax_centroids.sos());
-        am.rms.emplace_back (this->ax_centroids.rms());
-        am.crosscount.emplace_back (this->ax_centroids.crosscount());
-        return am;
+        AgentMetrics<T> _am;
+        _am.n_agents = this->ax_centroids.targ.size();
+        _am.sos.emplace_back (this->ax_centroids.sos());
+        _am.rms.emplace_back (this->ax_centroids.rms());
+        _am.rms.emplace_back (this->ax_centroids.crosscount());
+        return _am;
+    }
+    // Compute SOS, crossings count etc and add info to this->am
+    void update_metrics (unsigned int t, bool update_crosscount = false)
+    {
+        this->am.t.emplace_back (t);
+        this->am.n_agents = this->ax_centroids.targ.size();
+        this->am.sos.emplace_back (this->ax_centroids.sos());
+        this->am.rms.emplace_back (this->ax_centroids.rms());
+        if (update_crosscount == true) {
+            this->am.crosscount.emplace_back (this->ax_centroids.crosscount());
+        } else {
+            this->am.crosscount.emplace_back (T{-1});
+        }
     }
 
-    //! Save any relevant results of the simulation to an HdfData object.
+    // Save any relevant results of the simulation to an HdfData object.
     void save (const std::string& outfile)
     {
         std::cout << "save results (sos=" << this->ax_centroids.sos() << ")\n";
@@ -307,7 +346,7 @@ struct Agent1
     }
 
 #ifdef VISUALISE
-    //! Update the visualization
+    // Update the visualization
     unsigned int framenum = 0;
     void vis (unsigned int stepnum)
     {
@@ -372,12 +411,11 @@ struct Agent1
         {
             this->cv->reinit(); // Centroids
             this->sim_time_txt->setupText (std::to_string(stepnum)); // Text
-            AgentMetrics<T> am = this->get_metrics();
             std::stringstream amss, ccss;
             amss.precision(4);
             ccss.precision(4);
-            amss << am.rms[0];
-            ccss << am.crosscount[0];
+            amss << this->am.rms.back();
+            ccss << this->am.crosscount[0];
             this->emetric_txt->setupText (amss.str());
             this->crossings_txt->setupText (ccss.str());
             if (this->conf->getBool ("rc_vs_nt", false) == true) {
@@ -396,8 +434,7 @@ struct Agent1
             this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // RMS (surround)
             this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // RMS (patch)
             // Show RMS error
-            AgentMetrics<T> am = this->get_metrics();
-            this->emetric_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(this->am.rms.back()));
             break;
         }
         case graph_layout::h:
@@ -405,8 +442,7 @@ struct Agent1
             this->bv->reinit(); // Branches
             this->cv->reinit(); // Centroids
             // Show RMS error
-            AgentMetrics<T> am = this->get_metrics();
-            this->emetric_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(this->am.rms.back()));
             break;
         }
         case graph_layout::i:
@@ -427,16 +463,14 @@ struct Agent1
             this->gv->append ((float)stepnum, this->ax_centroids.rms_outside({0.25,0.25,0},{0.75,0.75,0}), 1); // RMS (surround)
             this->gv->append ((float)stepnum, this->ax_centroids.rms_inside({0.25,0.25,0},{0.75,0.75,0}), 2); // RMS (patch)
             // Show RMS error
-            AgentMetrics<T> am = this->get_metrics();
-            this->emetric_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(this->am.rms.back()));
             break;
         }
         case graph_layout::k:
         {
             this->cv->reinit(); // Centroids
             // Show RMS error
-            AgentMetrics<T> am = this->get_metrics();
-            this->emetric_txt->setupText (std::to_string(am.rms[0]));
+            this->emetric_txt->setupText (std::to_string(this->am.rms.back()));
             break;
         }
         default:
@@ -457,7 +491,7 @@ struct Agent1
     }
 #endif // VISUALISE
 
-    //! One step of the simulation in which branches positions are randomly set
+    // One step of the simulation in which branches positions are randomly set
     void steprandom()
     {
         morph::RandUniform<T, std::mt19937> rng(T{0}, T{1.0});
@@ -481,10 +515,10 @@ struct Agent1
 #endif
     }
 
-    //! RNG for adding noise to gradient sampling
+    // RNG for adding noise to gradient sampling
     morph::RandNormal<T, std::mt19937>* gradient_rng = nullptr;
 
-    //! Perform one step of the simulation
+    // Perform one step of the simulation
     void step()
     {
         if constexpr (branch_min_maxes == true) {
@@ -552,7 +586,7 @@ struct Agent1
     }
 
 #ifdef VISUALISE
-    //! Add a suitable set of orientation labels to a square-map visual
+    // Add a suitable set of orientation labels to a square-map visual
     void addOrientationLabels (morph::VisualModel* vm, const std::string& tag)
     {
         // Tag tells us which of the orientation labels to draw
@@ -569,7 +603,7 @@ struct Agent1
         }
     }
 
-    //! Create a tissue visual, to reduce boilerplate code in init()
+    // Create a tissue visual, to reduce boilerplate code in init()
     tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
                                                 expression_view exview, size_t pair_to_view, int alt_cmap=0)
@@ -578,10 +612,10 @@ struct Agent1
                                          offset, gtissue, tag, exview, pair_to_view, alt_cmap);
     }
 
-    //! Show x/y gradients in an alternative colour map (Twilight)?
+    // Show x/y gradients in an alternative colour map (Twilight)?
     static constexpr bool grads_in_jet = false;
 
-    //! Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
+    // Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
     tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
                                                 morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
@@ -964,7 +998,7 @@ struct Agent1
         }
     }
 
-    //! Re-compute initial positions of branches; reset content of graphs
+    // Re-compute initial positions of branches; reset content of graphs
     void reset()
     {
         size_t num_branches = this->ret->num() * this->bpa;
@@ -977,7 +1011,7 @@ struct Agent1
 #endif
     }
 
-    //! Update the 'm' parameters by reading mconf
+    // Update the 'm' parameters by reading mconf
     void update_m()
     {
         this->m[0] = this->mconf->getDouble ("m_g", 0.001);    // G rcpt-lgnd (axon-tectum)
@@ -987,15 +1021,15 @@ struct Agent1
         this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
     }
 
-    //! Graftswap "locn1" parameter from JSON, stored as a Vector. Member as it's used
-    //! in setup_expt_suggests
+    // Graftswap "locn1" parameter from JSON, stored as a Vector. Member as it's used
+    // in setup_expt_suggests
     morph::Vector<size_t, 2> l1v;
-    //! Graftswap "locn2" parameter from JSON, stored as a Vector.
+    // Graftswap "locn2" parameter from JSON, stored as a Vector.
     morph::Vector<size_t, 2> l2v;
-    //! Graftswap "patchsize" parameter from Json.
+    // Graftswap "patchsize" parameter from Json.
     morph::Vector<size_t, 2> psv;
 
-    //! Simulation init
+    // Simulation init
     void init()
     {
         /*
@@ -2315,10 +2349,6 @@ struct Agent1
     NetVisual<T>* cv3 = nullptr;
     // Simulation times to stop updating graphs (see graph_layout::c)
     morph::Vector<size_t, 4> freeze_times;
-    // How early to start showing the crossings count metric.
-    unsigned int crosscount_from = 1000;
-    // How often to show the crossings count metric.
-    unsigned int crosscount_every = 50;
     // Centroid visual for targets
     NetVisual<T>* tcv = nullptr;
     // A graph for the RMS metric
@@ -2326,4 +2356,8 @@ struct Agent1
     // Make a couple of options for the graph layout for different figure types
     graph_layout layout = graph_layout::c;
 #endif // VISUALISE
+    // How early to start showing the crossings count metric.
+    unsigned int crosscount_from = 1000;
+    // How often to show the crossings count metric.
+    unsigned int crosscount_every = 50;
 };
