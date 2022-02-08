@@ -38,15 +38,17 @@ with open ('GI_vs_noise.txt') as csvfile:
 
     fig, ax1 = plt.subplots()
 
-    color = clr1
+    color = clr2
     ax1.set_xlabel('Noise gain')
-    ax1.set_ylabel(r'$\bar{\eta}$', rotation=0,  color=blk)
+    # The bar reproduces well in matplotlib, but not in svg/inkscape
+    #ax1.set_ylabel(r'$\bar{\eta}$', rotation=0,  color=blk)
+    ax1.set_ylabel(r'$\eta$', rotation=0,  color=blk)
     ax1.plot(noise_gain, mean_eta, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
 
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    color = clr2
-    ax2.set_ylabel(r'$\bar{\epsilon}$', rotation=0, color=blk)  # we already handled the x-label with ax1
+    color = clr1
+    ax2.set_ylabel(r'$\epsilon$', rotation=0, color=blk)  # we already handled the x-label with ax1
     ax2.plot(noise_gain, mean_eps, color=color)
     ax2.tick_params(axis='y', labelcolor=color)
 

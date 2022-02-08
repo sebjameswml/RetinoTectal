@@ -547,7 +547,7 @@ To determine the strength of the effect we assumed a purely linear receptor
 binding model, and set the chemotactic movement vector of the branch $b$ at
 location $\mathbf{x}_b$ on the tectum to be
 %
-\begin{equation}
+\begin{equation}\label{e:G}
 \mathbf{G}_b = \sum_i^N F_i\,r_{i,b} \nabla L_i(\mathbf{x}_b)
 \end{equation}
 %
@@ -950,6 +950,44 @@ the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
 expression of ligand $i$ on branch $k$.
 
 See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
+
+\subsection*{Robustness to noise}
+
+\emph{This section might fit most naturally after the Chemoaffinity only section.}
+
+\begin{figure}
+\includegraphics[width=0.3\linewidth]{./images/GI_vs_noise_tweaked.png}
+\caption{The mean value of $\eta$ (number of crossings) and $\epsilon$
+(mean distance error), averaged over the period from simulation time $t=500$ to $t=1000$, plotted with respect to the
+noise gain in the $\mathbf{GI}$ model and the wildtype condition (compare with
+Fig.\,\ref{f:GI}). Both metrics indicate that a moderate
+amount of gradient sampling noise is \emph{beneficial} to the establishment of
+an ordered tectum.}
+\label{f:noise}
+\end{figure}
+
+One problem with axon gradient-following is the ability of the axon to
+successfully detect the direction of the gradient given the small distances
+over which the axon can sample signalling molecules and the size of receptor
+binding noise \citep{goodhill_noise_2014}.  We investigated the ability of the
+system to self-organise in the presence of noise, by introducing a stochastic
+element to each branch's sampling of the gradient.
+
+% See branch::estimate_ligand_gradient() in sim/agent/branch.h for the code
+Noise is added to the estimation of the ligand gradient by multiplying the
+true gradient by a random vector, $\mathbf{U}$, whose coordinates are drawn
+from a random uniform distribution centred about 0 with magnitude $\nu$, denoted:
+$\mathbf{U}(-\nu, \nu)$. Eq.\,\ref{e:G} becomes
+
+\begin{equation}\label{e:Gnu}
+\mathbf{G}_b = \sum_i^N F_i\,r_{i,b}\, \mathbf{U}(-\nu, \nu) \nabla L_i(\mathbf{x}_b)
+\end{equation}
+
+Fig.\,\ref{f:noise} shows the response of the $\mathbf{GI}$ model to the
+addition of ligand gradient estimation noise.
+
+What about retinal expression noise? This would have a disordering effect on
+the pattern.
 
 \subsection*{Single axon behaviour}
 

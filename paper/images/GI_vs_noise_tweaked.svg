@@ -15,8 +15,11 @@
    viewBox="0 0 460.8 345.6"
    width="460.8pt"
    id="svg223"
-   sodipodi:docname="GI_vs_noise.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+   sodipodi:docname="GI_vs_noise_tweaked.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/GI_vs_noise_tweaked.png"
+   inkscape:export-xdpi="200"
+   inkscape:export-ydpi="200">
   <metadata
      id="metadata227">
     <rdf:RDF>
@@ -25,6 +28,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -41,9 +45,9 @@
      inkscape:window-height="1756"
      id="namedview225"
      showgrid="false"
-     inkscape:zoom="2.0486111"
-     inkscape:cx="373.10143"
-     inkscape:cy="405.25259"
+     inkscape:zoom="1.4485868"
+     inkscape:cx="367.71092"
+     inkscape:cy="407.49043"
      inkscape:window-x="72"
      inkscape:window-y="27"
      inkscape:window-maximized="0"

@@ -65,10 +65,10 @@ public:
         morph::Vector<T, 2*N> lg = true_lgnd_grad;
         // ...unless this if is entered into
         if (add_simple_gradient_noise == true && this->noise_gain > T{0}) {
-            this->rn.randomize(); // 0->1
+            this->rn.randomize(); // random uniform, 0->1
             this->rn -= T{0.5};  // symmetric about 0
             this->rn *= T{2};   // +- 1
-            lg += this->rn * (this->noise_gain * lg);
+            lg += this->rn * this->noise_gain;
         }
         return lg;
     }
