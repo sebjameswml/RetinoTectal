@@ -46,7 +46,7 @@ for fn in files:
         cc_idx = np.nonzero(np.where (crosscount > -1, 1, 0)) # incantation to make an index array
         cc_red = crosscount[cc_idx]
         t_red = t[cc_idx]
-        rms = list(f['/crosscount'])
+        rms = list(f['/rms'])
         # 500-1000 time slice is [41:] 750-1000 slice is [66:]
         mean_eta.append(np.mean(cc_red[66:]))
         # 500-1000 time slice is [100:] 750-1000 slice is [150:]
@@ -55,7 +55,7 @@ for fn in files:
 fig, ax1 = plt.subplots()
 
 color = clr2
-ax1.set_xlabel('Noise gain')
+ax1.set_xlabel(r'$\nu$')
 # The bar reproduces well in matplotlib, but not in svg/inkscape
 #ax1.set_ylabel(r'$\bar{\eta}$', rotation=0,  color=blk)
 ax1.set_ylabel(r'$\eta$', rotation=0,  color=blk)
@@ -67,6 +67,9 @@ color = clr1
 ax2.set_ylabel(r'$\epsilon$', rotation=0, color=blk)  # we already handled the x-label with ax1
 ax2.plot(noise_gain, mean_eps, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
+
+ax2.set_ylim([0, 0.1])
+ax1.set_ylim([0,400])
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.savefig('G0_vs_noise.svg', transparent=True)
