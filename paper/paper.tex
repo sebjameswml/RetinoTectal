@@ -6,7 +6,8 @@
 \nonstopmode
 
 % Use the article doc class, with an 11 pt basic font size
-\documentclass[11pt, a4paper]{article}
+\documentclass[11pt, a4paper, draft]{article}
+%\documentclass[11pt, a4paper]{article}
 
 % Makes the main font Nimbus Roman, a Times New Roman lookalike:
 %\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
@@ -424,21 +425,21 @@ $L$: lateral, $M$: medial, $C$: caudal, $R$: rostral.
 \end{figure}
 
 Each retinal ganglion cell (RGC) projects growth cones (referred to
-as \emph{branches}) which carry a set of $m$ receptors, $r_i$ indexed by $i$ and
+as \emph{branches}) which carry a set of $N$ receptors, $r_i$ indexed by $i$ and
 expressed at levels determined by the cell soma's location on the
-retinal grid. ($m$ ligands, $l_i$, are also expressed by RGCs, but these are not
+retinal grid. ($N$ ligands, $l_i$, are also expressed by RGCs, but these are not
 used by the chemoaffinity simulation.) The expression of each receptor
 varies only with respect to one spatial dimension.
 
 The minimum number of gradients required to provide a coordinate system on the
 surface of the tectum within which axons could find a target location is
-$m=2$, arranged in orthogonal directions. However if there are only two
+$N=2$, arranged in orthogonal directions. However if there are only two
 gradients, imagining that one guides axons laterally and the other guides
 axons in the caudal direction, then it is necessary for there to be an
 additional `stopping mechanism' to prevent all of the axons eventually being
 guided to the most lateral/caudal position. To avoid the need for a different
 stopping mechanism, we chose to model \emph{opposing pairs of orthogonal
-gradients} with $m=4$. With opposing gradients, an axon which interacts most
+gradients} with $N=4$. With opposing gradients, an axon which interacts most
 strongly with a gradient in the caudal direction would be drawn to the caudal
 side of the tectum, whereas an axon whose strongest interaction was to climb a
 gradient in the rostral direction would be drawn to the rostral side. There is
@@ -461,23 +462,24 @@ as \citet{simpson_simple_2011} which is
 r_i(x,y) = 1.05 + 0.26 \exp(2.3 u)
 \end{equation}
 Where $u$ gives the direction with which the expression increases and is
-substituted by $1-x$ for $r_0$, $1-y$ for $r_1$, $x$ for $r_2$ and by $y$ for
-$r_3$ (Fig.\,\ref{1}B).
+substituted by $(1-x)$ for $r_0$, $(1-y)$ for $r_1$, $x$ for $r_2$ and by $y$ for
+$r_3$ (Fig.\,\ref{f:ex}B).
 
-The tectum expresses ligands, $L_i$, for the retinal receptors, also in
+Cells on the tectum express ligands, $L_i$, for the retinal receptors, also in
 orthogonal pairs of gradients. Although several studies model tectal ligand
 expression with exponential functions \citep{koulakov_stochastic_2004}, the
 experimental evidence for the form of tectal ligand expression is more ambiguous than that for
 retinal receptor expression (Fig.\,\ref{f:expressions} summarises results from
 the literature). We kept in mind the
 possibility that tectal ligand expression may be modelled by exponential,
-linear or logarithmic functions, but initially, we set it to the exponential function
+linear or logarithmic functions, but initially, we set it to the same
+exponential function used for retinal expression,
 \begin{equation} \label{e:tecligexp}
-L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 u)
+L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 u),
 \end{equation}
-and use the substitutions $y$, $x$, $(1-y)$ or $1-x$ in place of $u$ to obtain
+and used the substitutions $y$, $x$, $(1-y)$ or $(1-x)$ in place of $u$ to obtain
 the ligand expression functions for $L_0$, $L_1$, $L_2$ and $L_3$
-(Fig.\,\ref{1}D).
+(Fig.\,\ref{f:ex}D).
 
 While we do not explicitly name $r_0$, $r_1$,
 etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ includes EphA,
@@ -512,7 +514,7 @@ area of the branches at 0.86 ($44000 \times \pi r^2$) (if there is one cone
 per axon) or 6.9 (if there are 8 cones per axon).
 
 \color{black}
-Each discrete, square element in Fig.\,\ref{f:ex}B projects one RGC axon with 4
+Each discrete, square element in Fig.\,\ref{f:ex}B projects one RGC axon with $M=4$
 branches to the tectum, carrying the receptor expression at the retinal
 element's location.
 At each timestep in a simulation, the position, $\mathbf{x}_{b,t}$, at time
@@ -604,31 +606,31 @@ derived from a normal distribution of mean 0 and standard deviation 0.1.
 % end initial conditions
 
 The results of running this simulation for 300 time steps are shown in
-Fig.\,\ref{f:ch}. Fig.\,\ref{f:ch}A indicates the colour code used for retinal
+Fig.\,\ref{f:G}. Fig.\,\ref{f:G}A indicates the colour code used for retinal
 cell position; dorsal retinal cells are indicated by green, nasal cells by
 red. Lightness gives position along the relevant axis so that cells at the
 dorsal-nasal corner are yellow and those at the ventral-temporal corner are
-black. Fig.\,\ref{f:ch}E shows the expected layout of retinal ganglion cell
+black. Fig.\,\ref{f:G}E shows the expected layout of retinal ganglion cell
 axons on the tectum. The axons retain the colour of their originating cell on
 the retina. Nasal cell axons should be arranged
 caudally; dorsal axons laterally; axons should be evenly spaced and the
-pattern should span the entire tectum.  Fig.\,\ref{f:ch}, panels B--D show
+pattern should span the entire tectum.  Fig.\,\ref{f:G}, panels B--D show
 `fish net' plots of the average location of the 4 branches of each axon (the
-axon's centroid) at three timepoints. Fig.\,\ref{f:ch}B indicates the
+axon's centroid) at three timepoints. Fig.\,\ref{f:G}B indicates the
 randomised placement of axon branches at the rostral end of the tectum as
 specified by the initial conditions (Eq.\,\ref{e:ic}). In these plots, lines are drawn between
 axons that are expected to arrange themselves adjacently to one another by the
 end of the simulation. The number of line crossings in this plot gives an
-indication of the disorder in the arrangement. Fig.\,\ref{f:ch}G shows the positions of the individual branches
+indication of the disorder in the arrangement. Fig.\,\ref{f:G}G shows the positions of the individual branches
 (i.e.~growth cones) at $t=300$ that contribute to the plot in
-Fig.\,\ref{f:ch}D. By this time, the topological order matches that shown in
-Fig.\,\ref{f:ch}E. Opposing gradients have sorted the axons along the two axes
+Fig.\,\ref{f:G}D. By this time, the topological order matches that shown in
+Fig.\,\ref{f:G}E. Opposing gradients have sorted the axons along the two axes
 to form a grid of cells. However, the arrangement does not span the full
-tectum. Fig.\,\ref{f:ch}F shows two pattern metrics; $\epsilon$ is the mean
+tectum. Fig.\,\ref{f:G}F shows two pattern metrics; $\epsilon$ is the mean
 distance error of the axon centroids, given by:
 %
 \begin{equation}\label{e:eps}
-\epsilon = \sqrt{\frac{\sum_k (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
+\epsilon = \sqrt{\frac{\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
 \end{equation}
 %
 where $\mathbf{x}_{k}$ is the location of the centroid of the
@@ -638,11 +640,11 @@ $k$. $n$ is the number of RGC axons in the system.
 $\epsilon$ tends to 0 as the pattern approaches the target layout. However,
 two patterns may have the same non-zero value for $\epsilon$, despite one
 being qualitatively more disordered than the other. For this reason, we also
-use the number of crossings in the fish net plot of Fig.\,\ref{f:ch}D as a
+use the number of crossings in the fish net plot of Fig.\,\ref{f:G}D as a
 second metric, called $\eta$, which tends towards an expected target number of
 crossings, $\eta_t$ as the pattern approaches the target pattern.  For the wildtype
-pattern, $\eta_t=0$, as in Fig.\,\ref{f:ch}E, although note that in some patterns,
-$\eta_t$ is non-zero. Fig.\,\ref{f:ch}H shows selected
+pattern, $\eta_t=0$, as in Fig.\,\ref{f:G}E, although note that in some patterns,
+$\eta_t$ is non-zero. Fig.\,\ref{f:G}H shows selected
 axons (one from the centre and one from each corner of the retina) and their
 position history.
 
@@ -662,13 +664,13 @@ arrangement plotted with respect to simulation time. \textbf{G} The
 arrangement of axon branches at t=300. \textbf{H} Selected axon locations at
 t=300, with path histories in grey.  \emph{Abbreviations: D dorsal, V ventral, T
 temporal, N nasal, C caudal, R rostral, M medial, L lateral.}}
-\label{f:ch}
+\label{f:G}
 \end{figure}
 
 The form of the retinal receptor expression (Eq.\,\ref{e:retrcpt}) is based on
 empirical measurement, but the tectal ligand expression
 (Eq.\,\ref{e:tecligexp}) was chosen arbitrarily. To expand the pattern in
-Fig.\,\ref{f:ch}D so that it covers the entire tectum, we needed only to
+Fig.\,\ref{f:G}D so that it covers the entire tectum, we needed only to
 adjust the tectal ligand expression, substituting the alternative exponential
 expression:
 %
@@ -678,16 +680,16 @@ L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 u)
 %
 for Eq.\,\ref{e:tecligexp}.
 
-The result at $t=300$ is shown in Figs.\,\ref{f:chalt}A
-and \ref{f:chalt}B. The axon centroids are arranged across the full tectal
+The result at $t=300$ is shown in Figs.\,\ref{f:G0}A
+and \ref{f:G0}B. The axon centroids are arranged across the full tectal
 surface.  The arrangement is slightly disordered around the middle of the
 tectum. This is caused by numerical artefacts from the discretization of the
 ligand expression and the fact that in the centre, the difference between the
 opposing receptor-ligand signals is very small. Nevertheless, the result
 demonstrates that a modified form for the tectal ligand expression (which was
 found easily by hand tuning) allows a well ordered map to form for the
-wildtype system. Fig.\,\ref{f:chalt}C shows the error metric, $\epsilon$,
-which is much closer to 0 with the new ligand expression \textbf{Fix graph}.
+wildtype system. Fig.\,\ref{f:G0}C shows the error metric, $\epsilon$,
+which is much closer to 0 with the new ligand expression.
 
 % ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_wt_fig3.json
 \begin{figure}
@@ -699,7 +701,7 @@ which is much closer to 0 with the new ligand expression \textbf{Fix graph}.
  expression nor tectal ligand expression is high, the ordering is weaker than
  towards the edge. \textbf{A} Axon branches \textbf{B} axon
  centroids \textbf{C} Five selected axons.}
-\label{f:chalt}
+\label{f:G0}
 \end{figure}
 
 This `chemoaffinity only' model begins to encounter problems when we introduce
@@ -734,7 +736,7 @@ and ablation of half the tectum (Fig\,\ref{f:tmanip}D). A mismatch
 manipulation was also performed in which which half of the retina is removed
 along with the half of the tectum to which the remaining retina would project.
 
-Fig\,\ref{f:chsurg} shows the results of 6 simulated surgical
+Fig\,\ref{f:Gsurg} shows the results of 6 simulated surgical
 manipulations. In A, a patch of tectal tissue has been cut out and rotated by
 a quarter turn (the manipulation illustrated in Fig.\,\ref{f:trot90}). For
 this simulation, the figure shows i) The locations of the axon centroids at
@@ -751,7 +753,7 @@ similar result is shown for the 180\degree~example in B, in which the caudal
 half of the rotated patch is free of branches, but the rostral half contains
 branches with the correctly rotated orientations.
 
-Fig.\,\ref{f:chsurg}C shows the result of the patch swap manipulation, in
+Fig.\,\ref{f:Gsurg}C shows the result of the patch swap manipulation, in
 which 12$\times$4 element grafts, one from the caudal side of the tectum and one from
 the rostral side are swapped. This simulation is unsuccessful in patterning
 the caudal half of the tectum. The large gradients, both positive and
@@ -759,7 +761,7 @@ negative, caused by the discontinuities along the long edges of the grafts
 attracts almost all the branches (whose initial position is the rostral edge)
 and very few pass through to the caudal side.
 
-The retinal ablation shown in Fig.\,\ref{f:chsurg}D is also unsuccessful, with
+The retinal ablation shown in Fig.\,\ref{f:Gsurg}D is also unsuccessful, with
 the axons from the surviving nasal retina (the temporal half was removed)
 failing to arrange themselves across the entire tectum, due to the pure
 `position specification' which the dual gradient model achieves. Here, the
@@ -769,8 +771,8 @@ the tectal ablation simulation fails to reproduce experimentally observed
 results in which the retinal map `squashes up' within the remaining tectal
 region. Instead, axons from the temporal retina arrange with normal spacing
 and axons from the nasal retina are pushed to the caudal-most side of the
-remaining tectum (Fig.\,\ref{f:chsurg}E). A similar result occurs in the
-mismatch experiment (Fig.\,\ref{f:chsurg}F), but in this case there are no
+remaining tectum (Fig.\,\ref{f:Gsurg}E). A similar result occurs in the
+mismatch experiment (Fig.\,\ref{f:Gsurg}F), but in this case there are no
 axons from the temporal retina, which was been ablated and only the axons
 from the nasal retina are present, arranged in a line.
 
@@ -790,7 +792,7 @@ from the nasal retina are present, arranged in a line.
 \caption{Surgical manipulations in the chemoaffinity-only model. \textbf{A} 90 degree
 rotation. \textbf{B} 180 degree rotation. \textbf{C} Graft swap. \textbf{D}
 Retinal ablation \textbf{E} Tectal ablation \textbf{F} mismatch ablation}
-\label{f:chsurg}
+\label{f:Gsurg}
 \end{figure}
 
 Together, these results confirm that, while a pure gradient-following
@@ -807,7 +809,7 @@ barrels \citep{james_modelling_2020} \textbf{(FIXME owt else?)}.
 
 \citet{simpson_simple_2011} showed that repulsive interactions combined with a
 chemoaffinity-like effect could account for the surgical manipulations shown
-in Figs.\,\ref{f:trot90}--\ref{f:chsurg}. To confirm that a competitive
+in Figs.\,\ref{f:trot90}--\ref{f:Gsurg}. To confirm that a competitive
 mechanism could operate successfully in combination with the
 gradient-following chemoaffinity mechanism described above, we introduced
 three competition mechanisms and investigated their behaviour.
@@ -845,8 +847,8 @@ self-other signal which acts to discourage two cells from approaching each
 other. A competition movement vector, $\mathbf{C}_b$, acting on branch $b$, is
 defined as a proximity-weighted sum of the repulsion due to all nearby branches:
 %
-\begin{equation}
-\mathbf{C}_b = \frac{1}{|B_{b,c}|} \sum_k \hat{\mathbf{x}}_{kb} W_c
+\begin{equation} \label{e:C}
+\mathbf{C}_b = \frac{1}{|B_{b,c}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb} W_c
 \end{equation}
 where $\hat{\mathbf{x}}_{kb}$ is the unit vector from branch $k$ to branch
 $b$. The distance-dependent weight $W_c$ is given by
@@ -858,8 +860,9 @@ W_c(d_{kb}) = \begin{cases}
 \end{equation}
 for two growth cones of interaction radius $r_c$ separated by a distance
 $d_{kb}$. $B_{b,c}$ is the set of growth cones within a distance $2r_c$ of
-branch $b$. This description of the competition matches that
-in \citet{simpson_simple_2011}.
+branch $b$ and the total number of branches in the system is the number of RGC
+axons, $n$ multiplied by the number of branches per axon, $M$. This
+description of the competition matches that in \citet{simpson_simple_2011}.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json
 \begin{figure}
@@ -874,16 +877,70 @@ free parameters; $m_{\!_G}$, $m_c$ and $r_c$. To find the best combination of
 these parameters, we reasoned that evolution would optimize the arrangement of
 the wildtype pattern. We performed a simulated annealing optimization to
 minimize the error metric, $\epsilon$, for the wildtype pattern
-(Fig.\,\ref{f:ch}E) at simulation time 1000. The parameters returned were
+(Fig.\,\ref{f:G}E) at simulation time 1000. The parameters returned were
 $m_{\!_G}$ = 0.003841, $m_c$ = 0.09959 and $r_c$ = 0.39918. Fig.\,\ref{f:GC}
-shows the $\mathbf{GC}$ simulation with these parameters.
+shows the $\mathbf{GC}$ simulation with these parameters. Fish net plots at
+$t=40$ and $t=1000$ show that the pattern develops quickly and compares well
+with the expected layout (Fig.\,\ref{f:G}E). We investigated the response of
+this model to the same set of surgical manipulations shown for the
+chemoaffinity-only model in Fig.\,\ref{f:Gsurg}. We found that the addition of
+competition leads to a better correspondence to the experimental results than
+for the chemoaffinity-only model (see supplementary Fig.\,\ref{f:GCsurg}).
 
-% ./scripts/fig_GC_surgical.sh
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_GC_surgical.png}
-\caption{$\mathbf{GC}$ model, surgical manipulations}
-\label{f:GCsurg}
-\end{figure}
+\subsection*{Receptor-ligand axon-axon interactions (GJ)}
+
+Because the competition effect, $\mathbf{C}_b$ (Eq.\,\ref{e:C}), requires a
+global supervisor to provide information to each branch about the location of
+all other branches, we looked for a receptor-ligand interaction that could
+signal between axon branches and enable them to adjust their movements away
+from one another. We investigated the idea that the same receptor-ligand
+interaction that is modelled between RGC axons and the tectum could also act
+as a signal between the axons, because retinal ganglion cells are known to
+express ephrin receptor ligands as well as Eph
+receptors \citep{ephrins_on_RGCs}. We defined $N=4$ ligands, $l_i$, expressed
+by the RGCs in the model according to
+%
+\begin{equation} \label{e:retlig}
+l_i(x,y) = 1.05 + 0.26 \exp(2.3 u).
+\end{equation}
+%
+We used exactly the same form as the receptor expression given by
+Eq.\,\ref{e:retrcpt}, but with opposite gradient direction so here $u$ is
+substituted by $x$ for $l_0$, $y$ for $l_1$, $(1-x)$ for $l_2$ and by $(1-y)$
+for $l_3$ (see Fig.\,\ref{f:ex}C). We modelled a
+multiplicative (or mass-action?) interaction to give the movement
+vector, $\mathbf{J}_b$, as  follows:
+%
+\begin{equation}
+% No \frac{1}{|B_b|} in this one. Really?
+\mathbf{J}_b = \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,Q_{\!_J}(d_{kb})
+\end{equation}
+%
+where $Q_{\!_J}(d_{kb})$ is the signalling strength between two growth cones of
+receptor-ligand interaction radius $r_{\!_J}$ a distance $d_{kb}$ from one another,
+given by
+%
+\begin{equation}
+Q_{\!_J}(d_{kb}) = \begin{cases}
+     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r_{\!_J} \\
+     0 & d_{kb} > 2r_{\!_J}
+     \end{cases}
+\end{equation}
+%
+The sign of $Q_{\!_J}$ (which is dependent on the values of $F_i$) determines whether
+the interaction, $\mathbf{J}_b$, is repulsive or attractive. $l_{i,k}$ is the
+expression of ligand $i$ on branch $k$.
+
+Considering just one receptor-ligand pair,
+for instance $r_0$/$l_0$, and defining their interaction as repulsive, an axon
+from the transverse side of the retina, which expresses a high level of
+receptor $r_0$ will interact most strongly with an axon from the nasal side of
+the retina, where $l_0$ is most highly expressed. The interaction with axons
+that originate nearby, on the transverse side will be minimal, as these
+express low levels of $l_0$. Axons originating from the nasal side of the
+retina interact weakly with axons originating nearby.
+
+See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
 \subsection*{Receptor-receptor axon-axon interactions (GI)}
 
@@ -896,7 +953,7 @@ is given by
 %
 \begin{equation}
 \mathbf{I}_b
-= \frac{1}{|B_{b,I}|} \sum_k \sum_i \hat{\mathbf{x}}_{kb}\,W_{\!_I} \qquad \mathrm{if}~r_{i,b}
+= \frac{1}{|B_{b,I}|} \sum_k^{nM} \sum_i^N \hat{\mathbf{x}}_{kb}\,W_{\!_I} \qquad \mathrm{if}~r_{i,b}
 / r_{i,k} < 1.1
 \end{equation}
 %
@@ -914,7 +971,7 @@ See Fig.\,\ref{f:GI} and Fig.\,\ref{f:GIsurg}.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GI_best_1_wt_figcomp2.png}
+\includegraphics[width=\linewidth]{./images/j4_ee_GI_best_1_wt_figcomp2_exit_true.png}
 \caption{$\mathbf{GI}$ model}
 \label{f:GI}
 \end{figure}
@@ -926,41 +983,21 @@ See Fig.\,\ref{f:GI} and Fig.\,\ref{f:GIsurg}.
 \label{f:GIsurg}
 \end{figure}
 
-\subsection*{Receptor-ligand axon-axon interactions (GJ)}
-
-%
-\begin{equation}
-% No \frac{1}{|B_b|} in this one. Really?
-\mathbf{J}_b = \sum_k \hat{\mathbf{x}}_{kb}\,Q_{\!_J}(d_{kb})
-\end{equation}
-%
-where $Q_{\!_J}(d_{kb})$ is the signalling strength between two growth cones of
-receptor-ligand interaction radius $r_{\!_J}$ a distance $d_{kb}$ from one another,
-given by
-%
-\begin{equation}
-Q_{\!_J}(d_{kb}) = \begin{cases}
-     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r_{\!_J} \\
-     0 & d_{kb} > 2r_{\!_J}
-     \end{cases}
-\end{equation}
-%
-The sign of $Q_J$ (which is dependent on the values of $F_i$) determines whether
-the interaction, $\mathbf{I}_b$, is repulsive or attractive. $l_{i,k}$ is the
-expression of ligand $i$ on branch $k$.
-
-See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
-
 \subsection*{Robustness to noise}
 
 \emph{This section might fit most naturally after the Chemoaffinity only section.}
 
 \begin{figure}
-\includegraphics[width=0.3\linewidth]{./images/GI_vs_noise_tweaked.png}
-\caption{The mean value of $\eta$ (number of crossings) and $\epsilon$
-(mean distance error), averaged over the period from simulation time $t=500$ to $t=1000$, plotted with respect to the
-noise gain in the $\mathbf{GI}$ model and the wildtype condition (compare with
-Fig.\,\ref{f:GI}). Both metrics indicate that a moderate
+\centering
+\includegraphics[width=0.7\linewidth]{./images/model_vs_noise.png}
+\caption{ \textbf{A} Chemotaxis-only model. The mean value of $\eta$ (number of crossings) and $\epsilon$
+(mean distance error), averaged over the period from simulation time $t=750$ to $t=1000$, plotted with respect to the
+noise gain ($\nu$) in the best $\mathbf{G}$ model and the wildtype condition (compare with
+Fig.\,\ref{f:G0}). Noise for $\nu < 0.5$ is tolerated by the model, but
+disorder increases about this value.
+\textbf{B} Competitive interaction in the $\mathbf{GI}$ model extends the
+range of ligand gradient noise which can be tolerated by the system.
+Both metrics indicate that a moderate
 amount of gradient sampling noise is \emph{beneficial} to the establishment of
 an ordered tectum.}
 \label{f:noise}
@@ -994,6 +1031,11 @@ the pattern.
 Acknowledge the result of \citet{gosse_retinotopic_2008} and show the
 behaviour of the GC model (and by extension the other models) if a single axon
 is allowed to develop.
+
+\subsection*{Attractive receptor-ligand interactions}
+
+If we switch a receptor-ligand pair to have an attractive interaction, the
+tectal ligand expression should change from exponential to logarithmic.
 
 \section{Discussion}
 Discussion goes here.
@@ -1031,6 +1073,14 @@ Discussion goes here.
 \caption{Ligand expression and gradients on the tectum for the
 other simulated surgical manipulations}
 \label{f:tmanip}
+\end{figure}
+
+% ./scripts/fig_GC_surgical.sh
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/fig_GC_surgical.png}
+\caption{$\mathbf{GC}$ model, surgical manipulations. Demonstrating that this
+model reproduces these manipulations.}
+\label{f:GCsurg}
 \end{figure}
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
