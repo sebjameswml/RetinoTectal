@@ -927,18 +927,27 @@ Q_{\!_J}(d_{kb}) = \begin{cases}
      \end{cases}
 \end{equation}
 %
-The sign of $Q_{\!_J}$ (which is dependent on the values of $F_i$) determines whether
-the interaction, $\mathbf{J}_b$, is repulsive or attractive. $l_{i,k}$ is the
-expression of ligand $i$ on branch $k$.
+The sign of $Q_{\!_J}$ (which is dependent on the values of $F_i$) determines
+whether the interaction, $\mathbf{J}_b$, is repulsive or attractive. $l_{i,k}$
+is the expression of ligand $i$ on branch $k$.
 
-Considering just one receptor-ligand pair,
-for instance $r_0$/$l_0$, and defining their interaction as repulsive, an axon
-from the transverse side of the retina, which expresses a high level of
-receptor $r_0$ will interact most strongly with an axon from the nasal side of
-the retina, where $l_0$ is most highly expressed. The interaction with axons
-that originate nearby, on the transverse side will be minimal, as these
-express low levels of $l_0$. Axons originating from the nasal side of the
-retina interact weakly with axons originating nearby.
+Considering just one receptor-ligand pair, for instance $r_0$/$l_0$, and
+defining their interaction as repulsive, an axon from the transverse side of
+the retina, which expresses a high level of receptor $r_0$ will interact most
+strongly with an axon from the nasal side of the retina, where $l_0$ is most
+highly expressed. The interaction with axons that originate nearby, on the
+transverse side will be minimal, as these express low levels of $l_0$. Axons
+originating from the nasal side of the retina also interact most strongly with
+axons originating nearby and in general the $r_0$/$l_0$ interaction is weaker
+between a nasal axon and a second retinal axon. However, when the opposing
+receptor/ligand pair ($r_2$/$l_2$) interaction is summed with that of
+$r_0$/$l_0$, a more even interaction is found, with interactions between axons
+from extreme sides of the retina being the strongest. (Poss.~supp.~figure
+based on the Octave script J.m).
+
+We performed the same simulated annealing process as for the
+$\mathbf{GC}$-model to find the parameters best able to recover the wildtype
+pattern and found $m_{\!_G} = 0.00047$, $m_{\!_J} = 0.00089$ and $r_{\!_J} = 0.341$.
 
 See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
