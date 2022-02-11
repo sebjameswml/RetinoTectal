@@ -4,6 +4,7 @@
 x = [0:0.05:1];
 
 _exp = 0.26 .* exp (2.3.*x) + 1.05;
+_invexp = 1./_exp;
 _exp2 = 0.26 .* exp (1.1.*x) + 1.05;
 _log = 2.32 + 1.29 .* log (2.3 .* (x+0.2));
 _quad = 1.31 + 2.333 .* x .* x;
@@ -59,7 +60,8 @@ plot (x, _exp); % exp for receptors on retina
 hold on;
 plot (x, flip(_exp)); % ligands
 plot (x, _exp .* flip(_exp));
-lg = legend (['rcpt';'lgnd';'rcpt*lgnd interaction'],'Location','North');
+plot (x, _invexp); % Inverse of exponential
+lg = legend (['rcpt';'lgnd';'rcpt*lgnd interaction';'1/rcpt'],'Location','North');
 
 % with alt exp
 figure(14); clf;
