@@ -126,7 +126,7 @@ public:
     // growth cones interact and produce an attractive (and/or repulsive)
     // interaction. Use the strength of this interaction to weight a vector between the
     // two cones. I is the receptor-receptor interaction of S&G, J is my receptor-ligand
-    // axon-axon interaction.
+    // axon-axon interaction. Argument kp is "pointer to branch k"
     std::bitset<3>
     compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
                         morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J)
@@ -157,6 +157,8 @@ public:
             // (guided by Reber) looks at the relative levels
             morph::Vector<T,N> QI;
             QI.zero();
+            //std::cout << "is d ("<<d<<") <= two_r_i ("<<this->two_r_i<<")?..." << (d <= this->two_r_i ? "yes" : "no") << std::endl;
+
             W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
             QI = this->rcpt/kp->rcpt;
             if constexpr (branch_min_maxes == true && branch_min_max_i == true) {
@@ -172,7 +174,7 @@ public:
                 if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
                     I += kb * W;
                     rtn[1] = true;
-                    break;
+                    break; // Because for ONE of the receptor types (i in N), QI[i] > s and one is all it takes.
                 }
             }
         } else {
