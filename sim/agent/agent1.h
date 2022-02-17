@@ -10,10 +10,6 @@
 
 // If true, turns parallel execution OFF and branch interaction debugging ON.
 static constexpr bool debug_compute_branch = false;
-// If true, then compile code to collect minimum and maximum interactions from branches
-static constexpr bool branch_min_maxes = false;
-static constexpr bool branch_min_max_i = false; // make one false
-static constexpr bool branch_min_max_j = true; // and one true
 
 #include <ostream>
 #include <iostream>
@@ -521,14 +517,6 @@ struct Agent1
     // Perform one step of the simulation
     void step()
     {
-        if constexpr (branch_min_maxes == true) {
-            // Reset minses/maxes for branches to compute min/max in this step
-            for (auto& b : this->branches) {
-                b.minses.set_from (std::numeric_limits<T>::max());
-                b.maxes.set_from(std::numeric_limits<T>::lowest());
-            }
-        }
-
         // Compute the next position for each branch:
 #ifdef __OSX__
         // Mac compiler didn't like omp parallel for in front of a for(auto...
@@ -555,21 +543,6 @@ struct Agent1
 #endif
         }
 
-        if constexpr (branch_min_maxes == true) {
-            // Check mins/maxes
-            morph::Vector<T,N> minses;
-            minses.set_from(std::numeric_limits<T>::max());
-            morph::Vector<T,N> maxes;
-            maxes.set_from(std::numeric_limits<T>::lowest());
-            for (auto b : this->branches) {
-                for (size_t i = 0; i < N; ++i) {
-                    minses[i] = b.minses[i] < minses[i] ? b.minses[i] : minses[i];
-                    maxes[i] = b.maxes[i] > maxes[i] ? b.maxes[i] : maxes[i];
-                }
-            }
-            std::cout << "Minimum axon-axon signal: " << minses << std::endl;
-            std::cout << "Maximum axon-axon signal: " << maxes << std::endl;
-        }
         // Update centroids
         for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
@@ -817,10 +790,6 @@ struct Agent1
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].init();
             this->pending_branches[i].s = s;
-            if constexpr (branch_min_maxes == true) {
-                this->pending_branches[i].maxes.set_from(std::numeric_limits<T>::lowest());
-                this->pending_branches[i].minses.set_from(std::numeric_limits<T>::max());
-            }
             this->pending_branches[i].setr (r_conf);
             this->pending_branches[i].setr_c (r_c_conf);
             this->pending_branches[i].setr_j (r_j_conf);

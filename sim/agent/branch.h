@@ -141,6 +141,7 @@ public:
         T d = kb.length();
         kb.renormalize(); // vector kb is a unit vector
 
+        /////////////////////////////////////////////////////////////////////////////////////////////
         // Space-based competition, C
         //
         // W is a distance-dependent weight, which is 0 outside a distance of two_r and
@@ -149,63 +150,44 @@ public:
         C += kb * W;
         rtn[0] = d <= this->two_r_c ? true : false;
 
-        // QI/J collects the overall signal transmitted by ligands binding to
-        // receptors. Repulsive interactions add to Q; attractive interactions make Q
-        // more negative.
-        if constexpr (this->rcptrcpt_interactions_relative == true) {
-            // The S & G axon-axon interaction is based on the receptor expression only and
-            // (guided by Reber) looks at the relative levels
-            morph::Vector<T,N> QI;
-            QI.zero();
-            //std::cout << "is d ("<<d<<") <= two_r_i ("<<this->two_r_i<<")?..." << (d <= this->two_r_i ? "yes" : "no") << std::endl;
+        // Note: QI(QJ) collect the overall signal transmitted by ligands binding to
+        // receptors. Repulsive interactions add to QI(QJ); attractive interactions make
+        // QI(QJ) more negative.
 
-            W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
-            QI = this->rcpt/kp->rcpt;
-            if constexpr (branch_min_maxes == true && branch_min_max_i == true) {
-                if (W > T{0}) {
-                    for (size_t i = 0; i < N; ++i) {
-                        maxes[i] = QI[i] > maxes[i] ? QI[i] : maxes[i];
-                        minses[i] = QI[i] < minses[i] ? QI[i] : minses[i];
-                    }
-                }
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        // Axon-axon interaction, I
+        //
+        // The S & G axon-axon interaction is based on the receptor expression only and
+        // (guided by Reber) looks at the relative levels
+        morph::Vector<T,N> QI;
+        QI.zero();
+        W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
+        QI = this->rcpt/kp->rcpt;
+        rtn[1] = false;
+        for (size_t i = 0; i < N; ++i) {
+            if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
+                I += kb * W;
+                rtn[1] = true;
+                break; // Because for ONE of the receptor types (i in N), QI[i] > s and one is all it takes.
             }
-            rtn[1] = false;
-            for (size_t i = 0; i < N; ++i) {
-                if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
-                    I += kb * W;
-                    rtn[1] = true;
-                    break; // Because for ONE of the receptor types (i in N), QI[i] > s and one is all it takes.
-                }
-            }
-        } else {
-            // Use a mass-action receptor-receptor axon-axon interaction
-            T QI = T{0};
-            for (size_t i = 0; i < N; ++i) {
-                QI += kp->rcpt[i] * this->rcpt[i] * (source_tissue->rcptrcpt_interactions[i] == interaction::repulsion ? T{1} :
-                                                     (source_tissue->rcptrcpt_interactions[i] == interaction::attraction ? T{-1} : T{0}));
-            }
-            QI /= N;
-            I += kb * QI * (d <= this->two_r_i ? T{1} : T{0});
-            rtn[1] = (d <= this->two_r_i && QI > T{0}) ? true : false;
         }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////
         // Mass action receptor-ligand axon-axon interaction, J
+        //
+        // Here, we allow a branch to determine its direction of travel based on the
+        // binding of receptors and ligands.
+        //
+        // One important difference is the lack of a distance based weighting (cf C and I effects)
         morph::Vector<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
             QJar[i] = (source_tissue->forward_interactions[i] == interaction::repulsion ? T{1} :
                        (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;
-        // Debug QJar into maxes/minses if requested:
-        if constexpr (branch_min_maxes == true && branch_min_max_j == true) {
-            if (d <= this->two_r_j) {
-                for (size_t i = 0; i < N; ++i) {
-                    maxes[i] = QJar[i] > maxes[i] ? QJar[i] : maxes[i];
-                    minses[i] = QJar[i] < minses[i] ? QJar[i] : minses[i];
-                }
-            }
-        }
         T QJ = QJar.sum()/N;
-        J += kb * QJ * (d <= this->two_r_j ? T{1} : T{0});
+        // Incorporate a distance based weight for each contribution [the 1 - d / (2 r_j)]
+        J += kb * QJ * (d <= this->two_r_j ? (T{1} - d/this->two_r_j) : T{0});
         rtn[2] = (d <= this->two_r_j && QJ > T{0}) ? true : false;
 
         return rtn;

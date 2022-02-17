@@ -5,9 +5,6 @@
 #pragma once
 
 #include <morph/Vector.h>
-#if 0
-#include "tissue.h"
-#endif
 
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
 // termination zone, and the algorithm for computing the next position. Could derive
@@ -15,20 +12,6 @@
 template<typename T, size_t N>
 struct branch_base
 {
-#if 0
-    // Is branch k outside the region of the given tissue?
-    bool is_outside (const branch_base* k, const guidingtissue<T, N>* tissue)
-    {
-        if (k->current[0] < tissue->x_min()
-            || k->current[0] > tissue->x_max()
-            || k->current[1] > tissue->y_max()
-            || k->current[1] < tissue->y_min()) {
-            return true;
-        }
-        return false;
-    }
-#endif
-
     virtual void init() = 0;
 
     // Place the next computed location for path in 'next' so that while computing, we
