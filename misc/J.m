@@ -24,26 +24,25 @@ _exp2_kd = _exp2 - kd;
 _r0 = flip(_exp);
 _l0 = _exp;
 figure(1); clf;
-plot (x, _r0, 'linestyle', ':'); % exp for receptors on retina
+plot (x, _r0, 'linestyle', '--'); % exp for receptors on retina
 hold on;
-plot (x, _l0, 'linestyle', ':'); % ligands
+plot (x, _l0, 'linestyle', '--'); % ligands
 %%plot (x, _r0 .* _l0, 'color', colour.orchid2, 'linestyle', ':');
 plot (x, _r0(1) .* _l0, 'r-');
-plot ([x(1),x(1)], [_r0(2),_r0(1).*_l0(1)], 'ro-');
 plot (x(3:7), _r0(5) .* _l0(3:7), 'b');
-plot ([x(5),x(5)], [_r0(5),_r0(5).*_l0(5)], 'bo-');
 plot (x(7:11), _r0(9) .* _l0(7:11), 'g');
-plot ([x(9),x(9)], [_r0(9),_r0(9).*_l0(9)], 'go-');
 plot (x(11:15), _r0(13) .* _l0(11:15), 'm');
-plot ([x(13),x(13)], [_r0(13),_r0(13).*_l0(13)], 'mo-');
 plot (x(15:19), _r0(17) .* _l0(15:19), 'c');
-%%plot (x, _r0(17) .* _l0, 'c');
+
+plot ([x(1),x(1)], [_r0(1),_r0(1).*_l0(1)], 'ro-');
+plot ([x(5),x(5)], [_r0(5),_r0(5).*_l0(5)], 'bo-');
+plot ([x(9),x(9)], [_r0(9),_r0(9).*_l0(9)], 'go-');
+plot ([x(13),x(13)], [_r0(13),_r0(13).*_l0(13)], 'mo-');
 plot ([x(17),x(17)], [_r0(17),_r0(17).*_l0(17)], 'co-');
-%plot ([x(17),x(17)], [_r0(17),_r0(17).*_l0(17)], 'co-');
 
 plot (x, _r0(21) .* _l0, 'k');
 plot ([x(21),x(21)], [_r0(21),_r0(21).*_l0(21)], 'ko-');
-lg = legend (['rcpt0';'lgnd0'],'Location','North');
+lg = legend (['r0';'l0';'r0[0] x l0 interaction';'r0[.2] x l0 interaction'],'Location','North');
 
 _r2 = _exp; % opposing ligands
 _l2 = flip(_exp); % opposing receptors
