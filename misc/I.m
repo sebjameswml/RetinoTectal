@@ -125,4 +125,4 @@ plot ([x(13),x(13)], [_r0(13), _r0(13)./_r0(13)], 'mo-');
 plot ([x(17),x(17)], [_r0(17), _r0(17)./_r0(17)], 'co-');
 plot ([x(21),x(21)], [_r0(21), _r0(21)./_r0(21)], 'ko-');
 
-title ('Any pair of branches with r0 and r2 expression will exhibit competitition!')
+title ('Competitition occurs for branches that originate far from each other')
