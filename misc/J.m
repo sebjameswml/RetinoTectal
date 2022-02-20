@@ -1,6 +1,14 @@
 % Equations used in my modelling. See tissue.h and
 % guidingtissue::exponential_expression and similar
 
+% Set up the one figure
+h_f = figure(1); clf;
+h_f_pos = get(h_f, 'Position');
+w=2500;
+h=1280;
+set(h_f, 'Position', [20, 1500, w, h]);
+clf;
+
 x = [0:0.05:1];
 
 _exp = 0.26 .* exp (2.3.*x) + 1.05;
@@ -24,7 +32,8 @@ _exp2_kd = _exp2 - kd;
 %% The J effect
 _r0 = flip(_exp);
 _l0 = _exp;
-figure(1); clf;
+
+subplot(2,4,1);
 plot (x, _r0, 'linestyle', '--'); % exp for receptors on retina
 hold on;
 plot (x, _l0, 'linestyle', '--'); % ligands
@@ -43,11 +52,17 @@ plot ([x(17),x(17)], [_r0(17),_r0(17).*_l0(17)], 'co-');
 
 plot (x, _r0(21) .* _l0, 'k');
 plot ([x(21),x(21)], [_r0(21),_r0(21).*_l0(21)], 'ko-');
-lg = legend (['r0';'l0';'r0[0] x l0 interaction (competitive)';'r0[.2] x l0 interaction (competitive)'],'Location','North');
+lg1 = legend (['r0';'l0';'r0[0] x l0 interaction (competitive)';'r0[.2] x l0 interaction (competitive)'],'Location','North');
+strlbl = ['Temporal ------------------------> Nasal'];
+ylim([0,20])
+xlabel(strlbl)
+ylabel('Expression/Interaction')
+title('Mass-action r0/l0 expression/interaction')
 
 _r2 = _exp; % opposing ligands
 _l2 = flip(_exp); % opposing receptors
-figure(2); clf;
+
+subplot(2,4,2);
 plot (x, _r2, 'linestyle', ':');
 hold on;
 plot (x, _l2, 'linestyle', ':'); % ligands
@@ -68,12 +83,17 @@ plot ([x(17),x(17)], [_r2(17),_r2(17).*_l2(17)], 'co-');
 plot (x, _r2(21) .* _l2, 'k');
 plot ([x(21),x(21)], [_r2(21),_r2(21).*_l2(21)], 'ko-');
 
-lg = legend (['rcpt2';'lgnd2'],'Location','North');
+lg2 = legend (['rcpt2';'lgnd2'],'Location','North');
+strlbl = ['Temporal ------------------------> Nasal'];
+ylim([0,20])
+xlabel(strlbl)
+ylabel('Expression/Interaction')
+title('Mass-action r2/l2 expression/interaction')
 
 %% Now plot combined repulsion due to both receptor/ligand pairs
 
-figure(3)
-clf; hold on;
+subplot(2,4,3);
+hold on;
 plot (x, _r2(1) .* _l2 + _r0(1) .* _l0, 'r-');
 plot (x, _r2(5) .* _l2 + _r0(5) .* _l0, 'b-');
 plot (x, _r2(9) .* _l2 + _r0(9) .* _l0, 'g-');
@@ -86,22 +106,17 @@ plot ([x(9),x(9)], [0,_r2(9).*_l2(9)+_r0(9).*_l0(9)], 'go-');
 plot ([x(13),x(13)], [0,_r2(13).*_l2(13)+_r0(13).*_l0(13)], 'mo-');
 plot ([x(17),x(17)], [0,_r2(17).*_l2(17)+_r0(17).*_l0(17)], 'co-');
 plot ([x(21),x(21)], [0,_r2(21).*_l2(21)+_r0(21).*_l0(21)], 'ko-');
-lg = legend (['r0[0]xl0 + r2[0]xl2 combined interaction (competitive)';'r0[.2]xl0 + r2[.2]xl2 combined interaction (competitive)';'etc'],'Location','North');
+lg3 = legend (['r0[0]xl0 + r2[0]xl2 combined interaction (competitive)';'r0[.2]xl0 + r2[.2]xl2 combined interaction (competitive)';'etc'],'Location','North');
+strlbl = ['Temporal ------------------------> Nasal'];
+ylim([0,20])
+xlabel(strlbl)
+ylabel('Expression/Interaction')
+title('Combined mass-action interaction')
 
-strlbl = ['Temporal -------------------------------------> Nasal'];
-figure(1)
-ylim([0,20])
-xlabel(strlbl)
-figure(2)
-ylim([0,20])
-xlabel(strlbl)
-figure(3)
-ylim([0,20])
-xlabel(strlbl)
 
 ## Now the retina->tectum interactions
-figure(4)
-clf; hold on;
+subplot(2,4,5);
+hold on;
 _r0 = flip(_exp);
 _L0 = _deriv_exp;
 plot (x, _r0, 'linestyle', '--'); % exp for receptors on retina
@@ -121,10 +136,14 @@ plot ([x(17),x(17)], [_r0(17),_r0(17).*_L0(17)], 'co-');
 
 plot (x, _r0(21) .* _L0, 'k');
 plot ([x(21),x(21)], [_r0(21),_r0(21).*_L0(21)], 'ko-');
-lg = legend (['r0';'gradL0';'r0[0] x gradL0 interaction (tectal)';'r0[.2] x gradL0 interaction (tectal)'],'Location','North');
+lg4 = legend (['r0';'gradL0';'r0[0] x gradL0 interaction (tectal)';'r0[.2] x gradL0 interaction (tectal)'],'Location','North');
+strlbl = ['Temporal/Rostral ------------------------> Nasal/Caudal'];
+xlabel(strlbl)
+ylabel('Gradient interaction')
+title ('Receptor-tectal ligand interaction r0/L0')
 
-figure(5)
-clf; hold on;
+subplot(2,4,6);
+hold on;
 _r2 = _exp;
 _L2 = -flip(_deriv_exp);
 plot (x, _r2, 'linestyle', '--'); % exp for receptors on retina
@@ -144,11 +163,15 @@ plot ([x(17),x(17)], [_r2(17),_r2(17).*_L2(17)], 'co-');
 
 plot (x, _r2(21) .* _L2, 'k');
 plot ([x(21),x(21)], [_r2(21),_r2(21).*_L2(21)], 'ko-');
-lg = legend (['r0';'L2';'r2[0] x L2 interaction (tectal)';'r2[.2] x l0 interaction (tectal)'],'Location','Southeast');
+lg5 = legend (['r2';'gradL2';'r2[0] x grad L2 interaction (tectal)';'r2[.2] x grad L2 interaction (tectal)'],'Location','Southeast');
+strlbl = ['Temporal/Rostral ------------------------> Nasal/Caudal'];
+xlabel(strlbl)
+ylabel('Gradient interaction')
+title ('Receptor-tectal ligand interaction r2/L2')
 
-figure(6)
-clf; hold on;
 
+subplot(2,4,7);
+hold on;
 plot (x, _r2(1) .* _L2 + _r0(1) .* _L0, 'r-');
 plot (x, _r2(5) .* _L2 + _r0(5) .* _L0, 'b-');
 plot (x, _r2(9) .* _L2 + _r0(9) .* _L0, 'g-');
@@ -162,10 +185,14 @@ plot ([x(13),x(13)], [0,_r2(13).*_L2(13)+_r0(13).*_L0(13)], 'mo-');
 plot ([x(17),x(17)], [0,_r2(17).*_L2(17)+_r0(17).*_L0(17)], 'co-');
 plot ([x(21),x(21)], [0,_r2(21).*_L2(21)+_r0(21).*_L0(21)], 'ko-');
 plot ([0,1],[0,0],'k:')
-lg = legend (['r0[0]xL0 + r2[0]xL2 combined interaction (tectal)';'r0[.2]xL0 + r2[.2]xL2 combined interaction (tectal)';'etc'],'Location','North');
+lg6 = legend (['r0[0]xL0 + r2[0]xL2 combined interaction (tectal)';'r0[.2]xL0 + r2[.2]xL2 combined interaction (tectal)';'etc'],'Location','North');
+strlbl = ['Temporal/Rostral ------------------------> Nasal/Caudal'];
+xlabel(strlbl)
+ylabel('Gradient interaction')
 
-figure(7)
-clf; hold on;
+
+subplot(2,4,8);
+hold on;
 xx = [0:0.05:0.5];
 _L2trunc = _L2(1:11)
 _L0trunc = _L0(1:11)
@@ -183,32 +210,16 @@ plot ([xx(7),xx(7)], [0,_r2(13).*_L2(7)+_r0(13).*_L0(7)], 'mo-');
 plot ([xx(9),xx(9)], [0,_r2(17).*_L2(9)+_r0(17).*_L0(9)], 'co-');
 plot ([xx(11),xx(11)], [0,_r2(21).*_L2(11)+_r0(21).*_L0(11)], 'ko-');
 plot ([0,0.5],[0,0],'k:')
-lg = legend (['r0[0]xL0 + r2[0]xL2 combined interaction (tectal)';'r0[.2]xL0 + r2[.2]xL2 combined interaction (tectal)';'etc'],'Location','South');
-
-strlbl = ['Temporal/Rostral -------------------------------------> Nasal/Caudal'];
-figure(4)
-##ylim([0,20])
-xlabel(strlbl)
-ylabel('Gradient interaction')
-figure(5)
-##ylim([0,20])
-xlabel(strlbl)
-ylabel('Gradient interaction')
-figure(6)
-##ylim([0,20])
-#xlim([0,0.5])
-xlabel(strlbl)
-ylabel('Gradient interaction')
-
-
+lg7 = legend (['r0[0]xL0 + r2[0]xL2 combined interaction (tectal)';'r0[.2]xL0 + r2[.2]xL2 combined interaction (tectal)';'etc'],'Location','South');
 strlbl = ['Temporal/Rostral -----------------------------> Nasal/Tectal Midline'];
-figure(7)
-##ylim([0,20])
 xlabel(strlbl)
 
 
-figure(100)
-clf;
-plot (x, _exp)
-hold on
-plot (x, _deriv_exp, ':')
+
+
+
+#figure(100)
+#clf;
+#plot (x, _exp)
+#hold on
+#plot (x, _deriv_exp, ':')
