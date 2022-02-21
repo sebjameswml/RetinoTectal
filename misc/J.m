@@ -9,14 +9,17 @@ h=1280;
 set(h_f, 'Position', [20, 1500, w, h]);
 clf;
 
+## Set to 1 for exponential ligand expression
+exp_ligands = 1;
+
 x = [0:0.05:1];
 
 _exp = 0.26 .* exp (2.3.*x) + 1.05;
 _deriv_exp = 0.26 .* 2.3 .* exp (2.3.*x);
-_exp2 = 0.26 .* exp (1.1.*x) + 1.05;
-_log = 2.32 + 1.29 .* log (2.3 .* (x+0.2));
-_quad = 1.31 + 2.333 .* x .* x;
-_lin = 1.31 + 2.333 .* x;
+## _exp2 = 0.26 .* exp (1.1.*x) + 1.05;
+## _log = 2.32 + 1.29 .* log (2.3 .* (x+0.2));
+## _quad = 1.31 + 2.333 .* x .* x;
+## _lin = 1.31 + 2.333 .* x;
 
 ki = 1.1
 kd = 0.6
@@ -31,7 +34,12 @@ _exp2_kd = _exp2 - kd;
 
 %% The J effect
 _r0 = flip(_exp);
-_l0 = _exp;
+## Either this, making no strong assumptions about ligand expression:
+if exp_ligands == 1
+  _l0 = _exp;
+else
+  _l0 = 1 ./ _r0;
+end
 
 subplot(2,4,1);
 plot (x, _r0, 'linestyle', '--'); % exp for receptors on retina
@@ -60,8 +68,11 @@ ylabel('Expression/Interaction')
 title('Mass-action r0/l0 expression/interaction')
 
 _r2 = _exp; % opposing ligands
-_l2 = flip(_exp); % opposing receptors
-
+if exp_ligands == 1
+  _l2 = flip(_exp); % opposing receptors
+else
+  _l2 = 1 ./ _r2;
+end
 subplot(2,4,2);
 plot (x, _r2, 'linestyle', ':');
 hold on;
@@ -108,7 +119,7 @@ plot ([x(17),x(17)], [0,_r2(17).*_l2(17)+_r0(17).*_l0(17)], 'co-');
 plot ([x(21),x(21)], [0,_r2(21).*_l2(21)+_r0(21).*_l0(21)], 'ko-');
 lg3 = legend (['r0[0]xl0 + r2[0]xl2 combined interaction (competitive)';'r0[.2]xl0 + r2[.2]xl2 combined interaction (competitive)';'etc'],'Location','North');
 strlbl = ['Temporal ------------------------> Nasal'];
-ylim([0,20])
+##ylim([0,20])
 xlabel(strlbl)
 ylabel('Expression/Interaction')
 title('Combined mass-action interaction')
