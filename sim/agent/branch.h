@@ -116,9 +116,10 @@ public:
         return G;
     }
 
-    // if true use relative receptor-receptor interactions as in Simpson & Goodhill
-    // paper. If false, use a mass-action scheme.
-    static constexpr bool rcptrcpt_interactions_relative = true;
+    static constexpr bool distance_based_weight_for_J = false;
+    // Summing up mass-action interactinos for J was the old way. Alternative is to
+    // compete if any interaction is supra-threshold.
+    static constexpr bool sum_up_mass_action_interactions = false;
 
     // A subroutine of compute_next
     //
@@ -173,22 +174,51 @@ public:
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////
-        // Mass action receptor-ligand axon-axon interaction, J
+        // Mass action receptor-ligand axon-axon interaction, J. This is really *the
+        // same as I*. Or rather, this is the *mechanism behind I* (except that I assumes
+        // that ligand expression is 1/receptor expression)
         //
         // Here, we allow a branch to determine its direction of travel based on the
         // binding of receptors and ligands.
         //
-        // One important difference is the lack of a distance based weighting (cf C and I effects)
+        // One important difference is the lack of a distance based weighting (cf C and
+        // I effects). I have tried adding this, and as far as I can tell, it makes
+        // little difference to the competition.
         morph::Vector<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
             QJar[i] = (source_tissue->forward_interactions[i] == interaction::repulsion ? T{1} :
                        (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;
-        T QJ = QJar.sum()/N;
-        // Incorporate a distance based weight for each contribution [the 1 - d / (2 r_j)]
-        J += kb * QJ * (d <= this->two_r_j ? (T{1} - d/this->two_r_j) : T{0});
-        rtn[2] = (d <= this->two_r_j && QJ > T{0}) ? true : false;
+
+        if constexpr (sum_up_mass_action_interactions == true) {
+            T QJ = QJar.sum()/N; // The key is not to SUM, but to have, as with I, a
+            // threshold, above which competition is triggered.
+
+            if constexpr (distance_based_weight_for_J == true) {
+                // Incorporate a distance based weight for each contribution [the 1 - d / (2 r_j)]
+                J += kb * QJ * (d <= this->two_r_j ? (T{1} - d/this->two_r_j) : T{0});
+            } else {
+                // Just add to J. This will require smaller m_j parameter value than with
+                // a weight-basis. I prefer this as how would a cell know the distance?
+                J += kb * QJ * (d <= this->two_r_j ? T{1} : T{0});
+            }
+
+            rtn[2] = (d <= this->two_r_j && QJ > T{0}) ? true : false;
+        } else {
+            // Add to competition if any of the mass-action interactions is true.
+            // Note: use <= operator which is true if EVERY member of the Vector is <= threshold
+            bool subthreshold = false;
+            if ((subthreshold = QJar.abs() <= this->s) == false) {
+                T QJ = QJar.sum()/N; // Sum the interactions to modulate the competition strength?
+                if constexpr (distance_based_weight_for_J == true) { throw std::runtime_error ("Not coded"); }
+                J += kb * QJ * (d <= this->two_r_j ? T{1} : T{0});
+                rtn[2] = true;
+            } else {
+                //std::cout << "NO interaction for |QJar| = " << QJar.abs() << std::endl;
+                rtn[2] = false;
+            }
+        }
 
         return rtn;
     }
