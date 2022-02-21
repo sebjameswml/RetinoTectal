@@ -10,7 +10,9 @@ set(h_f, 'Position', [20, 1500, w, h]);
 clf;
 
 ## Set to 1 for exponential ligand expression
-exp_ligands = 1;
+exp_ligands = 0;
+
+threshold = 1.1;
 
 x = [0:0.05:1];
 
@@ -47,7 +49,6 @@ plot (x, _r0(21) .* _l0, 'k');
 plot ([x(21),x(21)], [_r0(21),_r0(21).*_l0(21)], 'ko-');
 lg1 = legend (['r0';'l0';'r0[0] x l0 interaction (competitive)';'r0[.2] x l0 interaction (competitive)'],'Location','North');
 strlbl = ['Temporal ------------------------> Nasal'];
-ylim([0,20])
 xlabel(strlbl)
 ylabel('Expression/Interaction')
 title('Mass-action r0/l0 expression/interaction')
@@ -56,7 +57,7 @@ _r2 = _exp; % opposing ligands
 if exp_ligands == 1
   _l2 = flip(_exp); % opposing receptors
 else
-  _l2 = 1 ./ _r2;
+  _l2 = 1 ./ _r2
 end
 subplot(2,4,2);
 plot (x, _r2, 'linestyle', ':');
@@ -81,7 +82,7 @@ plot ([x(21),x(21)], [_r2(21),_r2(21).*_l2(21)], 'ko-');
 
 lg2 = legend (['rcpt2';'lgnd2'],'Location','North');
 strlbl = ['Temporal ------------------------> Nasal'];
-ylim([0,20])
+##ylim([0,20])
 xlabel(strlbl)
 ylabel('Expression/Interaction')
 title('Mass-action r2/l2 expression/interaction')
@@ -150,7 +151,7 @@ plot ([x(17),x(17)], [_r2(17),_r2(17).*_l2(17)], 'co-');
 plot (x, _r2(21) .* _l2, 'k');
 plot ([x(21),x(21)], [_r2(21),_r2(21).*_l2(21)], 'ko-');
 
-plot ([0,1],[4,4],'k:')
+plot ([0,1],[threshold,threshold],'k:')
 
 ###
 strlbl = ['Temporal ------------------------> Nasal'];
