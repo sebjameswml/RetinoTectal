@@ -214,15 +214,15 @@ int main (int argc, char **argv)
         } else if (params.back() == "r_j") {
             param_ranges.push_back ({0.001, 0.5});
         } else if (params.back() == "s") {
-            param_ranges.push_back ({0.01, 0.99});
+            param_ranges.push_back ({0.01, 6});
         } else if (params.back() == "m_g") {
-            param_ranges.push_back ({0.0001, 0.01});
+            param_ranges.push_back ({0.0001, 0.004});
         } else if (params.back() == "m_c") {
             param_ranges.push_back ({0.01, 0.1});
         } else if (params.back() == "m_i") {
             param_ranges.push_back ({0.01, 0.8});
         } else if (params.back() == "m_j") {
-            param_ranges.push_back ({0.00001, 0.001});
+            param_ranges.push_back ({0.001, 0.4});
         }
     }
     morph::vVector<float> param_range_max(param_ranges.size(), float{0});

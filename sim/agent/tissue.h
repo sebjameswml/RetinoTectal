@@ -62,7 +62,8 @@ enum class expression_form
     quad, // A quadratic function
     exp,  // An exponential function
     log,  // A logarithmic function
-    exp2  // A slightly different exponential function, used to demonstrate dependence of chemo-only model on expressions
+    exp2,  // A slightly different exponential function, used to demonstrate dependence of chemo-only model on expressions
+    exp_inv // 1/exp
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -459,6 +460,8 @@ struct guidingtissue : public tissue<T>
         case expression_form::exp2:
             rtn = this->exponential_expression2 (x);
             break;
+        case expression_form::exp_inv:
+            rtn = T{1}/this->exponential_expression (x);
         default:
             break;
         }

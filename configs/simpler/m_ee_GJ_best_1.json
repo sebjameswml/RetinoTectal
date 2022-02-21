@@ -1,88 +1,77 @@
 {
-	"bpa" : 4,
-	"fobj" : 0.70730948448181152,
-	"intro_every" : 0,
-	"m_c" : 0,
-	"m_g" : 0.00046922318870201707,
-	"m_i" : 0,
-	"m_j" : 0.00088899984257295728,
-	"mborder" : 0.5,
-	"num_guiders" : 4,
-	"r" : 0.014999999999999999,
-	"r_c" : 0.050000000000000003,
-	"r_i" : 0.050000000000000003,
-	"r_j" : 0.34118703007698059,
-	"ret_forward_interactions" : 
-	[
-		-1,
-		-1,
-		-1,
-		-1
-	],
-	"ret_ligand_directions" : 
-	[
-		"+x",
-		"+y",
-		"-x",
-		"-y"
-	],
-	"ret_ligand_forms" : 
-	[
-		2,
-		2,
-		2,
-		2
-	],
-	"ret_rcptrcpt_interactions" : 
-	[
-		-1,
-		-1,
-		-1,
-		-1
-	],
-	"ret_receptor_directions" : 
-	[
-		"-x",
-		"-y",
-		"+x",
-		"+y"
-	],
-	"ret_receptor_forms" : 
-	[
-		2,
-		2,
-		2,
-		2
-	],
-	"rgcside" : 20,
-	"s" : 1.1000000000000001,
-	"tectum_ligand_directions" : 
-	[
-		"+y",
-		"+x",
-		"-y",
-		"-x"
-	],
-	"tectum_ligand_forms" : 
-	[
-		2,
-		2,
-		2,
-		2
-	],
-	"tectum_receptor_directions" : 
-	[
-		"x",
-		"+y",
-		"-x",
-		"-y"
-	],
-	"tectum_receptor_forms" : 
-	[
-		2,
-		2,
-		2,
-		2
-	],
-	"totally_random_init" : true
+    "bpa": 4,
+    "intro_every": 0,
+    "m_c": 0.0,
+    "m_g": 0.0016866875812411308,
+    "m_i": 0.0,
+    "m_j": 0.005328907165676355,
+    "mborder": 0.5,
+    "num_guiders": 4,
+    "r": 0.015,
+    "r_c": 0.05,
+    "r_i": 0.05,
+    "r_j": 0.5488964319229126,
+    "ret_forward_interactions": [
+        -1,
+        -1,
+        -1,
+        -1
+    ],
+    "ret_ligand_directions": [
+        "+x",
+        "+y",
+        "-x",
+        "-y"
+    ],
+    "ret_ligand_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "ret_rcptrcpt_interactions": [
+        -1,
+        -1,
+        -1,
+        -1
+    ],
+    "ret_receptor_directions": [
+        "-x",
+        "-y",
+        "+x",
+        "+y"
+    ],
+    "ret_receptor_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "rgcside": 20,
+    "s": 1.1,
+    "tectum_ligand_directions": [
+        "+y",
+        "+x",
+        "-y",
+        "-x"
+    ],
+    "tectum_ligand_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "tectum_receptor_directions": [
+        "x",
+        "+y",
+        "-x",
+        "-y"
+    ],
+    "tectum_receptor_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "totally_random_init": true
 }

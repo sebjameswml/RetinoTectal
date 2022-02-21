@@ -76,37 +76,26 @@ int main (int argc, char** argv)
         pnames.push_back (pname);
         if (pname == "r_c") {
             param_ranges.push_back ({0.001f, 0.5f});
-            range_min[i-1] =  (0.001f);
-            range_max[i-1] =  (0.5f);
         } else if (pname == "r_i") {
             param_ranges.push_back ({0.001f, 0.5f});
-            range_min[i-1] =  (0.001f);
-            range_max[i-1] =  (0.5f);
         } else if (pname == "r_j") {
-            param_ranges.push_back ({0.001f, 0.5f});
-            range_min[i-1] =  (0.001f);
-            range_max[i-1] =  (0.5f);
+            param_ranges.push_back ({0.001f, 0.7f});
         } else if (pname == "s") {
-            param_ranges.push_back ({0.01f, 0.99f});
-            range_min[i-1] =  (0.01f);
-            range_max[i-1] =  (0.99f);
+            param_ranges.push_back ({0.01, 6});
         } else if (pname == "m_g") {
-            param_ranges.push_back ({0.0001f, 0.01f});
-            range_min[i-1] =  (0.0001f);
-            range_max[i-1] =  (0.01f);
+            param_ranges.push_back ({0.0001f, 0.006f});
         } else if (pname == "m_c") {
             param_ranges.push_back ({0.01f, 0.1f});
-            range_min[i-1] =  (0.01f);
-            range_max[i-1] =  (0.1f);
         } else if (pname == "m_i") {
             param_ranges.push_back ({0.01f, 0.8f});
-            range_min[i-1] =  (0.01f);
-            range_max[i-1] =  (0.8f);
         } else if (pname == "m_j") {
-            param_ranges.push_back ({0.00001f, 0.001f});
-            range_min[i-1] =  (0.00001f);
-            range_max[i-1] =  (0.001f);
+            param_ranges.push_back ({0.00001f, 0.01f});
+        } else {
+            std::cout << "Warning: adding default 0 to 1 range to param_ranges...\n";
+            param_ranges.push_back ({0.0f, 1.0f});
         }
+        range_min[i-1] =  param_ranges.back()[0];
+        range_max[i-1] =  param_ranges.back()[1];
     }
 
     // This converts param_hist_rejected to model coords.
