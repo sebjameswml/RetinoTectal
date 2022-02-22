@@ -9,23 +9,47 @@ h=1280;
 set(h_f, 'Position', [20, 1500, w, h]);
 clf;
 
-## Set to 1 for exponential ligand expression
-exp_ligands = 0;
-
-threshold = 1.1;
+## What ligand expression profile?
+ligand_expression = 'lin'; #  or exp or invexp
 
 x = [0:0.05:1];
 
 _exp = 0.26 .* exp (2.3.*x) + 1.05;
+_rev_exp = 0.26 .* exp (2.3.*(1-x)) + 1.05;
 _deriv_exp = 0.26 .* 2.3 .* exp (2.3.*x);
+## Scaling for _exp to give inverse that starts and ends at the same point
+A = 4.7727;
+B =  -0.00014;
+_inv_exp = A .* (1./_exp) + B;
+
+## May also use a linear function
+_lin = 1.31 + 2.333 .* x;
+
+if strcmp (ligand_expression, 'exp')
+  threshold = 1.1
+else
+  threshold = 1.1 * (0.26 .* exp(2.3) + 1.05)
+end
+
+## Debugging the curves
+figure(7); clf;
+hold on;
+plot (x, _exp);
+plot (x, flip(1./_exp));
+plot (x, flip(_inv_exp));
+plot (x, _lin);
+legend('exp', '1/exp (flipped LR)','scaled 1/exp (flipped LR)', 'linear')
+figure(1);
 
 %% The J effect
 _r0 = flip(_exp);
 ## Either this, making no strong assumptions about ligand expression:
-if exp_ligands == 1
+if strcmp (ligand_expression, 'exp')
   _l0 = _exp;
+elseif strcmp (ligand_expression, 'lin')
+  _l0 = _lin;
 else
-  _l0 = 1 ./ _r0;
+  _l0 = flip(_inv_exp);
 end
 
 subplot(2,4,1);
@@ -54,10 +78,12 @@ ylabel('Expression/Interaction')
 title('Mass-action r0/l0 expression/interaction')
 
 _r2 = _exp; % opposing ligands
-if exp_ligands == 1
+if strcmp (ligand_expression, 'exp')
   _l2 = flip(_exp); % opposing receptors
+elseif strcmp (ligand_expression, 'lin')
+  _l2 = flip(_lin);
 else
-  _l2 = 1 ./ _r2
+  _l2 = _inv_exp;
 end
 subplot(2,4,2);
 plot (x, _r2, 'linestyle', ':');
@@ -240,8 +266,8 @@ ylabel('Gradient interaction')
 subplot(2,4,8);
 hold on;
 xx = [0:0.05:0.5];
-_L2trunc = _L2(1:11)
-_L0trunc = _L0(1:11)
+_L2trunc = _L2(1:11);
+_L0trunc = _L0(1:11);
 
 plot (xx, _r2(1) .* _L2trunc + _r0(1) .* _L0trunc, 'r-');
 plot (xx, _r2(5) .* _L2trunc + _r0(5) .* _L0trunc, 'b-');
