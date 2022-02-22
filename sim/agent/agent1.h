@@ -65,6 +65,8 @@ struct AgentMetrics
     morph::vVector<T> crosscount;
     // Sim time
     morph::vVector<unsigned int> t;
+    // Number of time steps to average over for output
+    size_t averaging_time = 50;
     // Output a string
     std::string str() const
     {
@@ -72,11 +74,54 @@ struct AgentMetrics
         if (sos.empty()) {
             ss << "No metrics to report.";
         } else if (sos.size() == 1) {
-            ss << "SOS: " << this->sos.back() << " RMS: " << this->rms.back() << " #X: " << this->crosscount.back();
+            ss << "SOS: ";
+            if (!this->sos.empty()) { ss << this->sos.back(); }
+            ss << " RMS: ";
+            if (!this->rms.empty()) {  ss << this->rms.back(); }
+            ss << " #X: ";
+            if (!this->crosscount.empty()) { ss << this->crosscount.back(); }
         } else {
-            ss << "SOS mean(std): " << this->sos.mean() << "(" << this->sos.std() <<  ") RMS: "
-               << this->rms.mean() << "(" << this->rms.std() << ") #X: "
-               << this->crosscount.mean() << "(" << this->crosscount.std() << ")";
+            // Split off averaging time?
+            typename morph::vVector<T>::const_iterator it = this->sos.end();
+            if (this->sos.size() > this->averaging_time) {
+                it -= this->averaging_time+1;
+            } else {
+                it = this->sos.begin();
+            }
+            morph::vVector<T> sos_ma;
+            std::copy (it, this->sos.end(), std::back_inserter(sos_ma));
+
+            it = this->rms.end();
+            if (this->rms.size() > this->averaging_time) {
+                it -= this->averaging_time+1;
+            } else {
+                it = this->rms.begin();
+            }
+            morph::vVector<T> rms_ma;
+            std::copy (it, this->rms.end(), std::back_inserter(rms_ma));
+
+            it = this->crosscount.end();
+            if (this->crosscount.size() > this->averaging_time) {
+                it -= this->averaging_time+1;
+            } else {
+                it = this->crosscount.begin();
+            }
+            morph::vVector<T> crosscount_ma;
+            std::copy (it, this->crosscount.end(), std::back_inserter(crosscount_ma));
+            // Have to remove any -1s from crosscount:
+            typename morph::vVector<T>::iterator it2 = crosscount_ma.begin();
+            while (it2 != crosscount_ma.end()) {
+                if (*it2 == -1) {
+                    it2 = crosscount_ma.erase(it2);
+                } else {
+                    ++it2;
+                }
+            }
+
+            ss << "Last " << averaging_time << " timesteps: SOS mean(std): "
+               << sos_ma.mean() << "(" << sos_ma.std() <<  ") RMS: "
+               << rms_ma.mean() << "(" << rms_ma.std() << ") #X: "
+               << crosscount_ma.mean() << "(" << crosscount_ma.std() << ")";
         }
         return ss.str();
     }
@@ -237,6 +282,10 @@ struct Agent1
                 laststep = std::chrono::steady_clock::now();
             }
         }
+
+        // Final metric computation
+        this->update_metrics (this->conf->getUInt ("steps", 1000), true);
+
         delete this->gradient_rng;
 
         if constexpr (visualise == true) {
@@ -299,7 +348,7 @@ struct Agent1
             this->v->saveImage (nss.str());
             std::cout << "Saved image: " << nss.str() << std::endl;
             this->vis(this->conf->getUInt ("steps", 1000));
-            std::cout << "Final SOS: " << this->am.sos.back() << " and crosscount = " << this->am.crosscount.back() << std::endl;
+            std::cout << this->am.str() << std::endl;
             if (this->immediate_exit == false) { this->v->keepOpen(); }
         }
     }
@@ -314,7 +363,7 @@ struct Agent1
         _am.n_agents = this->ax_centroids.targ.size();
         _am.sos.emplace_back (this->ax_centroids.sos());
         _am.rms.emplace_back (this->ax_centroids.rms());
-        _am.rms.emplace_back (this->ax_centroids.crosscount());
+        _am.crosscount.emplace_back (this->ax_centroids.crosscount());
         return _am;
     }
     // Compute SOS, crossings count etc and add info to this->am

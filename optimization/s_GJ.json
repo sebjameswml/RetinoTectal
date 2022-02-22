@@ -10,7 +10,17 @@
     "temperature_anneal_scale" : 100.0,
     "cost_parameter_scale_ratio" : 1.5,
     "acc_gen_reanneal_ratio" : 1e-6,
-    "objective_repeat_precision" : 1e-1,
+    "objective_repeat_precision" : 5e-2,
     "f_x_best_repeat_max" : 15,
-    "reanneal_after_steps" : 100
+    "reanneal_after_steps" : 100,
+
+    "parameter ranges": "These arrays are read by anneal1.cpp",
+    "r_c_range" : [0.001, 0.5],
+    "r_i_range" : [0.001, 0.5],
+    "r_j_range" : [0.001, 0.2],
+    "s_range" : [4.7, 5.5],
+    "m_g_range" : [0.0001, 0.0015],
+    "m_c_range" : [0.01, 0.1],
+    "m_i_range" : [0.01, 0.8],
+    "m_j_range" : [0.001, 0.4]
 }

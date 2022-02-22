@@ -14,6 +14,7 @@
 #include <vector>
 #include <morph/tools.h>
 #include <morph/Config.h>
+using nlohmann::json;
 #include <morph/Anneal.h>
 #include "agent1.h"
 #include <csignal>
@@ -60,7 +61,7 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
     AgentMetrics<T> m1m = model1.get_metrics();
 
     // Here's a combination of the sos differences between the expected map and the actual map, plus a cross count.
-    std::cout << "wt expt sos: " << m1m.sos << " for parameters: ";
+    std::cout << "wt expt metrics: " << m1m.str() << " for parameters: ";
     for (size_t i = 0; i < params.size(); ++i) {
         std::cout << params[i] << " = " << param_values[i] << ", ";
     }
@@ -154,7 +155,12 @@ int main (int argc, char **argv)
         if (!one.empty()) {
             std::vector<std::string> two = morph::Tools::stringToVector (one[0], "m_");
             // two should have size 2, with the first entry an empty string
-            if (two.size() > 1) { m_id = two[1]; }
+            if (two.size() > 1) {
+                m_id = two[1];
+            } else {
+                std::cout << "unknown model - was probably not in form 'm_ID.json'.\n";
+                m_id = "unknown";
+            }
             one.clear();
         }
 
@@ -202,27 +208,36 @@ int main (int argc, char **argv)
     std::vector<std::string> params;
     morph::vVector<double> param_values;
     morph::vVector<morph::Vector<double,2>> param_ranges;
-    nlohmann::json params_j = sconf->get("params");
+    json params_j = sconf->get("params");
     for (auto p : params_j) {
         params.push_back (p.get<std::string>());
         param_values.push_back (mconf->getFloat(p.get<std::string>(), 0));
         // Set ranges for the params
         if (params.back() == "r_c") {
-            param_ranges.push_back ({0.001, 0.5});
+            json r_c_range = sconf->get("r_c_range");
+            // Fixme: Check r_c_range contains 2 entries
+            param_ranges.push_back (morph::Vector<double, 2>{r_c_range[0].get<double>(), r_c_range[1].get<double>()});
         } else if (params.back() == "r_i") {
-            param_ranges.push_back ({0.001, 0.5});
+            json r_i_range = sconf->get("r_i_range");
+            param_ranges.push_back (morph::Vector<double, 2>{r_i_range[0].get<double>(), r_i_range[1].get<double>()});
         } else if (params.back() == "r_j") {
-            param_ranges.push_back ({0.001, 0.5});
+            json r_j_range = sconf->get("r_j_range");
+            param_ranges.push_back (morph::Vector<double, 2>{r_j_range[0].get<double>(), r_j_range[1].get<double>()});
         } else if (params.back() == "s") {
-            param_ranges.push_back ({0.01, 6});
+            json s_range = sconf->get("s_range");
+            param_ranges.push_back (morph::Vector<double, 2>{s_range[0].get<double>(), s_range[1].get<double>()});
         } else if (params.back() == "m_g") {
-            param_ranges.push_back ({0.0001, 0.004});
+            json m_g_range = sconf->get("m_g_range");
+            param_ranges.push_back (morph::Vector<double, 2>{m_g_range[0].get<double>(), m_g_range[1].get<double>()});
         } else if (params.back() == "m_c") {
-            param_ranges.push_back ({0.01, 0.1});
+            json m_c_range = sconf->get("m_c_range");
+            param_ranges.push_back (morph::Vector<double, 2>{m_c_range[0].get<double>(), m_c_range[1].get<double>()});
         } else if (params.back() == "m_i") {
-            param_ranges.push_back ({0.01, 0.8});
+            json m_i_range = sconf->get("m_i_range");
+            param_ranges.push_back (morph::Vector<double, 2>{m_i_range[0].get<double>(), m_i_range[1].get<double>()});
         } else if (params.back() == "m_j") {
-            param_ranges.push_back ({0.001, 0.4});
+            json m_j_range = sconf->get("m_j_range");
+            param_ranges.push_back (morph::Vector<double, 2>{m_j_range[0].get<double>(), m_j_range[1].get<double>()});
         }
     }
     morph::vVector<float> param_range_max(param_ranges.size(), float{0});

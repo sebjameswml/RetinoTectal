@@ -65,9 +65,10 @@ int main (int argc, char** argv)
 
     // This code section just hacked in until I regenerate data with range_max/range_min in the hdf data
     morph::vVector<morph::Vector<float,2>> param_ranges;
-    morph::Vector<float, D> range_min;
+    morph::Vector<float, D> range_min; // Why don't I read these from .h5?
     morph::Vector<float, D> range_max;
     std::vector<std::string> pnames;
+    // THIS info is in the .h5 file as 'range_min' and 'range_max'
     for (size_t i = 1; i <= D; ++i) {
         std::string pn = std::string("/param_name_") + std::to_string(i);
         std::string pname("");
@@ -94,8 +95,8 @@ int main (int argc, char** argv)
             std::cout << "Warning: adding default 0 to 1 range to param_ranges...\n";
             param_ranges.push_back ({0.0f, 1.0f});
         }
-        range_min[i-1] =  param_ranges.back()[0];
-        range_max[i-1] =  param_ranges.back()[1];
+        range_min[i-1] = param_ranges.back()[0];
+        range_max[i-1] = param_ranges.back()[1];
     }
 
     // This converts param_hist_rejected to model coords.

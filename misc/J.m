@@ -121,27 +121,6 @@ title('Mass-action r2/l2 expression/interaction')
 
 subplot(2,4,3);
 hold on;
-plot (x, _r2(1) .* _l2 + _r0(1) .* _l0, 'r-');
-plot (x, _r2(5) .* _l2 + _r0(5) .* _l0, 'b-');
-plot (x, _r2(9) .* _l2 + _r0(9) .* _l0, 'g-');
-plot (x, _r2(13) .* _l2 + _r0(13) .* _l0, 'm-');
-plot (x, _r2(17) .* _l2 + _r0(17) .* _l0, 'c-');
-plot (x, _r2(21) .* _l2 + _r0(21) .* _l0, 'k-');
-plot ([x(1),x(1)], [0,_r2(1).*_l2(1)+_r0(1).*_l0(1)], 'ro-');
-plot ([x(5),x(5)], [0,_r2(5).*_l2(5)+_r0(5).*_l0(5)], 'bo-');
-plot ([x(9),x(9)], [0,_r2(9).*_l2(9)+_r0(9).*_l0(9)], 'go-');
-plot ([x(13),x(13)], [0,_r2(13).*_l2(13)+_r0(13).*_l0(13)], 'mo-');
-plot ([x(17),x(17)], [0,_r2(17).*_l2(17)+_r0(17).*_l0(17)], 'co-');
-plot ([x(21),x(21)], [0,_r2(21).*_l2(21)+_r0(21).*_l0(21)], 'ko-');
-lg3 = legend (['r0[0]xl0 + r2[0]xl2 combined interaction (competitive)';'r0[.2]xl0 + r2[.2]xl2 combined interaction (competitive)';'etc'],'Location','North');
-strlbl = ['Temporal ------------------------> Nasal'];
-##ylim([0,20])
-xlabel(strlbl)
-ylabel('Expression/Interaction')
-title('Summed mass-action interaction')
-
-subplot(2,4,4);
-hold on;
 ###
 plot (x, _r0, 'linestyle', '--'); % exp for receptors on retina
 hold on;
@@ -188,6 +167,27 @@ strlbl = ['Temporal ------------------------> Nasal'];
 xlabel(strlbl)
 ylabel('Expression/Interaction')
 title('Combined mass-action interaction when either r0*l0 or r2*l2 is suprathreshold')
+
+subplot(2,4,4);
+hold on;
+plot (x, _r2(1) .* _l2 + _r0(1) .* _l0, 'r-');
+plot (x, _r2(5) .* _l2 + _r0(5) .* _l0, 'b-');
+plot (x, _r2(9) .* _l2 + _r0(9) .* _l0, 'g-');
+plot (x, _r2(13) .* _l2 + _r0(13) .* _l0, 'm-');
+plot (x, _r2(17) .* _l2 + _r0(17) .* _l0, 'c-');
+plot (x, _r2(21) .* _l2 + _r0(21) .* _l0, 'k-');
+plot ([x(1),x(1)], [0,_r2(1).*_l2(1)+_r0(1).*_l0(1)], 'ro-');
+plot ([x(5),x(5)], [0,_r2(5).*_l2(5)+_r0(5).*_l0(5)], 'bo-');
+plot ([x(9),x(9)], [0,_r2(9).*_l2(9)+_r0(9).*_l0(9)], 'go-');
+plot ([x(13),x(13)], [0,_r2(13).*_l2(13)+_r0(13).*_l0(13)], 'mo-');
+plot ([x(17),x(17)], [0,_r2(17).*_l2(17)+_r0(17).*_l0(17)], 'co-');
+plot ([x(21),x(21)], [0,_r2(21).*_l2(21)+_r0(21).*_l0(21)], 'ko-');
+lg3 = legend (['r0[0]xl0 + r2[0]xl2 combined interaction (competitive)';'r0[.2]xl0 + r2[.2]xl2 combined interaction (competitive)';'etc'],'Location','North');
+strlbl = ['Temporal ------------------------> Nasal'];
+##ylim([0,20])
+xlabel(strlbl)
+ylabel('Expression/Interaction')
+title('Summed mass-action interaction')
 
 
 ## Now the retina->tectum interactions
