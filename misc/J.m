@@ -27,18 +27,22 @@ _lin = 1.31 + 2.333 .* x;
 
 if strcmp (ligand_expression, 'exp')
   threshold = 1.1
+elseif strcmp (ligand_expression, 'lin')
+  threshold = 5.0 ## 4.7 to 5.4 is a sensible range
 else
-  threshold = 1.1 * (0.26 .* exp(2.3) + 1.05)
+  threshold = 5.2 ## 4.8 to 5.5 is a sensible range
 end
 
 ## Debugging the curves
 figure(7); clf;
 hold on;
 plot (x, _exp);
+plot (x, 1./_exp);
 plot (x, flip(1./_exp));
+plot (x, _inv_exp);
 plot (x, flip(_inv_exp));
 plot (x, _lin);
-legend('exp', '1/exp (flipped LR)','scaled 1/exp (flipped LR)', 'linear')
+legend('exp', '1/exp', '1/exp (flipped LR)','scaled 1/exp', 'scaled 1/exp (flipped LR)', 'linear')
 figure(1);
 
 %% The J effect
@@ -183,7 +187,7 @@ plot ([0,1],[threshold,threshold],'k:')
 strlbl = ['Temporal ------------------------> Nasal'];
 xlabel(strlbl)
 ylabel('Expression/Interaction')
-title('Combined mass-action interaction')
+title('Combined mass-action interaction when either r0*l0 or r2*l2 is suprathreshold')
 
 
 ## Now the retina->tectum interactions

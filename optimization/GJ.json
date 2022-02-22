@@ -2,7 +2,7 @@
     "m_g": 0.002,
     "m_j": 0.1,
     "r_j": 0.15,
-    "s": 1.1,
+    "s": 5,
 
     "bpa": 4,
     "intro_every": 0,
@@ -20,10 +20,10 @@
         -1
     ],
     "ret_ligand_directions": [
-        "-x",
-        "-y",
         "+x",
-        "+y"
+        "+y",
+        "-x",
+        "-y"
     ],
     "ret_ligand_forms": [
         5,

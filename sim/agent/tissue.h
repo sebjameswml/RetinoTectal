@@ -438,6 +438,22 @@ struct guidingtissue : public tissue<T>
     T linear_expression (const T& x) const { return T{1.31} + T{2.3333} * x; }
     T quadratic_expression (const T& x) const { return T{1.31} + T{2.3333} * x * x; }
     T exponential_expression (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{2.3} * x); }
+    // This inverse exponential is actually the inverse of exponential_expression, giving thresholds around 1.1 as in S&G
+    T inv_exponential_expression_like_I (const T& x) const {
+        // Note the T{1}-x. This ensures that this inverse exponential increases in the
+        // same direction as the other expressions.
+        return T{1}/(T{1.05} + T{0.26} * std::exp (T{2.3} * (T{1}-x)));
+    }
+    // This one is scaled so that it starts and ends with the same values as the other
+    // expressions. This will require a different threshold than in S&G but allows for
+    // comparison with other retinal ligand forms.
+    T inv_exponential_expression (const T& x) const {
+        // Note the T{1}-x. This ensures that this inverse exponential increases in the
+        // same direction as the other expressions.
+        static constexpr T A = T{4.7727};
+        static constexpr T B = T{-0.00014};
+        return B + A/(T{1.05} + T{0.26} * std::exp (T{2.3} * (T{1}-x)));
+    }
     T exponential_expression2 (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{1.1} * x); }
     T logarithmic_expression (const T& x) const { return T{2.32} + T{1.29} * std::log (T{2.3} * (x+T{0.2})); }
 
@@ -461,7 +477,7 @@ struct guidingtissue : public tissue<T>
             rtn = this->exponential_expression2 (x);
             break;
         case expression_form::exp_inv:
-            rtn = T{1}/this->exponential_expression (x);
+            rtn = this->inv_exponential_expression (x);
         default:
             break;
         }
