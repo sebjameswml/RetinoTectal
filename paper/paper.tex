@@ -6,8 +6,8 @@
 \nonstopmode
 
 % Use the article doc class, with an 11 pt basic font size
-%\documentclass[11pt, a4paper, draft]{article}
-\documentclass[11pt, a4paper]{article}
+\documentclass[11pt, a4paper, draft]{article}
+%\documentclass[11pt, a4paper]{article}
 
 % Makes the main font Nimbus Roman, a Times New Roman lookalike:
 %\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
@@ -894,9 +894,10 @@ shows the $\mathbf{GC}$ simulation with these parameters. Fish net plots at
 $t=40$ and $t=1000$ show that the pattern develops quickly and compares well
 with the expected layout (Fig.\,\ref{f:G}E). We investigated the response of
 this model to the same set of surgical manipulations shown for the
-chemoaffinity-only model in Fig.\,\ref{f:Gsurg}. We found that the addition of
-competition leads to a better correspondence to the experimental results than
-for the chemoaffinity-only model (see supplementary Fig.\,\ref{f:GCsurg}).
+chemoaffinity-only model in Fig.\,\ref{f:Gsurg}. We confirmed that the
+addition of competition leads to a better correspondence to the experimental
+results than for the chemoaffinity-only model (see supplementary
+Fig.\,\ref{f:GCsurg}).
 
 \subsection*{Axon-axon interactions}
 
@@ -907,8 +908,9 @@ signal between axon branches and enable them to adjust their movements away
 from one another.
 
 % First, look at I, from Simpson and Goodhill.
-First, we took inspiration from Simpson and Goodhill's `I' interaction, which
-is defined as:
+First, we took inspiration from Simpson and Goodhill's model for the
+interaction between EphA receptors, which is defined (with receptor type $i$
+standing for EphA) as:
 
 %We modelled interactions between axon growth cones due to signalling between
 %receptors of the same type. For these interactions, repulsion caused a
@@ -919,11 +921,12 @@ is defined as:
 %
 \begin{equation}
 \mathbf{I}_b
-= \frac{1}{|B_{b,I}|} \sum_k^{nM} \sum_i^N \hat{\mathbf{x}}_{kb}\,W_{\!_I} \qquad \mathrm{if}~r_{i,b}
+= \frac{1}{|B_{b,I}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W_{\!_I} \qquad \mathrm{if}~r_{i,b}
 / r_{i,k} > 1.1
 \end{equation}
 %
-the weight here is defined as a function of $r_{\!_I}$:
+$r_{i,k}$ is the expression of receptor $i$ on branch $k$ and the weight here
+is defined as a function of the distance, $d_{kb}$, between branches:
 %
 \begin{equation}
 W_{\!_I}(d_{kb}) = \begin{cases}
@@ -931,16 +934,41 @@ W_{\!_I}(d_{kb}) = \begin{cases}
      0 & d_{kb} > 2r_{\!_I}
      \end{cases}
 \end{equation}
-$r_{i,k}$ is the expression of receptor $i$ on branch $k$.
+%
+$B_{b,I}$ is the set of growth cones within a distance $2r_{\!_I}$ of branch
+$b$. $\hat{\mathbf{x}}_{kb}$ is as defined in Eq.\,\ref{e:C}.
 
- (supp?) Fig.\,\ref{f:GI} and Fig.\,\ref{f:GIsurg}.
+Simpson and Goodhill introduced this interaction as an additive modification
+to the main, distance based competition mechanism of Eq.\,\ref{e:C} (adding a
+term $m_{\!_I} \mathbf{I}_b$ to the equation). They introduced an interaction
+varying along the temporal-nasal retinal axis and mediated by one receptor,
+EphA, for which there was experimental data supporting a repulsive
+effect. They noted that the use of a receptor ratio (comparing the ratio with
+a `discrimination limit', above which repulsion would be activated) is
+equivalent to a multiplicative interaction between EphA receptors and ephrin-A
+ligands with the strong assumption that ligand expression is the inverse of
+receptor expression, i.e. that $l_i = 1/r_i$.
 
+We asked i) whether this mechanism could \emph{replace} the non-biological
+competition, C, (making necessary its extension to the dorsal-ventral retinal
+axis) and ii) if cast in terms of receptor-ligand interactions, could the
+strong ligand expression assumption be relaxed?
+
+% (supp?) Fig.\,\ref{f:GI} and Fig.\,\ref{f:GIsurg}.
 
 % Next, replicate with receptor-ligand interaction.
 
 % OR
 
 % Look at receptor-ligand interaction, and just point out that the
+
+In order to replace the distance-based competition, $\mathbf{C}_b$, we first
+suggest that each receptor ligand pair involved in the retinotectal system
+could mediate a repulsive interaction. DO WE NEED TO? Taken alone, the EphA
+interaction between one branch, $b$, and another, $k$, will cause a repulsion
+if $k$ originated more \textbf{nasally?} than $b$. What about a branch
+originating on the temporal side of $b$? This could be handled by the
+interaction between $k$ and $b$ and may not require an additional interaction.
 
 Next, we investigated the idea that the same receptor-ligand
 interaction that leads to gradient-based movement of RGC axons on the tectum
