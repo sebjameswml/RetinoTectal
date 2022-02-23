@@ -63,40 +63,17 @@ int main (int argc, char** argv)
     std::cout << "Total parameter sets examined: "
               << (param_hist_accepted.size() + param_hist_rejected.size()) << std::endl;
 
-    // This code section just hacked in until I regenerate data with range_max/range_min in the hdf data
-    morph::vVector<morph::Vector<float,2>> param_ranges;
-    morph::Vector<float, D> range_min; // Why don't I read these from .h5?
+    morph::Vector<float, D> range_min;
     morph::Vector<float, D> range_max;
     std::vector<std::string> pnames;
-    // THIS info is in the .h5 file as 'range_min' and 'range_max'
+    data.read_contained_vals ("/range_max", range_max);
+    data.read_contained_vals ("/range_min", range_min);
     for (size_t i = 1; i <= D; ++i) {
         std::string pn = std::string("/param_name_") + std::to_string(i);
         std::string pname("");
         data.read_string (pn.c_str(), pname);
         std::cout << "parameter name: " << pname << std::endl;
         pnames.push_back (pname);
-        if (pname == "r_c") {
-            param_ranges.push_back ({0.001f, 0.5f});
-        } else if (pname == "r_i") {
-            param_ranges.push_back ({0.001f, 0.5f});
-        } else if (pname == "r_j") {
-            param_ranges.push_back ({0.001f, 0.7f});
-        } else if (pname == "s") {
-            param_ranges.push_back ({0.01, 6});
-        } else if (pname == "m_g") {
-            param_ranges.push_back ({0.0001f, 0.006f});
-        } else if (pname == "m_c") {
-            param_ranges.push_back ({0.01f, 0.1f});
-        } else if (pname == "m_i") {
-            param_ranges.push_back ({0.01f, 0.8f});
-        } else if (pname == "m_j") {
-            param_ranges.push_back ({0.00001f, 0.01f});
-        } else {
-            std::cout << "Warning: adding default 0 to 1 range to param_ranges...\n";
-            param_ranges.push_back ({0.0f, 1.0f});
-        }
-        range_min[i-1] = param_ranges.back()[0];
-        range_max[i-1] = param_ranges.back()[1];
     }
 
     // This converts param_hist_rejected to model coords.
