@@ -190,10 +190,10 @@ public:
         // Note: use <= operator which is true if EVERY member of the Vector is <= threshold
         bool subthreshold = false;
         if (d <= this->two_r_j && (subthreshold = QJar.abs() <= this->s) == false) {
-            //T QJ = QJar.sum()/N; // Sum the interactions to modulate the competition strength?
-            //T QJ = QJar.longest(); // Use the maximum suprathreshold interaction element
-            W = T{1} - d/this->two_r_j;
-            J += kb * W; // Should now be equivalent to I
+            // W = QJar.sum()/N; // Sum the interactions to modulate the competition strength?
+            // W = QJar.longest(); // Use the maximum suprathreshold interaction element?
+            W = T{1} - d/this->two_r_j; // or have a distance based weight?
+            J += kb * W;
             rtn[2] = true;
         } else {
             //std::cout << "NO interaction for |QJar| = " << QJar.abs() << std::endl;
