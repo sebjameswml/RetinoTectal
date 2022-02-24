@@ -15,7 +15,9 @@
 #include <morph/TriaxesVisual.h>
 
 // Dimensionality.
-#define D 3
+#ifndef D
+# define D 3
+#endif
 
 int main (int argc, char** argv)
 {
@@ -76,9 +78,18 @@ int main (int argc, char** argv)
         pnames.push_back (pname);
     }
 
-    // This converts param_hist_rejected to model coords.
-    for (auto& phr : param_hist_rejected_vm_coords) { phr /= range_max; }
-    for (auto& pha : param_hist_accepted_vm_coords) { pha /= range_max; }
+    morph::Vector<float, D> range_diff = range_max - range_min;
+    morph::Vector<float, D> range_offs = range_min / range_diff;
+    // This converts param_hist_rejected to model coords
+    for (auto& phr : param_hist_rejected_vm_coords) {
+        phr /= range_diff;
+        phr -= range_offs;
+    }
+    for (auto& pha : param_hist_accepted_vm_coords) {
+        //pha += range_min;
+        pha /= range_diff;
+        pha -= range_offs;
+    }
 
     // Use a map to order all rejected and accepted parameter sets
     std::map<float, morph::Vector<float, D>> mapped_params; // Parameter space
@@ -199,7 +210,7 @@ int main (int argc, char** argv)
         sv3->add (bn.second.second, 0.0f, bn.second.first/1000.0f); // the most changed params nearby
 
         // Also write out jsons. One for the 'best' value
-        coord *= range_max;
+        coord = (coord + range_offs) * range_diff;
         mdl.set (pnames[0], coord[0]);
         mdl.set (pnames[1], coord[1]);
         mdl.set (pnames[2], coord[2]);
@@ -207,7 +218,7 @@ int main (int argc, char** argv)
         mdl.write (std::string("./log/anneal1/m_")+modelid+("_best_")+std::to_string(j)+(".json"));
 #if 0
         // And one for the params that are near to the 'best' value and have the greatest change/distance from it
-        morph::Vector<float, D> coord2 = bn.second.second * range_max;
+        morph::Vector<float, D> coord2 = (bn.second.second + range_diff) * range_max;
         mdl.set (pnames[0], coord2[0]);
         mdl.set (pnames[1], coord2[1]);
         mdl.set (pnames[2], coord2[2]);

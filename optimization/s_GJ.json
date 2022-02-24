@@ -1,6 +1,7 @@
 {
-    "desc_params" : "An array of paramter names to optimise",
-    "params" : ["m_g", "m_j", "r_j"],
+    "desc_params" : "An array of parameter names to optimise",
+    "__params" : ["m_g", "m_j", "r_j"],
+    "params" : ["s", "m_j", "r_j"],
     "desc_nm_threshold" : "Nelder-Mead stopping threshold and 'too many' loops",
     "nm_threshold" : 0.01,
     "nm_toomany" : 100,
@@ -18,7 +19,7 @@
     "r_c_range" : [0.001, 0.5],
     "r_i_range" : [0.001, 0.5],
     "r_j_range" : [0.001, 0.2],
-    "s_range" : [4.7, 5.5],
+    "s_range" : [4.6, 5.2],
     "m_g_range" : [0.0001, 0.0015],
     "m_c_range" : [0.01, 0.1],
     "m_i_range" : [0.01, 0.8],

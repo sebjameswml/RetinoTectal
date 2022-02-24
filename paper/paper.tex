@@ -6,8 +6,8 @@
 \nonstopmode
 
 % Use the article doc class, with an 11 pt basic font size
-\documentclass[11pt, a4paper, draft]{article}
-%\documentclass[11pt, a4paper]{article}
+%\documentclass[11pt, a4paper, draft]{article}
+\documentclass[11pt, a4paper]{article}
 
 % Makes the main font Nimbus Roman, a Times New Roman lookalike:
 %\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
@@ -400,11 +400,10 @@ corresponds to 2~mm on the retina or tectum for mouse \citep{reber_relative_2004
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_fig.png}
-\caption{Simulated retinal and tectal signalling molecule expression. Four
-receptor types are expressed, and four corresponding ligand types. Receptors
-of type $i$ are activated by ligands of type $i$.
+\caption{Simulated retinal and tectal signalling molecule
+expression. \textbf{A} A schematic of retino-tectal mapping.
 %
-\textbf{A} Retinal receptor expression, $r_i$. Four receptors are expressed and
+\textbf{B} Retinal receptor expression, $r_i$. Four receptors are expressed and
 displayed here in two dual-colour maps. $r_0$ and $r_1$ are red and blue;
 $r_2$ and $r_3$ are cyan and magenta. $r_0$ increases as an exponential
 function of $-x$; $r_1$ increases with an exponential function of $-y$. $r_2$
@@ -412,10 +411,10 @@ and $r_3$ have the opposite sense. Retinal receptor expression is modelled
 with exponential functions because there is ample evidence to support this
 form. $N$: nasal, $T$: temporal, $D$: dorsal, $V$: ventral.
 %
-\textbf{B} Retinal ligand expression, $l_i$, is expressed in complimentary
+\textbf{C} Retinal ligand expression, $l_i$, is expressed in complimentary
 gradients \citep{hornberger_modulation_1999}.
 %
-\textbf{C} Tectal ligand expression $L_i$. Tectal ligand expression is shown
+\textbf{D} Tectal ligand expression $L_i$. Tectal ligand expression is shown
 in an exponential form,
 although there is less evidence to determine whether tectal expression is
 exponential, linear or logarithmic.
@@ -649,7 +648,7 @@ position history.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_G.json configs/simpler/e_wt_fig2.json
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_G_wt_fig2.png}
+\includegraphics[width=\linewidth]{./images/j4_ee_G_wt_fig2_exit_true.png}
 \caption{The pure gradient-following model. \textbf{A} The origin position
 on the tectum gives axons a colour according to a dual-colour map. Axons in
 panels B-H that are red are those which originated in the most naso-ventral
@@ -692,7 +691,7 @@ which is much closer to 0 with the new ligand expression.
 
 % ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_wt_fig3.json
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_eE_G_wt_fig3.png}
+\includegraphics[width=\linewidth]{./images/j4_eE_G_wt_fig3_exit_true.png}
 \caption{By tuning the tectal ligand expression (replacing Eq.\,\ref{e:tecligexp} with
  Eq.\,\ref{e:tecligexp2}), the pure gradient-following model can achieve a
  successful layout in which the axons are arranged evenly across the full
@@ -777,14 +776,6 @@ from the nasal retina are present, arranged in a line.
 
 % The chemo manipulations figure is made up from 4 figures generated with
 % graph_layout::g
-%
-% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecrot90_fig4row1.json
-% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecrot180_fig4row2.json
-% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecswap_fig4row3.json
-% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_retablat_fig4row4.json
-% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_tecablat_fig4row5.json
-% ./build/sim/agent/agent1 configs/simpler/m_eE_G.json  configs/simpler/e_mismatch_fig4row6.json
-%
 % (see scripts/fig_G_surgical.sh)
 \begin{figure}
 \includegraphics[width=0.95\linewidth]{./images/fig_chemo_manipulations.png}
@@ -875,13 +866,6 @@ description of the competition matches that
 in \citet{simpson_simple_2011}. Because the model incorporates a chemoaffinity
 effect and a competition effect, we called it the `$\mathbf{GC}$ model'.
 
-% ./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GC_best_1_wt_figcomp1.png}
-\caption{$\mathbf{GC}$ model}
-\label{f:GC}
-\end{figure}
-
 The model defined by the receptor and ligand expressions of Eqs.\,\ref{e:retrcpt}
 \& \ref{e:tecligexp} along with Eq.\,\ref{e:mv2} has three
 free parameters; $m_{\!_G}$, $m_c$ and $r_c$. To find the best combination of
@@ -903,14 +887,14 @@ Fig.\,\ref{f:GCsurg}).
 
 Because the competition effect, $\mathbf{C}_b$ (Eq.\,\ref{e:C}), requires a
 global supervisor to provide information to each branch about the location of
-all other branches, we looked for a receptor-ligand interaction that could
-signal between axon branches and enable them to adjust their movements away
-from one another.
+all other branches (But \textbf{fixme}, arguably, so does the GJ model now!),
+we looked for a receptor-ligand interaction that could signal between axon
+branches and enable them to adjust their movements away from one another.
 
 % First, look at I, from Simpson and Goodhill.
 First, we took inspiration from Simpson and Goodhill's model for the
-interaction between EphA receptors, which is defined (with receptor type $i$
-standing for EphA) as:
+interaction between EphA receptors, which is defined (with receptor $r_i$
+representing EphA) as:
 
 %We modelled interactions between axon growth cones due to signalling between
 %receptors of the same type. For these interactions, repulsion caused a
@@ -963,13 +947,75 @@ strong ligand expression assumption be relaxed?
 % Look at receptor-ligand interaction, and just point out that the
 
 In order to replace the distance-based competition, $\mathbf{C}_b$, we first
-suggest that each receptor ligand pair involved in the retinotectal system
-could mediate a repulsive interaction. DO WE NEED TO? Taken alone, the EphA
-interaction between one branch, $b$, and another, $k$, will cause a repulsion
-if $k$ originated more \textbf{nasally?} than $b$. What about a branch
-originating on the temporal side of $b$? This could be handled by the
-interaction between $k$ and $b$ and may not require an additional interaction.
+point out that many of the ligands, $l_i$, expressed on the tectum are also
+expressed by retinal ganglion cells and so where there is signalling between
+tectal and RG cells, there is also the possibility for inter-RGC
+signalling. Furthermore, if a receptor-ligand interaction on the tectum leads
+to growth cones moving away from a region of high ligand expression, then the
+equivalent axon-axon interaction would also be expected to be repulsive.
 
+Taken alone, the EphA forward interaction between one branch, $b$, and
+another, $k$, will cause a repulsion if $k$ originated more nasally than
+$b$. A branch originating on the \emph{temporal} side of $b$ will cause no
+repulsion of $b$. However, although $k$ does not induce repulsion in $b$, $b$
+should induce a repulsion in $k$ and thus, it could be argued that only a
+single ephrin-A ligand gradient should be required in the retina to ensure
+that repulsive signals are transmitted between axons whose cell bodies
+originte far apart in the retina. However, there is an asymmetry in the
+interaction. Consider a cluster of growth cones, $k$, originating from the
+nasal retina near to a single cone, $b$, from the temporal retina and assume
+that $r_b/r_k>1.1$. The single cone is affected by the sum of 3 interactions
+and has a movement of 3 units added to its movement vector (in the temporal
+direction). Now reverse the originating locations so that the cluster, $k$,
+originates temporally and the individual cone, $b$, comes from the nasal
+retina. Now $r_k/r_b>1.1$ and each member of the cluster experiences an
+addition of just one unit to its movement vector and the cones move apart at a
+speed that is only $1/3$ of that for the original origins.
+
+To avoid this asymmetry, we allow two receptor-ligand pairs, which are
+expressed in opposing directions, to contribute to axon-axon interactions,
+ensuring that interactions between single growth cones and clusters are not
+dependent on their origin locations. Fig.\,\ref{f:expressions}C shows ligand
+expressions representing an ephrin-A like expression ($l_0$) and an opposing
+expression ($l_2$). It remains the case (with a suitable choice of threshold,
+$s$) that branches originating from the same location on the temporal-nasal
+axis will not experience competitive interactions.
+
+Note that it would be possible to postulate two additional retinal ligand
+expression fields (for $l_1$ and $l_3$), but we found this not to be
+necessary; a single opposing pair of fields ensures that axons that originated
+close together (and branches of the same axon) do not repel one another,
+whereas axons that are close on the temporal-nasal axis, but far apart on the
+dorso-ventral axis are generally driven far apart by chemotaxis, so whether
+they compete or not when close together does not affect the behaviour of the
+system.
+
+% Now describe J model, and show the result.
+
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_figcomp3_exit_true_steps_1500.png}
+\caption{$\mathbf{GJ}$ model}
+\label{f:GJ}
+\end{figure}
+
+% ./scripts/fig_GJ_surgical.sh
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/fig_GJ_surgical.png}
+\caption{$\mathbf{GJ}$ model, surgical manipulations}
+\label{f:GJsurg}
+\end{figure}
+
+%% TO ADD: Figure for the Reber/Brown manipulation on the GJ model.
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_reber.png}
+\caption{$\mathbf{GJ}$ model, Reber et al.~manipulation. Look at THAT!}
+\label{f:GJreber}
+\end{figure}
+
+
+%% HEREish
 Next, we investigated the idea that the same receptor-ligand
 interaction that leads to gradient-based movement of RGC axons on the tectum
 could also act as a signal between the axons. This is plausible, because
@@ -1039,21 +1085,6 @@ pattern and found $m_{\!_G} = 0.00047$, $m_{\!_J} = 0.00089$ and $r_{\!_J} =
 See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
 %%\subsection*{Receptor-receptor axon-axon interactions}
-
-
-% ./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GI_best_1_wt_figcomp2_exit_true.png}
-\caption{$\mathbf{GI}$ model}
-\label{f:GI}
-\end{figure}
-
-% ./scripts/fig_GI_surgical.sh
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_GI_surgical.png}
-\caption{$\mathbf{GI}$ model, surgical manipulations}
-\label{f:GIsurg}
-\end{figure}
 
 \subsection*{Robustness to noise}
 
@@ -1147,6 +1178,13 @@ other simulated surgical manipulations}
 \label{f:tmanip}
 \end{figure}
 
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1_exit_true.json
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/j4_ee_GC_best_1_wt_figcomp1_exit_true.png}
+\caption{$\mathbf{GC}$ model}
+\label{f:GC}
+\end{figure}
+
 % ./scripts/fig_GC_surgical.sh
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/fig_GC_surgical.png}
@@ -1155,20 +1193,20 @@ model reproduces these manipulations.}
 \label{f:GCsurg}
 \end{figure}
 
-% ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_figcomp3.png}
-\caption{$\mathbf{GJ}$ model}
-\label{f:GJ}
-\end{figure}
+% No need to show the GI model
+% ./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json
+%\begin{figure}
+%\includegraphics[width=\linewidth]{./images/j4_ee_GI_best_1_wt_figcomp2_exit_true.png}
+%\caption{$\mathbf{GI}$ model}
+%\label{f:GI}
+%\end{figure}
 
-% ./scripts/fig_GJ_surgical.sh
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_GJ_surgical.png}
-\caption{$\mathbf{GJ}$ model, surgical manipulations}
-\label{f:GJsurg}
-\end{figure}
-
+% ./scripts/fig_GI_surgical.sh
+%\begin{figure}
+%\includegraphics[width=\linewidth]{./images/fig_GI_surgical.png}
+%\caption{$\mathbf{GI}$ model, surgical manipulations}
+%\label{f:GIsurg}
+%\end{figure}
 
 \end{document}
 

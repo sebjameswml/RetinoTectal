@@ -66,7 +66,10 @@ T objfn (Agent1<T, N, branch<T, N>>& model1,
         std::cout << params[i] << " = " << param_values[i] << ", ";
     }
     std::cout << " (Sim count: " << model_sim_count << ")\n";
-    T rtn = m1m.sos.back();
+
+    // Compute the metric.
+    T scaled_nc = T{1} + T{0.01} * m1m.crosscount.back();
+    T rtn = m1m.sos.back() * scaled_nc;
 
     return rtn;
 }
@@ -248,6 +251,8 @@ int main (int argc, char **argv)
         param_range_min[i] = param_ranges[i][0];
         param_range_max[i] = param_ranges[i][1];
     }
+    morph::vVector<float> param_range_diff = param_range_max - param_range_min;
+    morph::vVector<float> param_range_offs = param_range_min / param_range_diff;
 
     optimiser = new morph::Anneal<double>(param_values, param_ranges);
     // Anneal ASA params from sconf:
@@ -406,13 +411,16 @@ int main (int argc, char **argv)
             graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
 
             // Add parameter set to the scattervisual. Scale coords by param_maxes
-            morph::vVector<float> coord = one_over_param_maxes * optimiser->x_cand;
+            morph::vVector<float> x_cand_dbl (optimiser->x_cand.size());
+            std::copy (optimiser->x_cand.begin(), optimiser->x_cand.end(), x_cand_dbl.begin());
+            morph::vVector<float> coord = (x_cand_dbl / param_range_diff) - param_range_offs;
             // Deal with < 3 coords
             size_t sz = coord.size();
             if (sz < 3) {
                 coord.resize (3);
                 for (size_t i = sz; i < 3; ++i) { coord[i] = float{0}; }
             }
+            static constexpr float scatter_max_sz = 0.05f; // How big should the bad blobs be allowed to get?
             // If there are >3 coords, then have a 'start index' and show 3 of
             // them. Allow user to swich the 'start index' so they can show dimensions
             // 0,1,2 or 1,2,3, or 2,3,4 etc, looping back to 0 as necessary. If start
@@ -430,10 +438,10 @@ int main (int argc, char **argv)
                 std::cout << "param_hist with accepted size is " << param_hist.size() << std::endl;
                 // Now add all the points
                 for (size_t i = 0; i < param_hist.size(); ++i) {
-                    morph::vVector<float> c = one_over_param_maxes * param_hist[i].as_float();
+                    morph::vVector<float> c = (param_hist[i].as_float() / param_range_diff) - param_range_offs;
                     std::cout << "coordinate c = " << c << " has obj f value " << f_param_hist[i] << std::endl;
                     sv->add ({c[v.start_idx%v.dimensions], c[(v.start_idx+1)%v.dimensions], c[(v.start_idx+2)%v.dimensions]},
-                             f_param_hist[i], f_param_hist[i]/600.0f);
+                             f_param_hist[i], (f_param_hist[i]/600.0f > scatter_max_sz ? scatter_max_sz : f_param_hist[i]/600.0f));
                 }
                 // Change the Triaxes visual
                 tav->clear();
@@ -442,7 +450,7 @@ int main (int argc, char **argv)
                 sv_start_idx_last = v.start_idx;
             }
             sv->add ({coord[v.start_idx%v.dimensions], coord[(v.start_idx+1)%v.dimensions], coord[(v.start_idx+2)%v.dimensions]},
-                     optimiser->f_x_cand, optimiser->f_x_cand/600.0f);
+                     optimiser->f_x_cand, (optimiser->f_x_cand/600.0f > scatter_max_sz ? scatter_max_sz : optimiser->f_x_cand/600.0f));
 
             max_repeats_so_far = max_repeats_so_far < optimiser->f_x_best_repeats ? optimiser->f_x_best_repeats : max_repeats_so_far;
             std::stringstream ss;
@@ -457,7 +465,15 @@ int main (int argc, char **argv)
 #endif
             // Every 100 steps save out data from optimiser? Or do it at and and catch
             // TERM signal and save data before exit? Probably that.
-            std::cout << "Current x_best: " << optimiser->x_best
+            std::cout << "For params (in order): ";
+            bool _first = true;
+            for (auto p : params) {
+                if (!_first) {
+                    std::cout << ", ";
+                } else { _first = false; }
+                std::cout << p;
+            }
+            std::cout << "\nCurrent x_best: " << optimiser->x_best
                       << " (objective: " << optimiser->f_x_best << ")\n";
             optimiser->step();
         }

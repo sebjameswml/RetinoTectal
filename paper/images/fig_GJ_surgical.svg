@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="1265.7143"
-     inkscape:cy="955.00008"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="1207.5701"
+     inkscape:cy="885.78612"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,11 +39,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1744"
-     inkscape:window-height="1170"
-     inkscape:window-x="838"
-     inkscape:window-y="752"
-     inkscape:window-maximized="0" />
+     inkscape:window-width="3768"
+     inkscape:window-height="2096"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -52,7 +52,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,58 +62,58 @@
      id="layer1"
      transform="translate(315.9881,66.802078)">
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecrot90_figcomp.png"
-       xlink:href="j4_ee_GJ_best_1_tecrot90_figcomp.png"
-       width="328.08334"
-       height="166.6875"
-       preserveAspectRatio="none"
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecrot90_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GJ_best_1_tecrot90_figcomp_steps_1000.png"
+       y="-66.802078"
+       x="-315.9881"
        id="image893"
-       x="-315.9881"
-       y="-66.802078" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecrot180_figcomp.png"
-       xlink:href="j4_ee_GJ_best_1_tecrot180_figcomp.png"
-       width="328.08334"
-       height="166.6875"
        preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecrot180_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GJ_best_1_tecrot180_figcomp_steps_1000.png"
+       y="-66.802078"
+       x="12.095245"
        id="image955"
-       x="12.095245"
-       y="-66.802078" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecswap_figcomp.png"
-       xlink:href="j4_ee_GJ_best_1_tecswap_figcomp.png"
-       width="328.08334"
-       height="166.6875"
        preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecswap_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GJ_best_1_tecswap_figcomp_steps_1000.png"
+       y="99.885422"
+       x="-315.9881"
        id="image1017"
-       x="-315.9881"
-       y="99.885422" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_retablat_figcomp.png"
-       xlink:href="j4_ee_GJ_best_1_retablat_figcomp.png"
-       width="328.08334"
-       height="166.6875"
        preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_retablat_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GJ_best_1_retablat_figcomp_steps_1000.png"
+       y="99.885422"
+       x="12.095245"
        id="image1095"
-       x="12.095245"
-       y="99.885422" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecablat_figcomp.png"
-       xlink:href="j4_ee_GJ_best_1_tecablat_figcomp.png"
-       width="328.08334"
-       height="166.6875"
        preserveAspectRatio="none"
-       id="image1205"
+       height="166.6875"
+       width="328.08334" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecablat_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GJ_best_1_tecablat_figcomp_steps_1000.png"
+       y="266.57294"
        x="-315.9881"
-       y="266.57294" />
-    <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_mismatch_figcomp.png"
-       xlink:href="j4_ee_GJ_best_1_mismatch_figcomp.png"
-       width="328.08334"
-       height="166.6875"
+       id="image1205"
        preserveAspectRatio="none"
-       id="image1267"
+       height="166.6875"
+       width="328.08334" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_mismatch_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GJ_best_1_mismatch_figcomp_steps_1000.png"
+       y="266.57294"
        x="12.095245"
-       y="266.57294" />
+       id="image1267"
+       preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
   </g>
 </svg>

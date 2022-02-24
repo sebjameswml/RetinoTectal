@@ -45,3 +45,14 @@ target_link_libraries(anneal1c ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 add_executable(anneal1read anneal1read.cpp)
 target_compile_definitions(anneal1read PUBLIC FLT=float)
 target_link_libraries(anneal1read ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
+# For 4D searches. anneal1read.cpp would need quite a bit of hacking
+# to make this work. I DID make anneal.cpp capable of handling >3
+# search dimensions though, and it would be nice to do the GJ
+# optimization with s, m_g, r_j and m_j and then vis the results
+# nicely. However, I can just look at the results in Octave, using the
+# HDF5.
+#
+#add_executable(anneal1read4 anneal1read.cpp)
+#target_compile_definitions(anneal1read4 PUBLIC FLT=float D=4)
+#target_link_libraries(anneal1read4 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
