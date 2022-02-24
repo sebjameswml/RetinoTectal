@@ -58,12 +58,13 @@ struct tissue
 
 enum class expression_form
 {
-    lin,  // A linear function
-    quad, // A quadratic function
-    exp,  // An exponential function
-    log,  // A logarithmic function
-    exp2,  // A slightly different exponential function, used to demonstrate dependence of chemo-only model on expressions
-    exp_inv // 1/exp
+    lin,         // 0. A linear function
+    quad,        // 1. A quadratic function
+    exp,         // 2. An exponential function
+    log,         // 3. A logarithmic function
+    exp2,        // 4. A slightly different exponential function, used to demonstrate dependence of chemo-only model on expressions
+    exp_inv,     // 5. 1/exp
+    unexpressed  // 6. No expression - zero everywhere
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -478,6 +479,8 @@ struct guidingtissue : public tissue<T>
             break;
         case expression_form::exp_inv:
             rtn = this->inv_exponential_expression (x);
+            break;
+        case expression_form::unexpressed:
         default:
             break;
         }

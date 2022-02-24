@@ -770,7 +770,7 @@ struct Agent1
     morph::Vector<expression_form, N> get_forms (const std::string& tag)
     {
         morph::Vector<expression_form, N> function_forms;
-        for (auto& ff : function_forms) { ff = expression_form::lin; }
+        for (auto& ff : function_forms) { ff = expression_form::unexpressed; }
         nlohmann::json arr = this->mconf->get (tag);
         if (arr.size() > 0) {
             for (unsigned int i = 0; i < arr.size(); ++i) {
