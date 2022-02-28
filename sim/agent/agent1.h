@@ -156,7 +156,7 @@ std::ostream& operator<< (std::ostream& os, const AgentMetrics<T>& am)
 }
 
 // A selection of possible graph layouts to show when running the program
-enum class graph_layout { a, b, c, d, e, f, g, h, i, j, k };
+enum class graph_layout { a, b, c, d, e, f, g, h, i, j, k, l };
 
 // Agent1 coordinates an agent based simulation of axon branches of type B. This class
 // also incorporates the visualisation code that displays the state of the simulation as
@@ -518,7 +518,12 @@ struct Agent1
             this->emetric_txt->setupText (std::to_string(this->am.rms.back()));
             break;
         }
-        default:
+        case graph_layout::l:
+        {
+            this->av->reinit();  // Selected axons
+            break;
+        }
+         default:
             std::cerr << "Warning: Unknown graph_layout\n";
             break;
         }
@@ -711,7 +716,7 @@ struct Agent1
 #endif // VISUALISE
 
     // This number decides which axon will be shown in the single axon expt. It's an axon from a central RGC.
-    static constexpr size_t singleaxon_idx = 210;
+    //static constexpr size_t singleaxon_idx = 210;
     // Set true to use orthographic projection
     static constexpr bool use_ortho = false;
     static constexpr bool use_ortho_tvv = false;
@@ -847,6 +852,7 @@ struct Agent1
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false)) {
+                unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
@@ -1003,7 +1009,9 @@ struct Agent1
         if (conf->getBool ("singleaxon", false)) {
             // Now put the selected axon's expected final location in.
             if (!ax_centroids.targ.empty()) {
+                unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 ax_centroids.targ[0] = this->ret->posn[singleaxon_idx].plus_one_dim();
+                std::cout << "Single axon expected target location: " << ax_centroids.targ[0] << std::endl;
             }
         }
 
@@ -1503,6 +1511,7 @@ struct Agent1
             break;
         }
         case graph_layout::f:
+        case graph_layout::l:
         {
             // 1x1
             wdefault = 675; hdefault = 550;
@@ -1553,6 +1562,8 @@ struct Agent1
             st_x = 0.309693903; st_y = -0.021264188; st_z = -2.8000021;
         } else if (this->layout == graph_layout::k) {
             st_x = 0.309693903; st_y = -0.021264188; st_z = -2.8000021;
+        } else if (this->layout == graph_layout::l) {
+            st_x = 1.00190961f; st_y = 0.0175217576f; st_z = -2.70000315f;
         }
         this->v->setSceneTrans (this->conf->getFloat("st_x", st_x), this->conf->getFloat("st_y", st_y), this->conf->getFloat("st_z", st_z));
 
@@ -1595,6 +1606,8 @@ struct Agent1
             this->graph_layout_j (offset, sl);
         } else if (this->layout == graph_layout::k) { // 1x2; centroids, ret NT vs tec RC
             this->graph_layout_k (offset, sl);
+        } else if (this->layout == graph_layout::l) { // 1x1; selected axons only
+            this->graph_layout_l (offset, sl);
         } else {
             throw std::runtime_error ("Unknown layout");
         }
@@ -2012,7 +2025,6 @@ struct Agent1
         morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm2);
-
     }
 
     // 1x4 graphs (expt, branches, centroids, selected)
@@ -2301,6 +2313,32 @@ struct Agent1
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
+    }
+
+    // A single graph of the path of selected axons (this is for e_single.json really).
+    void graph_layout_l (const morph::Vector<float>& offset0, const std::string& startletter)
+    {
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+
+        // Selected axons
+        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
+        this->av->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
+        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        this->av->target_scale.compute_autoscale (0, 1);
+        this->av->finalize();
+        //this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        this->v->addVisualModel (this->av);
+
+        // Figure letter
+        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        float lfs = 0.08f; // letter font size
+        int lpts = 36; // letter point resolution
+        char sl = 'A';
+        if (!startletter.empty()) { sl = startletter[0]; }
+        morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        this->v->addVisualModel (jtvm2);
     }
 
 #endif // VISUALISE

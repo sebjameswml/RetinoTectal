@@ -7,7 +7,10 @@
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 0 ],
 
+    "startletter" : "A",
+
     "singleaxon" : true,
+    "singleaxon_idx" : 210,
 
     "graph_ymax" : 0.5,
 
