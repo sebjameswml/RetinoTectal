@@ -912,7 +912,7 @@ representing EphA) as:
 $r_{i,k}$ is the expression of receptor $i$ on branch $k$ and the weight here
 is defined as a function of the distance, $d_{kb}$, between branches:
 %
-\begin{equation}
+\begin{equation} \label{e:WI}
 W_{\!_I}(d_{kb}) = \begin{cases}
       1 - \frac{d_{kb}}{2r_{\!_I}}   & d_{kb} \leq 2r_{\!_I} \\
      0 & d_{kb} > 2r_{\!_I}
@@ -954,7 +954,7 @@ signalling. Furthermore, if a receptor-ligand interaction on the tectum leads
 to growth cones moving away from a region of high ligand expression, then the
 equivalent axon-axon interaction would also be expected to be repulsive.
 
-Taken alone, the EphA forward interaction between one branch, $b$, and
+Taken alone, the EphA forward interaction between one RGC branch, $b$, and
 another, $k$, will cause a repulsion if $k$ originated more nasally than
 $b$. A branch originating on the \emph{temporal} side of $b$ will cause no
 repulsion of $b$. However, although $k$ does not induce repulsion in $b$, $b$
@@ -991,11 +991,54 @@ they compete or not when close together does not affect the behaviour of the
 system.
 
 % Now describe J model, and show the result.
+We defined a movement vector arising from a multiplicative receptor-ligand
+interaction, $\mathbf{J}_b$ (scaled by a parameter $m_{\!_J}$) to define the
+movement vector, $\mathbf{M}_b$, for the $\mathbf{GJ}$ model as:
+%
+\begin{equation} \label{e:mv3}
+ \mathbf{M}_{b} = m_{\!_G} \mathbf{G}_b + m_{\!_J} \mathbf{J}_b + 0.5 \mathbf{B}_b
+\end{equation}
+%
+% noting that $m_J J_b$ \emph{replaces} $m_c C_b$.
+%
+$\mathbf{J}_b$ is defined as
+%
+\begin{equation}
+\mathbf{J}_b = \frac{1}{|B_{b,J}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W_{\!_J}\,Q_{\!_J}(d_{kb})
+\end{equation}
+%
+where $W_{\!_J}$ is distance based weighting analogous to $W_{\!_I}$,
+$B_{b,J}$ is analogous to $B_{b,I}$ and $Q_{\!_J}(d_{kb})$ is the signalling
+strength between two growth cones of receptor-ligand interaction radius
+$r_{\!_J}$ a distance $d_{kb}$ from one another, given by
+%
+\begin{equation}
+Q_{\!_J}(d_{kb}) = \begin{cases}
+                 F_i & \sum_i^N r_{i,b}\,l_{i,k} > s,~d_{kb} \leq 2r_{\!_J} \\
+                 0 & \mathrm{otherwise}
+     \end{cases}
+\end{equation}
+%
+The sign of $Q_{\!_J}$ determines whether the interaction, $\mathbf{J}_b$, is
+repulsive or attractive. $l_{i,k}$ is the expression of ligand $i$ on branch
+$k$.
+
+$\mathbf{J}_b$ would be equivalent to $\mathbf{I}_b$ if there was a single
+$l_i$ expressed in the retina and its form was $1/r_i$. As well as allowing
+for two, opp
+
+With $m_{\!_G}$ fixed at the value 0.0012, and allowing the threshold
+parameter $s$ to vary along with $m_{\!_J}$ and $r_{\!_J}$ we performed a
+simulated annealing optimization. The parameters best able to recover the
+wildtype pattern were $s=4.732$, $m_{\!_J} = 0.247$ and $r_{\!_J} =
+0.079$. The simulation of the system with these parameters is shown in
+Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_figcomp3_exit_true_steps_1500.png}
-\caption{$\mathbf{GJ}$ model}
+\caption{Chemoaffinity and receptor-ligand mediated competitive interactions
+($\mathbf{GJ}$ model). }
 \label{f:GJ}
 \end{figure}
 
@@ -1006,7 +1049,9 @@ system.
 \label{f:GJsurg}
 \end{figure}
 
-%% TO ADD: Figure for the Reber/Brown manipulation on the GJ model.
+\subsection*{Knockin and Knockdown manipulations}
+
+
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_reber.png}
@@ -1015,74 +1060,20 @@ system.
 \end{figure}
 
 
-%% HEREish
-Next, we investigated the idea that the same receptor-ligand
-interaction that leads to gradient-based movement of RGC axons on the tectum
-could also act as a signal between the axons. This is plausible, because
-retinal ganglion cells are known to express ephrin receptor ligands as well as
-Eph receptors \citep{ephrins_on_RGCs}. We defined $N=4$ ligands, $l_i$,
-expressed by the RGCs in the model according to
-%
-\begin{equation} \label{e:retlig}
-l_i(x,y) = 1.05 + 0.26 \exp(2.3 u).
-\end{equation}
-%
-We used exactly the same form as the receptor expression given by
-Eq.\,\ref{e:retrcpt}, but with opposite gradient direction so here $u$ is
-substituted by $x$ for $l_0$, $y$ for $l_1$, $(1-x)$ for $l_2$ and by $(1-y)$
-for $l_3$ (see Fig.\,\ref{f:ex}C).
-%
-We combined chemotaxis with a multiplicative (or mass-action?) interaction,
-$\mathbf{J}_b$ (scaled by a parameter $m_{\!_J}$) to define the movement
-vector, $\mathbf{M}_b$, for the $\mathbf{GJ}$ model as:
-%
-\begin{equation} \label{e:mv3}
- \mathbf{M}_{b} = m_{\!_G} \mathbf{G}_b + m_{\!_J} \mathbf{J}_b + 0.5 \mathbf{B}_b
- %%+  m_{\!_I} \mathbf{I}_b +  m_{\!_J} \mathbf{J}_b + 0.5 \mathbf{B}_b
-\end{equation}
-%
-$\mathbf{J}_b$ is defined as
-%
-\begin{equation}
-% No \frac{1}{|B_b|} in this one. Really?
-\mathbf{J}_b = \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,Q_{\!_J}(d_{kb})
-\end{equation}
-%
-where $Q_{\!_J}(d_{kb})$ is the signalling strength between two growth cones of
-receptor-ligand interaction radius $r_{\!_J}$ a distance $d_{kb}$ from one another,
-given by
-%
-\begin{equation}
-Q_{\!_J}(d_{kb}) = \begin{cases}
-     \sum_i^N F_i\,r_{i,b}\,l_{i,k}    & d_{kb} \leq 2r_{\!_J} \\
-     0 & d_{kb} > 2r_{\!_J}
-     \end{cases}
-\end{equation}
-%
-The sign of $Q_{\!_J}$ (which is dependent on the values of $F_i$) determines
-whether the interaction, $\mathbf{J}_b$, is repulsive or attractive. $l_{i,k}$
-is the expression of ligand $i$ on branch $k$.
+%Considering just one receptor-ligand pair, for instance $r_0$/$l_0$, and
+%defining their interaction as repulsive, an axon from the transverse side of
+%the retina, which expresses a high level of receptor $r_0$ will interact most
+%strongly with an axon from the nasal side of the retina, where $l_0$ is most
+%highly expressed. The interaction with axons that originate nearby, on the
+%transverse side will be minimal, as these express low levels of $l_0$. Axons
+%originating from the nasal side of the retina also interact most strongly with
+%axons originating nearby and in general the $r_0$/$l_0$ interaction is weaker
+%between a nasal axon and a second retinal axon. However, when the opposing
+%receptor/ligand pair ($r_2$/$l_2$) interaction is summed with that of
+%$r_0$/$l_0$, a more even interaction is found, with interactions between axons
+%from extreme sides of the retina being the strongest. (Poss.~supp.~figure
+%based on the Octave script J.m).
 
-Considering just one receptor-ligand pair, for instance $r_0$/$l_0$, and
-defining their interaction as repulsive, an axon from the transverse side of
-the retina, which expresses a high level of receptor $r_0$ will interact most
-strongly with an axon from the nasal side of the retina, where $l_0$ is most
-highly expressed. The interaction with axons that originate nearby, on the
-transverse side will be minimal, as these express low levels of $l_0$. Axons
-originating from the nasal side of the retina also interact most strongly with
-axons originating nearby and in general the $r_0$/$l_0$ interaction is weaker
-between a nasal axon and a second retinal axon. However, when the opposing
-receptor/ligand pair ($r_2$/$l_2$) interaction is summed with that of
-$r_0$/$l_0$, a more even interaction is found, with interactions between axons
-from extreme sides of the retina being the strongest. (Poss.~supp.~figure
-based on the Octave script J.m).
-
-We performed the same simulated annealing process as for the
-$\mathbf{GC}$ model to find the parameters best able to recover the wildtype
-pattern and found $m_{\!_G} = 0.00047$, $m_{\!_J} = 0.00089$ and $r_{\!_J} =
-0.341$.
-
-See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
 %%\subsection*{Receptor-receptor axon-axon interactions}
 
@@ -1097,8 +1088,8 @@ See Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 (mean distance error), averaged over the period from simulation time $t=750$ to $t=1000$, plotted with respect to the
 noise gain ($\nu$) in the best $\mathbf{G}$ model and the wildtype condition (compare with
 Fig.\,\ref{f:G0}). Noise for $\nu < 0.5$ is tolerated by the model, but
-disorder increases about this value.
-\textbf{B} Competitive interaction in the $\mathbf{GI}$ model extends the
+disorder increases above this value.
+\textbf{B} Competitive interaction in the $\mathbf{GJ}$ model extends the
 range of ligand gradient noise which can be tolerated by the system.
 Both metrics indicate that a moderate
 amount of gradient sampling noise is \emph{beneficial} to the establishment of
@@ -1123,8 +1114,11 @@ $\mathbf{U}(-\nu, \nu)$. Eq.\,\ref{e:G} becomes
 \mathbf{G}_b = \sum_i^N F_i\,r_{i,b}\, \mathbf{U}(-\nu, \nu) \nabla L_i(\mathbf{x}_b)
 \end{equation}
 
-Fig.\,\ref{f:noise} shows the response of the $\mathbf{GI}$ model to the
-addition of ligand gradient estimation noise.
+Fig.\,\ref{f:noise} shows the response of both the chemoaffinity-only model
+and the full $\mathbf{GJ}$ model to the addition of ligand gradient estimation
+noise. The results indicate that a moderate amount of noise is beneficial for
+the establishment of an ordered map and that the competitive model is much
+more robust to higher levels of gradient estimation noise.
 
 What about retinal expression noise? This would have a disordering effect on
 the pattern.
@@ -1143,6 +1137,8 @@ tectal ligand expression should change from exponential to logarithmic.
 \section{Discussion}
 Discussion goes here.
 
+Discuss the requirement for a distance based weight and the fact that without
+this, the system doesn't converge on a stable solution.
 
 % Discuss the Hill Equation! https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)
 % This relates to the work \cite{naoki_revisiting_2017}

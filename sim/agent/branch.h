@@ -185,17 +185,27 @@ public:
                        (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;
+        //std::cout << "Rcpt * lgnd = " << QJar << " (s is " << this->s << ")\n";
 
         // Add to competition if any of the mass-action interactions is true.
         // Note: use <= operator which is true if EVERY member of the Vector is <= threshold
         bool subthreshold = false;
-        if (d <= this->two_r_j && (subthreshold = QJar.abs() <= this->s) == false) {
-            // W = QJar.sum()/N; // Sum the interactions to modulate the competition strength?
-            // W = QJar.longest(); // Use the maximum suprathreshold interaction element?
-            W = T{1} - d/this->two_r_j; // or have a distance based weight?
-            J += kb * W;
-            rtn[2] = true;
+        if (d <= this->two_r_j) {
+            //std::cout << "d < 2rj: " << d << " cf. two_r_j " << this->two_r_j << std::endl;
+            if ((subthreshold = QJar.abs() <= this->s) == false) {
+                //std::cout << "subthreshold false so OVER threshold for interaction...\n";
+                // W = QJar.sum()/N; // Sum the interactions to modulate the competition strength?
+                // W = QJar.longest(); // Use the maximum suprathreshold interaction element?
+                W = T{1} - d/this->two_r_j; // or have a distance based weight?
+                J += kb * W;
+                rtn[2] = true;
+            } else {
+                //std::cout << "subthreshold true (no interaction)...\n";
+                rtn[2] = false;
+            }
+            //std::cout << "subthreshold is " << (subthreshold == true ? "true" : "false") << std::endl;
         } else {
+            //std::cout << "d > 2rj (no interaction): " << d << " cf. two_r_j " << this->two_r_j << std::endl;
             //std::cout << "NO interaction for |QJar| = " << QJar.abs() << std::endl;
             rtn[2] = false;
         }

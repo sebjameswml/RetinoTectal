@@ -710,6 +710,7 @@ struct Agent1
     }
 #endif // VISUALISE
 
+    // This number decides which axon will be shown in the single axon expt. It's an axon from a central RGC.
     static constexpr size_t singleaxon_idx = 210;
     // Set true to use orthographic projection
     static constexpr bool use_ortho = false;

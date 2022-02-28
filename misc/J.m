@@ -28,9 +28,9 @@ _lin = 1.31 + 2.333 .* x;
 if strcmp (ligand_expression, 'exp')
   threshold = 1.1
 elseif strcmp (ligand_expression, 'lin')
-  threshold = 5.0 ## 4.7 to 5.4 is a sensible range
+  threshold = 4.73 ## 4.7 to 5.4 is a sensible range
 else
-  threshold = 5.2 ## 4.8 to 5.5 is a sensible range
+  threshold = 4.73 ## 4.8 to 5.5 is a sensible range
 end
 
 ## Debugging the curves

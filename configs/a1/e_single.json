@@ -5,12 +5,14 @@
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 0 ],
 
-    "singleaxon" : 1,
+    "singleaxon" : true,
 
     "graph_ymax" : 0.5,
 
     "desc_movie" : "If true, then save images to make a movie",
-    "movie" : false,
+    "movie" : true,
+
+    "showevery" : 1,
 
     "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
     "lighting" : true,
@@ -21,5 +23,5 @@
     "goslow" : false,
 
     "desc_steps" : "How many simulation steps should be computed?",
-    "steps" : 1500
+    "steps" : 100
 }

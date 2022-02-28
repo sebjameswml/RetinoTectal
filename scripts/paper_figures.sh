@@ -29,3 +29,6 @@
 ./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json -co:exit=true
 ./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json -co:exit=true
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json -co:exit=true -co:steps=1500
+
+# The Reber manipulation
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_reber.json -co:exit=true -co:steps=1500
