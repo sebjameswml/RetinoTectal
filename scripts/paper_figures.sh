@@ -23,7 +23,7 @@
 #./scripts/fig_GI_surgical.sh
 
 # GJ model, Surgical manipulations
-#./scripts/fig_GJ_surgical.sh
+./scripts/fig_GJ_surgical.sh
 
 # The 'best model' figures
 ./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json -co:exit=true
@@ -32,3 +32,8 @@
 
 # The Reber manipulation
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_reber.json -co:exit=true -co:steps=1500
+
+# Single axons
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_single-centre.json -co:exit=true
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_single-caudal.json -co:exit=true
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_single-rostral.json -co:exit=true

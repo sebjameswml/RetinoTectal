@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="461.16876mm"
+   height="145.52083mm"
+   viewBox="0 0 461.16876 145.52083"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="single_axon.svg"
+   inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/single_axon.png"
+   inkscape:export-xdpi="300.01199"
+   inkscape:export-ydpi="300.01199">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="931.17452"
+     inkscape:cy="191.56482"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="2488"
+     inkscape:window-height="1376"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(180.84274,-47.346729)">
+    <rect
+       style="opacity:0.99299999;fill:#fdfdfd;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+       id="rect4863"
+       width="461.16876"
+       height="145.52083"
+       x="-180.84274"
+       y="47.346729" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_single-centre.png"
+       xlink:href="j4_ee_GJ_best_1_single-centre.png"
+       width="178.59375"
+       height="145.52083"
+       preserveAspectRatio="none"
+       id="image4711"
+       x="-180.84274"
+       y="47.346729" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_single-caudal.png"
+       xlink:href="j4_ee_GJ_best_1_single-caudal.png"
+       width="178.59375"
+       height="145.52083"
+       preserveAspectRatio="none"
+       id="image4776"
+       x="-39.404011"
+       y="47.346729" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_single-rostral.png"
+       xlink:href="j4_ee_GJ_best_1_single-rostral.png"
+       width="178.59375"
+       height="145.52083"
+       preserveAspectRatio="none"
+       id="image4841"
+       x="101.73228"
+       y="47.346729" />
+  </g>
+</svg>
