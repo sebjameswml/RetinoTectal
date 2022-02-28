@@ -673,14 +673,20 @@ struct guidingtissue : public tissue<T>
     void receptor_knockdown (size_t idx, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
-        for (auto& r : this->rcpt) { r[idx] -= amount; }
+        for (auto& r : this->rcpt) {
+            r[idx] -= amount;
+            if (r[idx] < 0) { r[idx] = 0; }
+        }
         this->compute_gradients();
     }
 
     void ligand_knockdown (size_t idx, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("ligand index out of range"); }
-        for (auto& l : this->lgnd) { l[idx] -= amount; }
+        for (auto& l : this->lgnd) {
+            l[idx] -= amount;
+            if (l[idx] < 0) { l[idx] = 0; }
+        }
         this->compute_gradients();
     }
 

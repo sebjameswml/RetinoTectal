@@ -1497,6 +1497,11 @@ struct Agent1
         }
         case graph_layout::b:
         case graph_layout::e:
+        {
+            // 1x3
+            wdefault = 1920; hdefault = 574;
+            break;
+        }
         case graph_layout::g:
         case graph_layout::h:
         case graph_layout::i:
@@ -1549,7 +1554,7 @@ struct Agent1
         } else if (this->layout == graph_layout::c) {
             st_x = -0.91053f; st_y = 0.7895f; st_z = -6.1f;
         } else if (this->layout == graph_layout::e) {
-            st_x = -0.890077f; st_y = -0.0236414f; st_z = -2.6f;
+            st_x = -0.2375f; st_y = -0.03f; st_z = -2.8f;
         } else if (this->layout == graph_layout::f) {
             st_x = 1.00190961f; st_y = 0.0175217576f; st_z = -2.70000315f;
         } else if (this->layout == graph_layout::g) {
@@ -1908,11 +1913,15 @@ struct Agent1
         this->v->addVisualModel (jtvm);
     }
 
+    // Branches, centroids and RT/NT graph
     void graph_layout_e (const morph::Vector<float>& offset0)
     {
-        morph::Vector<float> offset = offset0;
+        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
+        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.7f, 0.0f, 0.0f});
+
         // Branches: Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
+        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->view = branchvisual_view::discs;
@@ -1922,8 +1931,7 @@ struct Agent1
         v->addVisualModel (this->bv);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        offset[0] += 1.3f;
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
         this->cv->viewmode = netvisual_viewmode::actual;
         if (this->layout == graph_layout::b) {
             this->cv->radiusFixed = 0.02;
@@ -1933,16 +1941,25 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
-        offset[0] += 1.4f;
-
         // The position graph, like Brown/Reber and S&G papers
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_C);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
         this->gv->policy = morph::stylepolicy::markers;
         this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
         this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+        this->gv->finalize();
         v->addVisualModel (this->gv);
+
+        // Figure letters
+        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        float lfs = 0.08f; // letter font size
+        int lpts = 36; // letter point resolution
+        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("C", g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        this->v->addVisualModel (jtvm);
     }
 
     // A single graph with an inset for the expt layout.

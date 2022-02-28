@@ -8,7 +8,7 @@
     "knockdown" : 1,
 
     "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
-    "graph_layout" : 3,
+    "graph_layout" : 4,
 
     "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
     "seeaxons" : [ 21, 38, 189, 378, 361 ],
