@@ -180,7 +180,7 @@ int main (int argc, char** argv)
     sv->cm.setType (morph::ColourMapType::Jet);
     sv->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_accepted_vm_coords);
     sv->setScalarData ((std::vector<float>*)&f_param_hist_accepted);
-    sv->sizeFactor = 0.05f;//1.0f/300.0f;
+    sv->sizeFactor = 0.1f; //0.05f is 1.0f/300.0f;
     sv->finalize();
     v.addVisualModel (sv);
 
@@ -189,7 +189,10 @@ int main (int argc, char** argv)
     sv2->colourScale.compute_autoscale (0, 30);
     sv2->cm.setType (morph::ColourMapType::Plasma);
     sv2->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_rejected_vm_coords);
-    sv2->setScalarData ((std::vector<float>*)&f_param_hist_rejected);
+
+    static constexpr float scatter_max_sz = 1.0f; // How big should the bad blobs be allowed to get?
+    morph::vVector<float> log_fphr = f_param_hist_rejected.log();
+    sv2->setScalarData ((std::vector<float>*)&log_fphr);
     sv2->sizeFactor = sv->sizeFactor;
     sv2->finalize();
     v.addVisualModel (sv2);
