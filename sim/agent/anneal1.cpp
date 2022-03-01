@@ -421,6 +421,7 @@ int main (int argc, char **argv)
                 for (size_t i = sz; i < 3; ++i) { coord[i] = float{0}; }
             }
             static constexpr float scatter_max_sz = 0.05f; // How big should the bad blobs be allowed to get?
+            static constexpr float blob_divisor = 600.0f; // For scaling the size of the scatter blobs
 
             // If there are >3 coords, then have a 'start index' and show 3 of
             // them. Allow user to swich the 'start index' so they can show dimensions
@@ -442,7 +443,7 @@ int main (int argc, char **argv)
                     morph::vVector<float> c = (param_hist[i].as_float() / param_range_diff) - param_range_offs;
                     std::cout << "coordinate c = " << c << " has obj f value " << f_param_hist[i] << std::endl;
                     sv->add ({c[v.start_idx%v.dimensions], c[(v.start_idx+1)%v.dimensions], c[(v.start_idx+2)%v.dimensions]},
-                             f_param_hist[i], (f_param_hist[i]/600.0f > scatter_max_sz ? scatter_max_sz : f_param_hist[i]/600.0f));
+                             f_param_hist[i], (f_param_hist[i]/blob_divisor > scatter_max_sz ? scatter_max_sz : f_param_hist[i]/blob_divisor));
                 }
                 // Change the Triaxes visual
                 tav->clear();
@@ -451,7 +452,7 @@ int main (int argc, char **argv)
                 sv_start_idx_last = v.start_idx;
             }
             sv->add ({coord[v.start_idx%v.dimensions], coord[(v.start_idx+1)%v.dimensions], coord[(v.start_idx+2)%v.dimensions]},
-                     optimiser->f_x_cand, (optimiser->f_x_cand/600.0f > scatter_max_sz ? scatter_max_sz : optimiser->f_x_cand/600.0f));
+                     optimiser->f_x_cand, (optimiser->f_x_cand/blob_divisor > scatter_max_sz ? scatter_max_sz : optimiser->f_x_cand/blob_divisor));
 
             max_repeats_so_far = max_repeats_so_far < optimiser->f_x_best_repeats ? optimiser->f_x_best_repeats : max_repeats_so_far;
             std::stringstream ss;
