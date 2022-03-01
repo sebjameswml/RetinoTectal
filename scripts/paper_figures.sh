@@ -32,6 +32,8 @@
 
 # The Reber manipulation
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_reber.json -co:exit=true -co:steps=1500
+# Reber, with GC model
+./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_reber.json -co:exit=true -co:steps=1500
 
 # Single axons
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_single-centre.json -co:exit=true
