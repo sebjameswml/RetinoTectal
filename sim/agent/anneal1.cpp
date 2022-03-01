@@ -111,7 +111,6 @@ void tav_setup (morph::TriaxesVisual<float>* tav, const size_t start_idx, const 
     tav->zlabel = params[_2];
     tav->finalize();
 }
-#endif
 
 // Specialise AnnealVisual to have an extra keybind and a 'start index' attribute
 class AnnealVisual : public morph::Visual
@@ -136,6 +135,7 @@ protected:
         }
     }
 };
+#endif
 
 // E.g.: pbm && ./build/sim/agent/search1c configs/a1/m_eE_GCI.json configs/a1/s_GCI.json
 int main (int argc, char **argv)
