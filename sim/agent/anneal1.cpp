@@ -421,6 +421,7 @@ int main (int argc, char **argv)
                 for (size_t i = sz; i < 3; ++i) { coord[i] = float{0}; }
             }
             static constexpr float scatter_max_sz = 0.05f; // How big should the bad blobs be allowed to get?
+
             // If there are >3 coords, then have a 'start index' and show 3 of
             // them. Allow user to swich the 'start index' so they can show dimensions
             // 0,1,2 or 1,2,3, or 2,3,4 etc, looping back to 0 as necessary. If start
@@ -490,9 +491,9 @@ int main (int argc, char **argv)
                   << " for params " << optimiser->x_best << std::endl;
         // Store origin json configs used for this anneal run
         {
-            std::string fname_conf = "log/anneal1/anneal1_" + m_id + ts + std::string("_mconf_") + std::string(".json");
+            std::string fname_conf = "log/anneal1/anneal1_" + m_id + std::string("_") + ts + "_mconf.json";
             mconf->write (fname_conf);
-            fname_conf = "log/anneal1/anneal1_" + m_id + ts + std::string("_sconf_") + std::string(".json");
+            fname_conf = "log/anneal1/anneal1_" + m_id + std::string("_") + ts + "_sconf.json";
             sconf->write (fname_conf);
         }
 
@@ -502,7 +503,7 @@ int main (int argc, char **argv)
             std::cout << params[i] << " = " << final_params[i] << std::endl;
         }
 
-        std::string mdl_conf_out = "log/anneal1/anneal1_" + m_id + ts + "_mopt_" + ".json";
+        std::string mdl_conf_out = "log/anneal1/anneal1_" + m_id + std::string("_") + ts + "_mopt.json";
         mconf->write (mdl_conf_out);
         if (mconf->ready == true) {
             std::cout << "Wrote optimised model to file " << mdl_conf_out << std::endl;
