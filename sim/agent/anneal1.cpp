@@ -370,7 +370,7 @@ int main (int argc, char **argv)
         // for (each expt) {
 
         // Create/use an expt config
-        std::string paramsfile_expt = "./configs/a1/e_wt.json";
+        std::string paramsfile_expt = "./optimization/e_wt.json";
         morph::Config* econf1 = new morph::Config (paramsfile_expt);
         Agent1<float, 4, branch<float, 4>> model1 (econf1, mconf);
         model1.title = std::string("j4_") + m_id + std::string("_1_s_") + s_id;
@@ -482,12 +482,19 @@ int main (int argc, char **argv)
 
         std::cout << "Optimisation finished. Saving data...\n";
         morph::Tools::createDirIf ("log/anneal1");
-        std::string fname = "log/anneal1/anneal1_" + m_id + std::string("_")
-        + morph::Tools::filenameTimestamp() + std::string(".h5");
+        std::string ts = morph::Tools::filenameTimestamp();
+        std::string fname = "log/anneal1/anneal1_" + m_id + std::string("_") + ts + std::string(".h5");
         std::cout << " to file "<< fname << std::endl;
         optimiser->save (fname);
         std::cout << "...saved. Best objective was " << optimiser->f_x_best
                   << " for params " << optimiser->x_best << std::endl;
+        // Store origin json configs used for this anneal run
+        {
+            std::string fname_conf = "log/anneal1/anneal1_" + m_id + ts + std::string("_mconf_") + std::string(".json");
+            mconf->write (fname_conf);
+            fname_conf = "log/anneal1/anneal1_" + m_id + ts + std::string("_sconf_") + std::string(".json");
+            sconf->write (fname_conf);
+        }
 
         morph::vVector<double> final_params = optimiser->x_best;
         if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
@@ -495,8 +502,7 @@ int main (int argc, char **argv)
             std::cout << params[i] << " = " << final_params[i] << std::endl;
         }
 
-        std::string mdl_conf_out("./m_");
-        mdl_conf_out += m_id + "_fin.json";
+        std::string mdl_conf_out = "log/anneal1/anneal1_" + m_id + ts + "_mopt_" + ".json";
         mconf->write (mdl_conf_out);
         if (mconf->ready == true) {
             std::cout << "Wrote optimised model to file " << mdl_conf_out << std::endl;
