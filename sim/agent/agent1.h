@@ -309,11 +309,19 @@ struct Agent1
                     }
                 }
 
-                this->gv->setdata (nt, rc, "wt");
                 T ki_amount = this->conf->getDouble ("knockin", 1);
                 T kd_amount = this->conf->getDouble ("knockdown", 0);
+                if (kd_amount > T{0}) {
+                    this->gv->setdata (nt, rc, "wt");
+                } else {
+                    std::stringstream sss;
+                    sss << "kd:" << kd_amount;
+                    this->gv->setdata (nt, rc, sss.str()); // or 'only knockdown'?
+                }
                 std::stringstream ss;
-                ss << "ski:" << ki_amount << ", gkd:" << kd_amount;
+                // gkd for 'general knockdown' - i.e. applied to all cells
+                // ski for 'selected knockin' - i.e. applied to a prop. of cells
+                ss << "ki:" << ki_amount << " + kd:" << kd_amount;
                 this->gv->setdata (nt_m, rc_m, ss.str());
                 this->gv->reinit();
                 this->v->render();
@@ -1207,7 +1215,7 @@ struct Agent1
 
         // Knockin will increase expression for half of all cells. There's code in tissue.h to make this randomised or regular
         this->genetic_manipulation = false;
-        T affected = T{0.5};
+        T affected = T{0.5}; // proportion of cells affected by a genetic manipulation
         T ki_amount = this->conf->getDouble ("knockin", 1);
         T kd_amount = this->conf->getDouble ("knockdown", 0);
         if (this->conf->getBool ("reber", false)) {
