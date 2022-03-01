@@ -190,7 +190,7 @@ int main (int argc, char** argv)
     sv2->cm.setType (morph::ColourMapType::Plasma);
     sv2->setDataCoords ((std::vector<morph::Vector<float, 3>>*)&param_hist_rejected_vm_coords);
 
-    static constexpr float scatter_max_sz = 1.0f; // How big should the bad blobs be allowed to get?
+    //static constexpr float scatter_max_sz = 1.0f; // How big should the bad blobs be allowed to get?
     morph::vVector<float> log_fphr = f_param_hist_rejected.log();
     sv2->setScalarData ((std::vector<float>*)&log_fphr);
     sv2->sizeFactor = sv->sizeFactor;
