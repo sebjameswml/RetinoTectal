@@ -38,9 +38,9 @@ target_compile_definitions(anneal1c PUBLIC FLT=float OPTVIS=1)
 target_link_libraries(anneal1c ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 # Run anneal1 with no visuals at all
-#add_executable(anneal1cc anneal1.cpp)
-#target_compile_definitions(anneal1cc PUBLIC FLT=float)
-#target_link_libraries(anneal1cc ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+add_executable(anneal1c0 anneal1.cpp)
+target_compile_definitions(anneal1c0 PUBLIC FLT=float)
+target_link_libraries(anneal1c0 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 add_executable(anneal1read anneal1read.cpp)
 target_compile_definitions(anneal1read PUBLIC FLT=float)
