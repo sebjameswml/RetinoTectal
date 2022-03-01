@@ -1,0 +1,57 @@
+{
+    "__params": [
+        "m_g",
+        "m_j",
+        "r_j"
+    ],
+    "acc_gen_reanneal_ratio": 1e-06,
+    "cost_parameter_scale_ratio": 1.5,
+    "desc_asa_params": "Adaptive simulated annealing parameters",
+    "desc_nm_threshold": "Nelder-Mead stopping threshold and 'too many' loops",
+    "desc_params": "An array of parameter names to optimise",
+    "f_x_best_repeat_max": 15,
+    "m_c_range": [
+        0.01,
+        0.1
+    ],
+    "m_g_range": [
+        0.0001,
+        0.0015
+    ],
+    "m_i_range": [
+        0.01,
+        0.8
+    ],
+    "m_j_range": [
+        0.001,
+        0.4
+    ],
+    "nm_threshold": 0.01,
+    "nm_toomany": 100,
+    "objective_repeat_precision": 0.05,
+    "parameter ranges": "These arrays are read by anneal1.cpp",
+    "params": [
+        "s",
+        "m_j",
+        "r_j"
+    ],
+    "r_c_range": [
+        0.001,
+        0.5
+    ],
+    "r_i_range": [
+        0.001,
+        0.5
+    ],
+    "r_j_range": [
+        0.001,
+        0.2
+    ],
+    "reanneal_after_steps": 100,
+    "s_range": [
+        4.5,
+        5.5
+    ],
+    "temperature_anneal_scale": 100.0,
+    "temperature_ratio_scale": 0.01
+}
