@@ -21,7 +21,7 @@
 
     "on ret_ligand_forms": "Oddly, it's important to have OPPOSING ligand gradients, but only one pair of opposing gradients is required. EphA and opposing is 0,6,0,6 (if linear) or 5,6,5,6 (if 1/r_i)",
 
-    "ret_ligand_forms": [0,6,0,6],
+    "ret_ligand_forms": [5,6,5,6],
 
     "ret_rcptrcpt_interactions": [-1,-1,-1,-1],
 
