@@ -347,8 +347,9 @@ struct rgcnet : public net<T>
         }
     }
 
-    static constexpr bool recolour_for_genetic_expts = false; // was the wrong place to do this
-
+    // Set up the expected experimental layout for the Reber or Brown manipulations. The
+    // genetic manipulations are carried out by
+    // guidingtissue::receptor_knockin/out/down. I'm not sure this is actually used.
     void targ_reber()
     {
         morph::Vector<T,3> fac2y = {1, 2, 1};
@@ -361,9 +362,6 @@ struct rgcnet : public net<T>
         for (size_t j = 0; j < this->h/2; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
                 this->targ[j+this->w*i] *= fac2y;
-                if constexpr (recolour_for_genetic_expts == true) {
-                    this->clr[j+this->w*i] = {1.0f, 0.0f, 0.0f};
-                }
             }
         }
         // Top part is shifted/stretched up
@@ -371,9 +369,6 @@ struct rgcnet : public net<T>
             for (size_t i = 0; i < this->w; ++i) {
                 this->targ[j+this->w*i] -= offshalfy;
                 this->targ[j+this->w*i] *= fac2y;
-                if constexpr (recolour_for_genetic_expts == true) {
-                    this->clr[j+this->w*i] = {0.0f, 0.0f, 1.0f};
-                }
             }
         }
     }
