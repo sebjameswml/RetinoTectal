@@ -10,7 +10,7 @@ set(h_f, 'Position', [20, 1500, w, h]);
 clf;
 
 ## What ligand expression profile?
-ligand_expression = 'lin'; #  or exp or invexp
+ligand_expression = 'invexp'; #  or exp or invexp
 
 x = [0:0.05:1];
 
