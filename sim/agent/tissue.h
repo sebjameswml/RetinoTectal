@@ -451,9 +451,7 @@ struct guidingtissue : public tissue<T>
     T inv_exponential_expression (const T& x) const {
         // Note the T{1}-x. This ensures that this inverse exponential increases in the
         // same direction as the other expressions.
-        static constexpr T A = T{4.7727};
-        static constexpr T B = T{-0.00014};
-        return B + A/(T{1.05} + T{0.26} * std::exp (T{2.3} * (T{1}-x)));
+        return T{4.7727} / (T{1.05} + T{0.26} * std::exp (T{2.3} * (T{1}-x)));
     }
     T exponential_expression2 (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{1.1} * x); }
     T logarithmic_expression (const T& x) const { return T{2.32} + T{1.29} * std::log (T{2.3} * (x+T{0.2})); }
