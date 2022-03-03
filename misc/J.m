@@ -19,8 +19,10 @@ _rev_exp = 0.26 .* exp (2.3.*(1-x)) + 1.05;
 _deriv_exp = 0.26 .* 2.3 .* exp (2.3.*x);
 ## Scaling for _exp to give inverse that starts and ends at the same point
 A = 4.7727;
-B =  -0.00014;
+B =  0; ##-0.00014;
 _inv_exp = A .* (1./_exp) + B;
+
+rtimesl = _exp .* _inv_exp;
 
 ## May also use a linear function
 _lin = 1.31 + 2.333 .* x;
@@ -41,8 +43,9 @@ plot (x, 1./_exp);
 plot (x, flip(1./_exp));
 plot (x, _inv_exp);
 plot (x, flip(_inv_exp));
+plot (x, rtimesl);
 plot (x, _lin);
-legend('exp', '1/exp', '1/exp (flipped LR)','scaled 1/exp', 'scaled 1/exp (flipped LR)', 'linear')
+legend('exp', '1/exp', '1/exp (flipped LR)','scaled 1/exp', 'scaled 1/exp (flipped LR)', 'exp times scaled 1/exp', 'linear')
 figure(1);
 
 %% The J effect

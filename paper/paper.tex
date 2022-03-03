@@ -6,8 +6,8 @@
 \nonstopmode
 
 % Use the article doc class, with an 11 pt basic font size
-%\documentclass[11pt, a4paper, draft]{article}
-\documentclass[11pt, a4paper]{article}
+\documentclass[11pt, a4paper, draft]{article}
+%\documentclass[11pt, a4paper]{article}
 
 % Makes the main font Nimbus Roman, a Times New Roman lookalike:
 %\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
@@ -447,7 +447,7 @@ examples of opposing pairs including XX and YY.
 
 We defined 4 receptor expression gradients arranged in orthogonal pairs
 with the gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose
-gradient is opposite to $r_0$, was orthogonal to $r_3$.
+gradient is opposite to $r_0$, was orthogonal to $r_3$ (Fig.\,\ref{f:expressions}B).
 
 Because there is convincing evidence that EphA and EphB receptors are
 expressed in exponentially increasing
@@ -474,7 +474,7 @@ possibility that tectal ligand expression may be modelled by exponential,
 linear or logarithmic functions, but initially, we set it to the same
 exponential function used for retinal expression,
 \begin{equation} \label{e:tecligexp}
-L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(2.3 u),
+L_i(x,y) = 1.05 + 0.26 \exp(2.3 u),
 \end{equation}
 and used the substitutions $y$, $x$, $(1-y)$ or $(1-x)$ in place of $u$ to obtain
 the ligand expression functions for $L_0$, $L_1$, $L_2$ and $L_3$
@@ -673,7 +673,7 @@ adjust the tectal ligand expression, substituting the alternative exponential
 expression:
 %
 \begin{equation} \label{e:tecligexp2}
-L_i^{\text{exp}}(x,y) = 1.05 + 0.26 \exp(1.1 u)
+L_i(x,y) = 1.05 + 0.26 \exp(1.1 u)
 \end{equation}
 %
 for Eq.\,\ref{e:tecligexp}.
@@ -698,7 +698,8 @@ which is much closer to 0 with the new ligand expression.
  tectum. At the centre of the tectum, where neither retinal receptor
  expression nor tectal ligand expression is high, the ordering is weaker than
  towards the edge. \textbf{A} Axon branches \textbf{B} axon
- centroids \textbf{C} Five selected axons.}
+ centroids \textbf{C} The pattern metric $\eta$ is zero, as it was in
+ Fig.\,\ref{f:G}F and $\epsilon$ approaches a much lower value as $t \to \infty.}
 \label{f:G0}
 \end{figure}
 
@@ -771,7 +772,7 @@ region. Instead, axons from the temporal retina arrange with normal spacing
 and axons from the nasal retina are pushed to the caudal-most side of the
 remaining tectum (Fig.\,\ref{f:Gsurg}E). A similar result occurs in the
 mismatch experiment (Fig.\,\ref{f:Gsurg}F), but in this case there are no
-axons from the temporal retina, which was been ablated and only the axons
+axons from the temporal retina, which was ablated and only the axons
 from the nasal retina are present, arranged in a line.
 
 % The chemo manipulations figure is made up from 4 figures generated with
@@ -881,19 +882,17 @@ this model to the same set of surgical manipulations shown for the
 chemoaffinity-only model in Fig.\,\ref{f:Gsurg}. We confirmed that the
 addition of competition leads to a better correspondence to the experimental
 results than for the chemoaffinity-only model (see supplementary
-Fig.\,\ref{f:GCsurg}). We also confirmed the result
-from \citet{simpson_simple_2011} that this description of a competitive
-interaction is not able to reproduce the result of \citet{reber_relative_2004}
-(Fig.\,\ref{f:GCreber}) Hmm. DID we? That graph looks nearly as good as the GJ
-one...
+Fig.\,\ref{f:GCsurg}).
 
 \subsection*{Axon-axon interactions}
 
 Because the competition effect, $\mathbf{C}_b$ (Eq.\,\ref{e:C}), does not
-describe a signalling mechanism and cannot, on its own, explain all of the
-experimental results, we looked for a receptor-ligand interaction that could
-signal between axon branches and enable them to adjust their movements away
-from one another.
+describe a signalling mechanism, and because \citet{simpson_simple_2011}
+reported that an additional mechanism is required to explain the gene
+manipulation experiments of \citet{brown_topographic_2000}
+and \citet{reber_relative_2004}, we looked for a receptor-ligand interaction
+that could signal between axon branches and enable them to adjust their
+movements away from one another.
 
 % First, look at I, from Simpson and Goodhill.
 First, we took inspiration from Simpson and Goodhill's model for the
@@ -924,7 +923,9 @@ W_{\!_I}(d_{kb}) = \begin{cases}
 \end{equation}
 %
 $B_{b,I}$ is the set of growth cones within a distance $2r_{\!_I}$ of branch
-$b$. $\hat{\mathbf{x}}_{kb}$ is as defined in Eq.\,\ref{e:C}.
+$b$. $\hat{\mathbf{x}}_{kb}$ is as defined in Eq.\,\ref{e:C}. This mechanism
+adds a weighted repulsion if the ratio of receptor expression on
+branch $b$ and the expression on branch $k$ exceeds the threshold of 1.1.
 
 Simpson and Goodhill introduced this interaction as an additive modification
 to the main, distance based competition mechanism of Eq.\,\ref{e:C} (adding a
@@ -976,28 +977,36 @@ retina. Now $r_k/r_b>1.1$ and each member of the cluster experiences an
 addition of just one unit to its movement vector and the cones move apart at a
 speed that is only $1/3$ of that for the original origins.
 
-To avoid this asymmetry, we allow two receptor-ligand pairs, which are
+To avoid this asymmetry, we allowed two receptor-ligand pairs, which are
 expressed in opposing directions, to contribute to axon-axon interactions,
 ensuring that interactions between single growth cones and clusters are not
-dependent on their origin locations. Fig.\,\ref{f:expressions}C shows ligand
+dependent on their origin locations. Fig.\,\ref{f:ex}C shows ligand
 expressions representing an ephrin-A like expression ($l_0$) and an opposing
-expression ($l_2$). It remains the case (with a suitable choice of threshold,
-$s$) that branches originating from the same location on the temporal-nasal
-axis will not experience competitive interactions.
+expression ($l_2$). We adopted a form for the ligand expression such that
+$r_i \times l_i = 4.7727$, with the scalar constant chosen so that the retinal
+ligand expression, $l_i(x,y)$ has approximately the same start and end values
+as the exponential retinal receptor expression:
+%
+\begin{equation}
+ \label{e:retligexp}
+l_i(x,y) = \frac{4.7727}{1.05 + 0.26 \exp (2.3 u)}
+\end{equation}
+$u$ was substituted with $(1-x)$ for $l_0$ or $x$ for $l_2$ (Fig.\,\ref{f:ex}C).
+%
+%With a suitable choice of threshold, $s$, branches originating from the same
+%location on the temporal-nasal axis will not experience competitive
+%interactions.
 
 Note that it would be possible to postulate two additional retinal ligand
 expression fields (for $l_1$ and $l_3$), but we found this not to be
-necessary; a single opposing pair of fields ensures that axons that originated
-close together (and branches of the same axon) do not repel one another,
-whereas axons that are close on the temporal-nasal axis, but far apart on the
-dorso-ventral axis are generally driven far apart by chemotaxis, so whether
-they compete or not when close together does not affect the behaviour of the
-system.
+necessary; a single opposing pair of fields can ensure that most pairs of
+axons are able to signal the necessity for a competitive interaction. We set
+$l_1 = l_3 = 0$.
 
 % Now describe J model, and show the result.
 We defined a movement vector arising from a multiplicative receptor-ligand
 interaction, $\mathbf{J}_b$ (scaled by a parameter $m_{\!_J}$) to define the
-movement vector, $\mathbf{M}_b$, for the $\mathbf{GJ}$ model as:
+movement vector, $\mathbf{M}_b$, for the `$\mathbf{GJ}$ model' as:
 %
 \begin{equation} \label{e:mv3}
  \mathbf{M}_{b} = m_{\!_G} \mathbf{G}_b + m_{\!_J} \mathbf{J}_b + 0.5 \mathbf{B}_b
@@ -1008,35 +1017,56 @@ movement vector, $\mathbf{M}_b$, for the $\mathbf{GJ}$ model as:
 $\mathbf{J}_b$ is defined as
 %
 \begin{equation}
-\mathbf{J}_b = \frac{1}{|B_{b,J}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W_{\!_J}\,Q_{\!_J}(d_{kb})
+\mathbf{J}_b = \frac{1}{|B_{b,J}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W_{\!_J}\,Q_{\!_J}(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k})
 \end{equation}
 %
-where $W_{\!_J}$ is distance based weighting analogous to $W_{\!_I}$,
-$B_{b,J}$ is analogous to $B_{b,I}$ and $Q_{\!_J}(d_{kb})$ is the signalling
-strength between two growth cones of receptor-ligand interaction radius
-$r_{\!_J}$ a distance $d_{kb}$ from one another, given by
+where $W_{\!_J}$ is distance based weighting analogous to $W_{\!_I}$ and
+$B_{b,J}$ is analogous to $B_{b,I}$. $Q_{\!_J}$ determines if the signals
+between a branch $b$ expressing receptors $\mathbf{r}_b$ and branch $k$
+expressing ligands $\mathbf{l}_k$, separated by a distance $d_{kb}$ will cause
+$b$ to move away from $k$. $Q_{\!_J}(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k})$
+can be expressed as
 %
 \begin{equation}
-Q_{\!_J}(d_{kb}) = \begin{cases}
-                 F_i & \sum_i^N r_{i,b}\,l_{i,k} > s,~d_{kb} \leq 2r_{\!_J} \\
-                 0 & \mathrm{otherwise}
+Q_{\!_J}(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}) = \begin{cases}
+                 0 & \mathrm{if}~-F_i\,r_{i,b}\,l_{i,k} <
+                 s,\,\forall{i}~\mathrm{or}~d_{kb} > 2r_{\!_J} \\
+                 1 & \mathrm{otherwise}
      \end{cases}
 \end{equation}
-%
-The sign of $Q_{\!_J}$ determines whether the interaction, $\mathbf{J}_b$, is
-repulsive or attractive. $l_{i,k}$ is the expression of ligand $i$ on branch
-$k$.
 
-$\mathbf{J}_b$ would be equivalent to $\mathbf{I}_b$ if there was a single
-$l_i$ expressed in the retina and its form was $1/r_i$. As well as allowing
-for two, opp
+where $r_{\!_J}$ is the receptor-ligand interaction radius, $l_{i,k}$ (the
+expression of ligand $i$ on branch $k$) is the $i^{\mathrm{th}}$ element of
+$\mathbf{l}_k$ and $r_{i,b}$ is the $i^{\mathrm{th}}$ element of
+$\mathbf{r}_b$. $F_i$, defined in Eq.\,\ref{e:G}, is -1 if the $r_{i}\,l_{i}$
+interaction signals repulsion and +1 if it signals attraction. $s$ is a
+positive signal threshold whose value should be around 4.7727; if higher, then
+branches whose retinal origin is close will not experience a competitive
+interaction. If $s\leq 4.7727$, then \emph{any} pair of branches will compete as they
+approch each other. With the constraint $s>0$ comes the assumption that
+attractive interactions will have no effect on the competitive movement
+vector---a receptor-ligand pair that signals attraction cannot cause
+$Q_{\!_J}$ to take the value 1. $Q_{\!_J}$ is set to 1 only if at least one
+repulsive signal exceeds the threshold, $s$ and the distance from branch
+$b$ to branch $k$ is smaller than $2 r_{\!_J}$.
 
-With $m_{\!_G}$ fixed at the value 0.0012, and allowing the threshold
-parameter $s$ to vary along with $m_{\!_J}$ and $r_{\!_J}$ we performed a
-simulated annealing optimization. The parameters best able to recover the
-wildtype pattern were $s=4.732$, $m_{\!_J} = 0.247$ and $r_{\!_J} =
-0.079$. The simulation of the system with these parameters is shown in
-Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
+Note that $\mathbf{J}_b$ would be equivalent to $\mathbf{I}_b$ (with $s=1.1$) if there
+was a single $l_i$ expressed in the retina and its form was $1/r_i$.
+
+% Now the simulation.
+Adopting retinal expressions given in Eqs.\,\ref{e:retrcpt}
+and \ref{e:retligexp}, we performed a simulated annealing optimization to find
+the best parameters for the $\mathbf{GJ}$ model.  With $m_{\!_G}$ fixed at the
+value 0.0012, we allowed the threshold parameter $s$ to vary along with
+$m_{\!_J}$ and $r_{\!_J}$ . The parameters best able to recover the wildtype
+pattern were $s=4.732$, $m_{\!_J} = 0.247$ and $r_{\!_J} = 0.079$. Note that
+the discovered value for $s$ is less than 4.7727 meaning that for \emph{any
+pair of branches}, either $r_0\times l_0$ or $r_2\times l_2$ will exceed $s$.
+
+
+The
+simulation of the system with these parameters is shown in Fig.\,\ref{f:GJ}
+and Fig.\,\ref{f:GJsurg}.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
 \begin{figure}
@@ -1058,8 +1088,8 @@ Fig.\,\ref{f:GJ} and Fig.\,\ref{f:GJsurg}.
 
 
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_reber.png}
-\caption{$\mathbf{GJ}$ model, Reber et al.~manipulation. Look at THAT!}
+\includegraphics[width=\linewidth]{./images/EphA_manipulations.png}
+\caption{$\mathbf{GJ}$ model, Brown et al./Reber et al.~manipulations.}
 \label{f:GJreber}
 \end{figure}
 

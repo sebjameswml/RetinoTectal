@@ -9,31 +9,30 @@
 
 # Chemoaffinity model, random choice of gradient expression. WT.
 ./scripts/fig_G0_wildtype.sh
-
 # Chemoaffinity model, hand-tuned gradient expression. WT.
 ./scripts/fig_G_wildtype.sh
-
 # Chemoaffinity model, hand-tuned gradient expression. Surgical manipulations
 ./scripts/fig_G_surgical.sh
 
 # GC model, Surgical manipulations
+./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json -co:exit=true
 ./scripts/fig_GC_surgical.sh
 
-# GI model, Surgical manipulations
+# GI model, Surgical manipulations (not included in paper)
+#./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json -co:exit=true
 #./scripts/fig_GI_surgical.sh
 
 # GJ model, Surgical manipulations
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json -co:exit=true -co:steps=1500
 ./scripts/fig_GJ_surgical.sh
 
-# The 'best model' figures
-./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_wt_figcomp1.json -co:exit=true
-./build/sim/agent/agent1 configs/simpler/m_ee_GI_best_1.json configs/simpler/e_wt_figcomp2.json -co:exit=true
-./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json -co:exit=true -co:steps=1500
-
-# The Reber manipulation
-./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_reber.json -co:exit=true -co:steps=1500
-# Reber, with GC model
-./build/sim/agent/agent1 configs/simpler/m_ee_GC_best_1.json configs/simpler/e_reber.json -co:exit=true -co:steps=1500
+# EphA3 and EphA4 manipulations
+# EphA3 ki/+ and EphA4 +/+ (i.e. EphA4 is wildtype/unmodified)
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_eph_ki-wt.json -co:exit=true -co:steps=1500
+# EphA3 ki/ki and EphA4 +/+
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_eph_kiki-wt.json -co:exit=true -co:steps=1500
+# EphA3 ki/+ and EphA4 +/-
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_eph_ki-kd.json -co:exit=true -co:steps=1500
 
 # Single axons
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_single-centre.json -co:exit=true
