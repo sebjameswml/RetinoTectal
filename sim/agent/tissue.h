@@ -674,8 +674,7 @@ struct guidingtissue : public tissue<T>
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         for (auto& r : this->rcpt) {
-            r[idx] -= amount;
-            if (r[idx] < 0) { r[idx] = 0; }
+            r[idx] = (r[idx] < amount ? T{0} : r[idx] - amount);
         }
         this->compute_gradients();
     }
@@ -684,8 +683,7 @@ struct guidingtissue : public tissue<T>
     {
         if (idx >= N) { throw std::runtime_error ("ligand index out of range"); }
         for (auto& l : this->lgnd) {
-            l[idx] -= amount;
-            if (l[idx] < 0) { l[idx] = 0; }
+            l[idx] = (l[idx] < amount ? T{0} : l[idx] - amount);
         }
         this->compute_gradients();
     }
