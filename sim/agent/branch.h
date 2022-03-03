@@ -185,31 +185,36 @@ public:
                        (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;
-        //std::cout << "Rcpt * lgnd = " << QJar << " (s is " << this->s << ")\n";
 
-        // Add to competition if any of the mass-action interactions is true.
-        // Note: use <= operator which is true if EVERY member of the Vector is <= threshold
         bool subthreshold = false;
         if (d <= this->two_r_j) {
-            //std::cout << "d < 2rj: " << d << " cf. two_r_j " << this->two_r_j << std::endl;
-            if ((subthreshold = QJar.abs() <= this->s) == false) {
+
+            // Add to competition if any of the mass-action interactions is true.
+            // *Note1: use <= operator which is true if EVERY member of the Vector is <=
+            // threshold. *Note2: There's NO QJar.abs() here, so attractive elements of
+            // QJar (which are -ve) will NEVER trigger the threshold, even if they are
+            // strong.
+            if ((subthreshold = QJar <= this->s) == false) {
                 //std::cout << "subthreshold false so OVER threshold for interaction...\n";
+
+                // Ideas that failed for a weighting:
                 // W = QJar.sum()/N; // Sum the interactions to modulate the competition strength?
+                // W = QJar.sum()/N * (T{1} - d/this->two_r_j); // Sum and also distance based?
                 // W = QJar.longest(); // Use the maximum suprathreshold interaction element?
-                W = T{1} - d/this->two_r_j; // or have a distance based weight?
+
+                // Just a simple, distance based weight, assuming a repulsive interaction (i.e. this is +ve)
+                W = T{1} - d/this->two_r_j;
                 J += kb * W;
                 rtn[2] = true;
+
             } else {
                 //std::cout << "subthreshold true (no interaction)...\n";
                 rtn[2] = false;
             }
-            //std::cout << "subthreshold is " << (subthreshold == true ? "true" : "false") << std::endl;
         } else {
             //std::cout << "d > 2rj (no interaction): " << d << " cf. two_r_j " << this->two_r_j << std::endl;
-            //std::cout << "NO interaction for |QJar| = " << QJar.abs() << std::endl;
             rtn[2] = false;
         }
-
         return rtn;
     }
 
