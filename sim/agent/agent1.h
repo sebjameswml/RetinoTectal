@@ -1606,7 +1606,7 @@ struct Agent1
         } else if (this->layout == graph_layout::c) { // 2x4 layout with diff. time end points
             this->graph_layout_c (offset);
         } else if (this->layout == graph_layout::e) { // Branches, centroids and the position graph
-            this->graph_layout_e (offset);
+            this->graph_layout_e (offset, sl);
         } else if (this->layout == graph_layout::f) { // Just centroids. Used by agent1_eval.cpp
             this->graph_layout_f (offset, sl);
         } else if (this->layout == graph_layout::g) { // 1x4; expt, branches, centroids, selected
@@ -1922,7 +1922,7 @@ struct Agent1
     }
 
     // Branches, centroids and RT/NT graph
-    void graph_layout_e (const morph::Vector<float>& offset0)
+    void graph_layout_e (const morph::Vector<float>& offset0, const std::string& startletter)
     {
         morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
         morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
@@ -1963,10 +1963,12 @@ struct Agent1
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
         float lfs = 0.08f; // letter font size
         int lpts = 36; // letter point resolution
+        char sl = 'A';
+        if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("C", g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({++sl}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({++sl}), g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
         this->v->addVisualModel (jtvm);
     }
 
