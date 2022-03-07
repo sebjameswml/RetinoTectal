@@ -699,6 +699,7 @@ struct guidingtissue : public tissue<T>
             for (size_t ri = 0; ri < this->rcpt.size(); ++ri) {
                 if (rns[ri] < affected) {
                     this->rcpt[ri][idx] += amount;
+                    this->rcpt[ri][idx] = this->rcpt[ri][idx] < 0 ? 0 : this->rcpt[ri][idx];
                     this->rcpt_manipulated[ri][idx] = true;
                 }
             }
@@ -706,6 +707,7 @@ struct guidingtissue : public tissue<T>
             for (size_t ri = 0; ri < this->rcpt.size(); ++ri) {
                 if (ri%2 == 0) {
                     this->rcpt[ri][idx] += amount;
+                    this->rcpt[ri][idx] = this->rcpt[ri][idx] < 0 ? 0 : this->rcpt[ri][idx];
                     this->rcpt_manipulated[ri][idx] = true;
                 }
             }
@@ -723,6 +725,7 @@ struct guidingtissue : public tissue<T>
             for (size_t li = 0; li < this->lgnd.size(); ++li) {
                 if (rns[li] < affected) {
                     this->lgnd[li][idx] += amount;
+                    this->lgnd[li][idx] = this->lgnd[li][idx] < 0 ? 0 : this->lgnd[li][idx];
                     this->lgnd_manipulated[li][idx] = true;
                 }
             }
@@ -730,6 +733,7 @@ struct guidingtissue : public tissue<T>
             for (size_t li = 0; li < this->lgnd.size(); ++li) {
                 if (li%2 == 0) {
                     this->lgnd[li][idx] += amount;
+                    this->lgnd[li][idx] = this->lgnd[li][idx] < 0 ? 0 : this->lgnd[li][idx];
                     this->lgnd_manipulated[li][idx] = true;
                 }
             }
