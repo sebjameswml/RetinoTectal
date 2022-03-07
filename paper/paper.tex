@@ -1041,16 +1041,16 @@ $\mathbf{r}_b$. $F_i$, defined in Eq.\,\ref{e:G}, is -1 if the $r_{i}\,l_{i}$
 interaction signals repulsion and +1 if it signals attraction. $s$ is a
 positive signal threshold whose value should be around 4.7727; if higher, then
 branches whose retinal origin is close will not experience a competitive
-interaction. If $s\leq 4.7727$, then \emph{any} pair of branches will compete as they
-approach each other. With the constraint $s>0$ comes the assumption that
-attractive interactions will have no effect on the competitive movement
+interaction. If $s\leq 4.7727$, then \emph{any} pair of branches will compete
+as they approach each other. With the constraint $s>0$ comes the assumption
+that attractive interactions will have no effect on the competitive movement
 vector---a receptor-ligand pair that signals attraction cannot cause
 $Q_{\!_J}$ to take the value 1. $Q_{\!_J}$ is set to 1 only if at least one
-repulsive signal exceeds the threshold, $s$ and the distance from branch
-$b$ to branch $k$ is smaller than $2 r_{\!_J}$.
+repulsive signal exceeds the threshold, $s$ and the distance from branch $b$
+to branch $k$ is smaller than $2 r_{\!_J}$.
 
-Note that $\mathbf{J}_b$ would be equivalent to $\mathbf{I}_b$ (with $s=1.1$) if there
-was a single $l_i$ expressed in the retina and its form was $1/r_i$.
+Note that $\mathbf{J}_b$ would be equivalent to $\mathbf{I}_b$ (with $s=1.1$)
+if there was a single $l_i$ expressed in the retina and its form was $1/r_i$.
 
 % Now the simulation.
 Adopting retinal expressions given in Eqs.\,\ref{e:retrcpt}
@@ -1114,6 +1114,12 @@ heterozygote EphA3 knock-in cells were pushed even further rostrally
 (\citet{reber_relative_2004}, their Fig.\,3e). Does the $\mathbf{GJ}$ model
 reproduce the results of Brown et al and Reber et al?
 
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/EphA_manipulations.png}
+\caption{$\mathbf{GJ}$ model, Brown et al./Reber et al.~manipulations.}
+\label{f:GJeph}
+\end{figure}
+
 An assumption made in these papers is that all EphA receptor subtypes
 contribute to a summed EphA expression level, $\sum\mathrm{EphA}$, which
 increases from a low level at the nasal side of the retina, to a high level at
@@ -1125,14 +1131,42 @@ al.~experiments. In half of the RGCs, we knock-in EphA3 by adding to the value
 of $r_0$ in these cells either 0.6 (heterzygote EphA3 ki/+) or 3.0 (homozygote
 EphA3 ki/ki). To add the additional knock-down of EphA4
 in \citet{reber_relative_2004}, we subtract 0.35 from $r_0$ in \emph{all}
-RGCs.
+RGCs. Fig.\,\ref{f:GJeph}A-C shows, for the single EphA3 knock-in (EphA3
+ki/+), branch positions, axon centroids and final rostral-caudal position on
+the tectum plotted versus the originating nasal-temporal retinal
+coordinate. In A, branches are coloured in the red/green duochrome scheme
+according to their origin location on the retina. In B \& C, axon centroids of
+RGCs which were treated with the knock-in manipulation are coloured red,
+wildtype cells are blue. The map of treated cells on the tectum is shifted
+slightly rostrally, but the shift becomes statistically insignificant at about
+0.75 along the nasal-temporal axis. While the map collapse is less abrupt than
+in the experimental result of \citet{brown_topographic_2000}, it is comparable
+with the result from \citet{simpson_simple_2011}.  Fig.\,\ref{f:GJeph}D-F
+shows the same trio of graphs for the homozygote double knock-in, EphA3
+ki/ki. Here, the treated axons are pushed further towards the rostral end of
+the tectum and the untreated axons are pushed caudally. The maps are
+completely separated; as in the experiment, there is no `collapse point'.
 
-\begin{figure}
-\includegraphics[width=\linewidth]{./images/EphA_manipulations.png}
-\caption{$\mathbf{GJ}$ model, Brown et al./Reber et al.~manipulations.}
-\label{f:GJreber}
-\end{figure}
+The rostral movement of treated axons occurs due to their increased expression
+of EphA ($r_0$), which increases the interaction with the tectal
+rostral-caudal ligand gradient. The opposing receptor expression ($r_2$) is
+unchanged by the manipulation and so those axons with increased $r_0$
+expression are pulled to a more rostral position than they would otherwise
+take. The caudal movement of wildtype axons, whose receptor expression in
+Figs.\,\ref{f:GJeph}A-F is unchanged, occurs due to competition with the
+caudally-drawn treated axons.
+%
+%Interestingly, the feature of a slight 'elbow' in the double knockin
+%graph (F) at about 0.7 on the nasal-temporal axis matches that seen in the
+%experimental result. Well, kinda.
 
+Figs.\,\ref{f:GJeph}G-I show the results for the Reber et al.~manipulation, in
+which the EphA expression is selectively knocked in in 50\% of cells and
+knocked down in all cells. The collapse point has moved from about 0.75 in
+Fig.\,\ref{f:GJeph}C to about 0.85 (\textbf{check}), in agreement with the
+experimental result. However, the significant rostral movement of the treated
+axons seen in \citet{reber_relative_2004}, where not a single treated axon was
+found more than 30\% along the rostral-caudal axis, was absent from our result.
 
 %Considering just one receptor-ligand pair, for instance $r_0$/$l_0$, and
 %defining their interaction as repulsive, an axon from the transverse side of
@@ -1159,8 +1193,9 @@ RGCs.
 \centering
 \includegraphics[width=0.7\linewidth]{./images/model_vs_noise.png}
 \caption{ \textbf{A} Chemotaxis-only model. The mean value of $\eta$ (number of crossings) and $\epsilon$
-(mean distance error), averaged over the period from simulation time $t=750$ to $t=1000$, plotted with respect to the
-noise gain ($\nu$) in the best $\mathbf{G}$ model and the wildtype condition (compare with
+(mean distance error), averaged over the period from simulation time $t=750$
+to $t=1000$, plotted with respect to the noise gain ($\nu$) in the best
+$\mathbf{G}$ model and the wildtype condition (compare with
 Fig.\,\ref{f:G0}). Noise for $\nu < 0.5$ is tolerated by the model, but
 disorder increases above this value.
 \textbf{B} Competitive interaction in the $\mathbf{GJ}$ model extends the
@@ -1175,14 +1210,15 @@ One problem with axon gradient-following is the ability of the axon to
 successfully detect the direction of the gradient given the small distances
 over which the axon can sample signalling molecules and the size of receptor
 binding noise \citep{goodhill_noise_2014}.  We investigated the ability of the
-system to self-organise in the presence of noise, by introducing a stochastic
-element to each branch's sampling of the gradient.
+chemoaffinity-only and the $\mathbf{GJ}$ model systems to self-organise in the
+presence of noise, by introducing a stochastic element to each branch's
+sampling of the gradient.
 
 % See branch::estimate_ligand_gradient() in sim/agent/branch.h for the code
 Noise is added to the estimation of the ligand gradient by multiplying the
 true gradient by a random vector, $\mathbf{U}$, whose coordinates are drawn
-from a random uniform distribution centred about 0 with magnitude $\nu$, denoted:
-$\mathbf{U}(-\nu, \nu)$. Eq.\,\ref{e:G} becomes
+from a random uniform distribution centred about 0 with magnitude $\nu$,
+denoted: $\mathbf{U}(-\nu, \nu)$. Eq.\,\ref{e:G} becomes
 
 \begin{equation}\label{e:Gnu}
 \mathbf{G}_b = \sum_i^N F_i\,r_{i,b}\, \mathbf{U}(-\nu, \nu) \nabla L_i(\mathbf{x}_b)
@@ -1196,6 +1232,9 @@ more robust to higher levels of gradient estimation noise.
 
 What about retinal expression noise? This would have a disordering effect on
 the pattern.
+
+% What about the EphA manipulations with noise? Ans: No strong effect (just
+% add "noise_gain" : 0.5, to one of the expt jsons.
 
 \subsection*{Single axon behaviour}
 
@@ -1287,7 +1326,7 @@ equivalent to those for the $\mathbf{GJ}$ model in Fig.\,\ref{f:GJsurg}.}
 optimization, genetic manipulations. As for the surgical manipulations, the
 results are similar to those of the $\mathbf{GJ}$ model with the equivalent
 parameters. However, there are subtle differences such as XXX.}
-\label{f:GClikeGJreber}
+\label{f:GClikeGJeph}
 \end{figure}
 
 % No need to show the GI model
