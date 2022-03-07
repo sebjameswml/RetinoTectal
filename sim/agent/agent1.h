@@ -312,7 +312,7 @@ struct Agent1
                 T ki_amount = this->conf->getDouble ("knockin", 1);
                 T kd_amount = this->conf->getDouble ("knockdown", 0);
                 if (kd_amount > T{0}) {
-                    this->gv->setdata (nt, rc, "wt");
+                    this->gv->setdata (nt, rc, "kd:0");
                 } else {
                     std::stringstream sss;
                     sss << "kd:" << kd_amount;
@@ -1218,16 +1218,22 @@ struct Agent1
         T affected = T{0.5}; // proportion of cells affected by a genetic manipulation
         T ki_amount = this->conf->getDouble ("knockin", 1);
         T kd_amount = this->conf->getDouble ("knockdown", 0);
-        if (this->conf->getBool ("reber", false)) {
+        T opp_ki_amount = this->conf->getDouble ("opp_knockin", 0);
+        T opp_kd_amount = this->conf->getDouble ("opp_knockdown", 0);
+        if (this->conf->getBool ("reber", false) == true) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
             this->ret->receptor_knockin (0, affected, ki_amount);
             this->ret->receptor_knockdown (0, kd_amount);
+            // And the opposing receptor 2:
+            std::cout << "opp_ki_amount = " << opp_ki_amount << "opp_kd_amount = " << opp_kd_amount << std::endl;
+            this->ret->receptor_knockin (2, affected, opp_ki_amount);
+            this->ret->receptor_knockdown (2, opp_kd_amount);
             manipulated = true;
             this->genetic_manipulation = true;
         }
 
-        if (this->conf->getBool ("brown", false)) {
+        if (this->conf->getBool ("brown", false) == true) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin receptor 0 in half of RGCs (but with no knockdown):
             this->ret->receptor_knockin (0, affected, ki_amount);
