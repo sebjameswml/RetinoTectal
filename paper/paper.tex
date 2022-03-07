@@ -6,8 +6,8 @@
 \nonstopmode
 
 % Use the article doc class, with an 11 pt basic font size
-\documentclass[11pt, a4paper, draft]{article}
-%\documentclass[11pt, a4paper]{article}
+%\documentclass[11pt, a4paper, draft]{article}
+\documentclass[11pt, a4paper]{article}
 
 % Makes the main font Nimbus Roman, a Times New Roman lookalike:
 %\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
@@ -939,9 +939,8 @@ ligands with the strong assumption that ligand expression is the inverse of
 receptor expression, i.e. that $l_i = 1/r_i$.
 
 We asked i) whether this mechanism could \emph{replace} the non-biological
-competition, C, (making necessary its extension to the dorsal-ventral retinal
-axis) and ii) if cast in terms of receptor-ligand interactions, could the
-strong ligand expression assumption be relaxed?
+competition, $\mathbf{C}_b$, and ii) if cast in terms of receptor-ligand
+interactions, could the strong ligand expression assumption be relaxed?
 
 % (supp?) Fig.\,\ref{f:GI} and Fig.\,\ref{f:GIsurg}.
 
@@ -966,7 +965,7 @@ repulsion of $b$. However, although $k$ does not induce repulsion in $b$, $b$
 should induce a repulsion in $k$ and thus, it could be argued that only a
 single ephrin-A ligand gradient should be required in the retina to ensure
 that repulsive signals are transmitted between axons whose cell bodies
-originte far apart in the retina. However, there is an asymmetry in the
+originate far apart in the retina. However, there is an asymmetry in the
 interaction. Consider a cluster of growth cones, $k$, originating from the
 nasal retina near to a single cone, $b$, from the temporal retina and assume
 that $r_b/r_k>1.1$. The single cone is affected by the sum of 3 interactions
@@ -1043,7 +1042,7 @@ interaction signals repulsion and +1 if it signals attraction. $s$ is a
 positive signal threshold whose value should be around 4.7727; if higher, then
 branches whose retinal origin is close will not experience a competitive
 interaction. If $s\leq 4.7727$, then \emph{any} pair of branches will compete as they
-approch each other. With the constraint $s>0$ comes the assumption that
+approach each other. With the constraint $s>0$ comes the assumption that
 attractive interactions will have no effect on the competitive movement
 vector---a receptor-ligand pair that signals attraction cannot cause
 $Q_{\!_J}$ to take the value 1. $Q_{\!_J}$ is set to 1 only if at least one
@@ -1058,15 +1057,27 @@ Adopting retinal expressions given in Eqs.\,\ref{e:retrcpt}
 and \ref{e:retligexp}, we performed a simulated annealing optimization to find
 the best parameters for the $\mathbf{GJ}$ model.  With $m_{\!_G}$ fixed at the
 value 0.0012, we allowed the threshold parameter $s$ to vary along with
-$m_{\!_J}$ and $r_{\!_J}$ . The parameters best able to recover the wildtype
-pattern were $s=4.732$, $m_{\!_J} = 0.247$ and $r_{\!_J} = 0.079$. Note that
-the discovered value for $s$ is less than 4.7727 meaning that for \emph{any
-pair of branches}, either $r_0\times l_0$ or $r_2\times l_2$ will exceed $s$.
+$m_{\!_J}$ and $r_{\!_J}$. The parameters best able to recover the wildtype
+pattern were $s=4.732$, $m_{\!_J} = 0.247$ and $r_{\!_J} = 0.079$, with the
+wildtype result shown in Fig.\,\ref{f:GJ}. Note that the discovered value for
+$s$ is \emph{less} than 4.7727 meaning that for any pair of branches, either
+$r_0\times l_0$ or $r_2\times l_2$ will exceed $s$ and branches all
+compete. With $s < 4.7727$ the $\mathbf{GJ}$ model is equivalent to the
+$\mathbf{GC}$ model. However, the parameters found for the $\mathbf{GJ}$ model
+did lead to better results for surgical manipulations, as shown in
+Fig.\,\ref{f:GJsurg}. Values for the pattern metric, $\epsilon$ are
+consistently lower than those for the $\mathbf{GC}$ model shown in
+Fig.\,\ref{f:GCsurg}. Given that the \emph{systems} are equivalent, the
+differences must have arisen due to the optimization process, which must have
+found alternative `good' parameters. We verified this by copying the
+parameters found for the $\mathbf{GJ}$ model into the $\mathbf{GC}$ model,
+setting $m_G = 0.0012$, $r_c = 0.079$ and $m_c =
+0.247$. Fig.\,\ref{f:GClikeGJsurg} shows the result for surgical
+manipulations. Their equivalence to Figs.~\ref{f:GCsurg} is evident by
+inspection. Nevertheless, we retain the receptor-ligand signalling of the
+$\mathbf{GJ}$ model as this maintains the ability of the model to respond to
+the genetic manipulations described in the next section.
 
-
-The
-simulation of the system with these parameters is shown in Fig.\,\ref{f:GJ}
-and Fig.\,\ref{f:GJsurg}.
 
 % ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_figcomp3.json
 \begin{figure}
@@ -1085,7 +1096,36 @@ and Fig.\,\ref{f:GJsurg}.
 
 \subsection*{Knockin and Knockdown manipulations}
 
+In the early 2000s, a series of genetic experiments added to the set of
+manipulations that a model of the retinotectal system would need to
+explain. First, \citet{brown_topographic_2000} showed that a selective RGC
+knock-in of EphA3 receptors led to an interesting modulation of the maps found
+in the tectum. For the strongest knock-in (a homozygote manipulation) two maps
+were formed, with knock-in cells finding termination zones more rostral than
+their wildtype retinal neighbours. By enhancing the quantity of EphA receptors
+expressed by half of all retino-tectal axons, they demonstrated the importance
+of retinal receptor expression for the arrangement of the tectal map. In the
+weaker, heterozygote manipulation, the maps were still separated, but the
+separation `collapsed' towards the rostral end of the tectum
+(see \citet{brown_topographic_2000}, Fig\,5). This led to a second study
+showing that with an additional knock-down of EphA4 receptors in \emph{all}
+RGCs, the retinal origin of the collapse point was shifted temporally and all
+heterozygote EphA3 knock-in cells were pushed even further rostrally
+(\citet{reber_relative_2004}, their Fig.\,3e). Does the $\mathbf{GJ}$ model
+reproduce the results of Brown et al and Reber et al?
 
+An assumption made in these papers is that all EphA receptor subtypes
+contribute to a summed EphA expression level, $\sum\mathrm{EphA}$, which
+increases from a low level at the nasal side of the retina, to a high level at
+the temporal side. The precise contribution of each subtype to the overall
+level is assumed not to be important. In our model, receptor $r_0$ increases
+in the retina in a nasal to temporal direction (Fig\,\ref{f:expressions}B) and
+so we will manipulate $r_0$ to recreate the Brown et al.~and Reber et
+al.~experiments. In half of the RGCs, we knock-in EphA3 by adding to the value
+of $r_0$ in these cells either 0.6 (heterzygote EphA3 ki/+) or 3.0 (homozygote
+EphA3 ki/ki). To add the additional knock-down of EphA4
+in \citet{reber_relative_2004}, we subtract 0.35 from $r_0$ in \emph{all}
+RGCs.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/EphA_manipulations.png}
@@ -1228,14 +1268,26 @@ other simulated surgical manipulations}
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/fig_GC_surgical.png}
 \caption{$\mathbf{GC}$ model, surgical manipulations. Demonstrating that this
-model reproduces these manipulations.}
+model performs better than the chemoaffinity-only model.}
 \label{f:GCsurg}
 \end{figure}
 
+% ./scripts/fig_GClikeGJ_surgical.sh
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GC_best_1_reber_exit_true_steps_1500.png}
-\caption{$\mathbf{GC}$ model, Reber experiment.}
-\label{f:GCreber}
+\includegraphics[width=\linewidth]{./images/fig_GClikeGJ_surgical.png}
+\caption{$\mathbf{GC}$ model with parameters found from \emph{GJ}
+optimization ( $m_G = 0.0012$, $r_c = 0.079$ and $m_c = 0.247$). Results are
+equivalent to those for the $\mathbf{GJ}$ model in Fig.\,\ref{f:GJsurg}.}
+\label{f:GClikeGJsurg}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{./images/EphA_manipulations_GClikeGJ.png}
+\caption{$\mathbf{GC}$ model with parameters found from \emph{GJ}
+optimization, genetic manipulations. As for the surgical manipulations, the
+results are similar to those of the $\mathbf{GJ}$ model with the equivalent
+parameters. However, there are subtle differences such as XXX.}
+\label{f:GClikeGJreber}
 \end{figure}
 
 % No need to show the GI model

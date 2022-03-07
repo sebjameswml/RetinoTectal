@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="656.16669mm"
+   height="500.0625mm"
+   viewBox="0 0 656.16669 500.0625"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="fig_GClikeGJ_surgical.svg"
+   inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/fig_GClikeGJ_surgical.png"
+   inkscape:export-xdpi="159.89841"
+   inkscape:export-ydpi="159.89841">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="1282.8572"
+     inkscape:cy="726.42865"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="2120"
+     inkscape:window-height="1170"
+     inkscape:window-x="682"
+     inkscape:window-y="649"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(315.9881,66.802078)">
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GClikeGJ_tecrot90_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GClikeGJ_tecrot90_figcomp_steps_1000.png"
+       width="328.08334"
+       height="166.6875"
+       preserveAspectRatio="none"
+       id="image893"
+       x="-315.9881"
+       y="-66.802078" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GClikeGJ_tecrot180_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GClikeGJ_tecrot180_figcomp_steps_1000.png"
+       width="328.08334"
+       height="166.6875"
+       preserveAspectRatio="none"
+       id="image955"
+       x="12.095245"
+       y="-66.802078" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GClikeGJ_tecswap_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GClikeGJ_tecswap_figcomp_steps_1000.png"
+       width="328.08334"
+       height="166.6875"
+       preserveAspectRatio="none"
+       id="image1017"
+       x="-315.9881"
+       y="99.885422" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GClikeGJ_retablat_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GClikeGJ_retablat_figcomp_steps_1000.png"
+       width="328.08334"
+       height="166.6875"
+       preserveAspectRatio="none"
+       id="image1095"
+       x="12.095245"
+       y="99.885422" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GClikeGJ_tecablat_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GClikeGJ_tecablat_figcomp_steps_1000.png"
+       width="328.08334"
+       height="166.6875"
+       preserveAspectRatio="none"
+       id="image1205"
+       x="-315.9881"
+       y="266.57294" />
+    <image
+       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GClikeGJ_mismatch_figcomp_steps_1000.png"
+       xlink:href="j4_ee_GClikeGJ_mismatch_figcomp_steps_1000.png"
+       width="328.08334"
+       height="166.6875"
+       preserveAspectRatio="none"
+       id="image1267"
+       x="12.095245"
+       y="266.57294" />
+  </g>
+</svg>
