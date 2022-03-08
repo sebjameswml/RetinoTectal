@@ -1092,6 +1092,11 @@ struct Agent1
         morph::Vector<expression_direction, N> tectum_receptor_directions =  this->get_directions ("tectum_receptor_directions");
         morph::Vector<expression_direction, N> tectum_ligand_directions =  this->get_directions ("tectum_ligand_directions");
 
+        // Get noise gains
+        T ret_rcpt_noise_gain = this->mconf->getDouble ("ret_rcpt_noise_gain", T{0});
+        T ret_lgnd_noise_gain = this->mconf->getDouble ("ret_lgnd_noise_gain", T{0});
+        T tec_lgnd_noise_gain = this->mconf->getDouble ("tec_lgnd_noise_gain", T{0});
+
         // Tectum interactions don't matter - they don't have an effect, nor are they
         // visualised, but a value is needed for guidingtissue constructor.
         morph::Vector<interaction, N> tectum_forward_interactions;
@@ -1100,6 +1105,7 @@ struct Agent1
         for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
         if constexpr (N==4 || N==2) {
+            // need a receptor noise arg for the guidingtissue constructor.
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                 ret_receptor_forms,
                                                 ret_ligand_forms,
@@ -1107,7 +1113,9 @@ struct Agent1
                                                 ret_ligand_directions,
                                                 ret_forward_interactions,
                                                 ret_reverse_interactions,
-                                                ret_rcptrcpt_interactions);
+                                                ret_rcptrcpt_interactions,
+                                                ret_rcpt_noise_gain,
+                                                ret_lgnd_noise_gain);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
@@ -1116,7 +1124,8 @@ struct Agent1
                                                    tectum_ligand_directions,
                                                    tectum_forward_interactions,
                                                    tectum_reverse_interactions,
-                                                   tectum_reverse_interactions); // a dummy arg really
+                                                   tectum_reverse_interactions, // a dummy arg really
+                                                   T{0}, tec_lgnd_noise_gain);
         } else {
             // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
             []<bool flag = false>() { static_assert (flag, "N must be 2 or 4"); }();

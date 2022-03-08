@@ -123,6 +123,10 @@ struct guidingtissue : public tissue<T>
     // Signalling interactions when receptors in this tissue are triggered by other receptors. Potentially an NxN matrix.
     morph::Vector<interaction, N> rcptrcpt_interactions;
 
+    // How much to perturb receptor and ligand noise?
+    T rcpt_noise_gain = T{0};
+    T lgnd_noise_gain = T{0};
+
     //! A left-right interaction parameter and an up-down interaction parameter for each
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
     //! expressions for each cell.
@@ -186,7 +190,9 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<expression_direction, N> _lgnd_dirn,
                   morph::Vector<interaction, N> _for_int,
                   morph::Vector<interaction, N> _rev_int,
-                  morph::Vector<interaction, N> _rcptrcpt_int)
+                  morph::Vector<interaction, N> _rcptrcpt_int,
+                  T _rcpt_noise_gain = T{0},
+                  T _lgnd_noise_gain = T{0})
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -195,6 +201,8 @@ struct guidingtissue : public tissue<T>
         , forward_interactions(_for_int)
         , reverse_interactions(_rev_int)
         , rcptrcpt_interactions(_rcptrcpt_int)
+        , rcpt_noise_gain(_rcpt_noise_gain)
+        , lgnd_noise_gain(_lgnd_noise_gain)
     {
         this->rcpt.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
@@ -207,32 +215,29 @@ struct guidingtissue : public tissue<T>
             this->lgnd_manipulated[ri].reset();
         }
 
+        // Add systematic receptor or ligand expression noise in this loop.
+        morph::RandNormal<T, std::mt19937> rnorm(T{0}, T{1}, 8473);
+
         // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
             if constexpr (N == 4 || N == 2) {
                 // First orthogonal pair of receptors.
-                this->rcpt[ri][0] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[0], ri), 0);
-                this->rcpt[ri][1] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[1], ri), 1);
-                if (ri == 10) {
-                    T thepos = this->get_pos (this->rcpt_dirns[0], ri);
-                    std::cout << "this->rcpt_dirns[0] = " << (int)this->rcpt_dirns[0] << " and this->get_pos (this->rcpt_dirns[0], ri) = " << thepos << std::endl;
-                    std::cout << "rcpt_expression_function ("<<thepos<<",0) returns " << this->rcpt_expression_function (thepos,0) << std::endl;
-                    std::cout << "rcpt["<<ri<<"][0]: " << this->rcpt[ri][0] << " and [1]: " << this->rcpt[ri][1] << std::endl;
-                }
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[0], ri), 0) + rnorm.get() * this->rcpt_noise_gain;
+                this->rcpt[ri][1] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[1], ri), 1) + rnorm.get() * this->rcpt_noise_gain;
                 // First orthogonal pair of ligands
-                this->lgnd[ri][0] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[0], ri), 0);
-                this->lgnd[ri][1] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[1], ri), 1);
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[0], ri), 0) + rnorm.get() * this->lgnd_noise_gain;
+                this->lgnd[ri][1] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[1], ri), 1) + rnorm.get() * this->lgnd_noise_gain;
             } else {
                 // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
                 []<bool flag = false>() { static_assert(flag, "no match"); }();
             }
             if constexpr (N == 4) {
                 // Add a second orthogonal pair for N==4
-                this->rcpt[ri][2] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[2], ri), 2);
-                this->rcpt[ri][3] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[3], ri), 3);
+                this->rcpt[ri][2] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[2], ri), 2) + rnorm.get() * this->rcpt_noise_gain;
+                this->rcpt[ri][3] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[3], ri), 3) + rnorm.get() * this->rcpt_noise_gain;
                 // Second orthogonal pair of ligands
-                this->lgnd[ri][2] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[2], ri), 2);
-                this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3);
+                this->lgnd[ri][2] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[2], ri), 2) + rnorm.get() * this->lgnd_noise_gain;
+                this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3) + rnorm.get() * this->lgnd_noise_gain;
             }
         }
 
@@ -341,28 +346,6 @@ struct guidingtissue : public tissue<T>
             }
         }
     }
-#if 0
-    // Create a circular HexGrid to contain the Gaussian convolution kernel
-    float sigma = 0.025f;
-    morph::HexGrid kernel(0.01, 20.0f*sigma, 0, morph::HexDomainShape::Boundary);
-    kernel.setCircularBoundary (6.0f*sigma);
-    std::vector<float> kerneldata (kernel.num(), 0.0f);
-    // Once-only parts of the calculation of the Gaussian.
-    float one_over_sigma_root_2_pi = 1 / sigma * 2.506628275;
-    float two_sigma_sq = 2.0f * sigma * sigma;
-    // Gaussian dist. result, and a running sum of the results:
-    float gauss = 0;
-    float sum = 0;
-    for (auto& k : kernel.hexen) {
-        // Gaussian profile based on the hex's distance from centre, which is
-        // already computed in each Hex as Hex::r
-        gauss = (one_over_sigma_root_2_pi * std::exp ( -(k.r*k.r) / two_sigma_sq ));
-        kerneldata[k.vi] = gauss;
-        sum += gauss;
-    }
-    // Renormalise
-    for (auto& k : kernel.hexen) { kerneldata[k.vi] /= sum; }
-#endif
 
     //! Convolve with a Gaussian to smooth the transitions in the expression
     void smooth_expression()
