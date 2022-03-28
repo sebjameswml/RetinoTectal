@@ -1208,6 +1208,7 @@ struct Agent1
         }
 
         // Various tissue ablation manipulations are possible, we only ablate ret left or tec top.
+        // Here, "ret_left" is the temporal retina. "tec_top" is the caudal tectum.
         if (this->conf->getBool ("ablate_ret_left", false)) {
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             this->ret->ablate_left_half();
