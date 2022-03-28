@@ -309,6 +309,14 @@ struct Agent1
                     }
                 }
 
+                { // save nt/rc graph
+                    morph::HdfData d ("rcnt.h5");
+                    d.add_contained_vals ("/nt", nt);
+                    d.add_contained_vals ("/rc", rc);
+                    d.add_contained_vals ("/nt_m", nt_m);
+                    d.add_contained_vals ("/rc_m", rc_m);
+                }
+
                 T ki_amount = this->conf->getDouble ("knockin", 1);
                 T kd_amount = this->conf->getDouble ("knockdown", 0);
                 if (kd_amount > T{0}) {
