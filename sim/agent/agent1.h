@@ -310,7 +310,13 @@ struct Agent1
                 }
 
                 { // save nt/rc graph
-                    morph::HdfData d ("rcnt.h5");
+                    std::stringstream coss;
+                    for (auto co : this->conf->config_overrides) {
+                        coss <<  "_" << co.first << "_" << co.second;
+                    }
+                    std::stringstream nss;
+                    nss << "./" << this->title << coss.str() << "_rcnt.h5";
+                    morph::HdfData d (nss.str());
                     d.add_contained_vals ("/nt", nt);
                     d.add_contained_vals ("/rc", rc);
                     d.add_contained_vals ("/nt_m", nt_m);
@@ -352,6 +358,20 @@ struct Agent1
                 this->gv->setdata (nt, rc, "Sim");
                 this->gv->reinit();
                 this->v->render();
+
+
+                { // save nt/rc graph
+                    std::stringstream coss;
+                    for (auto co : this->conf->config_overrides) {
+                        coss <<  "_" << co.first << "_" << co.second;
+                    }
+                    std::stringstream nss;
+                    nss << "./" << this->title << coss.str() << "_rcnt.h5";
+                    morph::HdfData d (nss.str());
+                    d.add_contained_vals ("/nt", nt);
+                    d.add_contained_vals ("/rc", rc);
+                    d.add_contained_vals ("/rc_expt", rc_expt);
+                }
             }
 
             // Save final image based on config file names and any overrides
