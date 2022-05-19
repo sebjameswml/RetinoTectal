@@ -37,3 +37,4 @@ class ephcol:
     En2=C.gold
 
     RGM=C.black
+    neogen=C.blueviolet
