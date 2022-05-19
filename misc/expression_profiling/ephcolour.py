@@ -35,3 +35,5 @@ class ephcol:
     Wnt=C.darkkhaki
 
     En2=C.gold
+
+    RGM=C.black
