@@ -7,6 +7,8 @@
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json  configs/simpler/e_tecablat_fig4row5.json  -co:steps=1500
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json  configs/simpler/e_mismatch_fig4row6.json  -co:steps=1500
 
+./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json  configs/simpler/e_compound_fig4row7.json  -co:steps=1500
+
 ./build/sim/agent/tissuevis configs/simpler/m_ee_GJ_best_1.json  configs/simpler/e_tecrot90_fig4row1.json
 ./build/sim/agent/tissuevis configs/simpler/m_ee_GJ_best_1.json  configs/simpler/e_tecrot180_fig4row2.json
 ./build/sim/agent/tissuevis configs/simpler/m_ee_GJ_best_1.json  configs/simpler/e_tecswap_fig4row3.json

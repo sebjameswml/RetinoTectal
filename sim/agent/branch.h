@@ -38,6 +38,8 @@ protected:
 public:
     // Signalling ratio parameter for S&G-type (relative receptor levels) interaction (but on 4 receptors, not 1)
     T s = T{0.3};
+    // Simp and Goodhill signalling ratio param
+    T si = T{1.1};
     // Track rcpt-rcpt interaction sizes
     morph::Vector<T, N> minses;
     morph::Vector<T, N> maxes;
@@ -161,7 +163,7 @@ public:
         QI = this->rcpt/kp->rcpt;
         rtn[1] = false;
         for (size_t i = 0; i < N; ++i) {
-            if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->s) {
+            if (source_tissue->rcptrcpt_interactions[i] != interaction::null && QI[i] > this->si) {
                 I += kb * W;
                 rtn[1] = true;
                 break; // Because for ONE of the receptor types (i in N), QI[i] > s and one is all it takes.
