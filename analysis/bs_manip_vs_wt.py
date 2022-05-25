@@ -39,7 +39,7 @@ def resample_with_replacement (data, B):
 # and may be used on distributions where the variances may not be equal.
 #
 # Re-coded from R (See https://github.com/ABRG-Models/GPR-BSB/blob/master/labbook/bootstrap_functions.r)
-def ttest_equalityofmeans (zdata_, ydata_, B):
+def bootstrap_ttest_equalityofmeans (zdata_, ydata_, B):
     # Ensure that the group which we name zdata is the larger one.
     if (np.mean(zdata_) > np.mean(ydata_)):
         zdata = zdata_;
@@ -97,19 +97,18 @@ def ttest_equalityofmeans (zdata_, ydata_, B):
 
     return (asl, minasl)
 
-ar = np.array([1.1,2.2,3.3,4.4])
-br = np.array([2.2,2.2,3.3,6.6])
-arres = resample_with_replacement (ar, 5)
-print ('arres: {0}'.format (arres))
-print ('arres means: {0}'.format (np.mean(arres, 1)))
-
-ttest_equalityofmeans (ar, br, 10)
+def bootstrap_error_of_mean (data, B):
+    resamples = resample_with_replacement (data, B)
+    r_mean = np.mean(resamples, 1)
+    std_err = np.sqrt(np.var(r_mean))
+    return std_err
 
 import h5py
 
-files = ["../j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500_rcnt.h5",
-         "../j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500_rcnt.h5",
-         "../j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500_rcnt.h5"]
+files = ["../j4_ee_GIJ_eph_ki-wt_steps_1500_rcnt.h5"]
+#files = ["../j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500_rcnt.h5",
+#         "../j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500_rcnt.h5",
+#         "../j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500_rcnt.h5"]
 
 for filename in files:
     print ('{0}'.format(filename))
@@ -120,28 +119,51 @@ for filename in files:
         nt   = np.array(list(f['/nt']))
         nt_m = np.array(list(f['/nt_m']))
 
-        #plt.plot (nt, rc)
-        #plt.plot (nt_m, rc_m)
+        plt.plot (nt, rc, marker='x', linestyle="none", color=clr1)
+        plt.plot (nt_m, rc_m, marker='o', linestyle="none", color=clr2)
 
         # find unique values in nt
         #print ("nt: {0}".format(np.unique(nt)))
         #print ("nt_m: {0}".format(np.unique(nt_m)))
 
         nt_vals = np.unique(nt)
+
+        nt_means_wt_mean = []
+        nt_means_wt_stderr = []
+        nt_means_wt_sd = []
+
+        nt_means_manip_mean = []
+        nt_means_manip_stderr = []
+        nt_means_manip_sd = []
+
         # for each in nt_vals, find rc and rc_m's that match
         for ntv in nt_vals:
-            idx1 = np.asarray(nt==ntv).nonzero()
-            idx2 = np.asarray(nt_m==ntv).nonzero()
-            #print ("for nt value {0}, idx in nt: {1} and in nt_m: {2}".format(ntv, idx1, idx2))
-            #print ("for nt value {0}, idx in nt: {1} and in nt_m: {2}".format(ntv, idx1, idx2))
+            idx_wt = np.asarray(nt==ntv).nonzero()
+            idx_manip = np.asarray(nt_m==ntv).nonzero()
 
-            #print ("for nt value {0}, rc values are {1} and rc_m values are {2}".format (ntv, rc[idx1],rc[idx2]))
-            #plt.plot (nt[idx1], rc[idx1])
-            #plt.plot (nt_m[idx2], rc_m[idx2])
-            #plt.show()
-
-            rcs1 = rc[idx1]
-            rcs2 = rc_m[idx2]
-            ## Now statistically test if rcs1 and rcs2 are from the same distribution or not
-            asl, minasl = ttest_equalityofmeans (rcs1, rcs2, 2000)
+            rcs_wt = rc[idx_wt]
+            rcs_manip = rc_m[idx_manip]
+            # Now statistically test if rcs_wt and rcs_manip are from the same distribution or not
+            asl, minasl = bootstrap_ttest_equalityofmeans (rcs_wt, rcs_manip, 2000)
             print ("for nt value {0}, asl of bootstrap test = {1}".format(ntv, (asl if asl > 0 else minasl)))
+
+            # Now compute the mean and the std err of the mean for each
+            nt_means_wt_mean.append (np.mean(rcs_wt))
+            nt_means_manip_mean.append(np.mean(rcs_manip))
+
+            nt_means_wt_sd.append (np.std(rcs_wt))
+            nt_means_manip_sd.append(np.std(rcs_manip))
+
+            rcs_wtstderr = bootstrap_error_of_mean (rcs_wt, 256)
+            nt_means_wt_stderr.append (rcs_wtstderr)
+
+            rcs_manipstderr = bootstrap_error_of_mean (rcs_manip, 256)
+            nt_means_manip_stderr.append (rcs_manipstderr)
+
+            #print ("wt mean: {0}({2}), manipulated mean: {1}({3})".format (np.mean(rcs_wt), np.mean(rcs_manip), rcs_wtstderr, rcs_manipstderr))
+
+        # error bar plot
+        plt.errorbar (nt_vals, nt_means_wt_mean, nt_means_wt_sd, capsize=10, color=clr1)
+        plt.errorbar (nt_vals, nt_means_manip_mean, nt_means_manip_sd, capsize=10, color=clr2)
+
+        plt.show()
