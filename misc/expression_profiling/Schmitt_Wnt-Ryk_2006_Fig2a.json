@@ -1,0 +1,16 @@
+{
+    "thickness" : 0.05,
+    "pixels_per_mm" : 368,
+    "bg_blur_screen_proportion" : 0.1667,
+    "bg_blur_subtraction_offset" : 180,
+    "save_per_pixel_data" : false,
+    "save_auto_align_data" : true,
+    "save_landmark_align_data" : true,
+    "rotate_landmark_one" : true,
+    "rotate_align_landmarks" : false,
+    "map_align_angle" : 3.14159267,
+
+    "slices": [
+        { "filename" : "Schmitt_Wnt-Ryk_2006_Fig2a.png", "x" : 0.0   }
+    ]
+}
