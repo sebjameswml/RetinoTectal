@@ -16,11 +16,6 @@ matplotlib.rc('font', **fnt)
 import pylab as pl
 pl.rcParams['svg.fonttype'] = 'none'
 
-# Important for svg output of text as 'things that can be edited in inkscape'
-import pylab as pl
-pl.rcParams['svg.fonttype'] = 'none'
-
-
 # Will need to extract data from .h5 files
 files=['../log/agent/ee_GJ_best_1_wt_figcomp2_exit_true_noise_gain_0.0_steps_1000.h5',
 '../log/agent/ee_GJ_best_1_wt_figcomp2_exit_true_noise_gain_0.2_steps_1000.h5',
