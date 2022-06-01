@@ -14,7 +14,9 @@ ligand_expression = 'invexp'; #  or exp or invexp
 
 x = [0:0.05:1];
 
-_exp = 0.26 .* exp (2.3.*x) + 1.05;
+_exp = 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
+_exp2 = 0.26 .* exp (1.1.*x) + 1.05; % T exponential_expression2 (const T& x)
+_exp3 = 0.26 .* exp (1.8.*x) + 1.05; % T exponential_expression3 (const T& x)
 _rev_exp = 0.26 .* exp (2.3.*(1-x)) + 1.05;
 _deriv_exp = 0.26 .* 2.3 .* exp (2.3.*x);
 ## Scaling for _exp to give inverse that starts and ends at the same point
@@ -39,13 +41,23 @@ end
 figure(7); clf;
 hold on;
 plot (x, _exp);
+plot (x, _exp2);
+plot (x, _exp3);
 plot (x, 1./_exp);
 plot (x, flip(1./_exp));
 plot (x, _inv_exp);
 plot (x, flip(_inv_exp));
 plot (x, rtimesl);
 plot (x, _lin);
-legend('exp', '1/exp', '1/exp (flipped LR)','scaled 1/exp', 'scaled 1/exp (flipped LR)', 'exp times scaled 1/exp', 'linear')
+legend('exp', 'exp2', 'exp3', '1/exp', '1/exp (flipped LR)','scaled 1/exp', 'scaled 1/exp (flipped LR)', 'exp times scaled 1/exp', 'linear')
+
+figure(8); clf;
+hold on;
+plot (x, _exp);
+plot (x, _exp2);
+plot (x, _exp3);
+legend('exp', 'exp2', 'exp3')
+
 figure(1);
 
 %% The J effect
