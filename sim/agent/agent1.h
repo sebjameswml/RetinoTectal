@@ -325,7 +325,7 @@ struct Agent1
 
                 T ki_amount = this->conf->getDouble ("knockin", 1);
                 T kd_amount = this->conf->getDouble ("knockdown", 0);
-                if (kd_amount > T{0}) {
+                if (kd_amount <= T{0}) {
                     this->gv->setdata (nt, rc, "kd:0");
                 } else {
                     std::stringstream sss;

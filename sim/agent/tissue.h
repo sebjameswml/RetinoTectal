@@ -65,7 +65,9 @@ enum class expression_form
     exp2,        // 4. A slightly different exponential function, used to demonstrate dependence of chemo-only model on expressions
     exp_inv,     // 5. 1/exp
     unexpressed, // 6. No expression - zero everywhere
-    exp3         // 7. An exponential function intermediate between exp and exp2. Competition required, but not so much as for exp
+    exp3,        // 7. An exponential function intermediate between exp and exp2. Competition required, but not so much as for exp
+    exp4,        // 8. A double exponential, for investigating the genetic experiments.
+    sigmoid      // 9. S shaped - a sigmoid like function
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -443,6 +445,20 @@ struct guidingtissue : public tissue<T>
     T exponential_expression3 (const T& x) const { return T{1.05} + T{0.26} * std::exp (T{1.8} * x); }
     T logarithmic_expression (const T& x) const { return T{2.32} + T{1.29} * std::log (T{2.3} * (x+T{0.2})); }
 
+    // Experimenting with a double exponential
+    T exponential_expression4 (const T& x) const
+    {
+        //return T{1.25} + T{0.1} * std::exp (T{1.8} * x) + T{0.05} * std::exp (T{3} * (x - T{0.5}));
+        //return T{1.2} + T{0.1} * std::exp (T{2} * x) + T{0.05} * std::exp (T{6} * (x - T{0.4}));
+        //return T{-0.1} + T{0.1} * std::exp (T{2} * x) + T{0.05} * std::exp (T{6} * (x - T{0.4}));
+        return T{-0.1} + T{0.1} * std::exp (T{2} * x) + T{0.05} * std::exp (T{10} * (x - T{0.7}));
+    }
+
+    T sigmoid_expression (const T& x) const
+    {
+        return /*T{1.3} +*/ T{2.5} / ( 1 + std::exp (-(x - T{0.7})*T{6}));
+    }
+
     T expression_function (const T& x, const expression_form& ef) const
     {
         T rtn = T{0};
@@ -464,6 +480,12 @@ struct guidingtissue : public tissue<T>
             break;
         case expression_form::exp3:
             rtn = this->exponential_expression3 (x);
+            break;
+        case expression_form::exp4:
+            rtn = this->exponential_expression4 (x);
+            break;
+        case expression_form::sigmoid:
+            rtn = this->sigmoid_expression (x);
             break;
         case expression_form::exp_inv:
             rtn = this->inv_exponential_expression (x);

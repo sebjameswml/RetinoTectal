@@ -26,7 +26,7 @@
     "ret_rcptrcpt_interactions": [-1,-1,-1,-1],
 
     "ret_receptor_directions": ["-x","-y","+x","+y"],
-    "ret_receptor_forms": [7,7,7,7],
+    "ret_receptor_forms": [2,2,2,2],
 
     "rgcside": 20,
 
