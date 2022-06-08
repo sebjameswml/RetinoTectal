@@ -14,9 +14,19 @@ ligand_expression = 'invexp'; #  or exp or invexp
 
 x = [0:0.05:1];
 
-_exp = 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
+_exp = -1.3 + 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
 _exp2 = 0.26 .* exp (1.1.*x) + 1.05; % T exponential_expression2 (const T& x)
 _exp3 = 0.26 .* exp (1.8.*x) + 1.05; % T exponential_expression3 (const T& x)
+
+# Double exponential?
+_exp4_1 = 0.1 .* exp (2.*x);
+##_exp4_2 = 0.05 .* exp (6.*(x-0.4)); # was quite good
+_exp4_2 = 0.05 .* exp (10.*(x-0.7));
+_exp4 = -1.3 + 1.2 + _exp4_1  +  _exp4_2; # -0.1
+
+# Sigmoidal
+_sig = -1.3 + 1.3 + 2.5 ./ (1 + exp(-(x-0.7).*6)) # 0 +
+
 _rev_exp = 0.26 .* exp (2.3.*(1-x)) + 1.05;
 _deriv_exp = 0.26 .* 2.3 .* exp (2.3.*x);
 ## Scaling for _exp to give inverse that starts and ends at the same point
@@ -54,9 +64,17 @@ legend('exp', 'exp2', 'exp3', '1/exp', '1/exp (flipped LR)','scaled 1/exp', 'sca
 figure(8); clf;
 hold on;
 plot (x, _exp);
-plot (x, _exp2);
-plot (x, _exp3);
-legend('exp', 'exp2', 'exp3')
+#plot (x, _exp2);
+#plot (x, _exp3);
+plot (x, _exp4);
+plot (x, _exp4_1);
+plot (x, _exp4_2);
+plot (x, _sig);
+
+legend('exp', 'exp4', 'exp4_1', 'exp4_2', 'sigmoidal')
+
+figure(9)
+plot (x, _sig);
 
 figure(1);
 
