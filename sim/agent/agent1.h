@@ -796,7 +796,11 @@ struct Agent1
             for (unsigned int i = 0; i < arr.size(); ++i) {
                 int ai = arr[i];
                 if (ai < 0) {
-                    interactions[i] = interaction::repulsion;
+                    if (ai == -2) {
+                        interactions[i] = interaction::special_EphA;
+                    } else {
+                        interactions[i] = interaction::repulsion;
+                    }
                 } else if (ai > 0) {
                     interactions[i] = interaction::attraction;
                 } // else if 0 then leave as interaction::null
@@ -892,10 +896,12 @@ struct Agent1
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
+                this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;

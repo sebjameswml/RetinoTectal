@@ -95,7 +95,8 @@ enum class interaction
 {
     attraction,
     repulsion,
-    null
+    null,
+    special_EphA // This is for EphA3/EphA4 interactions - special handling!
 };
 
 /*!
@@ -134,6 +135,14 @@ struct guidingtissue : public tissue<T>
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
     //! expressions for each cell.
     morph::vVector<morph::Vector<T,N>> rcpt;
+
+    //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
+    //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
+    //! expression, which is essentially uniform across the retina. Possibly doesn't
+    //! need to be a vector. Phosphorylation (i.e. activation) is tracked in
+    //! branch(_base).h
+    morph::vVector<T> rcpt0_EphA4;
+
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
     // Set fields true if the receptor expression has been manipulated
@@ -208,6 +217,7 @@ struct guidingtissue : public tissue<T>
         , lgnd_noise_gain(_lgnd_noise_gain)
     {
         this->rcpt.resize (this->posn.size());
+        this->rcpt0_EphA4.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());
@@ -517,6 +527,13 @@ struct guidingtissue : public tissue<T>
         morph::vVector<morph::Vector<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->lgnd[idx];
+    }
+
+    morph::Vector<T,N> rcpt_at (const morph::Vector<T,2>& x) const
+    {
+        morph::vVector<morph::Vector<T,2>> p = this->posn - x;
+        size_t idx = p.argshortest();
+        return this->rcpt[idx];
     }
 
     //! Remove half of the tissue

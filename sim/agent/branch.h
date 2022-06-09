@@ -92,17 +92,47 @@ public:
             morph::Vector<T, 4> l0 = tissue->lgnd_at (b);
             morph::Vector<T, 8> lg = this->estimate_ligand_gradient (lg0, l0);
 
+            // If our forward interaction is the EphAx/EphA4 scheme, then compute the
+            // current phosphorylization of the EphA4 to determine the signal.
+            if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
+                // Compute the expression of EphA_phos.
+                // Depends on:
+                // ephrin expression - combined retinal + tectal ephrin value.
+                T _cmbd_l0 = this->lgnd[0] + l0[0];
+
+                // EphAx expression - combined rcpt[0] expression and tectal receptor expression tissue->rcpt[0]
+                morph::Vector<T, 4> _tec_r = tissue->rcpt_at (b);
+                // receptor 0 is this->rcpt[0]
+                T _cmbd_r0 = this->rcpt[0] + _tec_r[0];
+
+                // Ratio of EphAx (_cmbd_r0) to EphA4 gives likelihood that EphA4 will be
+                // phosphorylated per unit available ephrin retinal EphA4 level (from
+                // source_tissue)
+                T _EphA_ratio = _cmbd_r0/this->rcpt0_EphA4;
+
+                // Octave: ra = [0:0.01:10]; lh = -1 + 2 ./ (1 + exp(-ra)); plot (ra, lh);
+                T likelihood = -T{1} + T{2} / (T{1} + std::exp(-_EphA_ratio));
+
+                this->EphA4_phos = likelihood * _cmbd_l0;
+            }
+
             // 4 receptors and 4 ligand gradients.
             // let receptor 0 interact primarily with ligand 0 [gradients (0,1)]
             // let receptor 1 interact primarily with ligand 1 [gradients (2,3)]
             // let receptor 2 interact primarily with ligand 2 [gradients (4,5)]
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
-            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
+
+            // For rcpt[0], do a special thing if interaction is 'special_EphA'
+            T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[0])
+            : (this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0]));
+            G[0] = r0
             + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
             + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
             + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
-            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1])
+            r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[1])
+            : this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1]);
+            G[1] = r0
             + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
             + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
             + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
@@ -253,7 +283,7 @@ public:
     {
         // Current location is named b
         morph::Vector<T, 2> b = this->current;
-        // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
+        // Chemotaxis, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
 
         // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
