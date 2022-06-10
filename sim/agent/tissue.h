@@ -217,7 +217,7 @@ struct guidingtissue : public tissue<T>
         , lgnd_noise_gain(_lgnd_noise_gain)
     {
         this->rcpt.resize (this->posn.size());
-        this->rcpt0_EphA4.resize (this->posn.size());
+        this->rcpt0_EphA4.resize (this->posn.size(), T{1});
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());

@@ -1,0 +1,79 @@
+{
+    "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",
+    "bpa": 4,
+    "intro_every": 0,
+    "m_c": 0.0,
+    "m_g": 0.0012,
+    "m_i": 0.0,
+    "m_j": 0.20787757635116577,
+    "mborder": 0.5,
+    "num_guiders": 4,
+    "on ret_ligand_forms": "Oddly, it's important to have OPPOSING ligand gradients, but only one pair of opposing gradients is required. EphA and opposing is 0,6,0,6 (if linear) or 5,6,5,6 (if 1/r_i)",
+    "r": 0.015,
+    "r_c": 0.05,
+    "r_i": 0.05,
+    "r_j": 0.0758848637342453,
+    "ret_forward_interactions": [
+        -2,
+        -1,
+        -1,
+        -1
+    ],
+    "ret_ligand_directions": [
+        "+x",
+        "+y",
+        "-x",
+        "-y"
+    ],
+    "ret_ligand_forms": [
+        5,
+        6,
+        5,
+        6
+    ],
+    "ret_rcptrcpt_interactions": [
+        -1,
+        -1,
+        -1,
+        -1
+    ],
+    "ret_receptor_directions": [
+        "-x",
+        "-y",
+        "+x",
+        "+y"
+    ],
+    "ret_receptor_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "rgcside": 20,
+    "s": 4.815075397491455,
+    "tectum_ligand_directions": [
+        "+y",
+        "+x",
+        "-y",
+        "-x"
+    ],
+    "tectum_ligand_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "tectum_receptor_directions": [
+        "x",
+        "+y",
+        "-x",
+        "-y"
+    ],
+    "tectum_receptor_forms": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "totally_random_init": true
+}

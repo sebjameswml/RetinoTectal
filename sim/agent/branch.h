@@ -93,27 +93,33 @@ public:
             morph::Vector<T, 8> lg = this->estimate_ligand_gradient (lg0, l0);
 
             // If our forward interaction is the EphAx/EphA4 scheme, then compute the
-            // current phosphorylization of the EphA4 to determine the signal.
+            // current phosphorylization of the EphA4.
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute the expression of EphA_phos.
                 // Depends on:
                 // ephrin expression - combined retinal + tectal ephrin value.
-                T _cmbd_l0 = this->lgnd[0] + l0[0];
+                T _cmbd_l0 = T{0.5}*this->lgnd[0] + l0[0]; // weighted in favour of tectal ephrins
 
                 // EphAx expression - combined rcpt[0] expression and tectal receptor expression tissue->rcpt[0]
                 morph::Vector<T, 4> _tec_r = tissue->rcpt_at (b);
                 // receptor 0 is this->rcpt[0]
-                T _cmbd_r0 = this->rcpt[0] + _tec_r[0];
+                T _cmbd_r0 = T{0.5}*this->rcpt[0] + _tec_r[0];
 
                 // Ratio of EphAx (_cmbd_r0) to EphA4 gives likelihood that EphA4 will be
                 // phosphorylated per unit available ephrin retinal EphA4 level (from
                 // source_tissue)
-                T _EphA_ratio = _cmbd_r0/this->rcpt0_EphA4;
+                T _EphA_ratio = this->rcpt0_EphA4 / _cmbd_r0;
 
                 // Octave: ra = [0:0.01:10]; lh = -1 + 2 ./ (1 + exp(-ra)); plot (ra, lh);
                 T likelihood = -T{1} + T{2} / (T{1} + std::exp(-_EphA_ratio));
 
                 this->EphA4_phos = likelihood * _cmbd_l0;
+
+                // Debug
+                if (this->id == 0 || this->id == 7) {
+                    std::cout << "for branch id " << this->id << ", _tec_r[0]: " << _tec_r[0] << ", and ret. rcpt[0] " << this->rcpt[0] <<  " giving _cmbd_r0 (EphAx) on branch: " << _cmbd_r0 << std::endl;
+                    std::cout << "rcpt0_EphA4 is " << this->rcpt0_EphA4  << " so EphAx/EphA4 is " << _EphA_ratio << " which equates to a likelihood of " << likelihood << "m _cmbd_l0 of " << _cmbd_l0 << " and EphA4_phos of " << this->EphA4_phos << std::endl;
+                }
             }
 
             // 4 receptors and 4 ligand gradients.
@@ -123,19 +129,20 @@ public:
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
 
             // For rcpt[0], do a special thing if interaction is 'special_EphA'
-            T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[0])
-            : (this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0]));
-            G[0] = r0
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
-            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
-            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
+            T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[0]) : T{0};
+            bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion || source_tissue->forward_interactions[0] == interaction::special_EphA;
+            G[0] = T{0.5} * r0
+                       + T{0.5} * (this->rcpt[0] * (repulse0 ? -lg[0] : lg[0]))
+                       + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
+                       + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
+                       + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
-            r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[1])
-            : this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1]);
-            G[1] = r0
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
-            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
-            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
+            r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[1]) : T{0};
+            G[1] = T{0.5} * r0
+                         + T{0.5} * (this->rcpt[0] * (repulse0 ? -lg[1] : lg[1]))
+                       + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
+                       + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
+                       + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
 
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
@@ -213,8 +220,9 @@ public:
         // it makes little difference to the result.
         morph::Vector<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
-            QJar[i] = (source_tissue->forward_interactions[i] == interaction::repulsion ? T{1} :
-                       (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
+            bool repulsei = source_tissue->forward_interactions[i] == interaction::repulsion
+            || source_tissue->forward_interactions[i] == interaction::special_EphA;
+            QJar[i] = (repulsei ? T{1} : (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;
 
