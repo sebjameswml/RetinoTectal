@@ -1,4 +1,15 @@
 {
+    "desc_ret_epha4_expression" : "What's the (even) EphA4 expression? (will probably be replaced by a scheme as for other receptor/lligand expression)",
+    "ret_epha4_expression" : 3.5,
+    "desc_side_attach_prob" : "Probability of a cluster having side-attached EphA4, if EphAx/EphA4 levels are equal",
+    "side_attach_prob" : 0.9,
+    "desc_normal_cluster_gain" : "What's the gradient climb/descent gain for a normal EphA cluster?",
+    "normal_cluster_gain" : 0.3,
+    "desc_enhanced_cluster_gain" : "What's the gradient climb/descent gain for an enlarged/enhanced EphA cluster?",
+    "enhanced_cluster_gain" : 15,
+    "desc_attachment_proportion" : "What proportion of ligand attachments are EphA4, if A4/Ax levels are equal",
+    "epha4_attachment_proportion" : 0.3,
+
     "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",
     "bpa": 4,
     "intro_every": 0,

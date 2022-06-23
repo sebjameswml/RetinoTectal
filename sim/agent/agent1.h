@@ -740,6 +740,8 @@ struct Agent1
             ss << tag << " ligand gradient "     << (pair_to_view) << " y";
         } else if (exview == expression_view::cell_positions) {
             ss << tag << " cell positions";
+        } else if (exview == expression_view::epha4) {
+            ss << tag << " EphA4";
         }
         tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f});
 
@@ -880,6 +882,8 @@ struct Agent1
         float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
         T s = this->mconf->getFloat ("s", 1.1f);
         // A loop to set up each branch object in pending_branches.
+        std::cout << "SET PENDING BRANCHES...\n";
+        std::cout << "side attach prob: " << this->mconf->getFloat("side_attach_prob", 1.0f) << std::endl;
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
@@ -890,8 +894,13 @@ struct Agent1
             this->pending_branches[i].setr_j (r_j_conf);
             this->pending_branches[i].setr_i (r_i_conf);
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
+            // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
+            this->pending_branches[i].epha4_attachment_proportion = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
+            this->pending_branches[i].side_attach_prob = this->mconf->getFloat("side_attach_prob", 1.0f);
+            this->pending_branches[i].normal_cluster_gain = this->mconf->getFloat("normal_cluster_gain", 1.0f);
+            this->pending_branches[i].enhanced_cluster_gain = this->mconf->getFloat("enhanced_cluster_gain", 1.0f);
             this->pending_branches[i].aid = (int)ri; // axon index
-            if (conf->getBool ("singleaxon", false)) {
+            if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
@@ -901,6 +910,7 @@ struct Agent1
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
+                std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
@@ -1138,8 +1148,11 @@ struct Agent1
         morph::Vector<interaction, N> tectum_reverse_interactions;
         for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
+        T _epha4 = this->mconf->getDouble ("ret_epha4_expression", T{0});
+
         if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
+            std::cout << "Create retina guidingtissue...\n";
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                 ret_receptor_forms,
                                                 ret_ligand_forms,
@@ -1149,7 +1162,7 @@ struct Agent1
                                                 ret_reverse_interactions,
                                                 ret_rcptrcpt_interactions,
                                                 ret_rcpt_noise_gain,
-                                                ret_lgnd_noise_gain);
+                                                ret_lgnd_noise_gain, _epha4);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
@@ -1268,9 +1281,10 @@ struct Agent1
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
             this->ret->receptor_knockin (0, affected, ki_amount);
+            std::cout << "KNOCKDOWN!!!!!!!\n";
             this->ret->receptor_knockdown (0, kd_amount);
             // And the opposing receptor 2:
-            std::cout << "opp_ki_amount = " << opp_ki_amount << "opp_kd_amount = " << opp_kd_amount << std::endl;
+            std::cout << "opp_ki_amount = " << opp_ki_amount << ", opp_kd_amount = " << opp_kd_amount << std::endl;
             this->ret->receptor_knockin (2, affected, opp_ki_amount);
             this->ret->receptor_knockdown (2, opp_kd_amount);
             manipulated = true;
@@ -1384,10 +1398,19 @@ struct Agent1
         float sqside = 1.4f;
 
         // Retina
+
+        // Extra for EphA4
+        offset2[1] += sqside;
+        offset2[0] -= sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::epha4, 0));
+        offset2[0] += sqside;
+        offset2[1] -= sqside;
+
         offset2[1] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair));
+
 #ifdef SHOW_RET_GRADS
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
@@ -1395,6 +1418,7 @@ struct Agent1
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
         offset2[1] -= sqside;
 #endif
+
         // Tectum
         if constexpr (show_tectal_receptors == true) {
             offset2[0] += sqside;

@@ -139,9 +139,10 @@ struct guidingtissue : public tissue<T>
     //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
     //! expression, which is essentially uniform across the retina. Possibly doesn't
-    //! need to be a vector. Phosphorylation (i.e. activation) is tracked in
-    //! branch(_base).h
+    //! need to be a vector. Phosphorylation (i.e. activation) could be tracked in
+    //! branch(_base).h (if we need it to be dynamic) or set here.
     morph::vVector<T> rcpt0_EphA4;
+    morph::vVector<T> rcpt0_EphA4_phos;
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
@@ -204,7 +205,8 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<interaction, N> _rev_int,
                   morph::Vector<interaction, N> _rcptrcpt_int,
                   T _rcpt_noise_gain = T{0},
-                  T _lgnd_noise_gain = T{0})
+                  T _lgnd_noise_gain = T{0},
+                  T _epha4 = T{1})
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -217,7 +219,7 @@ struct guidingtissue : public tissue<T>
         , lgnd_noise_gain(_lgnd_noise_gain)
     {
         this->rcpt.resize (this->posn.size());
-        this->rcpt0_EphA4.resize (this->posn.size(), T{1});
+        this->rcpt0_EphA4.resize (this->posn.size(), _epha4);
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());
@@ -252,6 +254,11 @@ struct guidingtissue : public tissue<T>
                 this->lgnd[ri][2] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[2], ri), 2) + rnorm.get() * this->lgnd_noise_gain;
                 this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3) + rnorm.get() * this->lgnd_noise_gain;
             }
+#if 1
+            // Do EphA4 if necessary
+            this->rcpt0_EphA4[ri] = this->expression_function (this->get_pos (this->rcpt_dirns[0], ri), expression_form::exp) + rnorm.get() * this->rcpt_noise_gain;
+            std::cout << "rcpt0_EphA4["<<ri<<"] = " << this->rcpt0_EphA4[ri] << std::endl;
+#endif
         }
 
         this->compute_gradients();
@@ -700,8 +707,14 @@ struct guidingtissue : public tissue<T>
     void receptor_knockdown (size_t idx, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
-        for (auto& r : this->rcpt) {
-            r[idx] = (r[idx] < amount ? T{0} : r[idx] - amount);
+        // Deal with special case...
+        if (idx == 0 && this->forward_interactions[0] == interaction::special_EphA) {
+            // In this case, we are knocking down JUST EphA4.
+            for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
+        } else {
+            for (auto& r : this->rcpt) {
+                r[idx] = (r[idx] < amount ? T{0} : r[idx] - amount);
+            }
         }
         this->compute_gradients();
     }
@@ -717,7 +730,7 @@ struct guidingtissue : public tissue<T>
 
     // For receptor index idx, knock-in affected proportion (range [0,1]) of cells,
     // adding amount as a constant increase in receptor expression
-    static constexpr bool random_knockin = true;
+    static constexpr bool random_knockin = false;
     void receptor_knockin (size_t idx, T affected, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }

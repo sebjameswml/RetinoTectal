@@ -91,7 +91,7 @@ public:
             morph::Vector<T, 8> lg0 = tissue->lgnd_grad_at (b);
             morph::Vector<T, 4> l0 = tissue->lgnd_at (b);
             morph::Vector<T, 8> lg = this->estimate_ligand_gradient (lg0, l0);
-
+#if 0
             // If our forward interaction is the EphAx/EphA4 scheme, then compute the
             // current phosphorylization of the EphA4.
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
@@ -121,6 +121,7 @@ public:
                     std::cout << "rcpt0_EphA4 is " << this->rcpt0_EphA4  << " so EphAx/EphA4 is " << _EphA_ratio << " which equates to a likelihood of " << likelihood << "m _cmbd_l0 of " << _cmbd_l0 << " and EphA4_phos of " << this->EphA4_phos << std::endl;
                 }
             }
+#endif
 
             // 4 receptors and 4 ligand gradients.
             // let receptor 0 interact primarily with ligand 0 [gradients (0,1)]
@@ -129,17 +130,40 @@ public:
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
 
             // For rcpt[0], do a special thing if interaction is 'special_EphA'
-            T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[0]) : T{0};
-            bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion || source_tissue->forward_interactions[0] == interaction::special_EphA;
-            G[0] = T{0.5} * r0
-                       + T{0.5} * (this->rcpt[0] * (repulse0 ? -lg[0] : lg[0]))
+
+            // attached_EphAx is the proportion of ligands attached to EphAx receptors
+            T attached_EphAx = T{1}-this->epha4_attachment_proportion * this->rcpt[0] / (this->rcpt[0] + this->rcpt0_EphA4);
+
+            // attached_EphA4 is the proportion of ligands attached to EphA4 receptors
+            T attached_EphA4 = this->epha4_attachment_proportion * this->rcpt0_EphA4 / (this->rcpt[0] + this->rcpt0_EphA4);
+
+            T AxToA4_ratio = attached_EphAx / attached_EphA4;
+
+            // Now, of the attached_EphAx, some will have attached EphA4, others will form EphA3 'super clusters'
+            T side_attached = this->rcpt0_EphA4 == T{0} ? T{0} : (this->side_attach_prob * (this->rcpt0_EphA4 - attached_EphA4) / this->rcpt0_EphA4);
+
+            // super clusters have enhanced effectiveness compared with normal clusters
+            T combined_r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
+                                             + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain);
+            if (this->id == 0 || this->id == 1 || this->id == 380 || this->id == 381) {
+                std::cout << "id: " << this->id << ", (EphAx/EphA4 attachment ratio): " << (AxToA4_ratio)
+                          << " [side " << side_attached << " : " << (1-side_attached) << " super]" << std::endl;
+            }
+
+            T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? combined_r0 : this->rcpt[0];
+            // The 'special thing' here is to anti-catalyse the interaction with EphA4 'side-binding'.
+
+            bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
+                              || source_tissue->forward_interactions[0] == interaction::special_EphA;
+
+            //std::cout << "r0: " << r0 << " cf. this->rcpt[0]: " << this->rcpt[0] << std::endl;
+
+            G[0] = (r0 * (repulse0 ? -lg[0] : lg[0]))
                        + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
                        + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
                        + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
-            r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? (this->EphA4_phos * -lg[1]) : T{0};
-            G[1] = T{0.5} * r0
-                         + T{0.5} * (this->rcpt[0] * (repulse0 ? -lg[1] : lg[1]))
+            G[1] = (r0 * (repulse0 ? -lg[1] : lg[1]))
                        + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
                        + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
                        + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
