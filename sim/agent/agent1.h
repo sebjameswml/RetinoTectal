@@ -1160,6 +1160,8 @@ struct Agent1
         for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
         T _epha4 = this->mconf->getDouble ("ret_epha4_expression", T{0});
+        // Expression form. Default of 6 means 'unexpressed'
+        expression_form epha4_expression_form = (expression_form)this->mconf->getInt ("epha4_expression_form", 6);
 
         if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
@@ -1173,7 +1175,7 @@ struct Agent1
                                                 ret_reverse_interactions,
                                                 ret_rcptrcpt_interactions,
                                                 ret_rcpt_noise_gain,
-                                                ret_lgnd_noise_gain, _epha4);
+                                                ret_lgnd_noise_gain, _epha4, epha4_expression_form);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,

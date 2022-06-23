@@ -138,11 +138,10 @@ struct guidingtissue : public tissue<T>
 
     //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
-    //! expression, which is essentially uniform across the retina. Possibly doesn't
-    //! need to be a vector. Phosphorylation (i.e. activation) could be tracked in
-    //! branch(_base).h (if we need it to be dynamic) or set here.
+    //! expression, which is essentially uniform across the retina.
     morph::vVector<T> rcpt0_EphA4;
-    morph::vVector<T> rcpt0_EphA4_phos;
+    //! Functional form for rcpt0_EphA4
+    expression_form EphA4_form;
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
@@ -206,7 +205,8 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<interaction, N> _rcptrcpt_int,
                   T _rcpt_noise_gain = T{0},
                   T _lgnd_noise_gain = T{0},
-                  T _epha4 = T{1})
+                  T _EphA4 = T{1},
+                  expression_form _EphA4_form = expression_form::exp)
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -217,9 +217,10 @@ struct guidingtissue : public tissue<T>
         , rcptrcpt_interactions(_rcptrcpt_int)
         , rcpt_noise_gain(_rcpt_noise_gain)
         , lgnd_noise_gain(_lgnd_noise_gain)
+        , EphA4_form(_EphA4_form)
     {
         this->rcpt.resize (this->posn.size());
-        this->rcpt0_EphA4.resize (this->posn.size(), _epha4);
+        this->rcpt0_EphA4.resize (this->posn.size(), _EphA4);
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());
@@ -254,11 +255,8 @@ struct guidingtissue : public tissue<T>
                 this->lgnd[ri][2] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[2], ri), 2) + rnorm.get() * this->lgnd_noise_gain;
                 this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3) + rnorm.get() * this->lgnd_noise_gain;
             }
-#if 1
-            // Do EphA4 if necessary
-            this->rcpt0_EphA4[ri] = this->expression_function (this->get_pos (this->rcpt_dirns[0], ri), expression_form::exp) + rnorm.get() * this->rcpt_noise_gain;
-            std::cout << "rcpt0_EphA4["<<ri<<"] = " << this->rcpt0_EphA4[ri] << std::endl;
-#endif
+            // EphA4 expression increases in same direction as rcpt[0]
+            this->rcpt0_EphA4[ri] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ri)) + rnorm.get() * this->rcpt_noise_gain;
         }
 
         this->compute_gradients();
@@ -516,6 +514,7 @@ struct guidingtissue : public tissue<T>
 
     T rcpt_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->rcpt_form[i]); }
     T lgnd_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->lgnd_form[i]); }
+    T EphA4_expression_function (const T& x) const { return this->expression_function (x, this->EphA4_form); }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return
     //! this.  Note: Not a function (like linear_gradient()) but a lookup, because this
@@ -730,7 +729,7 @@ struct guidingtissue : public tissue<T>
 
     // For receptor index idx, knock-in affected proportion (range [0,1]) of cells,
     // adding amount as a constant increase in receptor expression
-    static constexpr bool random_knockin = false;
+    static constexpr bool random_knockin = true;
     void receptor_knockin (size_t idx, T affected, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }

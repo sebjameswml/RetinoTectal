@@ -153,7 +153,7 @@ public:
             // super clusters have enhanced effectiveness compared with normal clusters
             T combined_r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
                                              + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain)
-            + this->rcpt[0] * std::exp(AxToA4_ratio) * T{0.00001};
+                          + this->rcpt[0] * AxToA4_ratio * AxToA4_ratio * T{0.01};
 
             T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? combined_r0 : this->rcpt[0];
             // The 'special thing' here is to anti-catalyse the interaction with EphA4 'side-binding'.
