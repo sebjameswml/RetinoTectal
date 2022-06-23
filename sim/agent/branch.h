@@ -142,13 +142,18 @@ public:
             // Now, of the attached_EphAx, some will have attached EphA4, others will form EphA3 'super clusters'
             T side_attached = this->rcpt0_EphA4 == T{0} ? T{0} : (this->side_attach_prob * (this->rcpt0_EphA4 - attached_EphA4) / this->rcpt0_EphA4);
 
-            // super clusters have enhanced effectiveness compared with normal clusters
-            T combined_r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
-                                             + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain);
-            if (this->id == 0 || this->id == 1 || this->id == 380 || this->id == 381) {
+            if (this->id == 0 || this->id == 1
+                || this->id == 18 || this->id == 19
+                || this->id== 380 || this->id == 381
+                || this->id== 398 || this->id == 399) {
                 std::cout << "id: " << this->id << ", (EphAx/EphA4 attachment ratio): " << (AxToA4_ratio)
                           << " [side " << side_attached << " : " << (1-side_attached) << " super]" << std::endl;
             }
+
+            // super clusters have enhanced effectiveness compared with normal clusters
+            T combined_r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
+                                             + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain)
+            + this->rcpt[0] * std::exp(AxToA4_ratio) * T{0.00001};
 
             T r0 = source_tissue->forward_interactions[0] == interaction::special_EphA ? combined_r0 : this->rcpt[0];
             // The 'special thing' here is to anti-catalyse the interaction with EphA4 'side-binding'.

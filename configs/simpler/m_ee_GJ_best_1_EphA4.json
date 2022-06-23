@@ -6,7 +6,7 @@
     "desc_normal_cluster_gain" : "What's the gradient climb/descent gain for a normal EphA cluster?",
     "normal_cluster_gain" : 0.3,
     "desc_enhanced_cluster_gain" : "What's the gradient climb/descent gain for an enlarged/enhanced EphA cluster?",
-    "enhanced_cluster_gain" : 15,
+    "enhanced_cluster_gain" : 10,
     "desc_attachment_proportion" : "What proportion of ligand attachments are EphA4, if A4/Ax levels are equal",
     "epha4_attachment_proportion" : 0.3,
 
