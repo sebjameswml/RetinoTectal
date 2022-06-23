@@ -1,0 +1,15 @@
+See also the paper:
+
+Unified Nomenclature for Eph Family Receptors and Their Ligands, the
+Ephrins (1997)
+
+
+Old            Accepted/current     Other, less common old names
+
+RAGS           ephrin-A5            AL-1,LERK-7,EFL-5
+
+ELF-1          ephrin-A2
+
+Mek4           EphA3                Hek,Hek4,Tyro4,Cek4
+
+Sek            EphA4                Sek1,Cek8,Hek8,Tyro1
