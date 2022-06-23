@@ -315,7 +315,7 @@ struct Agent1
                         coss <<  "_" << co.first << "_" << co.second;
                     }
                     std::stringstream nss;
-                    nss << "./" << this->title << coss.str() << "_rcnt.h5";
+                    nss << "./rcnt/" << this->title << coss.str() << "_" << morph::Tools::filenameTimestamp() << "_rcnt.h5";
                     morph::HdfData d (nss.str());
                     d.add_contained_vals ("/nt", nt);
                     d.add_contained_vals ("/rc", rc);
@@ -366,7 +366,7 @@ struct Agent1
                         coss <<  "_" << co.first << "_" << co.second;
                     }
                     std::stringstream nss;
-                    nss << "./" << this->title << coss.str() << "_rcnt.h5";
+                    nss << "./rcnt/" << this->title << coss.str() << "_" << morph::Tools::filenameTimestamp() << "_rcnt.h5";
                     morph::HdfData d (nss.str());
                     d.add_contained_vals ("/nt", nt);
                     d.add_contained_vals ("/rc", rc);
