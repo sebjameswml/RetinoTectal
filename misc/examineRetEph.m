@@ -11,7 +11,7 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
 
   x = [0:0.05:1];
 
-  w_EphCommon = 0.15;
+  w_EphCommon = 0.25;
 
   _exp = 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
 
@@ -23,7 +23,7 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   _epha4 = ones(1,length(ephrinA)) .* 2.0 - knockdown_epha4;
 
   ## Binding affinity for EphA4
-  w_EphA4 = 0.3;
+  w_EphA4 = 0.25;
 
   ## Let EphA4 get first dibs on ephrinA
   _p_epha4 = (w_EphA4 .* _epha4 .* ephrinA);
@@ -87,9 +87,17 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
 
   subplot(1,4,4);
   hold on;
-  plot (x, EphA4_free + EphAx_free, 'linestyle', '-', 'color', 'magenta'); #not phosphorylized = available
-  lg1 = legend (['EphA4 free + EphAx free'], 'Location','North');
-  ylim([0,5])
+  plot (x, EphAx_free./EphA4_free, 'linestyle', '-', 'color', 'magenta');
+  plot (x, EphAx_free.*EphA4_free, 'linestyle', '--', 'color', 'magenta');
+  #plot (x, EphAx_free./_p_epha4, 'linestyle', '--', 'color', 'magenta');
+  #plot (x, EphAx_free./_epha4, 'linestyle', ':', 'color', 'magenta');
+
+  #cs1 = EphAx_free./EphA4_free
+  #biggerthan = (4.* EphAx_free) > cs1
+  #plot (x, cs1.*biggerthan, 'linestyle', '-', 'color', 'black');
+
+  lg1 = legend (['EphAx (free)/EphA4 (free)';'*'], 'Location','North');
+  #ylim([0,10])
   xlabel(strlbl)
   ylabel('Expression/Interaction')
 end
