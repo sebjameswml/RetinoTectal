@@ -111,68 +111,94 @@ import h5py
 #         "../j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500_rcnt.h5",
 #         "../j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500_rcnt.h5"]
 
-files = ["../j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-wt_exit_false_steps_5000_rcnt.h5",
-         "../j4_ee_GJ_best_1_tec_ligand_exp4_eph_kiki-wt_exit_false_steps_5000_rcnt.h5",
-         "../j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-kd_exit_false_steps_5000_rcnt.h5"]
+#files = ["../j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-wt_exit_false_steps_5000_rcnt.h5",
+#         "../j4_ee_GJ_best_1_tec_ligand_exp4_eph_kiki-wt_exit_false_steps_5000_rcnt.h5",
+#         "../j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-kd_exit_false_steps_5000_rcnt.h5"]
 
 #files = ["../j4_ee_GJ_best_1_sandpit_eph_ki-wt_exit_false_steps_5000_rcnt.h5",
 #         "../j4_ee_GJ_best_1_sandpit_eph_kiki-wt_exit_false_steps_5000_rcnt.h5",
 #         "../j4_ee_GJ_best_1_sandpit_eph_ki-kd_exit_false_steps_5000_rcnt.h5"]
 
-for filename in files:
-    print ('{0}'.format(filename))
+# New scheme: Find files in ../rcnt/. These are now file base names
+filebases = ["../rcnt/j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-wt_exit_false_steps_5000",
+                 "../rcnt/j4_ee_GJ_best_1_tec_ligand_exp4_eph_kiki-wt_exit_false_steps_5000",
+                 "../rcnt/j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-kd_exit_false_steps_5000"]
+#filebases = ["../rcnt/j4_ee_GJ_best_1_tec_ligand_exp4_eph_ki-wt_exit_false_steps_5000"]
 
-    with h5py.File (filename, 'r') as f:
-        rc   = np.array(list(f['/rc']))
-        rc_m = np.array(list(f['/rc_m']))
-        nt   = np.array(list(f['/nt']))
-        nt_m = np.array(list(f['/nt_m']))
+#from fnmatch import fnmatch
+import os
 
-        plt.plot (nt, rc, marker='x', linestyle="none", color=clr1)
-        plt.plot (nt_m, rc_m, marker='o', linestyle="none", color=clr2)
+for fb in filebases:
+    print ('File base: {0} (type {1})'.format(fb, type(fb)))
 
-        # find unique values in nt
-        #print ("nt: {0}".format(np.unique(nt)))
-        #print ("nt_m: {0}".format(np.unique(nt_m)))
+    # For each filebase, collect stats and draw a graph
+    rc   = np.array([])
+    rc_m = np.array([])
+    nt   = np.array([])
+    nt_m = np.array([])
 
-        nt_vals = np.unique(nt)
+    # Now find all files that match
+    for r, d, fns in os.walk('../rcnt/'):
+        for filename in fns:
+            #print ('Does filename: {0} match filebase {1}?'.format (os.path.join(r, filename), fb))
+            if fb in os.path.join(r, filename):
 
-        nt_means_wt_mean = []
-        nt_means_wt_stderr = []
-        nt_means_wt_sd = []
+                filepath = os.path.join(r, filename)
+                print('Processing: {0}'.format(filepath))
 
-        nt_means_manip_mean = []
-        nt_means_manip_stderr = []
-        nt_means_manip_sd = []
+                with h5py.File (filepath, 'r') as f:
+                    rc   = np.append(rc, np.array(list(f['/rc'])))   # want to append to rc.
+                    rc_m = np.append(rc_m, np.array(list(f['/rc_m'])))
+                    nt   = np.append(nt, np.array(list(f['/nt'])))
+                    nt_m = np.append(nt_m, np.array(list(f['/nt_m'])))
 
-        # for each in nt_vals, find rc and rc_m's that match
-        for ntv in nt_vals:
-            idx_wt = np.asarray(nt==ntv).nonzero()
-            idx_manip = np.asarray(nt_m==ntv).nonzero()
+    plt.plot (nt, rc, marker='x', linestyle="none", color=clr1)
+    plt.plot (nt_m, rc_m, marker='o', linestyle="none", color=clr2)
 
-            rcs_wt = rc[idx_wt]
-            rcs_manip = rc_m[idx_manip]
-            # Now statistically test if rcs_wt and rcs_manip are from the same distribution or not
-            asl, minasl = bootstrap_ttest_equalityofmeans (rcs_wt, rcs_manip, 2000)
-            print ("for nt value {0}, asl of bootstrap test = {1}".format(ntv, (asl if asl > 0 else minasl)))
+    # find unique values in nt
+    #print ("nt: {0}".format(np.unique(nt)))
+    #print ("nt_m: {0}".format(np.unique(nt_m)))
 
-            # Now compute the mean and the std err of the mean for each
-            nt_means_wt_mean.append (np.mean(rcs_wt))
-            nt_means_manip_mean.append(np.mean(rcs_manip))
+    nt_vals = np.unique(nt)
 
-            nt_means_wt_sd.append (np.std(rcs_wt))
-            nt_means_manip_sd.append(np.std(rcs_manip))
+    nt_means_wt_mean = []
+    nt_means_wt_stderr = []
+    nt_means_wt_sd = []
 
-            rcs_wtstderr = bootstrap_error_of_mean (rcs_wt, 256)
-            nt_means_wt_stderr.append (rcs_wtstderr)
+    nt_means_manip_mean = []
+    nt_means_manip_stderr = []
+    nt_means_manip_sd = []
 
-            rcs_manipstderr = bootstrap_error_of_mean (rcs_manip, 256)
-            nt_means_manip_stderr.append (rcs_manipstderr)
+    # for each in nt_vals, find rc and rc_m's that match
+    for ntv in nt_vals:
+        idx_wt = np.asarray(nt==ntv).nonzero()
+        idx_manip = np.asarray(nt_m==ntv).nonzero()
 
-            #print ("wt mean: {0}({2}), manipulated mean: {1}({3})".format (np.mean(rcs_wt), np.mean(rcs_manip), rcs_wtstderr, rcs_manipstderr))
+        rcs_wt = rc[idx_wt]
+        rcs_manip = rc_m[idx_manip]
+        #print ('rcs_wt: {0}'.format (rcs_wt))
+        #print ('rcs_manip: {0}'.format (rcs_manip))
+        # Now statistically test if rcs_wt and rcs_manip are from the same distribution or not
+        asl, minasl = bootstrap_ttest_equalityofmeans (rcs_wt, rcs_manip, 10000)
+        print ("for nt value {0}, asl of bootstrap test = {1} (raw {2})".format(ntv, (asl if asl > 0 else minasl), asl))
 
-        # error bar plot
-        plt.errorbar (nt_vals, nt_means_wt_mean, nt_means_wt_sd, capsize=10, color=clr1)
-        plt.errorbar (nt_vals, nt_means_manip_mean, nt_means_manip_sd, capsize=10, color=clr2)
+        # Now compute the mean and the std err of the mean for each
+        nt_means_wt_mean.append (np.mean(rcs_wt))
+        nt_means_manip_mean.append(np.mean(rcs_manip))
 
-        plt.show()
+        nt_means_wt_sd.append (np.std(rcs_wt))
+        nt_means_manip_sd.append(np.std(rcs_manip))
+
+        rcs_wtstderr = bootstrap_error_of_mean (rcs_wt, 256)
+        nt_means_wt_stderr.append (rcs_wtstderr)
+
+        rcs_manipstderr = bootstrap_error_of_mean (rcs_manip, 256)
+        nt_means_manip_stderr.append (rcs_manipstderr)
+
+        #print ("wt mean: {0}({2}), manipulated mean: {1}({3})".format (np.mean(rcs_wt), np.mean(rcs_manip), rcs_wtstderr, rcs_manipstderr))
+
+    # error bar plot
+    plt.errorbar (nt_vals, nt_means_wt_mean, nt_means_wt_sd, capsize=10, color=clr1)
+    plt.errorbar (nt_vals, nt_means_manip_mean, nt_means_manip_sd, capsize=10, color=clr2)
+
+    plt.show()
