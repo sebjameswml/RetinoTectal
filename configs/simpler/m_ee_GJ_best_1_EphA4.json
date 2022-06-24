@@ -11,6 +11,8 @@
     "enhanced_cluster_gain" : 10,
     "desc_attachment_proportion" : "What proportion of ligand attachments are EphA4, if A4/Ax levels are equal",
     "epha4_attachment_proportion" : 0.3,
+    "desc_AxToA4_power" : "parameter: the power to raise the ratio of EphAx to EphA4 to.",
+    "AxToA4_power" : 2.3,
 
     "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",
     "bpa": 4,

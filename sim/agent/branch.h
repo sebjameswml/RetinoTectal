@@ -104,12 +104,15 @@ public:
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
 
                 // attached_EphAx is the proportion of ligands attached to EphAx receptors
-                T attached_EphAx = T{1}-this->epha4_attachment_proportion * this->rcpt[0] / (this->rcpt[0] + this->rcpt0_EphA4);
+                T attached_EphAx = (T{1}-this->epha4_attachment_proportion) * this->rcpt[0] / (this->rcpt[0] + this->rcpt0_EphA4);
 
                 // attached_EphA4 is the proportion of ligands attached to EphA4 receptors
                 T attached_EphA4 = this->epha4_attachment_proportion * this->rcpt0_EphA4 / (this->rcpt[0] + this->rcpt0_EphA4);
 
                 T AxToA4_ratio = attached_EphAx / attached_EphA4;
+
+                // OR mathematically equivalent to the previous 3 lines:
+                AxToA4_ratio = (this->rcpt[0] / this->rcpt0_EphA4) * ((T{1}-this->epha4_attachment_proportion) / this->epha4_attachment_proportion);
 
                 // Now, of the attached_EphAx, some will have attached EphA4, others will form EphA3 'super clusters'
                 T side_attached = this->rcpt0_EphA4 == T{0} ? T{0} : (this->side_attach_prob * (this->rcpt0_EphA4 - attached_EphA4) / this->rcpt0_EphA4);
@@ -122,10 +125,15 @@ public:
                               << " [side " << side_attached << " : " << (1-side_attached) << " super]" << std::endl;
                 }
 
+                static constexpr int r0_computation_number = 2;
                 // super clusters have enhanced effectiveness compared with normal clusters, so we update r0.
-                r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
-                                               + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain)
-                     + this->rcpt[0] * AxToA4_ratio * AxToA4_ratio * T{0.01};
+                if constexpr (r0_computation_number == 1) {
+                    r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
+                                          + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain);
+                    //r0 += this->rcpt[0] * AxToA4_ratio * AxToA4_ratio * T{0.01};
+                } else {
+                    r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * T{0.01});
+                }
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion

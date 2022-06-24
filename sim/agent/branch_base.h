@@ -47,4 +47,5 @@ struct branch_base
     T normal_cluster_gain = T{1};
     T enhanced_cluster_gain = T{1}; // An enhanced cluster is one with no EphA4 sides, and could be a larger cluster
     T epha4_attachment_proportion = T{0};
+    T AxToA4_power = T{2};
 };

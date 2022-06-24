@@ -894,6 +894,7 @@ struct Agent1
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
             // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
             this->pending_branches[i].epha4_attachment_proportion = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
+            this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
             this->pending_branches[i].side_attach_prob = this->mconf->getFloat("side_attach_prob", 1.0f);
             this->pending_branches[i].normal_cluster_gain = this->mconf->getFloat("normal_cluster_gain", 1.0f);
             this->pending_branches[i].enhanced_cluster_gain = this->mconf->getFloat("enhanced_cluster_gain", 1.0f);
