@@ -882,8 +882,6 @@ struct Agent1
         float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
         T s = this->mconf->getFloat ("s", 1.1f);
         // A loop to set up each branch object in pending_branches.
-        std::cout << "SET PENDING BRANCHES...\n";
-        std::cout << "side attach prob: " << this->mconf->getFloat("side_attach_prob", 1.0f) << std::endl;
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
@@ -910,7 +908,7 @@ struct Agent1
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
-                std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
+                //std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
@@ -1165,7 +1163,6 @@ struct Agent1
 
         if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
-            std::cout << "Create retina guidingtissue...\n";
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                 ret_receptor_forms,
                                                 ret_ligand_forms,

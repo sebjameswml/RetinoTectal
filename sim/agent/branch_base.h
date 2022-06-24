@@ -29,8 +29,6 @@ struct branch_base
     // Ligands on the RGCs may interact with receptors in the tectal tissue
     morph::Vector<T, N> lgnd;
 
-    // The amount of EphA4 receptors that are currently phosphorylated and thus signalling. Dynamic.
-    T EphA4_phos;
     // The base level of EphA4 in the retina, copied from the source tissue. Not dynamic.
     T rcpt0_EphA4;
 
