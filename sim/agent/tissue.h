@@ -479,7 +479,7 @@ struct guidingtissue : public tissue<T>
     {
         //return (T{2.525} - T{0.13} * std::exp (T{2.3} * (T{1}-x)));
         // First T{2} is the EphA4 constant expression
-        return (T{1.8} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x)))); // tried down to exp(1.8(1-x)).
+        return (T{2.2} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x)))); // tried down to exp(1.8(1-x)).
     }
 
     T expression_function (const T& x, const expression_form& ef) const

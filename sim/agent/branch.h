@@ -117,10 +117,8 @@ public:
                 // Or simpler:
                 T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
 
-#if 0
                 // Now, of the attached_EphAx, some will have attached EphA4, others will form EphA3 'super clusters'
                 T side_attached = this->rcpt0_EphA4 == T{0} ? T{0} : (this->side_attach_prob * (this->rcpt0_EphA4 - attached_EphA4) / this->rcpt0_EphA4);
-#endif
 
 #if 0 // just debugging
                 if (this->id == 0 || this->id == 1
@@ -135,13 +133,11 @@ public:
                 static constexpr int r0_computation_number = 2;
                 // super clusters have enhanced effectiveness compared with normal clusters, so we update r0.
                 if constexpr (r0_computation_number == 1) {
-#if 0
                     r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
                                           + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain);
                     //r0 += this->rcpt[0] * AxToA4_ratio * AxToA4_ratio * T{0.01};
-#endif
                 } else {
-                    r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->epha4_attachment_proportion /* T{0.01} */); // NB: using epha4_attachment_proportion as a param that doesn't mean what it's called! Debug only.
+                    r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->AxToA4_mult);
                 }
             }
 

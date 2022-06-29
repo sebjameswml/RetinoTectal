@@ -895,6 +895,7 @@ struct Agent1
             // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
             this->pending_branches[i].epha4_attachment_proportion = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
             this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
+            this->pending_branches[i].AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
             this->pending_branches[i].side_attach_prob = this->mconf->getFloat("side_attach_prob", 1.0f);
             this->pending_branches[i].normal_cluster_gain = this->mconf->getFloat("normal_cluster_gain", 1.0f);
             this->pending_branches[i].enhanced_cluster_gain = this->mconf->getFloat("enhanced_cluster_gain", 1.0f);
@@ -1429,12 +1430,14 @@ struct Agent1
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
         float ap = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
-        morph::vVector<T> r0 = rcpt0 * (ratio.sq() * ap + 1);
+        float AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
+        float AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
+        morph::vVector<T> r0 = rcpt0 * (ratio.pow(AxToA4_power) * AxToA4_mult + 1);
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4, "EphA4");
         _vm->setdata (nt, ratio, "EphAx/EphA4");
-        _vm->setdata (nt, r0, "rcpt * (1 + EphAx/EphA4^2)");
+        _vm->setdata (nt, r0, "rcpt * (1 + m EphAx/EphA4^k)");
         _vm->finalize();
         tvv->addVisualModel (_vm);
         offset2[1] -= sqside;
