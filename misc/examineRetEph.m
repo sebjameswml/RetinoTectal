@@ -6,7 +6,7 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   h_f = figure(fn);
   h_f_pos = get(h_f, 'Position');
   ##                                            w     h
-  set(h_f, 'Position', [h_f_pos(1), h_f_pos(2), 1000, 300]);
+  set(h_f, 'Position', [h_f_pos(1), h_f_pos(2), 2000, 600]);
   clf;
 
   x = [0:0.05:1];
@@ -49,7 +49,7 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   ephrinA_free2 = ephrinA_free - ephrinA_binds_EphAx;
 
 
-  subplot(1,4,1);
+  subplot(1,5,1);
   hold on;
   plot (x, EphAx, 'linestyle', ':', 'color', 'blue'); % exp for receptors on retina
   plot (x, EphAx_free, 'linestyle', '-', 'color', 'blue');
@@ -64,7 +64,7 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   xlabel(strlbl)
   ylabel('Expression/Interaction')
 
-  subplot(1,4,2);
+  subplot(1,5,2);
   hold on;
   plot (x, ephrinA, 'linestyle', ':', 'color', 'black'); % ligands
   plot (x, ephrinA_free, 'linestyle', '-', 'color', 'black'); % ligands
@@ -75,7 +75,7 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   xlabel(strlbl)
   ylabel('Expression/Interaction')
 
-  subplot(1,4,3);
+  subplot(1,5,3);
   hold on;
   plot (x, _epha4, 'linestyle', ':', 'color', 'red');
   plot (x, EphA4_free, 'linestyle', '-', 'color', 'red'); #not phosphorylized = available
@@ -85,19 +85,35 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   xlabel(strlbl)
   ylabel('Expression/Interaction')
 
-  subplot(1,4,4);
+  axpow = 1;
+  ###############################
+  subplot(1,5,4);
   hold on;
-  plot (x, EphAx_free./EphA4_free, 'linestyle', '-', 'color', 'magenta');
-  plot (x, EphAx_free.*EphA4_free, 'linestyle', '--', 'color', 'magenta');
-  #plot (x, EphAx_free./_p_epha4, 'linestyle', '--', 'color', 'magenta');
-  #plot (x, EphAx_free./_epha4, 'linestyle', ':', 'color', 'magenta');
 
-  #cs1 = EphAx_free./EphA4_free
-  #biggerthan = (4.* EphAx_free) > cs1
-  #plot (x, cs1.*biggerthan, 'linestyle', '-', 'color', 'black');
+  # Re-write EphA4_free as quadratic?
+  #EphA4_free = 1.31 + 2.3333 .* x .* x; # This is what I have in the sim right now
+  #EphA4_free = _p_epha4 # That's really _bound_ EphA4
 
-  lg1 = legend (['EphAx (free)/EphA4 (free)';'*'], 'Location','North');
-  #ylim([0,10])
+  ax = EphAx_free./EphA4_free;
+
+  plot (x, 0.01 .* power(ax, axpow))
+  plot (x, EphAx_free .* 0.01 .* power(ax, axpow))
+
+  lg1 = legend (['(Ax/A4)^k';'Ax * (Ax/A4)^k'], 'Location','North');
   xlabel(strlbl)
   ylabel('Expression/Interaction')
+
+  ################
+  subplot(1,5,5);
+  hold on;
+
+  plot (x, EphAx_free)
+  plot (x, EphA4_free)
+  plot (x, EphAx_free + EphAx_free .* 0.1 .* power(ax, axpow))
+  plot (x, ax)
+
+  lg1 = legend (['Ax';'A4';'Ax(1 + (Ax/A4)^k)';'Ax/A4'], 'Location','North');
+  xlabel(strlbl)
+  ylabel('Expression/Interaction')
+
 end

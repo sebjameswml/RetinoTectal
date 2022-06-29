@@ -67,7 +67,8 @@ enum class expression_form
     unexpressed, // 6. No expression - zero everywhere
     exp3,        // 7. An exponential function intermediate between exp and exp2. Competition required, but not so much as for exp
     exp4,        // 8. A double exponential, for investigating the genetic experiments.
-    sigmoid      // 9. S shaped - a sigmoid like function
+    sigmoid,     // 9. S shaped - a sigmoid like function
+    c_minus_exp  // 10. An expression (const - exp) for free EphA4 receptors on retina
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -474,6 +475,13 @@ struct guidingtissue : public tissue<T>
         return /*T{1.3} +*/ T{2.5} / ( 1 + std::exp (-(x - T{0.7})*T{6}));
     }
 
+    T const_minus_exp_expression (const T& x) const
+    {
+        //return (T{2.525} - T{0.13} * std::exp (T{2.3} * (T{1}-x)));
+        // First T{2} is the EphA4 constant expression
+        return (T{1.8} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x)))); // tried down to exp(1.8(1-x)).
+    }
+
     T expression_function (const T& x, const expression_form& ef) const
     {
         T rtn = T{0};
@@ -504,6 +512,9 @@ struct guidingtissue : public tissue<T>
             break;
         case expression_form::exp_inv:
             rtn = this->inv_exponential_expression (x);
+            break;
+        case expression_form::c_minus_exp:
+            rtn = this->const_minus_exp_expression (x);
             break;
         case expression_form::unexpressed:
         default:
@@ -540,6 +551,39 @@ struct guidingtissue : public tissue<T>
         morph::vVector<morph::Vector<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->rcpt[idx];
+    }
+
+    //! Return a vector of the average rcpt expression of given index along the x axis
+    morph::vVector<T> rcpt_average_x_axis (const size_t idx) const
+    {
+        morph::vVector<T> rtn (this->w);
+        for (size_t j = 0; j < this->h; ++j) {
+            for (size_t i = 0; i < this->w; ++i) {
+                rtn[i] += this->rcpt[i+this->w*j][idx] / static_cast<T>(this->h);
+            }
+        }
+        return rtn;
+    }
+
+    morph::vVector<T> epha4_average_x_axis() const
+    {
+        morph::vVector<T> rtn (this->w);
+        for (size_t j = 0; j < this->h; ++j) {
+            for (size_t i = 0; i < this->w; ++i) {
+                rtn[i] += this->rcpt0_EphA4[i+this->w*j] / static_cast<T>(this->h);
+            }
+        }
+        return rtn;
+    }
+
+
+    morph::vVector<T> x_axis_positions() const
+    {
+        morph::vVector<T> positions(this->w);
+        for (size_t i = 0; i < this->w; ++i) {
+            positions[i] = this->posn[i][0];
+        }
+        return positions;
     }
 
     //! Remove half of the tissue

@@ -1414,10 +1414,32 @@ struct Agent1
         offset2[1] += sqside;
         offset2[0] -= sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::epha4, 0));
-        offset2[0] += sqside;
-        offset2[1] -= sqside;
 
         offset2[1] += sqside;
+        // Place graph
+        morph::GraphVisual<T>* _vm = new morph::GraphVisual<T> (this->tvv->shaderprog, this->tvv->tshaderprog, offset2);
+        _vm->twodimensional = false;
+        _vm->setsize (0.9f, 1.0f);
+        _vm->setlimits_y (0.0f, 5.0f);
+        _vm->axislabelgap = 0.03f;
+        _vm->policy = morph::stylepolicy::lines;
+        _vm->ylabel = "Expression";
+        _vm->xlabel = "T.................N";
+        morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
+        morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
+        morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
+        float ap = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
+        morph::vVector<T> r0 = rcpt0 * (ratio.sq() * ap + 1);
+        morph::vVector<T> nt = ret->x_axis_positions();
+        _vm->setdata (nt, rcpt0, "EphAx");
+        _vm->setdata (nt, rcpt0_EphA4, "EphA4");
+        _vm->setdata (nt, ratio, "EphAx/EphA4");
+        _vm->setdata (nt, r0, "rcpt * (1 + EphAx/EphA4^2)");
+        _vm->finalize();
+        tvv->addVisualModel (_vm);
+        offset2[1] -= sqside;
+
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair));

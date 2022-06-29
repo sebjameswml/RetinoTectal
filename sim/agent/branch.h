@@ -109,14 +109,20 @@ public:
                 // attached_EphA4 is the proportion of ligands attached to EphA4 receptors
                 T attached_EphA4 = this->epha4_attachment_proportion * this->rcpt0_EphA4 / (this->rcpt[0] + this->rcpt0_EphA4);
 
-                T AxToA4_ratio = attached_EphAx / attached_EphA4;
+                T attachment_ratio = attached_EphAx / attached_EphA4;
 
                 // OR mathematically equivalent to the previous 3 lines:
-                AxToA4_ratio = (this->rcpt[0] / this->rcpt0_EphA4) * ((T{1}-this->epha4_attachment_proportion) / this->epha4_attachment_proportion);
+                //attachment_ratio = (this->rcpt[0] / this->rcpt0_EphA4) * ((T{1}-this->epha4_attachment_proportion) / this->epha4_attachment_proportion);
 
+                // Or simpler:
+                T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
+
+#if 0
                 // Now, of the attached_EphAx, some will have attached EphA4, others will form EphA3 'super clusters'
                 T side_attached = this->rcpt0_EphA4 == T{0} ? T{0} : (this->side_attach_prob * (this->rcpt0_EphA4 - attached_EphA4) / this->rcpt0_EphA4);
+#endif
 
+#if 0 // just debugging
                 if (this->id == 0 || this->id == 1
                     || this->id == 18 || this->id == 19
                     || this->id== 380 || this->id == 381
@@ -124,15 +130,18 @@ public:
                     std::cout << "id: " << this->id << ", (EphAx/EphA4 attachment ratio): " << (AxToA4_ratio)
                               << " [side " << side_attached << " : " << (1-side_attached) << " super]" << std::endl;
                 }
+#endif
 
                 static constexpr int r0_computation_number = 2;
                 // super clusters have enhanced effectiveness compared with normal clusters, so we update r0.
                 if constexpr (r0_computation_number == 1) {
+#if 0
                     r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
                                           + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain);
                     //r0 += this->rcpt[0] * AxToA4_ratio * AxToA4_ratio * T{0.01};
+#endif
                 } else {
-                    r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * T{0.01});
+                    r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->epha4_attachment_proportion /* T{0.01} */); // NB: using epha4_attachment_proportion as a param that doesn't mean what it's called! Debug only.
                 }
             }
 
