@@ -119,9 +119,9 @@ public:
                     //r0 += this->rcpt[0] * std::pow(attachment_ratio, this->AxToA4_power) * this->AxToA4_mult;
                 } else if constexpr (r0_computation_number == 2) {
                     // Cluster size is inversely proportional to amount of EphA4 available.
-                    T clustersize = 1 / this->rcpt0_EphA4;
-                    r0 = this->rcpt[0] * clustersize * this->normal_cluster_gain;
-
+                    T clustersize = T{1} / this->rcpt0_EphA4;
+                    r0 = this->normal_cluster_gain * std::pow(this->rcpt[0] * clustersize, this->AxToA4_power);
+                    //equiv: r0 = this->normal_cluster_gain * this->rcpt[0] / this->rcpt0_EphA4;
                 } else {
                     // A simpler computation, which just adds a component to r0 based on the Ax/A4 ratio
                     T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
