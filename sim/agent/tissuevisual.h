@@ -27,7 +27,8 @@ enum class expression_view
     ligand_grad_y,
     cell_positions,
     ligand_grad_x_single,
-    ligand_grad_y_single
+    ligand_grad_y_single,
+    epha4
 };
 
 /*!
@@ -118,9 +119,15 @@ public:
             }
 
         } else if (this->view == expression_view::cell_positions) {
-           for (unsigned int i = 0; i < this->gtissue->posn.size(); ++i) {
+            for (unsigned int i = 0; i < this->gtissue->posn.size(); ++i) {
                 this->dcolour[i] = this->gtissue->posn[i][0];
                 this->dcolour2[i] = this->gtissue->posn[i][1];
+            }
+
+        } else if (this->view == expression_view::epha4) {
+            for (unsigned int i = 0; i < this->gtissue->posn.size(); ++i) {
+                this->dcolour[i] = this->gtissue->rcpt0_EphA4[i];
+                this->dcolour2[i] = 0;
             }
         }
 

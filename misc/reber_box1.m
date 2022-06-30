@@ -42,3 +42,14 @@ xx = [-200:0.1:200];
 Eq12 = 3.7 ./ (0.26 .* exp(0.023.*xx) + 1.05);
 plot (xx, Eq12);
 legend('Eq 12 over a wider range')
+
+% Eqs 9-11
+a3ki_a4kd =  (0.26 .* exp(0.023.*x) + 1.44);
+a3wt_a4kd =  (0.26 .* exp(0.023.*x) + 0.51);
+Eq11 = a3ki_a4kd ./ a3wt_a4kd;
+figure(3); clf;
+plot (x, a3ki_a4kd); hold on;
+plot (x, a3wt_a4kd);
+plot (x, Eq11);
+plot ([0,100],[1.36,1.36],':');
+legend (['ki/A4- (Eq 9)';'wt/A4- (Eq 10)';'Signal (Eq 11)';'disc. lim']);

@@ -740,6 +740,8 @@ struct Agent1
             ss << tag << " ligand gradient "     << (pair_to_view) << " y";
         } else if (exview == expression_view::cell_positions) {
             ss << tag << " cell positions";
+        } else if (exview == expression_view::epha4) {
+            ss << tag << " EphA4";
         }
         tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f});
 
@@ -796,7 +798,11 @@ struct Agent1
             for (unsigned int i = 0; i < arr.size(); ++i) {
                 int ai = arr[i];
                 if (ai < 0) {
-                    interactions[i] = interaction::repulsion;
+                    if (ai == -2) {
+                        interactions[i] = interaction::special_EphA;
+                    } else {
+                        interactions[i] = interaction::repulsion;
+                    }
                 } else if (ai > 0) {
                     interactions[i] = interaction::attraction;
                 } // else if 0 then leave as interaction::null
@@ -886,16 +892,22 @@ struct Agent1
             this->pending_branches[i].setr_j (r_j_conf);
             this->pending_branches[i].setr_i (r_i_conf);
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
+            // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
+            this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
+            this->pending_branches[i].AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
             this->pending_branches[i].aid = (int)ri; // axon index
-            if (conf->getBool ("singleaxon", false)) {
+            if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
+                //std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
+                this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
@@ -924,8 +936,19 @@ struct Agent1
 
             if (this->genetic_manipulation == true) { // genetic manipulation of retinal receptor 0
                 // Set colour red or blue depending on if receptor 0 in the retina was manipulated or not.
-
                 this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? red : blue;
+
+                // Special debugging stuff to mark specific axons
+                std::array<float, 3> redish1 = { 0.93f, 0.227f, 0.549f }; // 238 	58 	140
+                std::array<float, 3> blueish1 = { 0.117f, 0.565f, 1.0f }; // 30 	144 	255
+                std::array<float, 3> redish2 = { 0.69f, 0.09f, 0.122f };  // 176 	23 	31
+                std::array<float, 3> blueish2 = { 0.0f, 0.898f, 0.933f }; // 0 	229 	238
+                // Coloured centroids get specific debugging couts
+                if (ri == 0 || ri == 1 || ri == 380 || ri == 381) {
+                    this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? redish1 : blueish1;
+                } else if (ri == 18 || ri == 19 || ri == 398 || ri == 399) {
+                    this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? redish2 : blueish2;
+                }
             }
 
             // "experiment suggests": The target for axon centroids is defined by their
@@ -1132,6 +1155,9 @@ struct Agent1
         morph::Vector<interaction, N> tectum_reverse_interactions;
         for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
+        // Expression form. Default of 6 means 'unexpressed'
+        expression_form epha4_expression_form = (expression_form)this->mconf->getInt ("epha4_expression_form", 6);
+
         if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
@@ -1143,7 +1169,7 @@ struct Agent1
                                                 ret_reverse_interactions,
                                                 ret_rcptrcpt_interactions,
                                                 ret_rcpt_noise_gain,
-                                                ret_lgnd_noise_gain);
+                                                ret_lgnd_noise_gain, epha4_expression_form);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
@@ -1262,9 +1288,10 @@ struct Agent1
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
             this->ret->receptor_knockin (0, affected, ki_amount);
+            std::cout << "KNOCKDOWN!!!!!!!\n";
             this->ret->receptor_knockdown (0, kd_amount);
             // And the opposing receptor 2:
-            std::cout << "opp_ki_amount = " << opp_ki_amount << "opp_kd_amount = " << opp_kd_amount << std::endl;
+            std::cout << "opp_ki_amount = " << opp_ki_amount << ", opp_kd_amount = " << opp_kd_amount << std::endl;
             this->ret->receptor_knockin (2, affected, opp_ki_amount);
             this->ret->receptor_knockdown (2, opp_kd_amount);
             manipulated = true;
@@ -1378,10 +1405,61 @@ struct Agent1
         float sqside = 1.4f;
 
         // Retina
+
+        // Extra for EphA4
         offset2[1] += sqside;
+        offset2[0] -= sqside;
+        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::epha4, 0));
+
+        offset2[1] += sqside;
+        // Place graph
+        morph::GraphVisual<T>* _vm = new morph::GraphVisual<T> (this->tvv->shaderprog, this->tvv->tshaderprog, offset2);
+        _vm->twodimensional = false;
+        _vm->setsize (0.9f, 1.0f);
+        _vm->setlimits_y (0.0f, 5.0f);
+        _vm->axislabelgap = 0.03f;
+        _vm->policy = morph::stylepolicy::lines;
+        _vm->ylabel = "Expression";
+        _vm->xlabel = "T.................N";
+        morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
+        morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
+        morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
+        float AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
+        float AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
+        morph::vVector<T> r0 = rcpt0 * (ratio.pow(AxToA4_power) * AxToA4_mult + 1);
+        morph::vVector<T> nt = ret->x_axis_positions();
+        _vm->setdata (nt, rcpt0, "EphAx");
+        _vm->setdata (nt, rcpt0_EphA4, "EphA4");
+        _vm->setdata (nt, ratio, "EphAx/EphA4");
+        _vm->setdata (nt, r0, "rcpt * (1 + m EphAx/EphA4^k)");
+        _vm->finalize();
+        tvv->addVisualModel (_vm);
+
+        // Another graph (cluster size theory)
+        offset2[1] += sqside * 1.2;
+        morph::GraphVisual<T>* _vm2 = new morph::GraphVisual<T> (this->tvv->shaderprog, this->tvv->tshaderprog, offset2);
+        _vm2->twodimensional = false;
+        _vm2->setsize (0.9f, 1.0f);
+        _vm2->axislabelgap = 0.03f;
+        _vm2->policy = morph::stylepolicy::lines;
+        _vm2->ylabel = "Expression";
+        _vm2->xlabel = "T.................N";
+        _vm2->setlimits_y (0.0f, 2.5f);
+        morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4;
+        morph::vVector<T> r0_ = (rcpt0 * cluster_size).pow(AxToA4_power);
+        _vm2->setdata (nt, cluster_size, "Cluster size (prop. 1/EphA4)");
+        _vm2->setdata (nt, r0_, "Effective rcpt0 strength");
+        _vm2->finalize();
+        tvv->addVisualModel (_vm2);
+
+        offset2[1] -= sqside * 1.2;
+        offset2[1] -= sqside;
+
+        offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair));
+
 #ifdef SHOW_RET_GRADS
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
@@ -1389,6 +1467,7 @@ struct Agent1
         tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
         offset2[1] -= sqside;
 #endif
+
         // Tectum
         if constexpr (show_tectal_receptors == true) {
             offset2[0] += sqside;

@@ -97,15 +97,31 @@ public:
             // let receptor 1 interact primarily with ligand 1 [gradients (2,3)]
             // let receptor 2 interact primarily with ligand 2 [gradients (4,5)]
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
-            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
-            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
-            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
-            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
-            + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
-            + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
+            // For rcpt[0], do a special thing if interaction is 'special_EphA'
+            T r0 = this->rcpt[0]; // Default case
+            if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
+                // Cluster size is inversely proportional to amount of EphA4 available. T clustersize = T{1} / this->rcpt0_EphA4;
+                r0 = std::pow(this->rcpt[0] / this->rcpt0_EphA4, this->AxToA4_power);
+                /*
+                // Another computation I tried, which just adds a component to r0 based on the Ax/A4 ratio was:
+                T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
+                r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->AxToA4_mult);
+                */
+            }
+
+            bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
+                              || source_tissue->forward_interactions[0] == interaction::special_EphA;
+
+            G[0] = (r0 * (repulse0 ? -lg[0] : lg[0]))
+                       + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
+                       + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
+                       + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
+
+            G[1] = (r0 * (repulse0 ? -lg[1] : lg[1]))
+                       + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
+                       + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
+                       + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
 
         } else if constexpr (N==2) {
             morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
@@ -183,8 +199,9 @@ public:
         // it makes little difference to the result.
         morph::Vector<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
-            QJar[i] = (source_tissue->forward_interactions[i] == interaction::repulsion ? T{1} :
-                       (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
+            bool repulsei = source_tissue->forward_interactions[i] == interaction::repulsion
+            || source_tissue->forward_interactions[i] == interaction::special_EphA;
+            QJar[i] = (repulsei ? T{1} : (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;
 
@@ -253,7 +270,7 @@ public:
     {
         // Current location is named b
         morph::Vector<T, 2> b = this->current;
-        // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
+        // Chemotaxis, graded by origin position (i.e termination zone) of each retinal axon
         morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
 
         // Competition, C, and Axon-axon interactions, I&J, computed during the same loop

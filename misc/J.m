@@ -14,7 +14,7 @@ ligand_expression = 'invexp'; #  or exp or invexp
 
 x = [0:0.05:1];
 
-_exp = -1.3 + 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
+_exp = 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
 _exp2 = 0.26 .* exp (1.1.*x) + 1.05; % T exponential_expression2 (const T& x)
 _exp3 = 0.26 .* exp (1.8.*x) + 1.05; % T exponential_expression3 (const T& x)
 

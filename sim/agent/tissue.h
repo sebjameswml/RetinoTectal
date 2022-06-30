@@ -67,7 +67,8 @@ enum class expression_form
     unexpressed, // 6. No expression - zero everywhere
     exp3,        // 7. An exponential function intermediate between exp and exp2. Competition required, but not so much as for exp
     exp4,        // 8. A double exponential, for investigating the genetic experiments.
-    sigmoid      // 9. S shaped - a sigmoid like function
+    sigmoid,     // 9. S shaped - a sigmoid like function
+    c_minus_exp  // 10. An expression (const - exp) for free EphA4 receptors on retina
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -95,7 +96,8 @@ enum class interaction
 {
     attraction,
     repulsion,
-    null
+    null,
+    special_EphA // This is for EphA3/EphA4 interactions - special handling!
 };
 
 /*!
@@ -134,6 +136,14 @@ struct guidingtissue : public tissue<T>
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
     //! expressions for each cell.
     morph::vVector<morph::Vector<T,N>> rcpt;
+
+    //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
+    //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
+    //! expression, which is essentially uniform across the retina.
+    morph::vVector<T> rcpt0_EphA4;
+    //! Functional form for rcpt0_EphA4
+    expression_form EphA4_form;
+
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
     // Set fields true if the receptor expression has been manipulated
@@ -195,7 +205,8 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<interaction, N> _rev_int,
                   morph::Vector<interaction, N> _rcptrcpt_int,
                   T _rcpt_noise_gain = T{0},
-                  T _lgnd_noise_gain = T{0})
+                  T _lgnd_noise_gain = T{0},
+                  expression_form _EphA4_form = expression_form::exp)
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -206,8 +217,10 @@ struct guidingtissue : public tissue<T>
         , rcptrcpt_interactions(_rcptrcpt_int)
         , rcpt_noise_gain(_rcpt_noise_gain)
         , lgnd_noise_gain(_lgnd_noise_gain)
+        , EphA4_form(_EphA4_form)
     {
         this->rcpt.resize (this->posn.size());
+        this->rcpt0_EphA4.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());
@@ -242,6 +255,8 @@ struct guidingtissue : public tissue<T>
                 this->lgnd[ri][2] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[2], ri), 2) + rnorm.get() * this->lgnd_noise_gain;
                 this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3) + rnorm.get() * this->lgnd_noise_gain;
             }
+            // EphA4 expression increases in same direction as rcpt[0]
+            this->rcpt0_EphA4[ri] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ri)) + rnorm.get() * this->rcpt_noise_gain;
         }
 
         this->compute_gradients();
@@ -459,6 +474,12 @@ struct guidingtissue : public tissue<T>
         return /*T{1.3} +*/ T{2.5} / ( 1 + std::exp (-(x - T{0.7})*T{6}));
     }
 
+    T const_minus_exp_expression (const T& x) const
+    {
+        // First multiplier (T{2.2}) is the EphA4 constant expression
+        return (T{2.2} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x))));
+    }
+
     T expression_function (const T& x, const expression_form& ef) const
     {
         T rtn = T{0};
@@ -490,6 +511,9 @@ struct guidingtissue : public tissue<T>
         case expression_form::exp_inv:
             rtn = this->inv_exponential_expression (x);
             break;
+        case expression_form::c_minus_exp:
+            rtn = this->const_minus_exp_expression (x);
+            break;
         case expression_form::unexpressed:
         default:
             break;
@@ -499,6 +523,7 @@ struct guidingtissue : public tissue<T>
 
     T rcpt_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->rcpt_form[i]); }
     T lgnd_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->lgnd_form[i]); }
+    T EphA4_expression_function (const T& x) const { return this->expression_function (x, this->EphA4_form); }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return
     //! this.  Note: Not a function (like linear_gradient()) but a lookup, because this
@@ -517,6 +542,46 @@ struct guidingtissue : public tissue<T>
         morph::vVector<morph::Vector<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->lgnd[idx];
+    }
+
+    morph::Vector<T,N> rcpt_at (const morph::Vector<T,2>& x) const
+    {
+        morph::vVector<morph::Vector<T,2>> p = this->posn - x;
+        size_t idx = p.argshortest();
+        return this->rcpt[idx];
+    }
+
+    //! Return a vector of the average rcpt expression of given index along the x axis
+    morph::vVector<T> rcpt_average_x_axis (const size_t idx) const
+    {
+        morph::vVector<T> rtn (this->w);
+        for (size_t j = 0; j < this->h; ++j) {
+            for (size_t i = 0; i < this->w; ++i) {
+                rtn[i] += this->rcpt[i+this->w*j][idx] / static_cast<T>(this->h);
+            }
+        }
+        return rtn;
+    }
+
+    morph::vVector<T> epha4_average_x_axis() const
+    {
+        morph::vVector<T> rtn (this->w);
+        for (size_t j = 0; j < this->h; ++j) {
+            for (size_t i = 0; i < this->w; ++i) {
+                rtn[i] += this->rcpt0_EphA4[i+this->w*j] / static_cast<T>(this->h);
+            }
+        }
+        return rtn;
+    }
+
+
+    morph::vVector<T> x_axis_positions() const
+    {
+        morph::vVector<T> positions(this->w);
+        for (size_t i = 0; i < this->w; ++i) {
+            positions[i] = this->posn[i][0];
+        }
+        return positions;
     }
 
     //! Remove half of the tissue
@@ -683,8 +748,14 @@ struct guidingtissue : public tissue<T>
     void receptor_knockdown (size_t idx, T amount)
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
-        for (auto& r : this->rcpt) {
-            r[idx] = (r[idx] < amount ? T{0} : r[idx] - amount);
+        // Deal with special case...
+        if (idx == 0 && this->forward_interactions[0] == interaction::special_EphA) {
+            // In this case, we are knocking down JUST EphA4.
+            for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
+        } else {
+            for (auto& r : this->rcpt) {
+                r[idx] = (r[idx] < amount ? T{0} : r[idx] - amount);
+            }
         }
         this->compute_gradients();
     }

@@ -29,6 +29,9 @@ struct branch_base
     // Ligands on the RGCs may interact with receptors in the tectal tissue
     morph::Vector<T, N> lgnd;
 
+    // The base level of EphA4 in the retina, copied from the source tissue. Not dynamic.
+    T rcpt0_EphA4;
+
     // By default, axons reckoned to be outside tissue. Can also be used to mean "active".
     bool entered = false;
 
@@ -38,4 +41,8 @@ struct branch_base
     int aid = 0; // this is id/bpa (computed with integer division)
     // Noise gain if required
     T noise_gain = T{1};
+
+    // Parameters for special EphA4 model
+    T AxToA4_power = T{2};
+    T AxToA4_mult = T{0.01};
 };
