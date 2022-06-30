@@ -99,34 +99,15 @@ public:
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
 
             // For rcpt[0], do a special thing if interaction is 'special_EphA'
-            static constexpr int r0_computation_number = 2;
             T r0 = this->rcpt[0]; // Default case
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
-                if constexpr (r0_computation_number == 1) { // "computation number 1" is my hypothesis about side-attaching EphA4 proteins.
-                    // attached_EphAx is the proportion of ligands attached to EphAx receptors
-                    T attached_EphAx = (T{1}-this->epha4_attachment_proportion) * this->rcpt[0] / (this->rcpt[0] + this->rcpt0_EphA4);
-                    T attached_EphA4 = this->epha4_attachment_proportion * this->rcpt0_EphA4 / (this->rcpt[0] + this->rcpt0_EphA4);
-                    T attachment_ratio = attached_EphAx / attached_EphA4;
-                    // OR mathematically equivalent to the previous 3 lines if you only want the attachment_ratio
-                    //T attachment_ratio = (this->rcpt[0] / this->rcpt0_EphA4) * ((T{1}-this->epha4_attachment_proportion) / this->epha4_attachment_proportion);
-                    // Now, of the attached_EphAx, some will have 'side attached' EphA4, others will form EphA3 'super clusters'
-                    T side_attached = this->rcpt0_EphA4 == T{0} ? T{0} : (this->side_attach_prob * (this->rcpt0_EphA4 - attached_EphA4) / this->rcpt0_EphA4);
-
-                    // super clusters have enhanced effectiveness compared with normal clusters, so we update r0.
-                    r0 = this->rcpt[0] * (attached_EphAx * side_attached * this->normal_cluster_gain
-                                          + attached_EphAx * (1-side_attached) * (1-side_attached) * this->enhanced_cluster_gain);
-                    // The above didn't work so I experimented with this.
-                    //r0 += this->rcpt[0] * std::pow(attachment_ratio, this->AxToA4_power) * this->AxToA4_mult;
-                } else if constexpr (r0_computation_number == 2) {
-                    // Cluster size is inversely proportional to amount of EphA4 available.
-                    T clustersize = T{1} / this->rcpt0_EphA4;
-                    r0 = this->normal_cluster_gain * std::pow(this->rcpt[0] * clustersize, this->AxToA4_power);
-                    //equiv: r0 = this->normal_cluster_gain * this->rcpt[0] / this->rcpt0_EphA4;
-                } else {
-                    // A simpler computation, which just adds a component to r0 based on the Ax/A4 ratio
-                    T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
-                    r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->AxToA4_mult);
-                }
+                // Cluster size is inversely proportional to amount of EphA4 available. T clustersize = T{1} / this->rcpt0_EphA4;
+                r0 = std::pow(this->rcpt[0] / this->rcpt0_EphA4, this->AxToA4_power);
+                /*
+                // Another computation I tried, which just adds a component to r0 based on the Ax/A4 ratio was:
+                T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
+                r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->AxToA4_mult);
+                */
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion

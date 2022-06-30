@@ -206,7 +206,6 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<interaction, N> _rcptrcpt_int,
                   T _rcpt_noise_gain = T{0},
                   T _lgnd_noise_gain = T{0},
-                  T _EphA4 = T{1},
                   expression_form _EphA4_form = expression_form::exp)
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
@@ -221,7 +220,7 @@ struct guidingtissue : public tissue<T>
         , EphA4_form(_EphA4_form)
     {
         this->rcpt.resize (this->posn.size());
-        this->rcpt0_EphA4.resize (this->posn.size(), _EphA4);
+        this->rcpt0_EphA4.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());

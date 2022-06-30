@@ -893,12 +893,8 @@ struct Agent1
             this->pending_branches[i].setr_i (r_i_conf);
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
             // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
-            this->pending_branches[i].epha4_attachment_proportion = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
             this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
             this->pending_branches[i].AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
-            this->pending_branches[i].side_attach_prob = this->mconf->getFloat("side_attach_prob", 1.0f);
-            this->pending_branches[i].normal_cluster_gain = this->mconf->getFloat("normal_cluster_gain", 1.0f);
-            this->pending_branches[i].enhanced_cluster_gain = this->mconf->getFloat("enhanced_cluster_gain", 1.0f);
             this->pending_branches[i].aid = (int)ri; // axon index
             if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
@@ -1159,7 +1155,6 @@ struct Agent1
         morph::Vector<interaction, N> tectum_reverse_interactions;
         for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
-        T _epha4 = this->mconf->getDouble ("ret_epha4_expression", T{0});
         // Expression form. Default of 6 means 'unexpressed'
         expression_form epha4_expression_form = (expression_form)this->mconf->getInt ("epha4_expression_form", 6);
 
@@ -1174,7 +1169,7 @@ struct Agent1
                                                 ret_reverse_interactions,
                                                 ret_rcptrcpt_interactions,
                                                 ret_rcpt_noise_gain,
-                                                ret_lgnd_noise_gain, _epha4, epha4_expression_form);
+                                                ret_lgnd_noise_gain, epha4_expression_form);
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
@@ -1440,7 +1435,7 @@ struct Agent1
         _vm->finalize();
         tvv->addVisualModel (_vm);
 
-        // Another graph
+        // Another graph (cluster size theory)
         offset2[1] += sqside * 1.2;
         morph::GraphVisual<T>* _vm2 = new morph::GraphVisual<T> (this->tvv->shaderprog, this->tvv->tshaderprog, offset2);
         _vm2->twodimensional = false;
@@ -1449,26 +1444,11 @@ struct Agent1
         _vm2->policy = morph::stylepolicy::lines;
         _vm2->ylabel = "Expression";
         _vm2->xlabel = "T.................N";
-#if 0
-        // Side-attachment theory (too complex, doesn't work)
-        _vm2->setlimits_y (0.0f, 1.0f);
-        float ap = this->mconf->getFloat("epha4_attachment_proportion", 0.0f);
-        morph::vVector<T> attached_EphAx = (T{1}-ap) * rcpt0 / (rcpt0 + rcpt0_EphA4);
-        morph::vVector<T> attached_EphA4 = ap * rcpt0_EphA4 / (rcpt0 + rcpt0_EphA4);
-        T side_attach_prob = this->mconf->getFloat("side_attach_prob", 1.0f);
-        morph::vVector<T> side_attached = (side_attach_prob * (rcpt0_EphA4 - attached_EphA4) / rcpt0_EphA4);
-        _vm2->setdata (nt, attached_EphAx, "EphAx lgnd-atchd");
-        _vm2->setdata (nt, attached_EphA4, "EphA4 lgnd-atchd");
-        _vm2->setdata (nt, side_attached, "EphAx lgnd+sideA4");
-#else
-        // Cluster size theory (simple, works :)
         _vm2->setlimits_y (0.0f, 2.5f);
         morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4;
-        T ncg = this->mconf->getFloat("normal_cluster_gain", 1.0f);
-        morph::vVector<T> r0_ = rcpt0 * cluster_size * ncg;
+        morph::vVector<T> r0_ = (rcpt0 * cluster_size).pow(AxToA4_power);
         _vm2->setdata (nt, cluster_size, "Cluster size (prop. 1/EphA4)");
         _vm2->setdata (nt, r0_, "Effective rcpt0 strength");
-#endif
         _vm2->finalize();
         tvv->addVisualModel (_vm2);
 

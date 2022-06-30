@@ -42,11 +42,7 @@ struct branch_base
     // Noise gain if required
     T noise_gain = T{1};
 
-    // Probability of a cluster having EphA4 'side-attachments', hypothesised to be a 'normal' EphA cluster
-    T side_attach_prob = T{1};
-    T normal_cluster_gain = T{1};
-    T enhanced_cluster_gain = T{1}; // An enhanced cluster is one with no EphA4 sides, and could be a larger cluster
-    T epha4_attachment_proportion = T{0};
+    // Parameters for special EphA4 model
     T AxToA4_power = T{2};
     T AxToA4_mult = T{0.01};
 };
