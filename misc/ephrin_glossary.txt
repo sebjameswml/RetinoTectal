@@ -13,3 +13,5 @@ ELF-1          ephrin-A2
 Mek4           EphA3                Hek,Hek4,Tyro4,Cek4
 
 Sek            EphA4                Sek1,Cek8,Hek8,Tyro1
+
+Cek7           EphA5                Hek7,Rek7,Ehk1,Bsk
