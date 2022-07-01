@@ -143,6 +143,8 @@ struct guidingtissue : public tissue<T>
     morph::vVector<T> rcpt0_EphA4;
     //! Functional form for rcpt0_EphA4
     expression_form EphA4_form;
+    T EphA4_const_expression = T{3.5};
+    T w_EphAx = T{0.25};
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
@@ -206,7 +208,8 @@ struct guidingtissue : public tissue<T>
                   morph::Vector<interaction, N> _rcptrcpt_int,
                   T _rcpt_noise_gain = T{0},
                   T _lgnd_noise_gain = T{0},
-                  expression_form _EphA4_form = expression_form::exp)
+                  expression_form _EphA4_form = expression_form::exp,
+                  T _EphA4_const_expression = 3.5)
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -218,6 +221,7 @@ struct guidingtissue : public tissue<T>
         , rcpt_noise_gain(_rcpt_noise_gain)
         , lgnd_noise_gain(_lgnd_noise_gain)
         , EphA4_form(_EphA4_form)
+        , EphA4_const_expression(_EphA4_const_expression)
     {
         this->rcpt.resize (this->posn.size());
         this->rcpt0_EphA4.resize (this->posn.size());
@@ -477,7 +481,11 @@ struct guidingtissue : public tissue<T>
     T const_minus_exp_expression (const T& x) const
     {
         // First multiplier (T{2.2}) is the EphA4 constant expression
-        return (T{2.2} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x))));
+        //return (T{2.2} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x))));
+
+        // Here, we get ephrinA from exponential expression.
+        T ephrinA = this->exponential_expression (1-x);
+        return EphA4_const_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
     }
 
     T expression_function (const T& x, const expression_form& ef) const

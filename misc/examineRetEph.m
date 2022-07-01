@@ -11,21 +11,29 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
 
   x = [0:0.05:1];
 
-  w_EphCommon = 0.25;
+  epha4_constant = 3.5;
+  # params
+  axpow = 1;
+  axmult = 0.01;
+
+  ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
+  ## 1997 for dissociation constants K_D = 6.16e-10 for ephrinA5/EphA5
+  ## and 1.44e-10 for ephrinA5/EphA3. Call it 3.8e-10 for EphAx,
+  ## ignore the magnitude and let w_EphAx = 0.25.
+  w_EphAx = 0.25
+  ## Binding affinity parameter for EphA4. K_D = 6.22e-10 for
+  ## ephrinA5, so binds slightly less well than EphA3/5. 0.611 = 3.8/6.22.
+  w_EphA4 = w_EphAx * 0.611
 
   _exp = 0.26 .* exp (2.3.*x) + 1.05; % T exponential_expression (const T& x)
 
-  ## Start with a certain amount of ephrinA
+  ## Start with a certain amount of ephrinA (ephrinA5 in retina - Frisen et al)
   ephrinA = fliplr(_exp);
 
+  ## Define an even expression of EphA4 (No nasal-temporal gradient)
+  _epha4 = ones(1,length(ephrinA)) .* epha4_constant - knockdown_epha4;
 
-  ## Even expression of EphA4
-  _epha4 = ones(1,length(ephrinA)) .* 2.0 - knockdown_epha4;
-
-  ## Binding affinity for EphA4
-  w_EphA4 = 0.25;
-
-  ## Let EphA4 get first dibs on ephrinA
+  ## Let EphA4 interact with cis ephrinA (Hornberger et al 1999)
   _p_epha4 = (w_EphA4 .* _epha4 .* ephrinA);
 
   ## Remaining epha4 could interact
@@ -36,9 +44,6 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
 
   ## And some expression of EphA3/x whatever
   EphAx = _exp + knockin_ephax;
-
-  ## Binding affinity for EphAx
-  w_EphAx = w_EphCommon;
 
   ## Some ephrinA binds to EphAx. Really, need a first order model that takes into account amount of EphAx and amount of ephrinA
   ephrinA_binds_EphAx = w_EphAx .* EphAx .* ephrinA_free;
@@ -85,7 +90,6 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   xlabel(strlbl)
   ylabel('Expression/Interaction')
 
-  axpow = 1;
   ###############################
   subplot(1,5,4);
   hold on;
@@ -94,10 +98,10 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
   #EphA4_free = 1.31 + 2.3333 .* x .* x; # This is what I have in the sim right now
   #EphA4_free = _p_epha4 # That's really _bound_ EphA4
 
-  ax = EphAx_free./EphA4_free;
+  axratio = EphAx_free./EphA4_free;
 
-  plot (x, 0.01 .* power(ax, axpow))
-  plot (x, EphAx_free .* 0.01 .* power(ax, axpow))
+  plot (x, axmult .* power(axratio, axpow))
+  plot (x, EphAx_free .* axmult .* power(axratio, axpow))
 
   lg1 = legend (['(Ax/A4)^k';'Ax * (Ax/A4)^k'], 'Location','North');
   xlabel(strlbl)
@@ -109,10 +113,10 @@ function examineRetEph (knockin_ephax = 0, knockdown_epha4 = 0, fn)
 
   plot (x, EphAx_free)
   plot (x, EphA4_free)
-  plot (x, EphAx_free + EphAx_free .* 0.1 .* power(ax, axpow))
-  plot (x, ax)
+  plot (x, EphAx_free + EphAx_free .* axmult .* power(axratio, axpow))
+  plot (x, axratio)
 
-  lg1 = legend (['Ax';'A4';'Ax(1 + (Ax/A4)^k)';'Ax/A4'], 'Location','North');
+  lg1 = legend (['Ax';'A4';'Ax(1 + m(Ax/A4)^k)';'Ax/A4'], 'Location','North');
   xlabel(strlbl)
   ylabel('Expression/Interaction')
 
