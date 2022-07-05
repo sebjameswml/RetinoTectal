@@ -100,27 +100,25 @@ public:
 
             // For rcpt[0], do a special thing if interaction is 'special_EphA'
             T r0 = this->rcpt[0]; // Default case
+            T r2 = this->rcpt[2];
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Cluster size is inversely proportional to amount of EphA4 available. T clustersize = T{1} / this->rcpt0_EphA4;
                 r0 = std::pow(this->rcpt[0] / this->rcpt0_EphA4, this->AxToA4_power);
-                /*
-                // Another computation I tried, which just adds a component to r0 based on the Ax/A4 ratio was:
-                T AxToA4_ratio = this->rcpt[0] / this->rcpt0_EphA4;
-                r0 = this->rcpt[0] * (T{1} + std::pow(AxToA4_ratio, this->AxToA4_power) * this->AxToA4_mult);
-                */
+                r2 *= this->AxToA4_mult;
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
                               || source_tissue->forward_interactions[0] == interaction::special_EphA;
 
+            //T compensator = T{1.2};
             G[0] = (r0 * (repulse0 ? -lg[0] : lg[0]))
                        + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
-                       + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
+                       + r2 * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
                        + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
             G[1] = (r0 * (repulse0 ? -lg[1] : lg[1]))
                        + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
-                       + this->rcpt[2] * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
+                       + r2 * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
                        + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
 
         } else if constexpr (N==2) {
