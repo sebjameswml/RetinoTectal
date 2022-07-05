@@ -755,11 +755,25 @@ struct guidingtissue : public tissue<T>
 
     void receptor_knockdown (size_t idx, T amount)
     {
+        static constexpr bool simple_r4_knockdown = true;
+
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         // Deal with special case...
         if (idx == 0 && this->forward_interactions[0] == interaction::special_EphA) {
             // In this case, we are knocking down JUST EphA4.
-            for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
+            if constexpr (simple_r4_knockdown == true) {
+                // Take the rcpt0_EphA4 curve and knock it down
+                for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
+            } else {
+                // Re-computation approach. Knock down the constant EphA4 expression, then recompute the curve.
+                size_t ii = 0;
+                for (auto p : this->posn) {
+                    T ephrinA = this->exponential_expression (1-p[0]);
+                    rcpt0_EphA4[ii] = (EphA4_const_expression > amount ? EphA4_const_expression-amount : T{0}) * (T{1} - 0.611 * this->w_EphAx * ephrinA);
+                    ++ii;
+                }
+            }
+
         } else {
             for (auto& r : this->rcpt) {
                 r[idx] = (r[idx] < amount ? T{0} : r[idx] - amount);
