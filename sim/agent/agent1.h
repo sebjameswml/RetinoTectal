@@ -1289,7 +1289,6 @@ struct Agent1
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
             this->ret->receptor_knockin (0, affected, ki_amount);
-            std::cout << "KNOCKDOWN!!!!!!!\n";
             this->ret->receptor_knockdown (0, kd_amount);
             // And the opposing receptor 2:
             std::cout << "opp_ki_amount = " << opp_ki_amount << ", opp_kd_amount = " << opp_kd_amount << std::endl;
@@ -1426,13 +1425,13 @@ struct Agent1
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
         float AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
-        float AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
-        morph::vVector<T> r0 = rcpt0 * (ratio.pow(AxToA4_power) * AxToA4_mult + 1);
+        morph::vVector<T> r0 = ratio.pow(AxToA4_power);
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4, "EphA4");
         _vm->setdata (nt, ratio, "EphAx/EphA4");
-        _vm->setdata (nt, r0, "rcpt * (1 + m EphAx/EphA4^k)");
+        std::string eatok = "(EphAx/EphA4)^" + std::to_string(AxToA4_power);
+        _vm->setdata (nt, r0, eatok);
         _vm->finalize();
         tvv->addVisualModel (_vm);
 
