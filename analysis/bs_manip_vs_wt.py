@@ -110,15 +110,33 @@ import h5py
 
 # The ORIGINAL model
 original_model = 1
-if original_model > 0:
-    filebases = ["../rcnt/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500",
-                 "../rcnt/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500",
-                 "../rcnt/j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500"]
-else:
-    # The FIXED model, with clustersize modification
+doitall = 1
+if doitall:
+    #filebases = ["../rcnt/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500",
+    #             "../rcnt/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500",
+    #             "../rcnt/j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500",
+    #             "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-wt_exit_true_steps_1500",
+    #             "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-wt_exit_true_steps_1500",
+    #             "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500",
+    #             "../rcnt/j4_ee_GJ_best_1_EphA4_eph_wt-kd_exit_true_steps_1500"]
     filebases = ["../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-wt_exit_true_steps_1500",
-                 "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-wt_exit_true_steps_1500",
                  "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500"]
+else:
+    if original_model > 0:
+        filebases = ["../rcnt/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500"]
+    else:
+        # The FIXED model, with clustersize modification
+        filebases = ["../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-wt_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-wt_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500"]
+
+from numpy import genfromtxt
+red = genfromtxt(fname = '../misc/reber_fig3_red.csv', delimiter=',', skip_header=1)
+grey = genfromtxt(fname = '../misc/reber_fig3_grey.csv', delimiter=',', skip_header=1)
+red = red / 100
+grey = grey / 100
 
 #from fnmatch import fnmatch
 import os
@@ -127,7 +145,7 @@ for fb in filebases:
     print ('File base: {0} (type {1})'.format(fb, type(fb)))
 
     # For each filebase, collect stats and draw a graph
-    rc   = np.array([])
+    rc   = []
     rc_m = np.array([])
     nt   = np.array([])
     nt_m = np.array([])
@@ -144,11 +162,14 @@ for fb in filebases:
                 print('Processing: {0}'.format(filepath))
 
                 with h5py.File (filepath, 'r') as f:
-                    rc   = np.append(rc, np.array(list(f['/rc'])))   # want to append to rc.
+                    #rc.append(np.array(list(f['/rc'])))
+                    rc = np.append(rc, np.array(list(f['/rc'])))
                     rc_m = np.append(rc_m, np.array(list(f['/rc_m'])))
                     nt   = np.append(nt, np.array(list(f['/nt'])))
                     nt_m = np.append(nt_m, np.array(list(f['/nt_m'])))
 
+    #print ('Sizes of rc/rc_m/nt/nt_m: {0}/{1}/{2}/{3}'.format (len(rc),len(rc_m),len(nt),len(nt_m)))
+    #print ('Shape of rc[0]: {0}'.format (np.shape (rc[0]))) # rc is a list we can iterate through.
     # Two lines plot the points
     #plt.plot (nt, rc, marker='x', linestyle="none", color=clr1)
     #plt.plot (nt_m, rc_m, marker='o', linestyle="none", color=clr2)
@@ -158,6 +179,7 @@ for fb in filebases:
     #print ("nt_m: {0}".format(np.unique(nt_m)))
 
     nt_vals = np.unique(nt)
+    print ('Size of nt_vals is (cf nt): {0}'.format(len(nt_vals)))
 
     nt_means_wt_mean = []
     nt_means_wt_stderr = []
@@ -175,10 +197,10 @@ for fb in filebases:
         idx_wt = np.asarray(nt==ntv).nonzero()
         idx_manip = np.asarray(nt_m==ntv).nonzero()
 
-        rcs_wt = rc[idx_wt]
+        rcs_wt = rc[idx_wt] # This is why my bootstrap thing isn't giving the right result.
         rcs_manip = rc_m[idx_manip]
-        #print ('rcs_wt: {0}'.format (rcs_wt))
-        #print ('rcs_manip: {0}'.format (rcs_manip))
+        print ('rcs_wt size: {0}'.format (len(rcs_wt)))
+        print ('rcs_manip size: {0}'.format (len(rcs_manip)))
         # Now statistically test if rcs_wt and rcs_manip are from the same distribution or not
         asl, minasl = bootstrap_ttest_equalityofmeans (rcs_wt, rcs_manip, 10000)
         print ("for nt value {0}, asl of bootstrap test = {1} (raw {2})".format(ntv, (asl if asl > 0 else minasl), asl))
@@ -204,12 +226,37 @@ for fb in filebases:
     # error bar plot
     #plt.errorbar (nt_vals, nt_means_wt_mean, nt_means_wt_sd, capsize=10, color=clr1)
     #plt.errorbar (nt_vals, nt_means_manip_mean, nt_means_manip_sd, capsize=10, color=clr2)
-    # Violins
-    plt.violinplot (all_rcs_wt, nt_vals, widths=0.05)
-    plt.violinplot (all_rcs_manip, nt_vals, widths=0.05)
-    # Non-error bar
+
+    # Violin plots
+    vbits = plt.violinplot (all_rcs_wt, nt_vals, widths=0.05)
+    for pc in vbits['bodies']:
+        pc.set_facecolor(clr1)
+        pc.set_edgecolor(clr1)
+    for partname in ('cbars','cmins','cmaxes'):
+        vp = vbits[partname]
+        vp.set_edgecolor(clr1)
+        vp.set_linewidth(1)
+
+    vbits = plt.violinplot (all_rcs_manip, nt_vals, widths=0.05)
+    for pc in vbits['bodies']:
+        pc.set_facecolor(clr2)
+        pc.set_edgecolor(clr2)
+    for partname in ('cbars','cmins','cmaxes'):
+        vp = vbits[partname]
+        vp.set_edgecolor(clr2)
+        vp.set_linewidth(1)
+
     plt.plot (nt_vals, nt_means_wt_mean, color=clr1)
     plt.plot (nt_vals, nt_means_manip_mean, color=clr2)
+
+    # Expt data
+    show_expt = 0
+    if show_expt:
+        if 'eph_ki-kd' in fb:
+            plt.plot (red[:,0],red[:,1],'o',color=C.crimson)
+        elif 'eph_ki-wt' in fb:
+            plt.plot(grey[:,0],grey[:,1],'o',color=C.grey30)
+
     plt.xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     plt.ylabel('R {0} tectum {0} C'.format(u"\u27f6"))
 
