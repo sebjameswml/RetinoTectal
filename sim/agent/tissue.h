@@ -68,7 +68,8 @@ enum class expression_form
     exp3,        // 7. An exponential function intermediate between exp and exp2. Competition required, but not so much as for exp
     exp4,        // 8. A double exponential, for investigating the genetic experiments.
     sigmoid,     // 9. S shaped - a sigmoid like function
-    c_minus_exp  // 10. An expression (const - exp) for free EphA4 receptors on retina
+    c_minus_exp, // 10. An expression (const - exp) for free EphA4 receptors on retina
+    epha4_one    // 11. Another special expression (const - exp) for free EphA4 receptors on retina.
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -144,6 +145,7 @@ struct guidingtissue : public tissue<T>
     //! Functional form for rcpt0_EphA4
     expression_form EphA4_form;
     T EphA4_const_expression = T{3.5};
+    T EphA4_knockdown_expression = T{2.5};
     T w_EphAx = T{0.25};
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
@@ -480,9 +482,6 @@ struct guidingtissue : public tissue<T>
 
     T const_minus_exp_expression (const T& x) const
     {
-        // First multiplier (T{2.2}) is the EphA4 constant expression
-        //return (T{2.2} * (T{1.2625} - T{0.065} * std::exp (T{2.3} * (T{1}-x))));
-
         // Here, we get ephrinA from exponential expression.
         T ephrinA = this->exponential_expression (1-x);
         return EphA4_const_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
@@ -522,6 +521,9 @@ struct guidingtissue : public tissue<T>
         case expression_form::c_minus_exp:
             rtn = this->const_minus_exp_expression (x);
             break;
+        case expression_form::epha4_one:
+            rtn = this->EphA4_expression_function_one (x);
+            break;
         case expression_form::unexpressed:
         default:
             break;
@@ -532,6 +534,13 @@ struct guidingtissue : public tissue<T>
     T rcpt_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->rcpt_form[i]); }
     T lgnd_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->lgnd_form[i]); }
     T EphA4_expression_function (const T& x) const { return this->expression_function (x, this->EphA4_form); }
+
+    T EphA4_expression_function_one (const T& x) const {
+        return         T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.6} * (1-x)) + T{2.35}));
+    }
+    T EphA4_knockdown_function (const T& x) const {
+        return T{-0.8} + T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.8} * (x)) + T{2.35}));
+    }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return
     //! this.  Note: Not a function (like linear_gradient()) but a lookup, because this
@@ -753,23 +762,39 @@ struct guidingtissue : public tissue<T>
         this->compute_gradients();
     }
 
+    enum class knockdown_method {
+        simple,            // Take rcpt_EphA4 and knock it down by a scalar
+        recompute,         // Knock down EphA4_const_expression by a scalar and recompute
+        separate_function  // Use a separate function for the knockdown.
+    };
     void receptor_knockdown (size_t idx, T amount)
     {
-        static constexpr bool simple_r4_knockdown = true;
+        static constexpr knockdown_method special_epha_knockdown = knockdown_method::separate_function;
 
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         // Deal with special case...
         if (idx == 0 && this->forward_interactions[0] == interaction::special_EphA) {
             // In this case, we are knocking down JUST EphA4.
-            if constexpr (simple_r4_knockdown == true) {
+            this->EphA4_knockdown_expression = this->EphA4_const_expression > amount ? this->EphA4_const_expression-amount : T{0};
+            if (this->EphA4_knockdown_expression == T{0}) {
+                std::cout << "Info: Knocked EphA4 expression down to ZERO\n";
+            }
+            if constexpr (special_epha_knockdown == knockdown_method::simple) {
                 // Take the rcpt0_EphA4 curve and knock it down
                 for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
-            } else {
+            } else if constexpr (special_epha_knockdown == knockdown_method::recompute) {
                 // Re-computation approach. Knock down the constant EphA4 expression, then recompute the curve.
                 size_t ii = 0;
                 for (auto p : this->posn) {
                     T ephrinA = this->exponential_expression (1-p[0]);
-                    rcpt0_EphA4[ii] = (EphA4_const_expression > amount ? EphA4_const_expression-amount : T{0}) * (T{1} - 0.611 * this->w_EphAx * ephrinA);
+                    rcpt0_EphA4[ii] = this->EphA4_knockdown_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
+                    ++ii;
+                }
+            } else if constexpr (special_epha_knockdown == knockdown_method::separate_function) {
+                size_t ii = 0;
+                for (auto p : this->posn) {
+                    T x = T{1}-p[0];
+                    rcpt0_EphA4[ii] = this->EphA4_knockdown_function (x);
                     ++ii;
                 }
             }

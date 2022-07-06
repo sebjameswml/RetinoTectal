@@ -1556,6 +1556,72 @@
        id="path9931-1"
        d="M 0,0 H -3.5"
        inkscape:connector-curvature="0" />
+    <style
+       id="style23468"
+       type="text/css">
+*{stroke-linecap:butt;stroke-linejoin:round;}
+  </style>
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="m5b1015d319"
+       d="M 0 0  L 0 3.5  " />
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="m8cbc82b9f8"
+       d="M 0 0  L -3.5 0  " />
+    <clipPath
+       id="pc70022868d">
+      <rect
+         id="rect23986"
+         y="19.44"
+         x="76.34"
+         width="365.02"
+         height="261.16" />
+    </clipPath>
+    <style
+       id="style24310"
+       type="text/css">
+*{stroke-linecap:butt;stroke-linejoin:round;}
+  </style>
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="m950bf0d900"
+       d="M 0 0  L 0 3.5  " />
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="m9b1e264142"
+       d="M 0 0  L -3.5 0  " />
+    <clipPath
+       id="paba393af3d">
+      <rect
+         id="rect24828"
+         y="19.44"
+         x="76.34"
+         width="365.02"
+         height="261.16" />
+    </clipPath>
+    <style
+       id="style25152"
+       type="text/css">
+*{stroke-linecap:butt;stroke-linejoin:round;}
+  </style>
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="me29ea155c8"
+       d="M 0 0  L 0 3.5  " />
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="m89bee90e16"
+       d="M 0 0  L -3.5 0  " />
+    <clipPath
+       id="pe229010de8">
+      <rect
+         id="rect25670"
+         y="19.44"
+         x="76.34"
+         width="365.02"
+         height="261.16" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -1565,8 +1631,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="1225.6006"
-     inkscape:cy="812.75396"
+     inkscape:cx="2039.5222"
+     inkscape:cy="711.29617"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1576,8 +1642,8 @@
      fit-margin-bottom="0"
      inkscape:window-width="2641"
      inkscape:window-height="1646"
-     inkscape:window-x="391"
-     inkscape:window-y="210"
+     inkscape:window-x="592"
+     inkscape:window-y="206"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata5">
@@ -1607,30 +1673,30 @@
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500.png"
-       y="239.1192"
-       x="-146.45021"
-       id="image2675"
-       preserveAspectRatio="none"
+       width="508"
        height="151.87083"
-       width="508" />
+       preserveAspectRatio="none"
+       id="image2675"
+       x="-146.45021"
+       y="239.1192" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500.png"
-       y="-64.622467"
-       x="-146.45021"
-       id="image2756"
-       preserveAspectRatio="none"
+       width="508"
        height="151.87083"
-       width="508" />
+       preserveAspectRatio="none"
+       id="image2756"
+       x="-146.45021"
+       y="-64.622467" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500.png"
-       y="87.248367"
-       x="-146.45021"
-       id="image2821"
-       preserveAspectRatio="none"
+       width="508"
        height="151.87083"
-       width="508" />
+       preserveAspectRatio="none"
+       id="image2821"
+       x="-146.45021"
+       y="87.248367" />
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.29255801;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect11805"

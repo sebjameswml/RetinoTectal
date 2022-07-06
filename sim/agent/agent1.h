@@ -1289,7 +1289,10 @@ struct Agent1
             if (manipulated) { throw std::runtime_error ("Code is only tested for one manipulation at a time!"); }
             // Knockin/knockdown receptor 0:
             this->ret->receptor_knockin (0, affected, ki_amount);
-            this->ret->receptor_knockdown (0, kd_amount);
+            if (kd_amount > T{0}) {
+                std::cout << "Applying retinal receptor knockdown...\n";
+                this->ret->receptor_knockdown (0, kd_amount);
+            }
             // And the opposing receptor 2:
             std::cout << "opp_ki_amount = " << opp_ki_amount << ", opp_kd_amount = " << opp_kd_amount << std::endl;
             this->ret->receptor_knockin (2, affected, opp_ki_amount);

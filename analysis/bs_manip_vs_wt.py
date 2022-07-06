@@ -145,7 +145,7 @@ for fb in filebases:
     print ('File base: {0} (type {1})'.format(fb, type(fb)))
 
     # For each filebase, collect stats and draw a graph
-    rc   = []
+    rc   = np.array([])
     rc_m = np.array([])
     nt   = np.array([])
     nt_m = np.array([])
