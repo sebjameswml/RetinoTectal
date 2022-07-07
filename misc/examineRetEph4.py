@@ -10,7 +10,7 @@ clr_knockdown = C.cyan2
 clr_wt = C.yellowgreen
 # Set plotting font defaults
 import matplotlib
-fs = 16
+fs = 8
 fnt = {'family' : 'DejaVu Sans',
        'weight' : 'regular',
        'size'   : fs}
@@ -59,20 +59,21 @@ def examineRetEph():
     ## Remaining epha4 could interact
     EphA4_free = _epha4 - _p_epha4
 
-
+    pAx = 1.0
+    pA4 = 0.0
 
     ## EphA4_expression_function_one
     EphA4_free = 3.5 * (1 - w_EphA4 * (0.26 * np.exp (1.6*(1-x)) + 2.35));
 
     ## EphA4_knockdown_function w_EphA4 = 0.15275
-    EphA4_free_kd = -0.8 + 3.5 * (1 -  w_EphA4 * (0.26 * np.exp (1.8*(x)) + 2.35))
+    EphA4_free_kd = -0.35 + 3.5 * (1 -  w_EphA4 * (0.26 * np.exp (1.0*(1-x)) + 2.35))
 
 
 
     ## And some expression of EphA3/x whatever
     EphAx = _exp
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16,6))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8,2.4))
 
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='EphAx')
@@ -95,17 +96,18 @@ def examineRetEph():
 
     #ax3.plot (x, 1/EphA4_free, linestyle='-.', color=clr_wt, label='Cluster size (1/EphA4 free)')
     #ax3.plot (x, 1/(EphA4_free_kd), linestyle='-.', color=clr_knockdown, label='Cluster size (kd)')
-    ax3.plot (x, EphAx+0.5*EphA4_free/EphA4_free, linestyle='-', color=clr_wt, label='Signal (WT)')
-    ax3.plot (x, EphAx+0.5*EphA4_free/(EphA4_free_kd), linestyle='-', color=clr_knockdown, label='Signal (kd)')
-    ax3.plot (x, (EphAx+ki+0.5*EphA4_free)/(EphA4_free), linestyle='-', color=clr_knockin, label='Signal (ki)')  # FIX so not red-green colour bind unfriendly!
+    e4power = 1
+    ax3.plot (x, (pAx*EphAx + pA4*EphA4_free)/(np.power(EphA4_free, e4power)), linestyle='-', color=clr_wt, label='Signal (WT)')
+    ax3.plot (x, (pAx*EphAx + pA4*EphA4_free_kd)/(np.power(EphA4_free_kd, e4power)), linestyle='-', color=clr_knockdown, label='Signal (kd)')
+    ax3.plot (x, (pAx*(EphAx+ki)+pA4*EphA4_free)/(np.power(EphA4_free, e4power)), linestyle='-', color=clr_knockin, label='Signal (ki)')
     ##ax3.plot (x, (EphAx+kiki)/(EphA4_free), linestyle='-', color=C.crimson, label='Signal (kiki)')
     ## How to make this alternating red/green?
-    ax3.plot (x, (EphAx+ki+0.5*EphA4_free)/(EphA4_free_kd), linestyle='-', color=clr_knockdown)
-    ax3.plot (x, (EphAx+ki+0.5*EphA4_free)/(EphA4_free_kd), linestyle='--', color=clr_knockin, dashes=(5, 5))
+    ax3.plot (x, (pAx*(EphAx+ki)+pA4*EphA4_free_kd)/(np.power(EphA4_free_kd, e4power)), linestyle='-', color=clr_knockdown)
+    ax3.plot (x, (pAx*(EphAx+ki)+pA4*EphA4_free_kd)/(np.power(EphA4_free_kd, e4power)), linestyle='--', color=clr_knockin, dashes=(5, 5))
     ax3.legend()
     ax3.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax3.set_ylabel('Signal')
-    ax3.set_ylim(0,5)
+    #ax3.set_ylim(0,5)
 
     plt.tight_layout()
     fn = 'epha_fig.svg'

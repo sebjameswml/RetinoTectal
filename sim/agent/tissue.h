@@ -539,7 +539,7 @@ struct guidingtissue : public tissue<T>
         return         T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.6} * (1-x)) + T{2.35}));
     }
     T EphA4_knockdown_function (const T& x) const {
-        return T{-0.8} + T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.8} * (x)) + T{2.35}));
+        return T{-0.35} + T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.0} * (1-x)) + T{2.35}));
     }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return

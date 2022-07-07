@@ -101,9 +101,11 @@ public:
             // For rcpt[0], do a special thing if interaction is 'special_EphA'
             T r0 = this->rcpt[0]; // Default case
             T r2 = this->rcpt[2];
+            static constexpr T pAx = T{1};
+            static constexpr T pA4 = T{0};
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Cluster size is inversely proportional to amount of EphA4 available. T clustersize = T{1} / this->rcpt0_EphA4;
-                r0 = std::pow(this->rcpt[0] / this->rcpt0_EphA4, this->AxToA4_power);
+                r0 = std::pow( ((pAx * this->rcpt[0]) + (pA4 * this->rcpt0_EphA4)) / this->rcpt0_EphA4, this->AxToA4_power);
                 r2 *= this->AxToA4_mult;
             }
 
