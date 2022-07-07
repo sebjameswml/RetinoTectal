@@ -20,8 +20,7 @@ import pylab
 pylab.rcParams['svg.fonttype'] = 'none'
 
 def clustersz (EphAx, EphA4):
-    #cs = (1.0 + np.exp(0.1 * (EphAx-np.min(EphAx)))) / EphA4
-    cs = 1 + 10 * np.exp(1.0*(EphAx-np.min(EphAx)))/(100* EphA4)
+    cs = 1 + 10 * np.exp(0.45*(EphAx-np.min(EphAx)))/(100 * EphA4)
     return cs
 
 ##
@@ -36,8 +35,8 @@ def examineRetEph():
     axmult = 0.01
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
-    kd = 1.2
-    ki = 1.0
+    kd = 1
+    ki = 2.0
     kiki = 3.0
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
@@ -63,12 +62,13 @@ def examineRetEph():
 
     ## Remaining epha4 could interact
     EphA4_free = _epha4 - _p_epha4
+    EphA4_free_kd = EphA4_free - kd
 
     ## EphA4_expression_function_one
-    EphA4_free = 3.5 * (1 - w_EphA4 * (0.26 * np.exp (1.6*(1-x)) + 2.35));
+    ##EphA4_free = 3.5 * (1 - w_EphA4 * (0.26 * np.exp (1.6*(1-x)) + 2.35));
 
     ## EphA4_knockdown_function w_EphA4 = 0.15275
-    EphA4_free_kd = -0.35 + 3.5 * (1 -  w_EphA4 * (0.26 * np.exp (1.0*(1-x)) + 2.35))
+    ##EphA4_free_kd = -0.35 + 3.5 * (1 -  w_EphA4 * (0.26 * np.exp (1.0*(1-x)) + 2.35))
 
 
 
