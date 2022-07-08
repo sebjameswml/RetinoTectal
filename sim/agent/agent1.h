@@ -1449,9 +1449,9 @@ struct Agent1
         _vm2->xlabel = "T.................N";
         _vm2->setlimits_y (0.0f, 2.5f);
         //morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4;
-        morph::vVector<T> cluster_size = (T{10} * ((rcpt0 - T{1.31})*T{0.45}).exp() / (rcpt0_EphA4 * T{100})) + T{1};
-        morph::vVector<T> r0_ = (rcpt0 * cluster_size).pow(AxToA4_power);
-        _vm2->setdata (nt, cluster_size, "Cluster size (prop. 1/EphA4)");
+        morph::vVector<T> cluster_size = (T{10} * ((rcpt0 - T{1.31})*T{0.5}).exp() / (rcpt0_EphA4 * T{100})) + T{0.2};
+        morph::vVector<T> r0_ = (rcpt0 * cluster_size * cluster_size * T{4}).pow(AxToA4_power);
+        _vm2->setdata (nt, cluster_size, "Cluster size");
         _vm2->setdata (nt, r0_, "Effective rcpt0 strength");
         _vm2->finalize();
         tvv->addVisualModel (_vm2);

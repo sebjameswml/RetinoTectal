@@ -106,7 +106,7 @@ public:
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Cluster size is inversely proportional to amount of EphA4 available. T clustersize = T{1} / this->rcpt0_EphA4;
                 //r0 = std::pow( ((pAx * this->rcpt[0]) + (pA4 * this->rcpt0_EphA4)) / this->rcpt0_EphA4, this->AxToA4_power);
-                T clustersize = T{1} + T{10} * std::exp(T{0.45} * (this->rcpt[0] - 1.31)) / (T{100} * this->rcpt0_EphA4);
+                T clustersize = T{0.2} + T{10} * std::exp(T{0.5} * (this->rcpt[0] - 1.31)) / (T{100} * std::pow(this->rcpt0_EphA4, 3));
                 r0 = std::pow(this->rcpt[0] * clustersize, this->AxToA4_power);
                 r2 *= this->AxToA4_mult;
             }
