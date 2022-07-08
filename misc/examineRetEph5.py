@@ -19,8 +19,9 @@ matplotlib.rc('font', **fnt)
 import pylab
 pylab.rcParams['svg.fonttype'] = 'none'
 
-def clustersz (EphAx, EphA4):
-    cs = 1 + 10 * np.exp(0.45*(EphAx-np.min(EphAx)))/(100 * EphA4)
+def clustersz (_EphAx, ki, _EphA4):
+    #print ('_EphAx min: {0}'.format (np.min(_EphAx))) # It's 1.31 here.
+    cs = 1 + 10 * np.exp(0.45*((_EphAx+ki)-np.min(_EphAx)))/(100 * _EphA4)
     return cs
 
 ##
@@ -36,7 +37,7 @@ def examineRetEph():
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
     kd = 1
-    ki = 2.0
+    ki = 3.0
     kiki = 3.0
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
@@ -75,7 +76,7 @@ def examineRetEph():
     ## And some expression of EphA3/x whatever
     EphAx = _exp
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(10,2.4))
+    fig, (ax1, ax2, ax3, ax31, ax4) = plt.subplots(1, 5, figsize=(13,2.4))
 
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='EphAx')
@@ -96,20 +97,33 @@ def examineRetEph():
     ax2.set_ylabel('Expression/Interaction')
     ax2.set_ylim(0,5)
 
-
-    ax3.plot (EphAx, clustersz (EphAx, 1), label='EphA4 = 1')
-    ax3.plot (EphAx, clustersz (EphAx, 1.5), label='EphA4 = 1.5')
-    ax3.plot (EphAx, clustersz (EphAx, 2), label='EphA4 = 2')
+    # Cluster size vs. EphAx/N/T posn
+    # Or vs. EphAx:
+    ax3.plot (EphAx, clustersz (EphAx, 0, 1), label='EphA4 = 1')
+    ax3.plot (EphAx, clustersz (EphAx, 0, 1.5), label='EphA4 = 1.5')
+    ax3.plot (EphAx, clustersz (EphAx, 0, 2), label='EphA4 = 2')
     ax3.legend()
     ax3.set_xlabel('EphAx')
     ax3.set_ylabel('Clustersize')
 
+    ax31.plot (x, clustersz (EphAx, 0, 1), label='EphA4 = 1')
+    ax31.plot (x, clustersz (EphAx, 0, 1.5), label='EphA4 = 1.5')
+    ax31.plot (x, clustersz (EphAx, 0, 2), label='EphA4 = 2')
+    print ('EphAx: {0}'.format(EphAx))
+    print ('EphAx ki: {0}'.format(EphAx+ki))
+    ax31.plot (x, clustersz (EphAx, ki, 1), label='ki EphA3, EphA4 = 1')
+    ax31.plot (x, clustersz (EphAx, ki, 1.5), label='ki EphA3, EphA4 = 1.5')
+    ax31.plot (x, clustersz (EphAx, ki, 2), label='ki EphA3, EphA4 = 2')
+    ax31.legend()
+    ax31.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
+    ax31.set_ylabel('Clustersize')
+
     e4power = 1
-    ax4.plot (x, (EphAx) * (clustersz(EphAx, EphA4_free)), linestyle='-', color=clr_wt, label='Signal (WT)')
-    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx+ki, EphA4_free)), linestyle='-', color=clr_knockin, label='Signal (ki)')
-    ax4.plot (x, (EphAx) * (clustersz(EphAx, EphA4_free_kd)), linestyle='-', color=clr_knockdown, label='Signal (kd)')
-    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx+ki, EphA4_free_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx+ki, EphA4_free_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
+    ax4.plot (x, (EphAx) * (clustersz(EphAx, 0, EphA4_free)), linestyle='-', color=clr_wt, label='Signal (WT)')
+    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx, ki, EphA4_free)), linestyle='-', color=clr_knockin, label='Signal (ki)')
+    ax4.plot (x, (EphAx) * (clustersz(EphAx, 0, EphA4_free_kd)), linestyle='-', color=clr_knockdown, label='Signal (kd)')
+    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx, ki, EphA4_free_kd)), linestyle='-', color=clr_knockdown)
+    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx, ki, EphA4_free_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
     ax4.legend()
     ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax4.set_ylabel('Signal')

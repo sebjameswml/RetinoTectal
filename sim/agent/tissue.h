@@ -769,7 +769,7 @@ struct guidingtissue : public tissue<T>
     };
     void receptor_knockdown (size_t idx, T amount)
     {
-        static constexpr knockdown_method special_epha_knockdown = knockdown_method::separate_function;
+        static constexpr knockdown_method special_epha_knockdown = knockdown_method::simple;
 
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         // Deal with special case...
@@ -823,6 +823,14 @@ struct guidingtissue : public tissue<T>
     {
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         if (affected < T{0} || affected > T{1}) { throw std::runtime_error ("'affected' proportion out of range"); }
+        static constexpr bool debug_rcpt0_min = true;
+        if constexpr (debug_rcpt0_min == true) {
+            morph::vVector<T> dvec;
+            for (size_t ri = 0; ri < this->rcpt.size(); ++ri) {
+                dvec.push_back (rcpt[ri][idx]);
+            }
+            std::cout << "Minimum of rcpt[idx=" << idx << "] is " << dvec.min() << std::endl;
+        }
         if constexpr (random_knockin == true) {
             morph::RandUniform<T> rng(0,1);
             std::vector<T> rns = rng.get(this->rcpt.size());
