@@ -21,7 +21,8 @@ pylab.rcParams['svg.fonttype'] = 'none'
 
 def clustersz (_EphAx, ki, _EphA4):
     #print ('_EphAx min: {0}'.format (np.min(_EphAx))) # It's 1.31 here.
-    cs = 0.2 + 10 * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))/(100 * np.power(_EphA4, 3))
+    x = np.linspace(0,1,21)
+    cs = 0.2 +  (1-x) * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))/(10 * np.power(_EphA4, 2))
     return cs
 
 ##
@@ -101,21 +102,30 @@ def examineRetEph():
 
     # Cluster size vs. EphAx/N/T posn
     # Or vs. EphAx:
-    ax3.plot (EphAx, clustersz (EphAx, 0, 0.5), label='EphA4 = 0.5')
-    ax3.plot (EphAx, clustersz (EphAx, 0, 1.5), label='EphA4 = 1.5')
+    ax3.plot (EphAx, clustersz (EphAx, 0, 0.5), label='EphA4 = 0.5', color=clr_knockdown)
+    ax3.plot (EphAx, clustersz (EphAx, 0, 1.5), label='EphA4 = 1.5', color=clr_wt)
     ax3.legend()
     ax3.set_xlabel('EphAx')
     ax3.set_ylabel('Clustersize')
+    yl = ax3.get_ylim()
+    yl = (0, yl[1])
+    ax3.set_ylim(yl)
 
-    ax31.plot (x, clustersz (EphAx, 0, 0.5), label='EphA4 = 0.5')
-    ax31.plot (x, clustersz (EphAx, 0, 1.5), label='EphA4 = 1.5')
+    ax31.plot (x, clustersz (EphAx, 0, 0.5), label='EphA4 = 0.5', color=clr_knockdown)
+    ax31.plot (x, clustersz (EphAx, 0, 1.5), label='EphA4 = 1.5', color=clr_wt)
     print ('EphAx: {0}'.format(EphAx))
     print ('EphAx ki: {0}'.format(EphAx+ki))
-    ax31.plot (x, clustersz (EphAx, ki, 0.5), label='ki EphA3, EphA4 = 0.5')
-    ax31.plot (x, clustersz (EphAx, ki, 1.5), label='ki EphA3, EphA4 = 1.5')
+    ax31.plot (x, clustersz (EphAx, ki, 0.5), label='ki EphA3, EphA4 = 0.5', color=clr_knockin)
+    ax31.plot (x, clustersz (EphAx, ki, 0.5), label='ki EphA3, EphA4 = 0.5', linestyle='--', color=clr_knockdown, dashes=(5, 5))
+    ax31.plot (x, clustersz (EphAx, ki, 1.5), label='ki EphA3, EphA4 = 1.5', color=clr_knockin)
+
+
     ax31.legend()
     ax31.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax31.set_ylabel('Clustersize')
+    yl = ax31.get_ylim()
+    yl = (0, yl[1])
+    ax31.set_ylim(yl)
 
     e4power = 1
     ax4.plot (x, (EphAx) * (clustersz(EphAx, 0, EphA4_free)), linestyle='-', color=clr_wt, label='Signal (WT)')
@@ -126,11 +136,13 @@ def examineRetEph():
     ax4.legend()
     ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax4.set_ylabel('Signal')
+    yl = ax4.get_ylim()
+    yl = (0, yl[1])
+    ax4.set_ylim(yl)
 
     plt.tight_layout()
     fn = 'epha_fig.svg'
     plt.savefig(fn)
     plt.show()
-
 
 examineRetEph()
