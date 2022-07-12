@@ -902,12 +902,14 @@ struct Agent1
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
                 //std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
+                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;

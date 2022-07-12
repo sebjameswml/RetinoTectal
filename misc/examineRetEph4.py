@@ -1,5 +1,6 @@
 #
-# *Choose* expression functions so that model reproduces data.
+# This is now a script to produce a figure that shows the 1/r_A4 cluster size
+# relationships
 #
 
 import numpy as np
