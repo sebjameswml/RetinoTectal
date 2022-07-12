@@ -75,8 +75,8 @@ public:
         return lg;
     }
 
-    // Used in compute_chemo(). Function for EphA cluster size.
-    T clustersize() const
+    // Used in compute_chemo(). Function for EphA cluster size. Matches fn in exampleRetEph_complex.py
+    T clustersz() const
     {
         T numer = (this->rcpt0_EphA4_phos - T{0.8404305}) * std::exp(T{0.5} * (this->rcpt[0] - T{1.31}));
         T denom = T{10} * std::pow (this->rcpt0_EphA4, 3) + T{2};
@@ -86,7 +86,7 @@ public:
     }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
-    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
+    T signal (const T rcpt0, const T csize) const { return this->AxToA4_mult * rcpt0 * csize; }
 
     // A subroutine of compute_next
     morph::Vector<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
@@ -116,8 +116,8 @@ public:
             T r2 = this->rcpt[2];
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute a signal that is based on a clustersize:
-                r0 = this->signal (this->rcpt[0], this->clustersize());
-                r2 *= this->AxToA4_mult;
+                r0 = this->signal (this->rcpt[0], this->clustersz());
+                //r2 *= this->AxToA4_mult;
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion

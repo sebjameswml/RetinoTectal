@@ -20,16 +20,10 @@ matplotlib.rc('font', **fnt)
 import pylab
 pylab.rcParams['svg.fonttype'] = 'none'
 
+## Computation of a cluster size. Matches C++ fn branch::clustersz() in branch.h
 def clustersz (_EphAx, ki, _EphA4, _EphA4_cisbound):
-    #print ('_EphAx min: {0}'.format (np.min(_EphAx))) # It's 1.31 here.
-    #x = np.linspace(0,1,21)
-    #k = 1
-    # k can be function of x, but it'd be better as some function of EphAx/EphA4. Perhaps of EphA4 cis-bound?
-    #k = (1-x) # <- make cluster size tend towards the constant. But, this leaves nothing to deal with the difference between the knockin and the non-knockin.
-
     # Numerator is an exponential function of EphAx expression.
-    print ('np.min(_EphA4_cisbound) = {0}'.format(np.min(_EphA4_cisbound)))
-    numer = (_EphA4_cisbound-np.min(_EphA4_cisbound)) * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))
+    numer = (_EphA4_cisbound-1.5) * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))
     # Denominator is some power of EphA4. The + 2 limits how large the clustersize can become.
     denom = (10 * np.power(_EphA4, 2) + 2)
     ratio = numer / denom
@@ -37,8 +31,9 @@ def clustersz (_EphAx, ki, _EphA4, _EphA4_cisbound):
 
     return cs
 
+## The signal function.
 def signal (rcpt, cs):
-    return 4 * rcpt * cs * cs
+    return rcpt * cs * 1.5
 
 ##
 ## Epha3/Epha4
@@ -121,8 +116,8 @@ def examineRetEph():
 
     # Cluster size vs. EphAx/N/T posn
     # Or vs. EphAx:
-    ax3.plot (EphAx, clustersz (EphAx, 0, 0.5, _p_epha4), label='EphA4 = 0.5', color=clr_knockdown)
-    ax3.plot (EphAx, clustersz (EphAx, 0, 1.5, _p_epha4), label='EphA4 = 1.5', color=clr_wt)
+    ax3.plot (EphAx, clustersz (EphAx, 0, 0.5, _p_epha4), label='$r_{A4} = 0.5$', color=clr_knockdown)
+    ax3.plot (EphAx, clustersz (EphAx, 0, 1.5, _p_epha4), label='$r_{A4} = 1.5$', color=clr_wt)
     ax3.legend()
     ax3.set_xlabel('EphAx')
     ax3.set_ylabel('Clustersize')
@@ -130,16 +125,21 @@ def examineRetEph():
     yl = (0, yl[1])
     ax3.set_ylim(yl)
 
-    ax31.plot (x, clustersz (EphAx, 0, 0.5, _p_epha4), label='EphA4 = 0.5', color=clr_knockdown)
-    ax31.plot (x, clustersz (EphAx, 0, 1.5, _p_epha4), label='EphA4 = 1.5', color=clr_wt)
-    print ('EphAx: {0}'.format(EphAx))
-    print ('EphAx ki: {0}'.format(EphAx+ki))
+    ax31.plot (x, clustersz (EphAx, 0, 0.5, _p_epha4), label='$r_{A4} = 0.5$', color=clr_knockdown)
+    ax31.plot (x, clustersz (EphAx, 0, 1.5, _p_epha4), label='$r_{A4} = 1.5$', color=clr_wt)
     ax31.plot (x, clustersz (EphAx, ki, 0.5, _p_epha4), label='ki EphA3, EphA4 = 0.5', color=clr_knockin)
     ax31.plot (x, clustersz (EphAx, ki, 0.5, _p_epha4), label='ki EphA3, EphA4 = 0.5', linestyle='--', color=clr_knockdown, dashes=(5, 5))
     ax31.plot (x, clustersz (EphAx, ki, 1.5, _p_epha4), label='ki EphA3, EphA4 = 1.5', color=clr_knockin)
 
 
-    ax31.legend()
+    # Have to create a curated legend for the above plots
+    filled_line_wt = plt.Line2D([], [], linestyle="-", color=clr_wt)
+    filled_line_ki = plt.Line2D([], [], linestyle="-", color=clr_knockin)
+    filled_line_kd = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
+    dotted_line1 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
+    dotted_line2 = plt.Line2D([], [], linestyle="--", color=clr_knockin, dashes=(5, 5))
+    ax31.legend([filled_line_kd, filled_line_wt, filled_line_ki, (dotted_line1, dotted_line2)],
+                    ['$r_{A4}=0.5$ (kd)','$r_{A4}=1.5$ (wt)', '$r_{A4}=0.5$ (EphA3 ki/kd)', '$r_{A4}=1.5$ (EphA3 ki)'])
     ax31.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax31.set_ylabel('Clustersize')
     yl = ax31.get_ylim()
@@ -152,13 +152,7 @@ def examineRetEph():
     ax4.plot (x, signal (EphAx,    clustersz(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    # Have to create a curated legend for the above plots
-    filled_line1 = plt.Line2D([], [], linestyle="-", color=clr_wt)
-    filled_line2 = plt.Line2D([], [], linestyle="-", color=clr_knockin)
-    filled_line3 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
-    dotted_line1 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
-    dotted_line2 = plt.Line2D([], [], linestyle="--", color=clr_knockin, dashes=(5, 5))
-    ax4.legend([filled_line1, filled_line2, filled_line3, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
+    ax4.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
     ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax4.set_ylabel('Signal')
     yl = ax4.get_ylim()
