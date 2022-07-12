@@ -78,23 +78,15 @@ public:
     // Used in compute_chemo(). Function for EphA cluster size.
     T clustersize() const
     {
-#if 1
-        T numer = (this->rcpt0_EphA4_phos - T{0.8404305}) * std::exp(T{0.5} * (this->rcpt[0] - 1.31));
+        T numer = (this->rcpt0_EphA4_phos - T{0.8404305}) * std::exp(T{0.5} * (this->rcpt[0] - T{1.31}));
         T denom = T{10} * std::pow (this->rcpt0_EphA4, 3) + T{2};
         T ratio = numer / denom;
         T csize = T{0.2} + ratio;
-#else
-        T csize = T{0.2} + std::exp(T{0.5} * (this->rcpt[0] - T{1.31})) / (T{10} * std::pow(this->rcpt0_EphA4, 3));
-#endif
         return csize;
     }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
-    T signal (const T rcpt0, const T csize) const
-    {
-        //return T{4} * rcpt0 * std::pow(csize, 2); // or this->AxToA4_power);
-        return rcpt0 * csize;
-    }
+    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
 
     // A subroutine of compute_next
     morph::Vector<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
@@ -122,12 +114,8 @@ public:
             // For rcpt[0], do a special thing if interaction is 'special_EphA'
             T r0 = this->rcpt[0]; // Default case
             T r2 = this->rcpt[2];
-            //static constexpr T pAx = T{1};
-            //static constexpr T pA4 = T{0};
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
-                // Cluster size is inversely proportional to amount of EphA4 available. T clustersize = T{1} / this->rcpt0_EphA4;
-                //r0 = std::pow( ((pAx * this->rcpt[0]) + (pA4 * this->rcpt0_EphA4)) / this->rcpt0_EphA4, this->AxToA4_power);
-                //T csize = T{0.2} + T{10} * std::exp(T{0.5} * (this->rcpt[0] - 1.31)) / (T{100} * std::pow(this->rcpt0_EphA4, 3));
+                // Compute a signal that is based on a clustersize:
                 r0 = this->signal (this->rcpt[0], this->clustersize());
                 r2 *= this->AxToA4_mult;
             }
@@ -135,7 +123,6 @@ public:
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
                               || source_tissue->forward_interactions[0] == interaction::special_EphA;
 
-            //T compensator = T{1.2};
             G[0] = (r0 * (repulse0 ? -lg[0] : lg[0]))
                        + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
                        + r2 * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
