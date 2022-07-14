@@ -82,11 +82,20 @@ public:
         T denom = T{10} * std::pow (this->rcpt0_EphA4, 3) + T{2};
         T ratio = numer / denom;
         T csize = T{0.2} + ratio;
-        return csize;
+        return csize * T{3};
+    }
+
+    // The simplest expression for cluster size: 1/r_A4
+    T clustersz_simple() const { return T{1} / this->rcpt0_EphA4; }
+
+    // Slightly more complex...
+    T clustersz_medium() const {
+        T numer = (this->rcpt0_EphA4_phos - T{0.8404305});
+        return T{0.5} + (numer > T{0} ? numer : T{0}) / this->rcpt0_EphA4;
     }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
-    T signal (const T rcpt0, const T csize) const { return this->AxToA4_mult * rcpt0 * csize; }
+    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
 
     // A subroutine of compute_next
     morph::Vector<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
@@ -117,11 +126,14 @@ public:
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute a signal that is based on a clustersize:
                 r0 = this->signal (this->rcpt[0], this->clustersz());
-                //r2 *= this->AxToA4_mult;
+            } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
+                // Compute a signal that is based on a clustersize:
+                r0 = this->signal (this->rcpt[0], this->clustersz_simple());
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
-                              || source_tissue->forward_interactions[0] == interaction::special_EphA;
+                            || source_tissue->forward_interactions[0] == interaction::special_EphA
+                            || source_tissue->forward_interactions[0] == interaction::special_EphA_simple;
 
             G[0] = (r0 * (repulse0 ? -lg[0] : lg[0]))
                        + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
@@ -210,7 +222,8 @@ public:
         morph::Vector<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
             bool repulsei = source_tissue->forward_interactions[i] == interaction::repulsion
-            || source_tissue->forward_interactions[i] == interaction::special_EphA;
+            || source_tissue->forward_interactions[i] == interaction::special_EphA
+            || source_tissue->forward_interactions[i] == interaction::special_EphA_simple;
             QJar[i] = (repulsei ? T{1} : (source_tissue->forward_interactions[i] == interaction::attraction ? T{-1} : T{0}));
         }
         QJar *= kp->lgnd * this->rcpt;

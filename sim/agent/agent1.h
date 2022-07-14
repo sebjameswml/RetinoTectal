@@ -800,6 +800,8 @@ struct Agent1
                 if (ai < 0) {
                     if (ai == -2) {
                         interactions[i] = interaction::special_EphA;
+                    } else if (ai == -3) {
+                        interactions[i] = interaction::special_EphA_simple;
                     } else {
                         interactions[i] = interaction::repulsion;
                     }
@@ -940,16 +942,19 @@ struct Agent1
                 // Set colour red or blue depending on if receptor 0 in the retina was manipulated or not.
                 this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? red : blue;
 
-                // Special debugging stuff to mark specific axons
-                std::array<float, 3> redish1 = { 0.93f, 0.227f, 0.549f }; // 238 	58 	140
-                std::array<float, 3> blueish1 = { 0.117f, 0.565f, 1.0f }; // 30 	144 	255
-                std::array<float, 3> redish2 = { 0.69f, 0.09f, 0.122f };  // 176 	23 	31
-                std::array<float, 3> blueish2 = { 0.0f, 0.898f, 0.933f }; // 0 	229 	238
-                // Coloured centroids get specific debugging couts
-                if (ri == 0 || ri == 1 || ri == 380 || ri == 381) {
-                    this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? redish1 : blueish1;
-                } else if (ri == 18 || ri == 19 || ri == 398 || ri == 399) {
-                    this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? redish2 : blueish2;
+                static constexpr bool debug_specific_axons = false;
+                if constexpr (debug_specific_axons == true) {
+                    // Special debugging stuff to mark specific axons
+                    std::array<float, 3> redish1 = { 0.93f, 0.227f, 0.549f }; // 238 	58 	140
+                    std::array<float, 3> blueish1 = { 0.117f, 0.565f, 1.0f }; // 30 	144 	255
+                    std::array<float, 3> redish2 = { 0.69f, 0.09f, 0.122f };  // 176 	23 	31
+                    std::array<float, 3> blueish2 = { 0.0f, 0.898f, 0.933f }; // 0 	229 	238
+                    // Coloured centroids get specific debugging couts
+                    if (ri == 0 || ri == 1 || ri == 380 || ri == 381) {
+                        this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? redish1 : blueish1;
+                    } else if (ri == 18 || ri == 19 || ri == 398 || ri == 399) {
+                        this->ax_centroids.clr[ri] = this->ret->rcpt_manipulated[ri][0] == true ? redish2 : blueish2;
+                    }
                 }
             }
 

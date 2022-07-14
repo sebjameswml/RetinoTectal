@@ -98,7 +98,8 @@ enum class interaction
     attraction,
     repulsion,
     null,
-    special_EphA // This is for EphA3/EphA4 interactions - special handling!
+    special_EphA, // This is for EphA3/EphA4 interactions - special handling!
+    special_EphA_simple // The simplest clustersize=1/r_A4 scheme
 };
 
 /*!

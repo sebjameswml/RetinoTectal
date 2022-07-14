@@ -1,5 +1,5 @@
 #
-# clustersize = 1/r_A4
+# This script explores clustersize as a function of both EphAx, and EphA4
 #
 
 import numpy as np
@@ -10,7 +10,7 @@ clr_knockdown = C.cyan2
 clr_wt = C.yellowgreen
 # Set plotting font defaults
 import matplotlib
-fs = 8
+fs = 12
 fnt = {'family' : 'DejaVu Sans',
        'weight' : 'regular',
        'size'   : fs}
@@ -19,10 +19,17 @@ matplotlib.rc('font', **fnt)
 import pylab
 pylab.rcParams['svg.fonttype'] = 'none'
 
-# Simple 1/EphA4 relationship for clustersize
-def clustersz (_EphAx, ki, _EphA4):
-    cs = np.ones(len(_EphAx))/_EphA4
+
+def clustersz (_EphAx, ki, _EphA4, _EphA4_cisbound):
+    return clustersz_simple (_EphAx, ki, _EphA4, _EphA4_cisbound)
+
+def clustersz_simple (_EphAx, ki, _EphA4, _EphA4_cisbound):
+    cs = np.ones (len(_EphAx)) / _EphA4
     return cs
+
+## The signal function.
+def signal (rcpt, cs):
+    return rcpt * cs
 
 ##
 ## Epha3/Epha4
@@ -31,20 +38,17 @@ def examineRetEph():
 
     x = np.linspace(0,1,21)
     epha4_constant = 3.5
-    # params
-    axpow = 1
-    axmult = 0.01
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
-    kd = 1
-    ki = 1.0
+    ki = 1.2
+    kd = 0.7
     kiki = 3.0
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
     ## 1997 for dissociation constants K_D = 6.16e-10 for ephrinA5/EphA5
     ## and 1.44e-10 for ephrinA5/EphA3. Call it 3.8e-10 for EphAx,
     ## ignore the magnitude and let w_EphAx = 0.25.
-    w_EphAx = 0.25
+    w_EphAx = 0.3
     ## Binding affinity parameter for EphA4. K_D = 6.22e-10 for
     ## ephrinA5, so binds slightly less well than EphA3/5. 0.611 = 3.8/6.22.
     w_EphA4 = w_EphAx * 0.611
@@ -54,23 +58,45 @@ def examineRetEph():
     ## Start with a certain amount of ephrinA (ephrinA5 in retina - Frisen et al)
     ephrinA = np.flip(_exp)
 
+    ## Choose between simple knockdown, where we just take the free EphA4 and
+    ## subtract a scalar, vs knocking down the original amount of EPhA4 and
+    ## re-multiplying by retinal ephrinA level
+    simple_knockdown = 1
+
+    if simple_knockdown == 0:
+        # Have a larger knockdown if we're not doing the 'simple' knockdown thing
+        kd = 2 * kd
+
     ## Define an even expression of EphA4 (No nasal-temporal gradient)
     _epha4 = np.ones(len(ephrinA)) * epha4_constant
     _epha4_kd = _epha4 - kd
 
-    ## Let EphA4 interact with cis ephrinA (Hornberger et al 1999)
-    _p_epha4 = (w_EphA4 * _epha4 * ephrinA)
-
+    ## Phosphorylised EphA4
+    _p_epha4    = (w_EphA4 * _epha4    * ephrinA)
     ## Remaining epha4 could interact
     EphA4_free = _epha4 - _p_epha4
-    EphA4_free_kd = EphA4_free - kd
+
+    ## Let EphA4 interact with cis ephrinA (Hornberger et al 1999)
+    if simple_knockdown:
+        EphA4_free_kd = EphA4_free - kd
+        _p_epha4_kd = _p_epha4 + kd
+    else:
+        _p_epha4_kd = (w_EphA4 * _epha4_kd * ephrinA)
+        # Knockdown static level of EphA4
+        EphA4_free_kd = _epha4_kd - _p_epha4_kd
 
     ## And some expression of EphA3/x whatever
     EphAx = _exp
 
-    fs1 = (13,2.4)
-    fs2 = (15,4)
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=fs2)
+    # Have to create a curated legend for some plots (those with dashed coloured line)
+    filled_line_wt = plt.Line2D([], [], linestyle="-", color=clr_wt)
+    filled_line_ki = plt.Line2D([], [], linestyle="-", color=clr_knockin)
+    filled_line_kd = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
+    dotted_line1 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
+    dotted_line2 = plt.Line2D([], [], linestyle="--", color=clr_knockin, dashes=(5, 5))
+
+    figsz = (15,5)
+    fig, (ax1, ax2, ax4) = plt.subplots(1, 3, figsize=figsz)
 
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$r_0$ (EphA wildtype cells)')
@@ -82,42 +108,39 @@ def examineRetEph():
     ax1.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax1.set_ylabel('Expression')
     ax1.set_ylim(0,5)
+    ax1.text (0.55, 2.9, 'ki = {0}'.format(ki))
 
     ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='EphA4')
+    ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='EphA4, cis bound')
     ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (free EphA4, wildtype)')
     ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (EphA4 knock-down)')
+
+    show_sum_epha = 0
+    if show_sum_epha:
+        ax21 = ax2.twinx()
+        ax21.plot (x, EphA4_free + EphAx , linestyle='-.', color=clr_wt, label='')
+        ax21.plot (x, EphA4_free + EphAx + ki, linestyle='-.', color=clr_knockin, label='$\Sigma$EphA ki')
+
+        ax21.plot (x, EphA4_free + EphAx + ki - kd, linestyle='-.', color=clr_knockin)
+        ax21.plot (x, EphA4_free + EphAx + ki - kd, linestyle='--', color=clr_knockdown, dashes=(5, 5))
+
+        ax21.legend([filled_line_wt, filled_line_ki, (dotted_line1, dotted_line2)],
+                        ['$\Sigma$EphA','$\Sigma$EphA ki', '$\Sigma$EphA ki/kd'])
+        ax21.set_ylabel('Expression')
+
     ax2.legend()
     ax2.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax2.set_ylabel('Expression')
     ax2.set_ylim(0,5)
-
-    # Cluster size vs. EphAx expression
-    #ax31 = ax3.twiny()
-    ax3.plot (EphA4_free, clustersz (EphAx, 0, EphA4_free), label='$c_0 = 1/r_{A4}$', color=clr_wt)
-    # Or vs. EphAx/N/T posn
-    #ax31.plot (x, clustersz (EphAx, 0, EphA4_free), label='$c_0 = 1/r_{A4}$', color=clr_wt)
-    ax3.legend()
-    ax3.set_xlabel('EphA4')
-    #ax31.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
-    ax3.set_ylabel('EphA clustersize ($c_0$)')
-    yl = ax3.get_ylim()
-    yl = (0, yl[1])
-    ax3.set_ylim(yl)
+    ax2.text (0.6, 2, 'kd = {0}'.format(kd))
 
     e4power = 1
-    ax4.plot (x, (EphAx) * (clustersz(EphAx, 0, EphA4_free)), linestyle='-', color=clr_wt)
-    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx, ki, EphA4_free)), linestyle='-', color=clr_knockin)
-    ax4.plot (x, (EphAx) * (clustersz(EphAx, 0, EphA4_free_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx, ki, EphA4_free_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, (EphAx+ki) * (clustersz(EphAx, ki, EphA4_free_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    # Have to create a curated legend for the above plots
-    filled_line1 = plt.Line2D([], [], linestyle="-", color=clr_wt)
-    filled_line2 = plt.Line2D([], [], linestyle="-", color=clr_knockin)
-    filled_line3 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
-    dotted_line1 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
-    dotted_line2 = plt.Line2D([], [], linestyle="--", color=clr_knockin, dashes=(5, 5))
-    ax4.legend([filled_line1, filled_line2, filled_line3, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
-
+    ax4.plot (x, signal (EphAx,    clustersz(EphAx, 0,  EphA4_free,    _p_epha4)), linestyle='-', color=clr_wt)
+    ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free,    _p_epha4)), linestyle='-', color=clr_knockin)
+    ax4.plot (x, signal (EphAx,    clustersz(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
+    ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
+    ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
+    ax4.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
     ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax4.set_ylabel('Signal')
     yl = ax4.get_ylim()
@@ -125,7 +148,7 @@ def examineRetEph():
     ax4.set_ylim(yl)
 
     plt.tight_layout()
-    fn = 'epha_fig_div.svg'
+    fn = 'examineRetEph_simple.svg'
     plt.savefig(fn)
     plt.show()
 
