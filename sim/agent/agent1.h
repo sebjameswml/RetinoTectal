@@ -799,8 +799,10 @@ struct Agent1
                 int ai = arr[i];
                 if (ai < 0) {
                     if (ai == -2) {
+                        std::cout << "Interaction is special_EphA\n";
                         interactions[i] = interaction::special_EphA;
                     } else if (ai == -3) {
+                        std::cout << "Interaction is special_EphA simple\n";
                         interactions[i] = interaction::special_EphA_simple;
                     } else {
                         interactions[i] = interaction::repulsion;
@@ -898,6 +900,8 @@ struct Agent1
             this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
             this->pending_branches[i].AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
             this->pending_branches[i].aid = (int)ri; // axon index
+            // Minimum of phosphorylised expression:
+            this->pending_branches[i].rcpt0_EphA4_phos_min = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4.max();
             if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons

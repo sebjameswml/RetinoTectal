@@ -22,27 +22,35 @@ pylab.rcParams['svg.fonttype'] = 'none'
 
 ## Computation of a cluster size. Matches C++ fn branch::clustersz() in branch.h
 def clustersz_complex (_EphAx, ki, _EphA4, _EphA4_cisbound):
-    cisbound = (_EphA4_cisbound-0.8404)
+    # Take cisbound and offset it by a static amount:
+    #cisbound = (_EphA4_cisbound-0.8404305)
+    cisbound = (_EphA4_cisbound-1.3)
+    # or (and this is harder to justify):
+    #cisbound = (_EphA4_cisbound-np.min(_EphA4_cisbound))
+
     # If cisbound>0, set to cisbound, otherwise set to 0
-    cisbound = np.where (cisbound>0, cisbound, 0)
+    ##cisbound = np.where (cisbound>0, cisbound, 0)
     # Numerator is an exponential function of EphAx expression.
     numer = cisbound * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))
     # Denominator is some power of EphA4. The + 2 limits how large the clustersize can become.
     denom = (10 * np.power(_EphA4, 2) + 2)
+    #x = np.exp(np.linspace(1,0,21))
+    #denom = (denom * x)-15
+    #denom = (10 * np.power(_EphA4, 3) + 1)
     ratio = numer / denom
-    cs = 0.2 + ratio
-    return 3 * cs
+    cs = 3 * (0.2 + ratio)
+    return (cs, numer, denom)
 
-def clustersz_medium (_EphAx, ki, _EphA4, _EphA4_cisbound):
-    cisbound = (_EphA4_cisbound-0.83)
+def clustersz_testing (_EphAx, ki, _EphA4, _EphA4_cisbound):
+    cisbound = (_EphA4_cisbound-0)
     # If cisbound>0, set to cisbound, otherwise set to 0
-    cisbound = np.where (cisbound>0, cisbound, 0)
-    cs = 0.5 + np.ones (len(_EphAx)) * cisbound / _EphA4
+    cisbound = np.power (cisbound, 2)
+    cs = np.ones (len(_EphAx)) * cisbound
     return cs
 
 ## Computation of a cluster size, simplest scheme
 def clustersz_simple (_EphAx, ki, _EphA4, _EphA4_cisbound):
-    cs = np.ones (len(_EphAx)) / _EphA4
+    cs = np.ones (len(_EphAx)) / np.power(_EphA4, 1.2)
     return cs
 
 ## The signal function.
@@ -58,7 +66,7 @@ def examineRetEph():
     epha4_constant = 3.5
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
-    ki = 1.2
+    ki = 0.9
     kd = 0.7
     kiki = 3.0
 
@@ -116,6 +124,9 @@ def examineRetEph():
     figsz = (15,10)
     fig, ((ax1, ax2, ax21),(ax3, ax31, ax4)) = plt.subplots(2, 3, figsize=figsz)
 
+    # For debug denom/numer
+    fig2, (b1, b2) = plt.subplots(1, 2, figsize=(8,4))
+
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$r_0$ (EphA wildtype cells)')
     ax1.plot (x, ephrinA, linestyle=':', color=clr_wt, label='$l_0$ (ephrinA)')
@@ -166,8 +177,10 @@ def examineRetEph():
 
     # Cluster size vs. EphAx/N/T posn
     # Or vs. EphAx:
-    ax3.plot (EphAx, clustersz_complex (EphAx, 0, 0.5, _p_epha4), label='$r_{A4} = 0.5$', color=clr_knockdown)
-    ax3.plot (EphAx, clustersz_complex (EphAx, 0, 1.5, _p_epha4), label='$r_{A4} = 1.5$', color=clr_wt)
+    (cs, n, d) = clustersz_complex (EphAx, 0, 0.5, _p_epha4_kd)
+    ax3.plot (EphAx, cs, label='$r_{A4} = 0.5$', color=clr_knockdown)
+    (cs, n, d) = clustersz_complex (EphAx, 0, 1.5, _p_epha4)
+    ax3.plot (EphAx, cs, label='$r_{A4} = 1.5$', color=clr_wt)
     ax3.legend()
     ax3.set_xlabel('EphAx')
     ax3.set_ylabel('Clustersize')
@@ -175,11 +188,18 @@ def examineRetEph():
     yl = (0, yl[1])
     ax3.set_ylim(yl)
 
-    ax31.plot (x, clustersz_complex (EphAx, 0, 0.5, _p_epha4), label='$r_{A4} = 0.5$', color=clr_knockdown)
-    ax31.plot (x, clustersz_complex (EphAx, 0, 1.5, _p_epha4), label='$r_{A4} = 1.5$', color=clr_wt)
-    ax31.plot (x, clustersz_complex (EphAx, ki, 0.5, _p_epha4), label='ki EphA3, EphA4 = 0.5', color=clr_knockin)
-    ax31.plot (x, clustersz_complex (EphAx, ki, 0.5, _p_epha4), label='ki EphA3, EphA4 = 0.5', linestyle='--', color=clr_knockdown, dashes=(5, 5))
-    ax31.plot (x, clustersz_complex (EphAx, ki, 1.5, _p_epha4), label='ki EphA3, EphA4 = 1.5', color=clr_knockin)
+    (cs, n, d) = clustersz_complex (EphAx, 0, 0.5, _p_epha4_kd)
+    ax31.plot (x, cs, label='$r_{A4} = 0.5$', color=clr_knockdown)
+
+    (cs, n, d) = clustersz_complex (EphAx, 0, 1.5, _p_epha4)
+    ax31.plot (x, cs, label='$r_{A4} = 1.5$', color=clr_wt)
+
+    (cs, n, d) = clustersz_complex (EphAx, ki, 0.5, _p_epha4_kd)
+    ax31.plot (x, cs, label='ki EphA3, EphA4 = 0.5', color=clr_knockin)
+    ax31.plot (x, cs, label='ki EphA3, EphA4 = 0.5', linestyle='--', color=clr_knockdown, dashes=(5, 5))
+
+    (cs, n, d) = clustersz_complex (EphAx, ki, 1.5, _p_epha4)
+    ax31.plot (x, cs, label='ki EphA3, EphA4 = 1.5', color=clr_knockin)
 
 
     ax31.legend([filled_line_kd, filled_line_wt, filled_line_ki, (dotted_line1, dotted_line2)],
@@ -190,17 +210,31 @@ def examineRetEph():
     yl = (0, yl[1])
     ax31.set_ylim(yl)
 
-    ax4.plot (x, signal (EphAx,    clustersz_complex(EphAx, 0,  EphA4_free,    _p_epha4)), linestyle='-', color=clr_wt)
-    ax4.plot (x, signal (EphAx+ki, clustersz_complex(EphAx, ki, EphA4_free,    _p_epha4)), linestyle='-', color=clr_knockin)
-    ax4.plot (x, signal (EphAx,    clustersz_complex(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, signal (EphAx+ki, clustersz_complex(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, signal (EphAx+ki, clustersz_complex(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
+    (cs, n, d) = clustersz_complex(EphAx, 0,  EphA4_free,    _p_epha4)
+    ax4.plot (x, signal (EphAx,    cs), linestyle='-', color=clr_wt)
+    b1.plot (x, n, linestyle='-', color=clr_wt)
+    b2.plot (x, d, linestyle='-', color=clr_wt)
+    (cs, n, d) = clustersz_complex(EphAx, ki, EphA4_free,    _p_epha4)
+    ax4.plot (x, signal (EphAx+ki, cs), linestyle='-', color=clr_knockin)
+    b1.plot (x, n, linestyle='-', color=clr_knockin)
+    b2.plot (x, d, linestyle='-', color=clr_knockin)
+    (cs, n, d) = clustersz_complex(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)
+    ax4.plot (x, signal (EphAx,    cs), linestyle='-', color=clr_knockdown)
+    b1.plot (x, n, linestyle='-', color=clr_knockdown)
+    b2.plot (x, d, linestyle='-', color=clr_knockdown)
+    (cs, n, d) = clustersz_complex(EphAx, ki, EphA4_free_kd, _p_epha4_kd)
+    ax4.plot (x, signal (EphAx+ki, cs), linestyle='-', color=clr_knockdown)
+    ax4.plot (x, signal (EphAx+ki, cs), linestyle='--', color=clr_knockin, dashes=(5, 5))
+    b1.plot (x, n, linestyle='-', color=C.red)
+    b2.plot (x, d, linestyle='-', color=C.red)
     ax4.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['wildtype','EphA3 ki', 'EphA4 kd', 'ki + kd'])
     ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax4.set_ylabel('Signal')
     yl = ax4.get_ylim()
     yl = (0, yl[1])
     ax4.set_ylim(yl)
+    b1.set_ylabel('numerator')
+    b2.set_ylabel('denominator')
 
     #plt.tight_layout()
     fn = 'examineRetEph_complex.svg'

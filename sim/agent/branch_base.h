@@ -32,6 +32,7 @@ struct branch_base
     // The base level of EphA4 in the retina, copied from the source tissue. Not dynamic.
     T rcpt0_EphA4 = T{0};      // Free
     T rcpt0_EphA4_phos = T{0}; // phosphorylised
+    T rcpt0_EphA4_phos_min = T{0}; // min phosphorylised amount
 
     // By default, axons reckoned to be outside tissue. Can also be used to mean "active".
     bool entered = false;

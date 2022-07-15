@@ -774,7 +774,8 @@ struct guidingtissue : public tissue<T>
 
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         // Deal with special case...
-        if (idx == 0 && this->forward_interactions[0] == interaction::special_EphA) {
+        if (idx == 0 && (this->forward_interactions[0] == interaction::special_EphA
+                         || this->forward_interactions[0] == interaction::special_EphA_simple)) {
             // In this case, we are knocking down JUST EphA4.
             this->EphA4_knockdown_expression = this->EphA4_const_expression > amount ? this->EphA4_const_expression-amount : T{0};
             if (this->EphA4_knockdown_expression == T{0}) {

@@ -4,7 +4,7 @@
     "desc_AxToA4_power" : "parameter: the power to raise the ratio of EphAx to EphA4 to.",
     "AxToA4_power" : 1,
     "desc_AxToA4_mult" : "parameter: used to modify the response of r2 receptors to tectal ligands, to balance the change in r0 for the wildtype layout",
-    "AxToA4_mult" : 1.5,
+    "AxToA4_mult" : 1,
 
     "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",
     "bpa": 4,
@@ -21,7 +21,7 @@
     "r_i": 0.05,
     "r_j": 0.0758848637342453,
     "ret_forward_interactions": [
-        -2,
+        -3,
         -1,
         -1,
         -1
