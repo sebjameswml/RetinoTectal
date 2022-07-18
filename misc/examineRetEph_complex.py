@@ -24,22 +24,31 @@ pylab.rcParams['svg.fonttype'] = 'none'
 def clustersz_complex (_EphAx, ki, _EphA4, _EphA4_cisbound):
     # Take cisbound and offset it by a static amount:
     #cisbound = (_EphA4_cisbound-0.8404305)
-    cisbound = (_EphA4_cisbound-1.3)
+    cisbound = (_EphA4_cisbound-0.8)
     # or (and this is harder to justify):
     #cisbound = (_EphA4_cisbound-np.min(_EphA4_cisbound))
 
     # If cisbound>0, set to cisbound, otherwise set to 0
     ##cisbound = np.where (cisbound>0, cisbound, 0)
     # Numerator is an exponential function of EphAx expression.
-    numer = cisbound * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))
+    numer = cisbound * np.exp(0.5*((_EphAx+ki)- 1.31 )) # np.min(_EphAx) ))
     # Denominator is some power of EphA4. The + 2 limits how large the clustersize can become.
-    denom = (10 * np.power(_EphA4, 2) + 2)
+    denom = (10 * np.power(_EphA4, 3) + 2) # power 3 or 2??
     #x = np.exp(np.linspace(1,0,21))
     #denom = (denom * x)-15
     #denom = (10 * np.power(_EphA4, 3) + 1)
     ratio = numer / denom
     cs = 3 * (0.2 + ratio)
     return (cs, numer, denom)
+
+def clustersz_complex1 (_EphAx, ki, _EphA4, _EphA4_cisbound):
+    cisbound = (2.7-_EphA4)
+    numer = cisbound * np.exp(0.5*((_EphAx+ki)-np.min(_EphAx)))
+    denom = (10 * np.power(_EphA4, 3) + 2) # power 3 or 2??
+    ratio = numer / denom
+    cs = 3 * (0.2 + ratio)
+    return (cs, numer, denom)
+
 
 def clustersz_testing (_EphAx, ki, _EphA4, _EphA4_cisbound):
     cisbound = (_EphA4_cisbound-0)
@@ -125,7 +134,9 @@ def examineRetEph():
     fig, ((ax1, ax2, ax21),(ax3, ax31, ax4)) = plt.subplots(2, 3, figsize=figsz)
 
     # For debug denom/numer
-    fig2, (b1, b2) = plt.subplots(1, 2, figsize=(8,4))
+    debug_denom = 1
+    if debug_denom:
+        fig2, (b1, b2) = plt.subplots(1, 2, figsize=(8,4))
 
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$r_0$ (EphA wildtype cells)')
@@ -212,29 +223,34 @@ def examineRetEph():
 
     (cs, n, d) = clustersz_complex(EphAx, 0,  EphA4_free,    _p_epha4)
     ax4.plot (x, signal (EphAx,    cs), linestyle='-', color=clr_wt)
-    b1.plot (x, n, linestyle='-', color=clr_wt)
-    b2.plot (x, d, linestyle='-', color=clr_wt)
+    if debug_denom:
+        b1.plot (x, n, linestyle='-', color=clr_wt)
+        b2.plot (x, d, linestyle='-', color=clr_wt)
     (cs, n, d) = clustersz_complex(EphAx, ki, EphA4_free,    _p_epha4)
     ax4.plot (x, signal (EphAx+ki, cs), linestyle='-', color=clr_knockin)
-    b1.plot (x, n, linestyle='-', color=clr_knockin)
-    b2.plot (x, d, linestyle='-', color=clr_knockin)
+    if debug_denom:
+        b1.plot (x, n, linestyle='-', color=clr_knockin)
+        b2.plot (x, d, linestyle='-', color=clr_knockin)
     (cs, n, d) = clustersz_complex(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)
     ax4.plot (x, signal (EphAx,    cs), linestyle='-', color=clr_knockdown)
-    b1.plot (x, n, linestyle='-', color=clr_knockdown)
-    b2.plot (x, d, linestyle='-', color=clr_knockdown)
+    if debug_denom:
+        b1.plot (x, n, linestyle='-', color=clr_knockdown)
+        b2.plot (x, d, linestyle='-', color=clr_knockdown)
     (cs, n, d) = clustersz_complex(EphAx, ki, EphA4_free_kd, _p_epha4_kd)
     ax4.plot (x, signal (EphAx+ki, cs), linestyle='-', color=clr_knockdown)
     ax4.plot (x, signal (EphAx+ki, cs), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    b1.plot (x, n, linestyle='-', color=C.red)
-    b2.plot (x, d, linestyle='-', color=C.red)
+    if debug_denom:
+        b1.plot (x, n, linestyle='-', color=C.red)
+        b2.plot (x, d, linestyle='-', color=C.red)
     ax4.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['wildtype','EphA3 ki', 'EphA4 kd', 'ki + kd'])
     ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax4.set_ylabel('Signal')
     yl = ax4.get_ylim()
     yl = (0, yl[1])
     ax4.set_ylim(yl)
-    b1.set_ylabel('numerator')
-    b2.set_ylabel('denominator')
+    if debug_denom:
+        b1.set_ylabel('numerator')
+        b2.set_ylabel('denominator')
 
     #plt.tight_layout()
     fn = 'examineRetEph_complex.svg'

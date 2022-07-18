@@ -79,7 +79,7 @@ public:
     T clustersz() const
     {
         // this->rcpt0_EphA4_phos - [this->rcpt0_EphA4_phos_min or T{0.8404305} or Whatever]
-        T numer = (this->rcpt0_EphA4_phos - T{1.3}) * std::exp(T{0.5} * (this->rcpt[0] - T{1.31}));
+        T numer = (this->rcpt0_EphA4_phos - T{0.8}) * std::exp(T{0.5} * (this->rcpt[0] - T{1.31}));
         T denom = T{10} * std::pow (this->rcpt0_EphA4, 3) + T{2};
         T ratio = numer / denom;
         T csize = T{3} * (T{0.2} + ratio);
