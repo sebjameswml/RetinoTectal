@@ -95,7 +95,7 @@ public:
     }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
-    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize * this->AxToA4_mult; }
+    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize /* * this->AxToA4_mult */ ; }
 
     // A subroutine of compute_next
     morph::Vector<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
@@ -128,7 +128,7 @@ public:
                 r0 = this->signal (this->rcpt[0], this->clustersz());
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
                 // Compute a signal that is based on a clustersize:
-                r0 = this->signal (this->rcpt[0], this->clustersz_medium());
+                r0 = this->signal (this->rcpt[0], this->clustersz_simple());
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
@@ -246,6 +246,18 @@ public:
 
                 // Just a simple, distance based weight, assuming a repulsive interaction (i.e. this is +ve)
                 W = T{1} - d/this->two_r_j;
+
+                // Multiply weight by a factor relating to rcpt[0] expression
+                T r0 = this->rcpt[0];
+                if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
+                    r0 = this->signal (this->rcpt[0], this->clustersz());
+                } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
+                    r0 = this->signal (this->rcpt[0], this->clustersz_simple());
+                }
+                // Using AxToA4_power as a parameter, despite its name
+                if (r0 > this->AxToA4_power) {
+                    W *= this->AxToA4_mult * r0;
+                }
                 J += kb * W;
                 rtn[2] = true;
 

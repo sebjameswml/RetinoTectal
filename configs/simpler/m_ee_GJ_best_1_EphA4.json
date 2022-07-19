@@ -2,7 +2,7 @@
     "desc_epha4_expression_form" : "The form of epha4 expression (or of effective expression after cis interactions). 0:lin 1:q 2:ex 3:log 4:ex2 5:invex 6:null (etc), 10: the special EphA4 one (based on phosphorylization of EphA4 and remaining free EphA4)",
     "epha4_expression_form" : 11,
     "desc_AxToA4_power" : "parameter: the power to raise the ratio of EphAx to EphA4 to.",
-    "AxToA4_power" : 1,
+    "AxToA4_power" : 5,
     "desc_AxToA4_mult" : "parameter: used to modify the response of r2 receptors to tectal ligands, to balance the change in r0 for the wildtype layout",
     "AxToA4_mult" : 1.5,
 
