@@ -20,6 +20,7 @@
     "r_c": 0.05,
     "r_i": 0.05,
     "r_j": 0.0758848637342453,
+    "desc_ret_forward_interactions" : "Note *-3* for the first of these.",
     "ret_forward_interactions": [
         -3,
         -1,

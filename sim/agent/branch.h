@@ -89,9 +89,9 @@ public:
     // The simplest expression for cluster size: 1/r_A4
     T clustersz_simple() const { return T{1} / this->rcpt0_EphA4; }
 
-    // Slightly more complex...
+    // Slightly more complex: 1/(r_A4)^k
     T clustersz_medium() const {
-        return T{1} / std::pow(this->rcpt0_EphA4, T{1.2});
+        return T{1} / std::pow(this->rcpt0_EphA4, this->AxToA4_power);
     }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
@@ -120,14 +120,13 @@ public:
             // let receptor 2 interact primarily with ligand 2 [gradients (4,5)]
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
 
-            // For rcpt[0], do a special thing if interaction is 'special_EphA'
+            // For rcpt[0], do a special thing if interaction is 'special_EphA', which means treat EphA4 and different from EphAx
             T r0 = this->rcpt[0]; // Default case
             T r2 = this->rcpt[2];
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute a signal that is based on a clustersize:
                 r0 = this->signal (this->rcpt[0], this->clustersz());
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
-                // Compute a signal that is based on a clustersize:
                 r0 = this->signal (this->rcpt[0], this->clustersz_medium());
             }
 
