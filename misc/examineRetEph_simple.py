@@ -10,7 +10,7 @@ clr_knockdown = C.cyan2
 clr_wt = C.yellowgreen
 # Set plotting font defaults
 import matplotlib
-fs = 12
+fs = 10
 fnt = {'family' : 'DejaVu Sans',
        'weight' : 'regular',
        'size'   : fs}
@@ -19,12 +19,9 @@ matplotlib.rc('font', **fnt)
 import pylab
 pylab.rcParams['svg.fonttype'] = 'none'
 
-
-def clustersz (_EphAx, ki, _EphA4, _EphA4_cisbound):
-    return clustersz_simple (_EphAx, ki, _EphA4, _EphA4_cisbound)
-
+## Computation of a cluster size, simplest scheme
 def clustersz_simple (_EphAx, ki, _EphA4, _EphA4_cisbound):
-    cs = np.ones (len(_EphAx)) / _EphA4
+    cs = np.ones (len(_EphAx)) / np.power(_EphA4, 1)
     return cs
 
 ## The signal function.
@@ -40,7 +37,7 @@ def examineRetEph():
     epha4_constant = 3.5
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
-    ki = 1.2
+    ki = 0.9
     kd = 0.7
     kiki = 3.0
 
@@ -95,25 +92,28 @@ def examineRetEph():
     dotted_line1 = plt.Line2D([], [], linestyle="-", color=clr_knockdown)
     dotted_line2 = plt.Line2D([], [], linestyle="--", color=clr_knockin, dashes=(5, 5))
 
-    figsz = (15,5)
-    fig, (ax1, ax2, ax4) = plt.subplots(1, 3, figsize=figsz)
+    figsz = (15,4)
+    fig, (ax1, ax2, ax21) = plt.subplots(1, 3, figsize=figsz)
 
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$r_0$ (EphA wildtype cells)')
     ax1.plot (x, ephrinA, linestyle=':', color=clr_wt, label='$l_0$ (ephrinA)')
     # EphA3 knockin
-    ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='$r_0 + ki$ (EphA3 knock-in)')
+    ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='$r_0 + ki$ (EphA3 ki)')
 
     ax1.legend()
     ax1.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax1.set_ylabel('Expression')
     ax1.set_ylim(0,5)
+    x0,x1 = ax1.get_xlim()
+    y0,y1 = ax1.get_ylim()
+    ax1.set_aspect(abs(x1-x0)/abs(y1-y0))
     ax1.text (0.55, 2.9, 'ki = {0}'.format(ki))
 
-    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='EphA4')
-    ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='EphA4, cis bound')
-    ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (free EphA4, wildtype)')
-    ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (EphA4 knock-down)')
+    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression')
+    ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wildtype)')
+    ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wildtype)')
+    ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (un-bound, kd)')
 
     show_sum_epha = 0
     if show_sum_epha:
@@ -132,22 +132,27 @@ def examineRetEph():
     ax2.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax2.set_ylabel('Expression')
     ax2.set_ylim(0,5)
+    x0,x1 = ax2.get_xlim()
+    y0,y1 = ax2.get_ylim()
+    ax2.set_aspect(abs(x1-x0)/abs(y1-y0))
     ax2.text (0.6, 2, 'kd = {0}'.format(kd))
 
-    e4power = 1
-    ax4.plot (x, signal (EphAx,    clustersz(EphAx, 0,  EphA4_free,    _p_epha4)), linestyle='-', color=clr_wt)
-    ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free,    _p_epha4)), linestyle='-', color=clr_knockin)
-    ax4.plot (x, signal (EphAx,    clustersz(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
-    ax4.plot (x, signal (EphAx+ki, clustersz(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    ax4.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
-    ax4.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
-    ax4.set_ylabel('Signal')
-    yl = ax4.get_ylim()
+    ax21.plot (x, signal (EphAx,    clustersz_simple(EphAx, 0,  EphA4_free,    _p_epha4)), linestyle='-', color=clr_wt)
+    ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free,    _p_epha4)), linestyle='-', color=clr_knockin)
+    ax21.plot (x, signal (EphAx,    clustersz_simple(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
+    ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
+    ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
+    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
+    ax21.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
+    ax21.set_ylabel('Signal')
+    yl = ax21.get_ylim()
     yl = (0, yl[1])
-    ax4.set_ylim(yl)
+    ax21.set_ylim(yl)
+    x0,x1 = ax21.get_xlim()
+    y0,y1 = ax21.get_ylim()
+    ax21.set_aspect(abs(x1-x0)/abs(y1-y0))
 
-    plt.tight_layout()
+    #plt.tight_layout()
     fn = 'examineRetEph_simple.svg'
     plt.savefig(fn)
     plt.show()

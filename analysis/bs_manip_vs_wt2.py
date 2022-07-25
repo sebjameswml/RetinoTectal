@@ -116,7 +116,7 @@ import h5py
 
 # The ORIGINAL model
 original_model = 1
-doitall = 1
+doitall = 0
 if doitall:
     #filebases = ["../rcnt/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500",
     #             "../rcnt/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500",
@@ -135,7 +135,11 @@ else:
         # The FIXED model, with clustersize modification
         filebases = ["../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-wt_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500"]
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kdkd_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kdkd_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kd_exit_true_steps_1500",
+                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_wt-kd_exit_true_steps_1500"]
 
 from numpy import genfromtxt
 red = genfromtxt(fname = '../misc/reber_fig3_red.csv', delimiter=',', skip_header=1)
@@ -250,7 +254,10 @@ for fb in filebases:
         all_rcs_manip.append (rcs_manip)
         #print ("wt mean: {0}({2}), manipulated mean: {1}({3})".format (np.mean(rcs_wt), np.mean(rcs_manip), rcs_wtstderr, rcs_manipstderr))
 
-    fig1,(ax) = plt.subplots (1, 1)
+    fig1,(ax) = plt.subplots (1, 1, figsize=(6,6))
+
+    # 1:1 line for reference
+    ax.plot ([1,0],[0,1], color=C.grey45, linestyle='--', dashes=(9, 3))
 
     # error bar plot
     #plt.errorbar (nt_vals, nt_means_wt_mean, nt_means_wt_sd, capsize=10, color=clr1)
@@ -288,6 +295,8 @@ for fb in filebases:
 
     ax.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax.set_ylabel('R {0} tectum {0} C'.format(u"\u27f6"))
+
+    ax.set_aspect('equal', 'box')
 
     plt.tight_layout()
 
