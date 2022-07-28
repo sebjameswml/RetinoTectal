@@ -37,9 +37,9 @@ def examineRetEph():
     epha4_constant = 3.5
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
-    ki = 0.9
+    ki = 1.0
     kd = 0.7
-    kiki = 3.0
+    kiki = 4.0
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
     ## 1997 for dissociation constants K_D = 6.16e-10 for ephrinA5/EphA5
@@ -108,7 +108,7 @@ def examineRetEph():
     x0,x1 = ax1.get_xlim()
     y0,y1 = ax1.get_ylim()
     ax1.set_aspect(abs(x1-x0)/abs(y1-y0))
-    ax1.text (0.55, 2.9, 'ki = {0}'.format(ki))
+    ax1.text (0.52, 2.67, 'ki = {0}'.format(ki))
 
     ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression')
     ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wildtype)')
