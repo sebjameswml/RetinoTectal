@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 from sebcolour import Colour as C
 clr_knockin = C.darkorchid1
 clr_knockdown = C.cyan2
+clr_knockdown2 = C.midnightblue
 clr_wt = C.yellowgreen
 # Set plotting font defaults
 import matplotlib
-fs = 7 # real: 10
+fs = 10
 fnt = {'family' : 'DejaVu Sans',
        'weight' : 'regular',
        'size'   : fs}
@@ -50,7 +51,11 @@ def examineRetEph():
     ## ephrinA5, so binds slightly less well than EphA3/5. 0.611 = 3.8/6.22.
     w_EphA4 = w_EphAx * 0.611
 
-    _exp = 0.26 * np.exp(2.3*x) + 1.05 # T exponential_expression (const T& x)
+    B=0.26
+    C=2.3
+    D=1.05
+
+    _exp = B * np.exp(C*x) + D # T exponential_expression (const T& x)
 
     ## Start with a certain amount of ephrinA (ephrinA5 in retina - Frisen et al)
     ephrinA = np.flip(_exp)
@@ -78,15 +83,26 @@ def examineRetEph():
         EphA4_free_kd = EphA4_free - kd
         _p_epha4_kd = _p_epha4 + kd
     else:
-        _p_epha4_kd = (w_EphA4 * _epha4_kd * ephrinA) * np.power(1-x,2) + 0.5
         # Knockdown static level of EphA4
+        #_p_epha4_kd = (w_EphA4 * _epha4_kd * ephrinA) * np.power(1-x,2) + 0.5
         #EphA4_free_kd = _epha4_kd - _p_epha4_kd # - (1-x) + 0.7
-        A1=0.4
+
+        # Define two arbitrary double exp functions as the knockdowns
+        A1=0.83
         B1=0.04
         C1=2.8
         B2=0.048
-        C2=3.2
+        C2=2.8
+        #print ('_epha4: {0}'.format(_epha4))
         EphA4_free_kd =  _epha4 - (A1 + B1 * np.exp(C1*(1-x)) + B2 * np.exp(C2*(1.2-x)))
+        _p_epha4_kd = _epha4 - EphA4_free_kd
+
+        A3=0.95
+        B3=0.04
+        C3=2.8
+        B4=0.048
+        C4=3
+        EphA4_free_kd2 =  _epha4 - (A3 + B3 * np.exp(C3*(1-x)) + B4 * np.exp(C4*(1.2-x)))
 
     ## And some expression of EphA3/x whatever
     EphAx = _exp
@@ -118,9 +134,11 @@ def examineRetEph():
 
     ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression')
     ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wildtype)')
-    ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis}$ (cis-bound, kd)')
+    #ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis}$ (cis-bound, kd)')
     ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wildtype)')
     ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (un-bound, kd)')
+    if not simple_knockdown:
+        ax2.plot (x, EphA4_free_kd2, linestyle='-', color=clr_knockdown2, label='$r_{A4} - kd$ (un-bound, kd/kd)')
 
     show_sum_epha = 0
     if show_sum_epha:

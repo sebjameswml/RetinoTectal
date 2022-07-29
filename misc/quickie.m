@@ -47,4 +47,4 @@ f5 = A3+f3+f4;
 plot (x, (epha4_constant - f5), 'r-');
 legend(['WT';'kd1';'kd2'])
 
-ylim([0,4])
+ylim([0,5])
