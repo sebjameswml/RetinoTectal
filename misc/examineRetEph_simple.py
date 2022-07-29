@@ -10,7 +10,7 @@ clr_knockdown = C.cyan2
 clr_wt = C.yellowgreen
 # Set plotting font defaults
 import matplotlib
-fs = 10
+fs = 7 # real: 10
 fnt = {'family' : 'DejaVu Sans',
        'weight' : 'regular',
        'size'   : fs}
@@ -58,7 +58,7 @@ def examineRetEph():
     ## Choose between simple knockdown, where we just take the free EphA4 and
     ## subtract a scalar, vs knocking down the original amount of EPhA4 and
     ## re-multiplying by retinal ephrinA level
-    simple_knockdown = 1
+    simple_knockdown = 0
 
     if simple_knockdown == 0:
         # Have a larger knockdown if we're not doing the 'simple' knockdown thing
@@ -78,9 +78,15 @@ def examineRetEph():
         EphA4_free_kd = EphA4_free - kd
         _p_epha4_kd = _p_epha4 + kd
     else:
-        _p_epha4_kd = (w_EphA4 * _epha4_kd * ephrinA)
+        _p_epha4_kd = (w_EphA4 * _epha4_kd * ephrinA) * np.power(1-x,2) + 0.5
         # Knockdown static level of EphA4
-        EphA4_free_kd = _epha4_kd - _p_epha4_kd
+        #EphA4_free_kd = _epha4_kd - _p_epha4_kd # - (1-x) + 0.7
+        A1=0.4
+        B1=0.04
+        C1=2.8
+        B2=0.048
+        C2=3.2
+        EphA4_free_kd =  _epha4 - (A1 + B1 * np.exp(C1*(1-x)) + B2 * np.exp(C2*(1.2-x)))
 
     ## And some expression of EphA3/x whatever
     EphAx = _exp
@@ -112,6 +118,7 @@ def examineRetEph():
 
     ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression')
     ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wildtype)')
+    ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis}$ (cis-bound, kd)')
     ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wildtype)')
     ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (un-bound, kd)')
 
