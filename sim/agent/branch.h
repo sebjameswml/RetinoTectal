@@ -76,7 +76,7 @@ public:
     }
 
     // Used in compute_chemo(). Function for EphA cluster size. Matches fn in exampleRetEph_complex.py
-    T clustersz() const
+    T clustersz_toocomplex() const
     {
         // this->rcpt0_EphA4_phos - [this->rcpt0_EphA4_phos_min or T{0.8404305} or Whatever]
         T numer = (this->rcpt0_EphA4_phos - T{0.8}) * std::exp(T{0.5} * (this->rcpt[0] - T{1.31}));
@@ -89,7 +89,7 @@ public:
     // The simplest expression for cluster size: 1/r_A4
     T clustersz_simple() const { return T{1} / this->rcpt0_EphA4; }
 
-    // Slightly more complex: 1/(r_A4)^k
+    // Slightly more nuanced - ability to raise to power: 1/(r_A4)^k
     T clustersz_medium() const {
         return T{1} / std::pow(this->rcpt0_EphA4, this->AxToA4_power);
     }
@@ -123,9 +123,19 @@ public:
             // For rcpt[0], do a special thing if interaction is 'special_EphA', which means treat EphA4 and different from EphAx
             T r0 = this->rcpt[0]; // Default case
             T r2 = this->rcpt[2];
+            static constexpr T r0_thresh = 0.5;
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute a signal that is based on a clustersize:
-                r0 = this->signal (this->rcpt[0], this->clustersz());
+                r0 = this->signal (this->rcpt[0], this->clustersz_medium());
+                // Have the this->rcpt0_EphA4 (or phos version?) do something to r2.
+
+                // What happens is that when there is knocked in EphA3 AND knocked down
+                // EphA4, then the push towards caudal seems to vanish.  Look at Reber
+                // idea about TrkB and think - it doesn't seem to be compatible with my
+                // dual gradient scheme here.
+
+                r2 = this->rcpt0_EphA4 > r0_thresh ? T{0} : this->rcpt[2];
+
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
                 r0 = this->signal (this->rcpt[0], this->clustersz_medium());
             }

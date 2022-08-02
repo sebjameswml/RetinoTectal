@@ -93,6 +93,12 @@ def examineRetEph():
         C1=2.8
         B2=0.048
         C2=2.8
+
+        A1=0.78
+        B1=0.04
+        C1=2.8
+        B2=0.048
+        C2=2.7
         #print ('_epha4: {0}'.format(_epha4))
         EphA4_free_kd =  _epha4 - (A1 + B1 * np.exp(C1*(1-x)) + B2 * np.exp(C2*(1.2-x)))
         _p_epha4_kd = _epha4 - EphA4_free_kd

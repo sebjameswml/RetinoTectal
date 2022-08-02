@@ -542,6 +542,26 @@ struct guidingtissue : public tissue<T>
     T EphA4_knockdown_function (const T& x) const {
         return T{-0.35} + T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.0} * (1-x)) + T{2.35}));
     }
+    // Double exponential EphA4 +/- knockdown function
+    T EphA4_kd_function (const T& x) const {
+        T A1 = T{0.78};
+        T B1 = T{0.04};
+        T C1 = T{2.8};
+        T B2 = T{0.048};
+        T C2 = T{2.7};
+        T EphA4_free_kd = T{3.5} - (A1 + B1 * std::exp(C1*(T{1}-x)) + B2 * std::exp(C2*(T{1.2}-x)));
+        return EphA4_free_kd;
+    }
+    // Double exponential EphA4 -/- knockdown function
+    T EphA4_kdkd_function (const T& x) const {
+        T A3 = T{0.95};
+        T B3 = T{0.04};
+        T C3 = T{2.8};
+        T B4 = T{0.048};
+        T C4 = T{3};
+        T EphA4_free_kd2 = T{3.5} - (A3 + B3 * std::exp(C3*(T{1}-x)) + B4 * std::exp(C4*(T{1.2}-x)));
+        return EphA4_free_kd2;
+    }
 
     //! With the passed-in location, find the closest gradient in lgnd_grad and return
     //! this.  Note: Not a function (like linear_gradient()) but a lookup, because this
@@ -766,11 +786,11 @@ struct guidingtissue : public tissue<T>
     enum class knockdown_method {
         simple,            // Take rcpt_EphA4 and knock it down by a scalar
         recompute,         // Knock down EphA4_const_expression by a scalar and recompute
-        separate_function  // Use a separate function for the knockdown.
+        separate_function  // Use a separate function or functions for the knockdown.
     };
     void receptor_knockdown (size_t idx, T amount)
     {
-        static constexpr knockdown_method special_epha_knockdown = knockdown_method::simple;
+        static constexpr knockdown_method special_epha_knockdown = knockdown_method::separate_function;
 
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         // Deal with special case...
@@ -794,10 +814,20 @@ struct guidingtissue : public tissue<T>
                 }
             } else if constexpr (special_epha_knockdown == knockdown_method::separate_function) {
                 size_t ii = 0;
-                for (auto p : this->posn) {
-                    T x = T{1}-p[0];
-                    rcpt0_EphA4[ii] = this->EphA4_knockdown_function (x);
-                    ++ii;
+                if (amount < T{1}) {
+                    std::cout << "Selecting single (heterogeneous) EphA4 knockdown (kd = " << amount << " < 1).\n";
+                    for (auto p : this->posn) {
+                        T x = T{1}-p[0];
+                        rcpt0_EphA4[ii] = this->EphA4_kd_function (x);
+                        ++ii;
+                    }
+                } else { // amount > 1
+                    std::cout << "Selecting double (homogeneous) EphA4 knockdown (kd = " << amount << " >= 1).\n";
+                    for (auto p : this->posn) {
+                        T x = T{1}-p[0];
+                        rcpt0_EphA4[ii] = this->EphA4_kdkd_function (x);
+                        ++ii;
+                    }
                 }
             }
 
