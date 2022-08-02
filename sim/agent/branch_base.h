@@ -47,4 +47,7 @@ struct branch_base
     // Parameters for special EphA4 model
     T AxToA4_power = T{2};
     T AxToA4_mult = T{0.01};
+
+    T Ax_thresh = T{2.5};
+    T A4_thresh = T{1.5};
 };

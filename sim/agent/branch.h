@@ -123,7 +123,6 @@ public:
             // For rcpt[0], do a special thing if interaction is 'special_EphA', which means treat EphA4 and different from EphAx
             T r0 = this->rcpt[0]; // Default case
             T r2 = this->rcpt[2];
-            static constexpr T r0_thresh = 0.5;
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute a signal that is based on a clustersize:
                 r0 = this->signal (this->rcpt[0], this->clustersz_medium());
@@ -133,8 +132,27 @@ public:
                 // EphA4, then the push towards caudal seems to vanish.  Look at Reber
                 // idea about TrkB and think - it doesn't seem to be compatible with my
                 // dual gradient scheme here.
-
-                r2 = this->rcpt0_EphA4 > r0_thresh ? T{0} : this->rcpt[2];
+                bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4_phos < this->A4_thresh;
+#if 0
+                if (collapse_condition) {
+                    std::cout << "r2 collapses for rcpt[0]=" << this->rcpt[0] << " and EphA4=" << this->rcpt0_EphA4_phos << std::endl;
+                } else if (this->rcpt[0] > this->Ax_thresh) {
+                    std::cout << "ONE) rcpt[0] (" << this->rcpt[0] << ") > " << this->Ax_thresh
+                              << " but EphA4 (" << this->rcpt0_EphA4_phos << ") NOT < " << this->A4_thresh
+                              << std::endl;
+                } else if (this->rcpt0_EphA4 < this->A4_thresh) {
+                    std::cout  << "TWO) EphA4 (" << this->rcpt0_EphA4_phos << ") < " << this->A4_thresh
+                               << "but rcpt[0] (" << this->rcpt[0] << ") NOT > " << this->Ax_thresh
+                               << std::endl;
+                } else {
+                    std::cout  << "EphA4 (" << this->rcpt0_EphA4 << ") "
+                               << ", rcpt[0] (" << this->rcpt[0] << ")"
+                               << std::endl;
+                }
+#endif
+                // If condition is met, then the effectiveness of r2 vanishes (or could
+                // be reduced to a fraction)
+                r2 = collapse_condition ? T{0} : this->rcpt[2];
 
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
                 r0 = this->signal (this->rcpt[0], this->clustersz_medium());

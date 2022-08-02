@@ -790,7 +790,7 @@ struct guidingtissue : public tissue<T>
     };
     void receptor_knockdown (size_t idx, T amount)
     {
-        static constexpr knockdown_method special_epha_knockdown = knockdown_method::separate_function;
+        static constexpr knockdown_method special_epha_knockdown = knockdown_method::recompute;
 
         if (idx >= N) { throw std::runtime_error ("receptor index out of range"); }
         // Deal with special case...

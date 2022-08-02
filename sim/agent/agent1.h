@@ -899,6 +899,8 @@ struct Agent1
             // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
             this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
             this->pending_branches[i].AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
+            this->pending_branches[i].Ax_thresh = this->mconf->getFloat("Ax_thresh", 2.5f);
+            this->pending_branches[i].A4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
             this->pending_branches[i].aid = (int)ri; // axon index
             // Minimum of phosphorylised expression:
             this->pending_branches[i].rcpt0_EphA4_phos_min = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4.max();
@@ -1437,12 +1439,14 @@ struct Agent1
         _vm->xlabel = "T.................N";
         morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
+        morph::vVector<T> rcpt0_EphA4_phos = -rcpt0_EphA4 + ret->EphA4_knockdown_expression;
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
         float AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
         morph::vVector<T> r0 = ratio.pow(AxToA4_power);
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4, "EphA4");
+        _vm->setdata (nt, rcpt0_EphA4_phos, "EphA4 (phos)");
         _vm->setdata (nt, ratio, "EphAx/EphA4");
         std::string eatok = "(EphAx/EphA4)^" + std::to_string(AxToA4_power);
         _vm->setdata (nt, r0, eatok);
