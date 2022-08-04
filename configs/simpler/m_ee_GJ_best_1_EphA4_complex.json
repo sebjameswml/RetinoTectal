@@ -1,11 +1,9 @@
 {
     "desc_epha4_expression_form" : "The form of epha4 expression (or of effective expression after cis interactions). 0:lin 1:q 2:ex 3:log 4:ex2 5:invex 6:null (etc), 10: the special EphA4 one (based on phosphorylization of EphA4 and remaining free EphA4)",
     "epha4_expression_form" : 10,
-    "desc_AxToA4_power" : "parameter: the power to raise the ratio of EphAx to EphA4 to.",
-    "AxToA4_power" : 1,
-    "desc_AxToA4_mult" : "parameter: used to modify the response of r2 receptors to tectal ligands, to balance the change in r0 for the wildtype layout",
-    "AxToA4_mult" : 1,
+    "desc_Ax_thresh" : "parameter: EphAx above this value can trigger collapse of r2.",
     "Ax_thresh" : 1.6,
+    "desc_A4_thresh" : "parameter: EphA4 below this value can trigger collapse of r2.",
     "A4_thresh" : 0.7,
 
     "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",

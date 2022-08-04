@@ -897,8 +897,6 @@ struct Agent1
             this->pending_branches[i].setr_i (r_i_conf);
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
             // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
-            this->pending_branches[i].AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
-            this->pending_branches[i].AxToA4_mult = this->mconf->getFloat("AxToA4_mult", 0.01f);
             this->pending_branches[i].Ax_thresh = this->mconf->getFloat("Ax_thresh", 2.5f);
             this->pending_branches[i].A4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
             this->pending_branches[i].aid = (int)ri; // axon index
@@ -1441,15 +1439,11 @@ struct Agent1
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
         morph::vVector<T> rcpt0_EphA4_phos = -rcpt0_EphA4 + ret->EphA4_current_expression;
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
-        float AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
-        morph::vVector<T> r0 = ratio.pow(AxToA4_power);
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4, "EphA4");
         _vm->setdata (nt, rcpt0_EphA4_phos, "EphA4 (phos)");
         _vm->setdata (nt, ratio, "EphAx/EphA4");
-        std::string eatok = "(EphAx/EphA4)^" + std::to_string(AxToA4_power);
-        _vm->setdata (nt, r0, eatok);
         _vm->finalize();
         tvv->addVisualModel (_vm);
 
@@ -1463,9 +1457,8 @@ struct Agent1
         _vm2->ylabel = "Expression";
         _vm2->xlabel = "T.................N";
         _vm2->setlimits_y (0.0f, 2.5f);
-        //morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4;
-        morph::vVector<T> cluster_size = (T{10} * ((rcpt0 - T{1.31})*T{0.5}).exp() / (rcpt0_EphA4 * T{100})) + T{0.2};
-        morph::vVector<T> r0_ = (rcpt0 * cluster_size * cluster_size * T{4}).pow(AxToA4_power);
+        morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4;
+        morph::vVector<T> r0_ = rcpt0 * cluster_size;
         _vm2->setdata (nt, cluster_size, "Cluster size");
         _vm2->setdata (nt, r0_, "Effective rcpt0 strength");
         _vm2->finalize();

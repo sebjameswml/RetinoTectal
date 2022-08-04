@@ -75,27 +75,11 @@ public:
         return lg;
     }
 
-    // Used in compute_chemo(). Function for EphA cluster size. Matches fn in exampleRetEph_complex.py
-    T clustersz_toocomplex() const
-    {
-        // this->rcpt0_EphA4_phos - [this->rcpt0_EphA4_phos_min or T{0.8404305} or Whatever]
-        T numer = (this->rcpt0_EphA4_phos - T{0.8}) * std::exp(T{0.5} * (this->rcpt[0] - T{1.31}));
-        T denom = T{10} * std::pow (this->rcpt0_EphA4, 3) + T{2};
-        T ratio = numer / denom;
-        T csize = T{3} * (T{0.2} + ratio);
-        return csize;
-    }
-
     // The simplest expression for cluster size: 1/r_A4
-    T clustersz_simple() const { return T{1} / this->rcpt0_EphA4; }
-
-    // Slightly more nuanced - ability to raise to power: 1/(r_A4)^k
-    T clustersz_medium() const {
-        return T{1} / std::pow(this->rcpt0_EphA4, this->AxToA4_power);
-    }
+    T clustersz() const { return T{1} / this->rcpt0_EphA4; }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
-    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize * this->AxToA4_mult; }
+    T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
 
     // A subroutine of compute_next
     morph::Vector<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
@@ -125,12 +109,11 @@ public:
             T r2 = this->rcpt[2];
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
                 // Compute a signal that is based on a clustersize:
-                r0 = this->signal (this->rcpt[0], this->clustersz_medium());
-                // Have the this->rcpt0_EphA4 (or phos version?) do something to r2.
+                r0 = this->signal (this->rcpt[0], this->clustersz());
 
                 // What happens is that when there is knocked in EphA3 AND knocked down
                 // EphA4, then the push towards caudal seems to vanish - that's a
-                // collapse of the r2 receptor strength.
+                // collapse of the r2 receptor strength under these conditions.
                 bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4_phos < this->A4_thresh;
 #if 0
                 if (collapse_condition) {
@@ -149,12 +132,11 @@ public:
                                << std::endl;
                 }
 #endif
-                // If condition is met, then the effectiveness of r2 vanishes (or could
-                // be reduced to a fraction)
+                // If condition is met, then the effectiveness of r2 becomes very small.
                 r2 = collapse_condition ? this->rcpt[2]/T{10} : this->rcpt[2];
 
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
-                r0 = this->signal (this->rcpt[0], this->clustersz_medium());
+                r0 = this->signal (this->rcpt[0], this->clustersz());
             }
 
             bool repulse0 = source_tissue->forward_interactions[0] == interaction::repulsion
