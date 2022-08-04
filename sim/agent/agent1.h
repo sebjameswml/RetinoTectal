@@ -903,21 +903,21 @@ struct Agent1
             this->pending_branches[i].A4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
             this->pending_branches[i].aid = (int)ri; // axon index
             // Minimum of phosphorylised expression:
-            this->pending_branches[i].rcpt0_EphA4_phos_min = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4.max();
+            this->pending_branches[i].rcpt0_EphA4_phos_min = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4.max();
             if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[singleaxon_idx];
-                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
                 //std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
-                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_const_expression - this->ret->rcpt0_EphA4[ri];
+                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
@@ -1439,7 +1439,7 @@ struct Agent1
         _vm->xlabel = "T.................N";
         morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
-        morph::vVector<T> rcpt0_EphA4_phos = -rcpt0_EphA4 + ret->EphA4_knockdown_expression;
+        morph::vVector<T> rcpt0_EphA4_phos = -rcpt0_EphA4 + ret->EphA4_current_expression;
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
         float AxToA4_power = this->mconf->getFloat("AxToA4_power", 2.0f);
         morph::vVector<T> r0 = ratio.pow(AxToA4_power);

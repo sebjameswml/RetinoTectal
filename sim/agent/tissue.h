@@ -143,9 +143,11 @@ struct guidingtissue : public tissue<T>
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
     //! expression, which is essentially uniform across the retina.
     morph::vVector<T> rcpt0_EphA4;
+    morph::vVector<T> rcpt0_EphA4_phos;
     //! Functional form for rcpt0_EphA4
     expression_form EphA4_form;
     T EphA4_const_expression = T{3.5};
+    T EphA4_current_expression = T{3.5};
     T EphA4_knockdown_expression = T{2.5};
     T w_EphAx = T{0.25};
 
@@ -226,8 +228,10 @@ struct guidingtissue : public tissue<T>
         , EphA4_form(_EphA4_form)
         , EphA4_const_expression(_EphA4_const_expression)
     {
+        this->EphA4_current_expression = this->EphA4_const_expression;
         this->rcpt.resize (this->posn.size());
         this->rcpt0_EphA4.resize (this->posn.size());
+        this->rcpt0_EphA4_phos.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());
@@ -264,6 +268,8 @@ struct guidingtissue : public tissue<T>
             }
             // EphA4 expression increases in same direction as rcpt[0]
             this->rcpt0_EphA4[ri] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ri)) + rnorm.get() * this->rcpt_noise_gain;
+
+            this->rcpt0_EphA4_phos[ri] = this->EphA4_current_expression - this->rcpt0_EphA4[ri];
         }
 
         this->compute_gradients();
@@ -485,7 +491,7 @@ struct guidingtissue : public tissue<T>
     {
         // Here, we get ephrinA from exponential expression.
         T ephrinA = this->exponential_expression (1-x);
-        return EphA4_const_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
+        return this->EphA4_current_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
     }
 
     T expression_function (const T& x, const expression_form& ef) const
@@ -798,19 +804,22 @@ struct guidingtissue : public tissue<T>
                          || this->forward_interactions[0] == interaction::special_EphA_simple)) {
             // In this case, we are knocking down JUST EphA4.
             this->EphA4_knockdown_expression = this->EphA4_const_expression > amount ? this->EphA4_const_expression-amount : T{0};
+            this->EphA4_current_expression = this->EphA4_knockdown_expression;
             if (this->EphA4_knockdown_expression == T{0}) {
                 std::cout << "Info: Knocked EphA4 expression down to ZERO\n";
+            } else {
+                std::cout << "Info: Knocked EphA4 expression down from "
+                          << this->EphA4_const_expression << " to "
+                          << this->EphA4_knockdown_expression << "\n";
             }
             if constexpr (special_epha_knockdown == knockdown_method::simple) {
                 // Take the rcpt0_EphA4 curve and knock it down
                 for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
             } else if constexpr (special_epha_knockdown == knockdown_method::recompute) {
                 // Re-computation approach. Knock down the constant EphA4 expression, then recompute the curve.
-                size_t ii = 0;
-                for (auto p : this->posn) {
-                    T ephrinA = this->exponential_expression (1-p[0]);
-                    rcpt0_EphA4[ii] = this->EphA4_knockdown_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
-                    ++ii;
+                for (size_t ii = 0; ii < this->posn.size(); ++ii) {
+                    this->rcpt0_EphA4[ii] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ii));
+                    rcpt0_EphA4_phos[ii] = this->EphA4_current_expression - rcpt0_EphA4[ii];
                 }
             } else if constexpr (special_epha_knockdown == knockdown_method::separate_function) {
                 size_t ii = 0;

@@ -129,9 +129,8 @@ public:
                 // Have the this->rcpt0_EphA4 (or phos version?) do something to r2.
 
                 // What happens is that when there is knocked in EphA3 AND knocked down
-                // EphA4, then the push towards caudal seems to vanish.  Look at Reber
-                // idea about TrkB and think - it doesn't seem to be compatible with my
-                // dual gradient scheme here.
+                // EphA4, then the push towards caudal seems to vanish - that's a
+                // collapse of the r2 receptor strength.
                 bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4_phos < this->A4_thresh;
 #if 0
                 if (collapse_condition) {
@@ -152,7 +151,7 @@ public:
 #endif
                 // If condition is met, then the effectiveness of r2 vanishes (or could
                 // be reduced to a fraction)
-                r2 = collapse_condition ? T{0} : this->rcpt[2];
+                r2 = collapse_condition ? this->rcpt[2]/T{10} : this->rcpt[2];
 
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
                 r0 = this->signal (this->rcpt[0], this->clustersz_medium());
