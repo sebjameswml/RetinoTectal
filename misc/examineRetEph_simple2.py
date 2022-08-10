@@ -10,6 +10,8 @@ clr_knockin = C.darkorchid1
 clr_knockdown = C.cyan2
 clr_knockdown2 = C.midnightblue
 clr_wt = C.yellowgreen
+clr_blk = C.black
+clr_red = C.crimson
 # Set plotting font defaults
 import matplotlib
 fs = 10
@@ -40,7 +42,7 @@ def examineRetEph():
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
     ki = 1.0
-    kd = 2.5
+    kd = 1.9
     kiki = 4.0
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
@@ -102,6 +104,7 @@ def examineRetEph():
     ax1.plot (x, ephrinA, linestyle=':', color=clr_wt, label='$l_0$ (ephrinA)')
     # EphA3 knockin
     ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='$r_0 + ki$ (EphA3 ki)')
+    ax1.plot ([0,1], [1.6, 1.6], linestyle=':', color=clr_red, label='Ex_Thresh')
 
     ax1.legend()
     ax1.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
@@ -120,6 +123,7 @@ def examineRetEph():
     ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (un-bound, kd)')
     #if not simple_knockdown:
     #    ax2.plot (x, EphA4_free_kd2, linestyle='-', color=clr_knockdown2, label='$r_{A4} - kd$ (un-bound, kd/kd)')
+    ax2.plot ([0,1], [1.1626, 1.1626], linestyle=':', color=clr_red, label='E4_Thresh')
 
     show_sum_epha = 0
     if show_sum_epha:
