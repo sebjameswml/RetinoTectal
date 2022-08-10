@@ -30,6 +30,7 @@ struct branch_base
     morph::Vector<T, N> lgnd;
 
     // The base level of EphA4 in the retina, copied from the source tissue. Not dynamic.
+    T rcpt0_EphA4_base = T{0}; // Base level, before any cis interactions
     T rcpt0_EphA4 = T{0};      // Free
     T rcpt0_EphA4_phos = T{0}; // phosphorylised
     T rcpt0_EphA4_phos_min = T{0}; // min phosphorylised amount

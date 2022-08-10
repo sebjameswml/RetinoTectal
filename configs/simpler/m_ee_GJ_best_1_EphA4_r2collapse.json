@@ -4,7 +4,7 @@
     "desc_Ax_thresh" : "parameter: EphAx above this value can trigger collapse of r2.",
     "Ax_thresh" : 1.6,
     "desc_A4_thresh" : "parameter: EphA4 below this value can trigger collapse of r2.",
-    "A4_thresh" : 0.68,
+    "A4_thresh" : 1.1626,
 
     "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",
     "bpa": 4,

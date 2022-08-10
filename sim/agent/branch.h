@@ -104,36 +104,22 @@ public:
             // let receptor 2 interact primarily with ligand 2 [gradients (4,5)]
             // let receptor 3 interact primarily with ligand 3 [gradients (6,7)]
 
-            // For rcpt[0], do a special thing if interaction is 'special_EphA', which means treat EphA4 and different from EphAx
+            // For rcpt[0], do a special thing if interaction is 'special_EphA', which means treat EphA4 as different from EphAx
             T r0 = this->rcpt[0]; // Default case
             T r2 = this->rcpt[2];
             if (source_tissue->forward_interactions[0] == interaction::special_EphA) {
-                // Compute a signal that is based on a clustersize:
+                // Compute a signal for r0 that is based on a clustersize:
                 r0 = this->signal (this->rcpt[0], this->clustersz());
 
-                // What happens is that when there is knocked in EphA3 AND knocked down
-                // EphA4, then the push towards caudal seems to vanish - that's a
-                // collapse of the r2 receptor strength under these conditions.
-                bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4_phos < this->A4_thresh;
-#if 0
-                if (collapse_condition) {
-                    std::cout << "r2 collapses for rcpt[0]=" << this->rcpt[0] << " and EphA4=" << this->rcpt0_EphA4_phos << std::endl;
-                } else if (this->rcpt[0] > this->Ax_thresh) {
-                    std::cout << "ONE) rcpt[0] (" << this->rcpt[0] << ") > " << this->Ax_thresh
-                              << " but EphA4 (" << this->rcpt0_EphA4_phos << ") NOT < " << this->A4_thresh
-                              << std::endl;
-                } else if (this->rcpt0_EphA4 < this->A4_thresh) {
-                    std::cout  << "TWO) EphA4 (" << this->rcpt0_EphA4_phos << ") < " << this->A4_thresh
-                               << "but rcpt[0] (" << this->rcpt[0] << ") NOT > " << this->Ax_thresh
-                               << std::endl;
-                } else {
-                    std::cout  << "EphA4 (" << this->rcpt0_EphA4 << ") "
-                               << ", rcpt[0] (" << this->rcpt[0] << ")"
-                               << std::endl;
-                }
-#endif
-                // If condition is met, then the effectiveness of r2 becomes very small.
-                r2 = collapse_condition ? this->rcpt[2]/T{10} : this->rcpt[2];
+                // Add a 'collapse condition'. Exp. observation is that when there is
+                // knocked in EphA3 AND knocked down EphA4, then the push towards caudal
+                // seems to vanish - that's a collapse of the r2 receptor strength under
+                // these conditions.
+                bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4 < this->A4_thresh;
+                // If condition is met, then the effectiveness of r2 becomes very
+                // small. Otherwise, r2 has a slightly lower 'strength' in this
+                // "Special_EphA" condition.
+                r2 = collapse_condition ? this->rcpt[2]/T{10} : this->rcpt[2] * T{0.5};
 
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {
                 r0 = this->signal (this->rcpt[0], this->clustersz());

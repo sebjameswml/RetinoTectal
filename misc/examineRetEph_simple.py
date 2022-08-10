@@ -41,9 +41,9 @@ def examineRetEph():
     epha4_constant = 3.5
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
-    ki = 1.0
-    kd = 1.9
-    kiki = 4.0
+    ki = .8
+    kd = 2.1
+    kiki = 3.2
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
     ## 1997 for dissociation constants K_D = 6.16e-10 for ephrinA5/EphA5
@@ -103,8 +103,8 @@ def examineRetEph():
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$r_0$ (EphA wildtype cells)')
     ax1.plot (x, ephrinA, linestyle=':', color=clr_wt, label='$l_0$ (ephrinA)')
     # EphA3 knockin
-    ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='$r_0 + ki$ (EphA3 ki)')
-    ax1.plot ([0,1], [1.6, 1.6], linestyle=':', color=clr_red, label='Ex_Thresh')
+    ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='$r_0 + ki$ (after EphA3 ki)')
+    ax1.plot ([0,1], [1.6, 1.6], linestyle=':', color=clr_red, label='$h_0$ (threshold)')
 
     ax1.legend()
     ax1.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
@@ -115,15 +115,15 @@ def examineRetEph():
     ax1.set_aspect(abs(x1-x0)/abs(y1-y0))
     ax1.text (0.52, 2.67, 'ki = {0}'.format(ki))
 
-    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression')
+    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression, wt')
     ax2.plot (x, _epha4_kd, linestyle=':', color=clr_knockdown, label='Total EphA4, kd')
-    ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wildtype)')
-    ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis}$ (cis-bound, kd)')
-    ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wildtype)')
-    ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4} - kd$ (un-bound, kd)')
+    ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wt)')
+    ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis,kd}$ (cis-bound, kd)')
+    ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wt)')
+    ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4}^{kd}$ (un-bound, kd)')
     #if not simple_knockdown:
     #    ax2.plot (x, EphA4_free_kd2, linestyle='-', color=clr_knockdown2, label='$r_{A4} - kd$ (un-bound, kd/kd)')
-    ax2.plot ([0,1], [1.1626, 1.1626], linestyle=':', color=clr_red, label='E4_Thresh')
+    ax2.plot ([0,1], [1.1626, 1.1626], linestyle=':', color=clr_red, label='$h_{A4}$ (threshold)')
 
     show_sum_epha = 0
     if show_sum_epha:
@@ -152,7 +152,7 @@ def examineRetEph():
     ax21.plot (x, signal (EphAx,    clustersz_simple(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}-kd)$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}-kd)$ (ki + kd)'])
+    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}^{kd})$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}^{kd})$ (ki + kd)'])
     ax21.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax21.set_ylabel('Signal')
     yl = ax21.get_ylim()
