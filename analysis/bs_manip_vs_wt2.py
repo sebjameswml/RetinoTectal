@@ -115,8 +115,8 @@ import h5py
 # simulations for the Genetic manipulation sims to create these.
 
 # 0: ORIGINAL model 1: Clustersize model 2: Clustersize + r2 collapse
-model_type = 2
-doitall = 1
+model_type = 0
+doitall = 0
 if doitall:
     filebases = ["../rcnt/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500",

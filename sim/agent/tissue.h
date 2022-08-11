@@ -805,6 +805,7 @@ struct guidingtissue : public tissue<T>
             // In this case, we are knocking down JUST EphA4.
             this->EphA4_knockdown_expression = this->EphA4_const_expression > amount ? this->EphA4_const_expression-amount : T{0};
             this->EphA4_current_expression = this->EphA4_knockdown_expression;
+
             if (this->EphA4_knockdown_expression == T{0}) {
                 std::cout << "Info: Knocked EphA4 expression down to ZERO\n";
             } else {
@@ -812,15 +813,18 @@ struct guidingtissue : public tissue<T>
                           << this->EphA4_const_expression << " to "
                           << this->EphA4_knockdown_expression << "\n";
             }
+
             if constexpr (special_epha_knockdown == knockdown_method::simple) {
                 // Take the rcpt0_EphA4 curve and knock it down
                 for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
+
             } else if constexpr (special_epha_knockdown == knockdown_method::recompute) {
                 // Re-computation approach. Knock down the constant EphA4 expression, then recompute the curve.
                 for (size_t ii = 0; ii < this->posn.size(); ++ii) {
                     this->rcpt0_EphA4[ii] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ii));
                     rcpt0_EphA4_phos[ii] = this->EphA4_current_expression - rcpt0_EphA4[ii];
                 }
+
             } else if constexpr (special_epha_knockdown == knockdown_method::separate_function) {
                 size_t ii = 0;
                 if (amount < T{1}) {

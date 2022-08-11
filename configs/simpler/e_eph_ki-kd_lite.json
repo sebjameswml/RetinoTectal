@@ -5,7 +5,7 @@
     "reber" : true,
     "desc_knockin" : "The amount of knockin to apply. The range of expression values is in the units (about 3 is max)",
     "knockin" : 0.8,
-    "knockdown" : 2.1,
+    "knockdown" : 1.2,
 
     "startletter" : "G",
 
