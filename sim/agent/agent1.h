@@ -496,7 +496,7 @@ struct Agent1
             amss.precision(4);
             ccss.precision(4);
             amss << this->am.rms.back();
-            ccss << this->am.crosscount[0];
+            ccss << this->ax_centroids.crosscount(); // SLOW // this->am.crosscount[0]; // always -1 ?!
             this->emetric_txt->setupText (amss.str());
             this->crossings_txt->setupText (ccss.str());
             if (this->conf->getBool ("rc_vs_nt", false) == true) {
