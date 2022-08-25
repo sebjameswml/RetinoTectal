@@ -1,0 +1,42 @@
+{
+    "desc_graph_layout" : "0 is graph_layout::a, 1 is graph_layout::b, etc",
+    "graph_ymax" : 0.75,
+    "graph_layout" : 5,
+    "startletter" : "C",
+
+    "win_width" : 1942,
+    "win_height" : 982,
+    "st_x" : 0.1826,
+    "st_y" : -0.00947,
+    "st_z" : -3,
+    "fontsz_small" : 0.04,
+    "fontres" : 24,
+    "figlet_x" : -1.25, "figlet_y" : 1.15,
+    "expoff_x" : 1.05, "expoff_y" : -0.02,
+    "explabel_x" : 0.22, "explabel_y" : 0.5,
+    "tx" : 0.1, "ty" : 0.95, "th" : 0.1,
+    "graphb_x" : 1.8,
+
+    "desc_graftswap_coords" : "Note, that these depend on the size of model defined in the m_*.json config",
+    "graftswap_coords" : { "locn1" : [4,4], "locn2" : [4,12], "patchsize" : [12,4] },
+
+    "tectal_graftswap" : true,
+
+    "desc_seeaxons" : "Which axons to visualise as 'selected axons' eg [ 21, 38, 189, 378, 361 ]",
+    "seeaxons" : [ 129, 270 ],
+
+    "desc_movie" : "If true, then save images to make a movie",
+    "movie" : false,
+
+    "desc_lighting" : "Whether or not to use the lighting shader (defaults to false if omitted)",
+    "lighting" : true,
+
+    "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
+    "goslow" : false,
+
+    "desc_exit" : "If true, then exit at the end to allow running in scripts",
+    "exit" : true,
+
+    "desc_steps" : "How many simulation steps should be computed?",
+    "steps" : 1000
+}
