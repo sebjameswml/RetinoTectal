@@ -469,8 +469,9 @@ struct Agent1
             this->tcv->reinit(); // Experiment
             this->av->reinit();  // Selected axons
             this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
+            // Crosscount goes on second subgraph
             if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
-                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+                this->gv2->append ((float)stepnum, this->ax_centroids.crosscount(), 0);
             }
             break;
         }
@@ -2004,23 +2005,38 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
-        // A graph of the RMS diffs between axon position centroids and target positions from retina
+        // TWO graphs for epsilon (rms distance error) and eta (net crossings)
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F);
-        this->gv->axisstyle = morph::axisstyle::twinax;
         this->gv->twodimensional = false;
-        this->gv->setsize (0.9f, 1.0f);
+        this->gv->setsize (0.9f, 0.45f);
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f),
-                             0, this->conf->getFloat("graph_ymax2", 200.0f));
+                             0, this->conf->getFloat("graph_ymax", 1.0f));
         this->gv->axislabelgap = 0.03f;
         this->gv->policy = morph::stylepolicy::lines;
         this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
         this->gv->xlabel = "t";
-        this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
-        this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
+        morph::DatasetStyle ds(morph::stylepolicy::lines);
+        ds.linecolour = morph::colour::dodgerblue3;
+        ds.datalabel = unicode::toUtf8 (unicode::epsilon);
+        this->gv->prepdata (ds);
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
+
+        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::Vector<float>({0.0f, 0.6f, 0.0f}));
+        this->gv2->twodimensional = false;
+        this->gv2->omit_x_tick_labels = true;
+        this->gv2->setsize (0.9f, 0.45f);
+        this->gv2->setlimits (0, this->conf->getFloat ("steps", 1000),
+                              0, this->conf->getFloat("graph_ymax2", 200.0f));
+        this->gv2->axislabelgap = 0.03f;
+        this->gv2->policy = morph::stylepolicy::lines;
+        this->gv2->ylabel = unicode::toUtf8 (unicode::eta);
+        this->gv2->xlabel = "t";
+        ds.linecolour = morph::colour::red3;
+        ds.datalabel = unicode::toUtf8 (unicode::eta);
+        this->gv2->prepdata (ds);
+        this->gv2->finalize();
+        this->v->addVisualModel (this->gv2);
 
         // Branches: Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_G, &this->branches, &this->ax_history);
@@ -2572,8 +2588,10 @@ struct Agent1
     morph::Vector<size_t, 4> freeze_times;
     // Centroid visual for targets
     NetVisual<T>* tcv = nullptr;
-    // A graph for the RMS metric
+    // A graph for the RMS metric (epsilon)
     morph::GraphVisual<T>* gv = nullptr;
+    // A graph for eta metric
+    morph::GraphVisual<T>* gv2 = nullptr;
     // Make a couple of options for the graph layout for different figure types
     graph_layout layout = graph_layout::c;
 #endif // VISUALISE
