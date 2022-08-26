@@ -2006,12 +2006,13 @@ struct Agent1
         this->v->addVisualModel (this->cv);
 
         // TWO graphs for epsilon (rms distance error) and eta (net crossings)
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F);
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
         this->gv->twodimensional = false;
-        this->gv->setsize (0.9f, 0.45f);
+        this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 1.0f));
         this->gv->axislabelgap = 0.03f;
+        //this->gv->axisstyle = morph::axisstyle::boxfullticks;
         this->gv->policy = morph::stylepolicy::lines;
         this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
         this->gv->xlabel = "t";
@@ -2019,22 +2020,25 @@ struct Agent1
         ds.linecolour = morph::colour::dodgerblue3;
         ds.datalabel = unicode::toUtf8 (unicode::epsilon);
         this->gv->prepdata (ds);
+        this->gv->legend = false;
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
 
-        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::Vector<float>({0.0f, 0.6f, 0.0f}));
+        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
         this->gv2->twodimensional = false;
         this->gv2->omit_x_tick_labels = true;
-        this->gv2->setsize (0.9f, 0.45f);
+        this->gv2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
         this->gv2->setlimits (0, this->conf->getFloat ("steps", 1000),
                               0, this->conf->getFloat("graph_ymax2", 200.0f));
         this->gv2->axislabelgap = 0.03f;
+        //this->gv2->axisstyle = morph::axisstyle::boxfullticks;
         this->gv2->policy = morph::stylepolicy::lines;
         this->gv2->ylabel = unicode::toUtf8 (unicode::eta);
-        this->gv2->xlabel = "t";
+        this->gv2->xlabel = "";
         ds.linecolour = morph::colour::red3;
         ds.datalabel = unicode::toUtf8 (unicode::eta);
         this->gv2->prepdata (ds);
+        this->gv2->legend = false;
         this->gv2->finalize();
         this->v->addVisualModel (this->gv2);
 

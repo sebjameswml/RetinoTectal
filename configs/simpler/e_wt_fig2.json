@@ -8,9 +8,13 @@
 
     "graph_layout" : 2,
 
+    "subgraph_leftoffset" : 0.1,
+    "subgraph_vertoffset" : 0.55,
+    "subgraph_height" : 0.47,
+
     "freeze_time1" : 40,
     "freeze_time2" : 200,
-    "crosscount_from" : 40,
+    "crosscount_from" : 10,
     "crosscount_every" : 10,
 
     "desc_movie" : "If true, then save images to make a movie",
@@ -28,5 +32,5 @@
     "steps" : 300,
 
     "graph_ymax" : 0.75,
-    "graph_ymax2" : 150
+    "graph_ymax2" : 450
 }
