@@ -127,12 +127,12 @@ def examineRetEph():
     ax1.set_aspect(abs(x1-x0)/abs(y1-y0))
     ax1.text (0.52, 2.67, 'ki = {0}'.format(ki))
 
-    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression, wt')
-    ax2.plot (x, _epha4_kd, linestyle=':', color=clr_knockdown, label='Total EphA4, kd')
+    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression, $r_{A4}$, wt')
+    ax2.plot (x, _epha4_kd, linestyle=':', color=clr_knockdown, label='Total EphA4, kd ($r_{A4}^{kd}$)')
     ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wt)')
     ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis,kd}$ (cis-bound, kd)')
-    ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wt)')
-    ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4}^{kd}$ (un-bound, kd)')
+    ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}^{free}$  (un-bound, wt)')
+    ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4}^{free,kd}$ (un-bound, kd)')
     print ('EphA4_free_kd = {0}'.format(EphA4_free_kd))
 
     #if not simple_knockdown:
@@ -166,7 +166,7 @@ def examineRetEph():
     ax21.plot (x, signal (EphAx,    clustersz_simple(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}$ (EphA3 ki)', '${r_0}/(r_{A4}^{kd})$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}^{kd})$ (ki + kd)'])
+    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}^{free}$ (EphA3 ki)', '${r_0}/(r_{A4}^{free,kd})$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}^{free,kd})$ (ki + kd)'])
     ax21.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax21.set_ylabel('Signal')
     yl = ax21.get_ylim()

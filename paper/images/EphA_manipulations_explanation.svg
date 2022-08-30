@@ -5172,6 +5172,46 @@
          style="fill:#040404;fill-opacity:1;fill-rule:evenodd;stroke:#040404;stroke-width:1.00000003pt;stroke-opacity:1"
          transform="matrix(0.2,0,0,0.2,1.48,0.2)" />
     </marker>
+    <style
+       id="style51403"
+       type="text/css">
+*{stroke-linecap:butt;stroke-linejoin:round;}
+  </style>
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="mae4f1a1c1e"
+       d="M 0 0  L 0 3.5  " />
+    <path
+       style="stroke:#000000;stroke-width:0.8;"
+       id="md877960e99"
+       d="M 0 0  L -3.5 0  " />
+    <clipPath
+       id="p7acd6199af">
+      <rect
+         id="rect52157"
+         y="34.56"
+         x="147.208235"
+         width="221.76"
+         height="221.76" />
+    </clipPath>
+    <clipPath
+       id="p44a3b8389c">
+      <rect
+         id="rect52160"
+         y="34.56"
+         x="442.62"
+         width="221.76"
+         height="221.76" />
+    </clipPath>
+    <clipPath
+       id="pc9873dca62">
+      <rect
+         id="rect52163"
+         y="34.56"
+         x="738.031765"
+         width="221.76"
+         height="221.76" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -5181,8 +5221,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
-     inkscape:cx="467.24286"
-     inkscape:cy="539.22505"
+     inkscape:cx="533.04235"
+     inkscape:cy="400.99358"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -5785,216 +5825,6 @@
          inkscape:connector-curvature="0" />
     </g>
     <g
-       id="legend_3-9"
-       style="stroke-linecap:butt;stroke-linejoin:round"
-       transform="matrix(0.30106219,0,0,0.30106219,-178.13561,-9.1659812)">
-      <g
-         id="patch_19-3"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3802"
-           style="opacity:0.8;fill:#ffffff;stroke:#cccccc;stroke-linecap:butt;stroke-linejoin:miter"
-           d="m 745.03176,105.96 h 141.5 q 2,0 2,-2 v -62.4 q 0,-2 -2,-2 h -141.5 q -2,0 -2,2 v 62.4 q 0,2 2,2 z"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         id="line2d_78-9"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3805"
-           style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
-           d="m 747.03176,47.66 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         id="line2d_79-0"
-         style="stroke-linecap:butt;stroke-linejoin:round" />
-      <g
-         id="text_59"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <!-- $r_0/r_{A4}$ (wildtype) -->
-        <g
-           id="g3819"
-           transform="translate(775.03176,51.16)"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             id="text3817"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <tspan
-               id="tspan3809"
-               y="-0.40625"
-               x="0 12.20752"
-               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rr</tspan>
-            <tspan
-               id="tspan3811"
-               y="1.234375"
-               x="4.1113281 21.107422"
-               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04</tspan>
-            <tspan
-               id="tspan3813"
-               y="-0.40625"
-               x="8.8383789 25.834473 29.013184 32.914551 41.093262 43.871582 46.649902 52.997559 56.918457 62.836426 69.184082 75.336426"
-               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">/ (wildtype)</tspan>
-            <tspan
-               id="tspan3815"
-               y="1.234375"
-               x="16.318848"
-               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">A</tspan>
-          </text>
-        </g>
-      </g>
-      <g
-         id="line2d_80-8"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3822"
-           style="fill:none;stroke:#bf3eff;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
-           d="m 747.03176,62.36 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         id="line2d_81"
-         style="stroke-linecap:butt;stroke-linejoin:round" />
-      <g
-         id="text_60"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <!-- $(r_0 + ki)/r_{A4}$ (EphA3 ki) -->
-        <g
-           id="g3836"
-           transform="translate(775.03176,65.86)"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             id="text3834"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <tspan
-               id="tspan3826"
-               y="-0.40625"
-               x="0 14.687988 33.584473 37.48584 54.481934 57.660645 61.562012 67.880371 74.228027 80.565918 87.406738 93.769043 96.947754 102.73877 105.51709"
-               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">(+)/ (EphA3 ki)</tspan>
-            <tspan
-               id="tspan3828"
-               y="-0.40625"
-               x="3.9013669 25.015137 30.806152 40.85498"
-               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rkir</tspan>
-            <tspan
-               id="tspan3830"
-               y="1.234375"
-               x="8.0126953 49.754883"
-               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04</tspan>
-            <tspan
-               id="tspan3832"
-               y="1.234375"
-               x="44.966309"
-               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">A</tspan>
-          </text>
-        </g>
-      </g>
-      <g
-         id="line2d_82"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3839"
-           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
-           d="m 747.03176,78.66 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         id="line2d_83"
-         style="stroke-linecap:butt;stroke-linejoin:round" />
-      <g
-         id="text_61"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <!-- ${r_0}/(r_{A4}^{kd})$ (EphA4 kd) -->
-        <g
-           id="g3853"
-           transform="translate(775.03176,82.16)"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             id="text3851"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <tspan
-               id="tspan3843"
-               y="-0.85624999"
-               x="0 16.108887"
-               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rr</tspan>
-            <tspan
-               id="tspan3845"
-               y="0.78437501 1.878125"
-               x="4.1113281 25.008789"
-               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04</tspan>
-            <tspan
-               id="tspan3847"
-               y="-0.85624999"
-               x="8.8383789 12.20752 29.73584 33.637207 36.815918 40.717285 47.035645 53.383301 59.721191 66.562012 72.924316 76.103027 81.894043 88.241699"
-               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">/() (EphA4 kd)</tspan>
-            <tspan
-               id="tspan3849"
-               y="1.878125 -4.6843748 -4.6843748"
-               x="20.220215 20.684328 24.738041"
-               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Akd</tspan>
-          </text>
-        </g>
-      </g>
-      <g
-         id="line2d_84"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3856"
-           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
-           d="m 747.03176,95.66 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         id="line2d_85"
-         style="stroke-linecap:butt;stroke-linejoin:round" />
-      <g
-         id="line2d_86"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3860"
-           style="fill:none;stroke:#bf3eff;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:7.5, 7.5;stroke-dashoffset:0"
-           d="m 747.03176,95.66 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         id="line2d_87"
-         style="stroke-linecap:butt;stroke-linejoin:round" />
-      <g
-         id="text_62"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <!-- $(r_0+ki)/(r_{A4}^{kd})$ (ki + kd) -->
-        <g
-           id="g3874"
-           transform="translate(775.03176,99.16)"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             id="text3872"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <tspan
-               id="tspan3864"
-               y="-0.85624999"
-               x="0 14.687988 33.584473 37.48584 40.85498 58.383301 62.284668 65.463379 69.364746 75.155762 77.934082 81.112793 89.491699 92.67041 98.461426 104.80908"
-               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">(+)/() (ki + kd)</tspan>
-            <tspan
-               id="tspan3866"
-               y="-0.85624999"
-               x="3.9013669 25.015137 30.806152 44.756348"
-               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rkir</tspan>
-            <tspan
-               id="tspan3868"
-               y="0.78437501 1.878125"
-               x="8.0126953 53.65625"
-               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04</tspan>
-            <tspan
-               id="tspan3870"
-               y="1.878125 -4.6843748 -4.6843748"
-               x="48.867676 49.331791 53.385502"
-               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Akd</tspan>
-          </text>
-        </g>
-      </g>
-    </g>
-    <g
        id="patch_8"
        style="stroke-linecap:butt;stroke-linejoin:round"
        transform="matrix(0.35277778,0,0,0.35277778,-12.95064,-110.08719)">
@@ -6536,292 +6366,6 @@
        style="stroke-linecap:butt;stroke-linejoin:round"
        id="line2d_57-9"
        transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)" />
-    <g
-       id="g5614"
-       transform="matrix(1.1187758,0,0,1.1187758,-11.963477,59.774177)"
-       style="stroke-linecap:butt;stroke-linejoin:round">
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="patch_13-7"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           sodipodi:nodetypes="sssssssss"
-           id="path3525"
-           style="opacity:0.8;fill:#ffffff;stroke:#cccccc;stroke-linecap:butt;stroke-linejoin:miter"
-           d="m 449.62,105.87799 h 268.16965 c 1.33333,0 2,-0.66667 2,-2 V 41.56 c 0,-1.333333 -0.66667,-2 -2,-2 H 449.62 c -1.33333,0 -2,0.666667 -2,2 v 62.31799 c 0,1.33333 0.66667,2 2,2 z"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="line2d_44"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3528"
-           style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.5, 2.475;stroke-dashoffset:0"
-           d="m 451.62,47.658437 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="text_35-5"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <text
-           id="text3532"
-           y="51.158436"
-           x="479.62"
-           style="font-style:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:start;stroke-linecap:butt;stroke-linejoin:round">Total EphA4 expression, wt</text>
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="line2d_46-2"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3535"
-           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.5, 2.475;stroke-dashoffset:0"
-           d="m 451.62,62.336563 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="text_36-4"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <text
-           id="text3539"
-           y="65.836563"
-           x="479.62"
-           style="font-style:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:start;stroke-linecap:butt;stroke-linejoin:round">Total EphA4, kd</text>
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="line2d_48-7"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3542"
-           style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:5.55, 2.4;stroke-dashoffset:0"
-           d="m 451.62,78.61625 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="text_37-4"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <!-- $r_{A4}^{cis}$ (cis-bound, wt) -->
-        <g
-           id="g3556"
-           transform="translate(479.62,82.11625)"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             id="text3554"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <tspan
-               id="tspan3546"
-               y="-0.85624999"
-               x="0"
-               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">r</tspan>
-            <tspan
-               id="tspan3548"
-               y="1.878125 -4.6843748 -4.6843748 -4.6843748"
-               x="4.1113281 4.5754428 8.4240761 10.3689"
-               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Acis</tspan>
-            <tspan
-               id="tspan3550"
-               y="1.878125"
-               x="8.8999023"
-               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">4</tspan>
-            <tspan
-               id="tspan3552"
-               y="-0.85624999"
-               x="14.28931 17.468021 21.369389 26.867435 29.645756 34.855717 38.464115 44.811771 50.929935 57.267826 63.605717 69.953369 73.13208 76.310791 84.489502 88.4104"
-               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"> (cis-bound, wt)</tspan>
-          </text>
-        </g>
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="line2d_50-3"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <path
-           id="path3559"
-           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:5.55, 2.4;stroke-dashoffset:0"
-           d="m 451.62,96.21625 h 20"
-           inkscape:connector-curvature="0" />
-      </g>
-      <g
-         transform="matrix(0.25329949,0,0,0.25329949,22.90865,-150.30104)"
-         id="text_38-7"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <!-- $r_{A4}^{cis,kd}$ (cis-bound, kd) -->
-        <g
-           id="g3573"
-           transform="translate(479.62,99.71625)"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             id="text3571"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <tspan
-               id="tspan3563"
-               y="-0.25156251"
-               x="0"
-               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">r</tspan>
-            <tspan
-               id="tspan3565"
-               y="2.4828124 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
-               x="4.1113281 4.5754428 8.4240761 10.3689 17.60474 21.658451"
-               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Aciskd</tspan>
-            <tspan
-               id="tspan3567"
-               y="2.4828124 -4.6843748"
-               x="8.8999023 14.015872"
-               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">4,</tspan>
-            <tspan
-               id="tspan3569"
-               y="-0.25156251"
-               x="26.375246 29.553959 33.455326 38.953373 41.731693 46.941654 50.550053 56.897709 63.015873 69.35376 75.69165 82.039307 85.218018 88.396729 94.187744 100.5354"
-               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"> (cis-bound, kd)</tspan>
-          </text>
-        </g>
-      </g>
-      <g
-         style="stroke-linecap:butt;stroke-linejoin:round"
-         transform="matrix(0.71801431,0,0,0.71801431,77.649744,-36.467918)"
-         id="g5442">
-        <g
-           style="stroke-linecap:butt;stroke-linejoin:round"
-           id="line2d_52-8"
-           transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)">
-          <path
-             inkscape:connector-curvature="0"
-             d="m 451.62,111.61469 h 20"
-             style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
-             id="path3576" />
-        </g>
-        <g
-           style="stroke-linecap:butt;stroke-linejoin:round"
-           id="text_39-8"
-           transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)">
-          <!-- $r_{A4}$  (un-bound, wt) -->
-          <g
-             style="stroke-linecap:butt;stroke-linejoin:round"
-             transform="translate(479.62,115.11469)"
-             id="g3590">
-            <text
-               style="stroke-linecap:butt;stroke-linejoin:round"
-               id="text3588">
-              <tspan
-                 style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="0"
-                 y="-0.40625"
-                 id="tspan3580">r</tspan>
-              <tspan
-                 style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="4.1113281"
-                 y="1.234375"
-                 id="tspan3582">A</tspan>
-              <tspan
-                 style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="8.8999023"
-                 y="1.234375"
-                 id="tspan3584">4</tspan>
-              <tspan
-                 style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="13.626953 16.805664 19.984375 23.885742 30.223633 36.561523 40.169922 46.517578 52.635742 58.973633 65.311523 71.65918 74.837891 78.016602 86.195312 90.116211"
-                 y="-0.40625"
-                 id="tspan3586">  (un-bound, wt)</tspan>
-            </text>
-          </g>
-        </g>
-        <g
-           style="stroke-linecap:butt;stroke-linejoin:round"
-           id="line2d_54-8"
-           transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)">
-          <path
-             inkscape:connector-curvature="0"
-             d="m 451.62,127.89437 h 20"
-             style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
-             id="path3593" />
-        </g>
-        <g
-           style="stroke-linecap:butt;stroke-linejoin:round"
-           id="text_40-1"
-           transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)">
-          <!-- $r_{A4}^{kd}$ (un-bound, kd) -->
-          <g
-             style="stroke-linecap:butt;stroke-linejoin:round"
-             transform="translate(479.62,131.39437)"
-             id="g3607">
-            <text
-               style="stroke-linecap:butt;stroke-linejoin:round"
-               id="text3605">
-              <tspan
-                 style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="0"
-                 y="-0.85624999"
-                 id="tspan3597">r</tspan>
-              <tspan
-                 style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="4.1113281 4.5754428 8.6291542"
-                 y="1.878125 -4.6843748 -4.6843748"
-                 id="tspan3599">Akd</tspan>
-              <tspan
-                 style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="8.8999023"
-                 y="1.878125"
-                 id="tspan3601">4</tspan>
-              <tspan
-                 style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="13.626953 16.805664 20.707031 27.044922 33.382812 36.991211 43.338867 49.457031 55.794922 62.132812 68.480469 71.65918 74.837891 80.628906 86.976562"
-                 y="-0.85624999"
-                 id="tspan3603"> (un-bound, kd)</tspan>
-            </text>
-          </g>
-        </g>
-        <g
-           style="stroke-linecap:butt;stroke-linejoin:round"
-           id="line2d_56-4"
-           transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)">
-          <path
-             inkscape:connector-curvature="0"
-             d="m 451.62,143.29281 h 20"
-             style="fill:none;stroke:#dc143c;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.5, 2.475;stroke-dashoffset:0"
-             id="path3610" />
-        </g>
-        <g
-           style="stroke-linecap:butt;stroke-linejoin:round"
-           id="text_41"
-           transform="matrix(0.35277778,0,0,0.35277778,-25.846395,-175.56823)">
-          <!-- $h_{A4}$ (threshold) -->
-          <g
-             style="stroke-linecap:butt;stroke-linejoin:round"
-             transform="translate(479.62,146.79281)"
-             id="g3624">
-            <text
-               style="stroke-linecap:butt;stroke-linejoin:round"
-               id="text3622">
-              <tspan
-                 style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="0"
-                 y="-0.40625"
-                 id="tspan3614">h</tspan>
-              <tspan
-                 style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="6.3378911"
-                 y="1.234375"
-                 id="tspan3616">A</tspan>
-              <tspan
-                 style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="11.126465"
-                 y="1.234375"
-                 id="tspan3618">4</tspan>
-              <tspan
-                 style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
-                 x="15.853516 19.032227 22.933594 26.854492 33.192383 37.303711 43.456055 48.666016 55.003906 61.12207 63.900391 70.248047"
-                 y="-0.40625"
-                 id="tspan3620"> (threshold)</tspan>
-            </text>
-          </g>
-        </g>
-      </g>
-    </g>
     <g
        id="patch_2-6"
        style="stroke-linecap:butt;stroke-linejoin:round"
@@ -7812,7 +7356,7 @@
          y="64.832527"
          id="tspan10304">to r<tspan
    style="font-size:3.54588318px;baseline-shift:sub;stroke-width:0.12027969;stroke-linecap:butt;stroke-linejoin:round"
-   id="tspan10302">2</tspan>/10</tspan></text>
+   id="tspan10302">2</tspan>/5</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.25327873px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20332992;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -7881,5 +7425,579 @@
        id="path5616-0"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_45-3"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_47-46"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_49-6"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_51-02"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_53"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_55"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       id="line2d_57"
+       transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)" />
+    <g
+       id="g53666"
+       transform="matrix(0.75247199,0,0,0.75247199,-58.43859,-19.205156)"
+       style="stroke-linecap:butt;stroke-linejoin:round">
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="patch_13"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           sodipodi:nodetypes="sssssssss"
+           id="path51782"
+           style="opacity:0.8;fill:#ffffff;stroke:#cccccc;stroke-linecap:butt;stroke-linejoin:miter"
+           d="m 449.62,109.27199 h 284.23822 c 1.33334,0 2,-0.66667 2,-2 V 41.56 c 0,-1.333333 -0.66666,-2 -2,-2 H 449.62 c -1.33333,0 -2,0.666667 -2,2 v 65.71199 c 0,1.33333 0.66667,2 2,2 z"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="line2d_44-0"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path51785"
+           style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.5, 2.475;stroke-dashoffset:0"
+           d="m 451.62,47.66 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="text_35"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- Total EphA4 expression, $r_{A4}$, wt -->
+        <g
+           id="g51799"
+           transform="translate(479.62,51.16)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text51797"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan51789"
+               y="-0.40625"
+               x="0 6.108398 12.226562 16.147461 22.275391 25.053711 28.232422 34.550781 40.898438 47.236328 54.077148 60.439453 63.618164 69.770508 75.688477 82.036133 86.147461 92.299805 97.509766 102.71973 105.49805 111.61621 117.9541 121.13281 137.93848 141.11719 144.2959 152.47461"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Total EphA4 expression, , wt</tspan>
+            <tspan
+               id="tspan51791"
+               y="-0.40625"
+               x="124.31152"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">r</tspan>
+            <tspan
+               id="tspan51793"
+               y="1.234375"
+               x="128.42285"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">A</tspan>
+            <tspan
+               id="tspan51795"
+               y="1.234375"
+               x="133.21143"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">4</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="line2d_46"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path51802"
+           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.5, 2.475;stroke-dashoffset:0"
+           d="m 451.62,63.96 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="text_36"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- Total EphA4, kd ($r_{A4}^{kd}$) -->
+        <g
+           id="g51816"
+           transform="translate(479.62,67.46)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text51814"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan51806"
+               y="-0.85624999"
+               x="0 6.108398 12.226562 16.147461 22.275391 25.053711 28.232422 34.550781 40.898438 47.236328 54.077148 60.439453 63.618164 66.796875 72.587891 78.935547 82.114258 99.642578"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Total EphA4, kd ()</tspan>
+            <tspan
+               id="tspan51808"
+               y="-0.85624999"
+               x="86.015625"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">r</tspan>
+            <tspan
+               id="tspan51810"
+               y="1.878125 -4.6843748 -4.6843748"
+               x="90.126953 90.591064 94.644775"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Akd</tspan>
+            <tspan
+               id="tspan51812"
+               y="1.878125"
+               x="94.915527"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">4</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="line2d_48"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path51819"
+           style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:5.55, 2.4;stroke-dashoffset:0"
+           d="m 451.62,80.96 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="text_37"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- $r_{A4}^{cis}$ (cis-bound, wt) -->
+        <g
+           id="g51833"
+           transform="translate(479.62,84.46)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text51831"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan51823"
+               y="-0.85624999"
+               x="0"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">r</tspan>
+            <tspan
+               id="tspan51825"
+               y="1.878125 -4.6843748 -4.6843748 -4.6843748"
+               x="4.1113281 4.5754428 8.4240761 10.3689"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Acis</tspan>
+            <tspan
+               id="tspan51827"
+               y="1.878125"
+               x="8.8999023"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">4</tspan>
+            <tspan
+               id="tspan51829"
+               y="-0.85624999"
+               x="14.28931 17.468021 21.369389 26.867435 29.645756 34.855717 38.464115 44.811771 50.929935 57.267826 63.605717 69.953369 73.13208 76.310791 84.489502 88.4104"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"> (cis-bound, wt)</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="line2d_50"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path51836"
+           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:5.55, 2.4;stroke-dashoffset:0"
+           d="m 451.62,98.56 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)"
+         id="text_38"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- $r_{A4}^{cis,kd}$ (cis-bound, kd) -->
+        <g
+           id="g51850"
+           transform="translate(479.62,102.06)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text51848"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan51840"
+               y="-0.25156251"
+               x="0"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">r</tspan>
+            <tspan
+               id="tspan51842"
+               y="2.4828124 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
+               x="4.1113281 4.5754428 8.4240761 10.3689 17.60474 21.658451"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Aciskd</tspan>
+            <tspan
+               id="tspan51844"
+               y="2.4828124 -4.6843748"
+               x="8.8999023 14.015872"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">4,</tspan>
+            <tspan
+               id="tspan51846"
+               y="-0.25156251"
+               x="26.375246 29.553959 33.455326 38.953373 41.731693 46.941654 50.550053 56.897709 63.015873 69.35376 75.69165 82.039307 85.218018 88.396729 94.187744 100.5354"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"> (cis-bound, kd)</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         style="stroke-linecap:butt;stroke-linejoin:round"
+         transform="translate(51.026786,-17.608318)"
+         id="g53596">
+        <g
+           style="stroke-linecap:butt;stroke-linejoin:round"
+           id="line2d_52"
+           transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)">
+          <path
+             inkscape:connector-curvature="0"
+             d="m 451.62,115.56 h 20"
+             style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
+             id="path51853" />
+        </g>
+        <g
+           style="stroke-linecap:butt;stroke-linejoin:round"
+           id="text_39"
+           transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)">
+          <!-- $r_{A4}^{free}$  (un-bound, wt) -->
+          <g
+             style="stroke-linecap:butt;stroke-linejoin:round"
+             transform="translate(479.62,119.06)"
+             id="g51867">
+            <text
+               style="stroke-linecap:butt;stroke-linejoin:round"
+               id="text51865">
+              <tspan
+                 style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="0"
+                 y="-0.85624999"
+                 id="tspan51857">r</tspan>
+              <tspan
+                 style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="4.1113281 4.5754428 7.0397978 9.9177284 14.224368"
+                 y="1.878125 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
+                 id="tspan51859">Afree</tspan>
+              <tspan
+                 style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="8.8999023"
+                 y="1.878125"
+                 id="tspan51861">4</tspan>
+              <tspan
+                 style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="18.804447 21.983158 25.161867 29.063236 35.401127 41.739017 45.347416 51.695072 57.813236 64.151123 70.489014 76.83667 80.015381 83.194092 91.372803 95.293701"
+                 y="-0.85624999"
+                 id="tspan51863">  (un-bound, wt)</tspan>
+            </text>
+          </g>
+        </g>
+        <g
+           style="stroke-linecap:butt;stroke-linejoin:round"
+           id="line2d_54"
+           transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)">
+          <path
+             inkscape:connector-curvature="0"
+             d="m 451.62,133.16 h 20"
+             style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
+             id="path51870" />
+        </g>
+        <g
+           style="stroke-linecap:butt;stroke-linejoin:round"
+           id="text_40"
+           transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)">
+          <!-- $r_{A4}^{free,kd}$ (un-bound, kd) -->
+          <g
+             style="stroke-linecap:butt;stroke-linejoin:round"
+             transform="translate(479.62,136.66)"
+             id="g51884">
+            <text
+               style="stroke-linecap:butt;stroke-linejoin:round"
+               id="text51882">
+              <tspan
+                 style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="0"
+                 y="-0.25156251"
+                 id="tspan51874">r</tspan>
+              <tspan
+                 style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="4.1113281 4.5754428 7.0397978 9.9177284 14.224368 22.119877 26.173588"
+                 y="2.4828124 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
+                 id="tspan51876">Afreekd</tspan>
+              <tspan
+                 style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="8.8999023 18.53101"
+                 y="2.4828124 -4.6843748"
+                 id="tspan51878">4,</tspan>
+              <tspan
+                 style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="30.890385 34.069096 37.970463 44.308353 50.646244 54.254642 60.602299 66.720459 73.05835 79.39624 85.743896 88.922607 92.101318 97.892334 104.23999"
+                 y="-0.25156251"
+                 id="tspan51880"> (un-bound, kd)</tspan>
+            </text>
+          </g>
+        </g>
+        <g
+           style="stroke-linecap:butt;stroke-linejoin:round"
+           id="line2d_56"
+           transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)">
+          <path
+             inkscape:connector-curvature="0"
+             d="m 451.62,148.55844 h 20"
+             style="fill:none;stroke:#dc143c;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:1.5, 2.475;stroke-dashoffset:0"
+             id="path51887" />
+        </g>
+        <g
+           style="stroke-linecap:butt;stroke-linejoin:round"
+           id="text_41-5"
+           transform="matrix(0.35277778,0,0,0.35277778,107.07296,-117.36869)">
+          <!-- $h_{A4}$ (threshold) -->
+          <g
+             style="stroke-linecap:butt;stroke-linejoin:round"
+             transform="translate(479.62,152.05844)"
+             id="g51901">
+            <text
+               style="stroke-linecap:butt;stroke-linejoin:round"
+               id="text51899">
+              <tspan
+                 style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="0"
+                 y="-0.40625"
+                 id="tspan51891">h</tspan>
+              <tspan
+                 style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="6.3378911"
+                 y="1.234375"
+                 id="tspan51893">A</tspan>
+              <tspan
+                 style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="11.126465"
+                 y="1.234375"
+                 id="tspan51895">4</tspan>
+              <tspan
+                 style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round"
+                 x="15.853516 19.032227 22.933594 26.854492 33.192383 37.303711 43.456055 48.666016 55.003906 61.12207 63.900391 70.248047"
+                 y="-0.40625"
+                 id="tspan51897"> (threshold)</tspan>
+            </text>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="legend_3"
+       style="stroke-linecap:butt;stroke-linejoin:round"
+       transform="matrix(0.28148363,0,0,0.28148363,-164.34796,-8.132218)">
+      <g
+         id="patch_19"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path52079"
+           style="opacity:0.8;fill:#ffffff;stroke:#cccccc;stroke-linecap:butt;stroke-linejoin:miter"
+           d="m 745.03176,109.46 h 158 q 2,0 2,-2 v -65.9 q 0,-2 -2,-2 h -158 q -2,0 -2,2 v 65.9 q 0,2 2,2 z"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="line2d_78"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path52082"
+           style="fill:none;stroke:#9acd32;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
+           d="m 747.03176,47.66 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="line2d_79"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="text_59-3"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- $r_0/r_{A4}$ (wildtype) -->
+        <g
+           id="g52096"
+           transform="translate(775.03176,51.16)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text52094"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan52086"
+               y="-0.40625"
+               x="0 12.20752"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rr</tspan>
+            <tspan
+               id="tspan52088"
+               y="1.234375"
+               x="4.1113281 21.107422"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04</tspan>
+            <tspan
+               id="tspan52090"
+               y="-0.40625"
+               x="8.8383789 25.834473 29.013184 32.914551 41.093262 43.871582 46.649902 52.997559 56.918457 62.836426 69.184082 75.336426"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">/ (wildtype)</tspan>
+            <tspan
+               id="tspan52092"
+               y="1.234375"
+               x="16.318848"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">A</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         id="line2d_80"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path52099"
+           style="fill:none;stroke:#bf3eff;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
+           d="m 747.03176,63.96 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="line2d_81-7"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="text_60-8"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- $(r_0 + ki)/r_{A4}^{free}$ (EphA3 ki) -->
+        <g
+           id="g52113"
+           transform="translate(775.03176,67.46)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text52111"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan52103"
+               y="-0.85624999"
+               x="0 14.687988 33.584473 37.48584 59.659428 62.838139 66.739502 73.057861 79.405518 85.743408 92.584229 98.946533 102.12524 107.91626 110.69458"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">(+)/ (EphA3 ki)</tspan>
+            <tspan
+               id="tspan52105"
+               y="-0.85624999"
+               x="3.9013669 25.015137 30.806152 40.85498"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rkir</tspan>
+            <tspan
+               id="tspan52107"
+               y="0.78437501 1.878125"
+               x="8.0126953 49.754883"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04</tspan>
+            <tspan
+               id="tspan52109"
+               y="1.878125 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
+               x="44.966309 45.430424 47.894779 50.772709 55.07935"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Afree</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         id="line2d_82-2"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path52116"
+           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
+           d="m 747.03176,81.56 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="line2d_83-1"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="text_61-0"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- ${r_0}/(r_{A4}^{free,kd})$ (EphA4 kd) -->
+        <g
+           id="g52130"
+           transform="translate(775.03176,85.06)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text52128"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan52120"
+               y="-0.25156251"
+               x="0 16.108887"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rr</tspan>
+            <tspan
+               id="tspan52122"
+               y="1.3890625 2.4828124 -4.6843748"
+               x="4.1113281 25.008789 34.639896"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04,</tspan>
+            <tspan
+               id="tspan52124"
+               y="-0.25156251"
+               x="8.8383789 12.20752 46.999271 50.900639 54.07935 57.980717 64.299072 70.646729 76.984619 83.825439 90.187744 93.366455 99.157471 105.50513"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">/() (EphA4 kd)</tspan>
+            <tspan
+               id="tspan52126"
+               y="2.4828124 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
+               x="20.220215 20.684328 23.148685 26.026615 30.333256 38.228764 42.282475"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Afreekd</tspan>
+          </text>
+        </g>
+      </g>
+      <g
+         id="line2d_84-5"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path52133"
+           style="fill:none;stroke:#00eeee;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round"
+           d="m 747.03176,99.16 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="line2d_85-8"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="line2d_86-5"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           id="path52137"
+           style="fill:none;stroke:#bf3eff;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:7.5, 7.5;stroke-dashoffset:0"
+           d="m 747.03176,99.16 h 20"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="line2d_87-5"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="text_62-0"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <!-- $(r_0+ki)/(r_{A4}^{free,kd})$ (ki + kd) -->
+        <g
+           id="g52151"
+           transform="translate(775.03176,102.66)"
+           style="stroke-linecap:butt;stroke-linejoin:round">
+          <text
+             id="text52149"
+             style="stroke-linecap:butt;stroke-linejoin:round">
+            <tspan
+               id="tspan52141"
+               y="-0.25156251"
+               x="0 14.687988 33.584473 37.48584 40.85498 75.646729 79.548096 82.726807 86.628174 92.419189 95.19751 98.376221 106.75513 109.93384 115.72485 122.07251"
+               style="font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">(+)/() (ki + kd)</tspan>
+            <tspan
+               id="tspan52143"
+               y="-0.25156251"
+               x="3.9013669 25.015137 30.806152 44.756348"
+               style="font-style:oblique;font-size:10px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">rkir</tspan>
+            <tspan
+               id="tspan52145"
+               y="1.3890625 2.4828124 -4.6843748"
+               x="8.0126953 53.65625 63.287357"
+               style="font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">04,</tspan>
+            <tspan
+               id="tspan52147"
+               y="2.4828124 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748 -4.6843748"
+               x="48.867676 49.331791 51.796146 54.674076 58.980717 66.876221 70.929932"
+               style="font-style:oblique;font-size:7px;font-family:'DejaVu Sans';stroke-linecap:butt;stroke-linejoin:round">Afreekd</tspan>
+          </text>
+        </g>
+      </g>
+    </g>
   </g>
 </svg>
