@@ -214,7 +214,8 @@ struct guidingtissue : public tissue<T>
                   T _rcpt_noise_gain = T{0},
                   T _lgnd_noise_gain = T{0},
                   expression_form _EphA4_form = expression_form::exp,
-                  T _EphA4_const_expression = 3.5)
+                  T _EphA4_const_expression = T{3.5},
+                  T _w_EphAx = T{0.25})
         : tissue<T> (_w, _h, _dx, _x0)
         , rcpt_form(_rcpt_form)
         , lgnd_form(_lgnd_form)
@@ -227,7 +228,9 @@ struct guidingtissue : public tissue<T>
         , lgnd_noise_gain(_lgnd_noise_gain)
         , EphA4_form(_EphA4_form)
         , EphA4_const_expression(_EphA4_const_expression)
+        , w_EphAx(_w_EphAx)
     {
+        std::cout << "w_EphAx = " << this->w_EphAx << std::endl;
         this->EphA4_current_expression = this->EphA4_const_expression;
         this->rcpt.resize (this->posn.size());
         this->rcpt0_EphA4.resize (this->posn.size());
@@ -491,7 +494,10 @@ struct guidingtissue : public tissue<T>
     {
         // Here, we get ephrinA from exponential expression.
         T ephrinA = this->exponential_expression (1-x);
-        return this->EphA4_current_expression * (T{1} - 0.611 * this->w_EphAx * ephrinA);
+        // 0.611 is the ratio of (the average K_D for ephrinA5 + EphA5 and EphA3
+        // receptors) to (the K_D for ephrinA4 + EphA4)
+        T w_EphA4 = T{0.611} * this->w_EphAx;
+        return this->EphA4_current_expression * (T{1} - w_EphA4 * ephrinA);
     }
 
     T expression_function (const T& x, const expression_form& ef) const
@@ -542,6 +548,8 @@ struct guidingtissue : public tissue<T>
     T lgnd_expression_function (const T& x, const size_t i) const { return this->expression_function (x, this->lgnd_form[i]); }
     T EphA4_expression_function (const T& x) const { return this->expression_function (x, this->EphA4_form); }
 
+    // 0.611 is the ratio of (the average K_D for ephrinA5 + EphA5 and EphA3 receptors)
+    // to (the K_D for ephrinA4 + EphA4)
     T EphA4_expression_function_one (const T& x) const {
         return         T{3.5} * (T{1} - this->w_EphAx*0.611 * (T{0.26} * std::exp (T{1.6} * (1-x)) + T{2.35}));
     }

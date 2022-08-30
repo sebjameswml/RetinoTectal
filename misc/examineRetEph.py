@@ -38,6 +38,7 @@ def signal (rcpt, cs):
 def examineRetEph():
 
     x = np.linspace(0,1,21)
+    print ('x = {0}'.format(x))
     epha4_constant = 3.5
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
@@ -48,10 +49,14 @@ def examineRetEph():
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
     ## 1997 for dissociation constants K_D = 6.16e-10 for ephrinA5/EphA5
     ## and 1.44e-10 for ephrinA5/EphA3. Call it 3.8e-10 for EphAx,
-    ## ignore the magnitude and let w_EphAx = 0.25.
-    w_EphAx = 0.3
+    ## ignore the magnitude and let w_EphAx be the single parameter (value about 0.2).
+
+    w_EphAx = 0.25 ## This must also be set in m_ee_GJ_best_1_EphA4_r2collapse.json
+
     ## Binding affinity parameter for EphA4. K_D = 6.22e-10 for
-    ## ephrinA5, so binds slightly less well than EphA3/5. 0.611 = 3.8/6.22.
+    ## ephrinA5, so binds slightly less well than EphA3/5.
+    ## 0.611 = 3.8/6.22 = K_D(Ax)/K_D(A4)
+
     w_EphA4 = w_EphAx * 0.611
 
     B=0.26
@@ -71,11 +76,16 @@ def examineRetEph():
     ## Define an even expression of EphA4 (No nasal-temporal gradient)
     _epha4 = np.ones(len(ephrinA)) * epha4_constant
     _epha4_kd = _epha4 - kd
+    print ('_epha4 = {0}'.format(_epha4))
 
     ## Phosphorylised EphA4
     _p_epha4    = (w_EphA4 * _epha4    * ephrinA)
+    print ('_p_epha4 = {0}'.format(_p_epha4))
+
     ## Remaining epha4 could interact
     EphA4_free = _epha4 - _p_epha4
+    print ('EphA4_free = {0}'.format(EphA4_free))
+
 
     ## Let EphA4 interact with cis ephrinA (Hornberger et al 1999)
     if simple_knockdown:
@@ -84,6 +94,8 @@ def examineRetEph():
     else:
         # Knockdown static level of EphA4
         _p_epha4_kd = (w_EphA4 * _epha4_kd * ephrinA)
+        print ('_epha4_kd = {0}'.format(_epha4_kd))
+        print ('_p_epha4_kd = {0}'.format(_p_epha4_kd))
         EphA4_free_kd = _epha4_kd - _p_epha4_kd
 
     ## And some expression of EphA3/x whatever
@@ -121,6 +133,8 @@ def examineRetEph():
     ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis,kd}$ (cis-bound, kd)')
     ax2.plot (x, EphA4_free, linestyle='-', color=clr_wt, label='$r_{A4}$  (un-bound, wt)')
     ax2.plot (x, EphA4_free_kd, linestyle='-', color=clr_knockdown, label='$r_{A4}^{kd}$ (un-bound, kd)')
+    print ('EphA4_free_kd = {0}'.format(EphA4_free_kd))
+
     #if not simple_knockdown:
     #    ax2.plot (x, EphA4_free_kd2, linestyle='-', color=clr_knockdown2, label='$r_{A4} - kd$ (un-bound, kd/kd)')
     ax2.plot ([0,1], [1.1626, 1.1626], linestyle=':', color=clr_red, label='$h_{A4}$ (threshold)')
@@ -163,7 +177,7 @@ def examineRetEph():
     ax21.set_aspect(abs(x1-x0)/abs(y1-y0))
 
     #plt.tight_layout()
-    fn = 'examineRetEph_simple.svg'
+    fn = 'examineRetEph.svg'
     plt.savefig(fn)
     plt.show()
 

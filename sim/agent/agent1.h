@@ -1184,7 +1184,8 @@ struct Agent1
                                                 ret_reverse_interactions,
                                                 ret_rcptrcpt_interactions,
                                                 ret_rcpt_noise_gain,
-                                                ret_lgnd_noise_gain, epha4_expression_form, epha4_const_expression);
+                                                ret_lgnd_noise_gain, epha4_expression_form, epha4_const_expression,
+                                                this->mconf->getFloat ("w_EphAx", 0.25));
 
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
@@ -1439,14 +1440,24 @@ struct Agent1
         _vm->ylabel = "Expression";
         _vm->xlabel = "T.................N";
         morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
+        std::cout << "rcpt0 = " << rcpt0 << std::endl;
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
+        std::cout << "ret->EphA4_current_expression = " << ret->EphA4_current_expression << std::endl;
         morph::vVector<T> rcpt0_EphA4_phos = -rcpt0_EphA4 + ret->EphA4_current_expression;
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4, "EphA4");
-        _vm->setdata (nt, rcpt0_EphA4_phos, "EphA4 (phos)");
+        std::cout << "rcpt0_EphA4 = " << rcpt0_EphA4 << std::endl;
+        _vm->setdata (nt, rcpt0_EphA4_phos, "EphA4 (phos)"); // make dashed?
+        std::cout << "rcpt0_EphA4_phos = " << rcpt0_EphA4_phos << std::endl;
         _vm->setdata (nt, ratio, "EphAx/EphA4");
+        // Add threshold. Where's the threshold? It's A4_thresh.
+        float a4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
+        morph::vVector<float> a4_thresh_arr (nt);
+        a4_thresh_arr.set_from(a4_thresh);
+        std::cout << "nt = " << nt << std::endl;
+        _vm->setdata (nt, a4_thresh_arr, "h_A4");
         _vm->finalize();
         tvv->addVisualModel (_vm);
 

@@ -6,6 +6,9 @@
     "desc_A4_thresh" : "parameter: EphA4 below this value can trigger collapse of r2.",
     "A4_thresh" : 1.1626,
 
+    "desc_w_EphAx" : "Binding weight for ephrinA and EphAx (r0) in the EphA-modified model. 0.24 is minimum to work.",
+    "w_EphAx" : 0.25,
+
     "Desc forward": "Forward interactions are used in G (and were used in J) -1: repulsion 0: null 1: attraction",
     "bpa": 4,
     "intro_every": 0,
