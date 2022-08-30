@@ -7,6 +7,7 @@ import csv
 from sebcolour import Colour as C
 clr1 = C.royalblue
 clr2 = C.crimson
+clr3 = C.black
 # Set plotting font defaults
 import matplotlib
 fs = 18
@@ -115,7 +116,7 @@ import h5py
 # simulations for the Genetic manipulation sims to create these.
 
 # 0: ORIGINAL model 1: Clustersize model 2: Clustersize + r2 collapse
-model_type = 0
+model_type = 2
 doitall = 0
 if doitall:
     filebases = ["../rcnt/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500",
@@ -124,16 +125,16 @@ if doitall:
                      "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kd_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_wt-kd_exit_true_steps_1500",
                      "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kd_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_wt-kd_exit_true_steps_1500"]
 else:
     if model_type == 0:
@@ -145,17 +146,17 @@ else:
         filebases = ["../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_eph_ki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_eph_kiki-kd_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_eph_wt-kd_exit_true_steps_1500"]
     elif model_type == 2:
         filebases = ["../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-wt_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kdkd_exit_true_steps_1500",
-                         "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kdkd_exit_true_steps_1500",
+                         #"../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-kd_exit_true_steps_1500",
                          "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_wt-kd_exit_true_steps_1500"]
 
 from numpy import genfromtxt
@@ -166,6 +167,21 @@ grey = grey / 100
 
 #from fnmatch import fnmatch
 import os
+
+def squarify(fig):
+    w, h = fig.get_size_inches()
+    if w > h:
+        t = fig.subplotpars.top
+        b = fig.subplotpars.bottom
+        axs = h*(t-b)
+        l = (1.-axs/w)/2
+        fig.subplots_adjust(left=l, right=1-l)
+    else:
+        t = fig.subplotpars.right
+        b = fig.subplotpars.left
+        axs = w*(t-b)
+        l = (1.-axs/h)/2
+        fig.subplots_adjust(bottom=l, top=1-l)
 
 for fb in filebases:
     print ('File base: {0} (type {1})'.format(fb, type(fb)))
@@ -216,6 +232,9 @@ for fb in filebases:
     nt_means_manip_stderr = []
     nt_means_manip_sd = []
 
+    # Achieved significance levels
+    nt_bs_asl = []
+
     all_rcs_wt = []
     all_rcs_manip = []
 
@@ -253,6 +272,9 @@ for fb in filebases:
         asl, minasl = bootstrap_ttest_equalityofmeans (rcs_wt, rcs_manip, 10000)
         print ("for nt value {0}, asl of bootstrap test = {1} (raw {2})".format(ntv, (asl if asl > 0 else minasl), asl))
 
+        # Append bootstrap asl to a container so that this can be saved out to a file.
+        nt_bs_asl.append ((asl if asl > 0 else minasl))
+
         # Now compute the mean and the std err of the mean for each
         nt_means_wt_mean.append (np.mean(rcs_wt))
         nt_means_manip_mean.append(np.mean(rcs_manip))
@@ -271,7 +293,7 @@ for fb in filebases:
         all_rcs_manip.append (rcs_manip)
         #print ("wt mean: {0}({2}), manipulated mean: {1}({3})".format (np.mean(rcs_wt), np.mean(rcs_manip), rcs_wtstderr, rcs_manipstderr))
 
-    fig1,(ax) = plt.subplots (1, 1, figsize=(6,6))
+    fig1,(ax) = plt.subplots (1, 1, figsize=(7,6))
 
     # 1:1 line for reference
     ax.plot ([1,0],[0,1], color=C.grey45, linestyle='--', dashes=(9, 3))
@@ -313,9 +335,15 @@ for fb in filebases:
     ax.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax.set_ylabel('R {0} tectum {0} C'.format(u"\u27f6"))
 
-    ax.set_aspect('equal', 'box')
+    axr = ax.twinx()
+    axr.plot (nt_vals, np.log(nt_bs_asl), color=clr3, linestyle=':')
+    axr.set_ylim([-10,0])
+    axr.set_ylabel('log(ASL)')
 
-    plt.tight_layout()
+    #ax.set_aspect('equal', 'box')
+    squarify(fig1)
+
+    #plt.tight_layout()
 
     plt.savefig('{0}.svg'.format(fb))
     plt.show()
