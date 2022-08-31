@@ -143,7 +143,7 @@ struct guidingtissue : public tissue<T>
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
     //! expression, which is essentially uniform across the retina.
     morph::vVector<T> rcpt0_EphA4;
-    morph::vVector<T> rcpt0_EphA4_phos;
+    morph::vVector<T> rcpt0_EphA4_cis;
     //! Functional form for rcpt0_EphA4
     expression_form EphA4_form;
     T EphA4_const_expression = T{3.5};
@@ -234,7 +234,7 @@ struct guidingtissue : public tissue<T>
         this->EphA4_current_expression = this->EphA4_const_expression;
         this->rcpt.resize (this->posn.size());
         this->rcpt0_EphA4.resize (this->posn.size());
-        this->rcpt0_EphA4_phos.resize (this->posn.size());
+        this->rcpt0_EphA4_cis.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
         this->lgnd_manipulated.resize (this->posn.size());
@@ -272,7 +272,7 @@ struct guidingtissue : public tissue<T>
             // EphA4 expression increases in same direction as rcpt[0]
             this->rcpt0_EphA4[ri] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ri)) + rnorm.get() * this->rcpt_noise_gain;
 
-            this->rcpt0_EphA4_phos[ri] = this->EphA4_current_expression - this->rcpt0_EphA4[ri];
+            this->rcpt0_EphA4_cis[ri] = this->EphA4_current_expression - this->rcpt0_EphA4[ri];
         }
 
         this->compute_gradients();
@@ -830,7 +830,7 @@ struct guidingtissue : public tissue<T>
                 // Re-computation approach. Knock down the constant EphA4 expression, then recompute the curve.
                 for (size_t ii = 0; ii < this->posn.size(); ++ii) {
                     this->rcpt0_EphA4[ii] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ii));
-                    rcpt0_EphA4_phos[ii] = this->EphA4_current_expression - rcpt0_EphA4[ii];
+                    rcpt0_EphA4_cis[ii] = this->EphA4_current_expression - rcpt0_EphA4[ii];
                 }
 
             } else if constexpr (special_epha_knockdown == knockdown_method::separate_function) {

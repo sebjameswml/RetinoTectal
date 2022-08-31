@@ -902,7 +902,7 @@ struct Agent1
             this->pending_branches[i].A4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
             this->pending_branches[i].aid = (int)ri; // axon index
             // Minimum of phosphorylised expression:
-            this->pending_branches[i].rcpt0_EphA4_phos_min = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4.max();
+            this->pending_branches[i].rcpt0_EphA4_cis_min = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4.max();
             if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
@@ -910,7 +910,7 @@ struct Agent1
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[singleaxon_idx];
                 this->pending_branches[i].rcpt0_EphA4_base = this->ret->EphA4_current_expression;
-                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
@@ -918,7 +918,7 @@ struct Agent1
                 //std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
                 this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
                 this->pending_branches[i].rcpt0_EphA4_base = this->ret->EphA4_current_expression;
-                this->pending_branches[i].rcpt0_EphA4_phos = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[ri];
+                this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[ri];
             }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
@@ -1443,14 +1443,14 @@ struct Agent1
         std::cout << "rcpt0 = " << rcpt0 << std::endl;
         morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
         std::cout << "ret->EphA4_current_expression = " << ret->EphA4_current_expression << std::endl;
-        morph::vVector<T> rcpt0_EphA4_phos = -rcpt0_EphA4 + ret->EphA4_current_expression;
+        morph::vVector<T> rcpt0_EphA4_cis = -rcpt0_EphA4 + ret->EphA4_current_expression;
         morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4, "EphA4");
         std::cout << "rcpt0_EphA4 = " << rcpt0_EphA4 << std::endl;
-        _vm->setdata (nt, rcpt0_EphA4_phos, "EphA4 (phos)"); // make dashed?
-        std::cout << "rcpt0_EphA4_phos = " << rcpt0_EphA4_phos << std::endl;
+        _vm->setdata (nt, rcpt0_EphA4_cis, "EphA4 (cis)"); // make dashed?
+        std::cout << "rcpt0_EphA4_cis = " << rcpt0_EphA4_cis << std::endl;
         _vm->setdata (nt, ratio, "EphAx/EphA4");
         // Add threshold. Where's the threshold? It's A4_thresh.
         float a4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
