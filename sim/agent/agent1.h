@@ -902,23 +902,23 @@ struct Agent1
             this->pending_branches[i].A4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
             this->pending_branches[i].aid = (int)ri; // axon index
             // Minimum of phosphorylised expression:
-            this->pending_branches[i].rcpt0_EphA4_cis_min = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4.max();
+            this->pending_branches[i].rcpt0_EphA4_cis_min = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4_free.max();
             if (conf->getBool ("singleaxon", false) == true) {
                 unsigned int singleaxon_idx = conf->getUInt ("singleaxon_idx", 210);
                 this->pending_branches[i].rcpt = this->ret->rcpt[singleaxon_idx]; // FIXME: Use seeaxons
                 this->pending_branches[i].lgnd = this->ret->lgnd[singleaxon_idx];
                 this->pending_branches[i].target = this->ret->posn[singleaxon_idx];
-                this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4_free = this->ret->rcpt0_EphA4_free[singleaxon_idx];
                 this->pending_branches[i].rcpt0_EphA4_base = this->ret->EphA4_current_expression;
-                this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[singleaxon_idx];
+                this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4_free[singleaxon_idx];
             } else {
                 this->pending_branches[i].rcpt = this->ret->rcpt[ri];
                 this->pending_branches[i].lgnd = this->ret->lgnd[ri];
                 this->pending_branches[i].target = this->ret->posn[ri];
-                //std::cout << "Setting branch[" << i << "].rcpt0_EphA4 to ret->rcpt0_EphA4[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4[ri] << std::endl;
-                this->pending_branches[i].rcpt0_EphA4 = this->ret->rcpt0_EphA4[ri];
+                //std::cout << "Setting branch[" << i << "].rcpt0_EphA4_free to ret->rcpt0_EphA4_free[ri="<<ri<<"] = " << this->ret->rcpt0_EphA4_free[ri] << std::endl;
+                this->pending_branches[i].rcpt0_EphA4_free = this->ret->rcpt0_EphA4_free[ri];
                 this->pending_branches[i].rcpt0_EphA4_base = this->ret->EphA4_current_expression;
-                this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4[ri];
+                this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4_free[ri];
             }
             // Call the first interaction parameter 'EphA'
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
@@ -1441,14 +1441,14 @@ struct Agent1
         _vm->xlabel = "T.................N";
         morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
         std::cout << "rcpt0 = " << rcpt0 << std::endl;
-        morph::vVector<T> rcpt0_EphA4 = ret->epha4_average_x_axis();
+        morph::vVector<T> rcpt0_EphA4_free = ret->epha4_average_x_axis();
         std::cout << "ret->EphA4_current_expression = " << ret->EphA4_current_expression << std::endl;
-        morph::vVector<T> rcpt0_EphA4_cis = -rcpt0_EphA4 + ret->EphA4_current_expression;
-        morph::vVector<T> ratio = rcpt0/rcpt0_EphA4;
+        morph::vVector<T> rcpt0_EphA4_cis = -rcpt0_EphA4_free + ret->EphA4_current_expression;
+        morph::vVector<T> ratio = rcpt0/rcpt0_EphA4_free;
         morph::vVector<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
-        _vm->setdata (nt, rcpt0_EphA4, "EphA4");
-        std::cout << "rcpt0_EphA4 = " << rcpt0_EphA4 << std::endl;
+        _vm->setdata (nt, rcpt0_EphA4_free, "EphA4");
+        std::cout << "rcpt0_EphA4_free = " << rcpt0_EphA4_free << std::endl;
         _vm->setdata (nt, rcpt0_EphA4_cis, "EphA4 (cis)"); // make dashed?
         std::cout << "rcpt0_EphA4_cis = " << rcpt0_EphA4_cis << std::endl;
         _vm->setdata (nt, ratio, "EphAx/EphA4");
@@ -1471,7 +1471,7 @@ struct Agent1
         _vm2->ylabel = "Expression";
         _vm2->xlabel = "T.................N";
         _vm2->setlimits_y (0.0f, 2.5f);
-        morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4;
+        morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4_free;
         morph::vVector<T> r0_ = rcpt0 * cluster_size;
         _vm2->setdata (nt, cluster_size, "Cluster size");
         _vm2->setdata (nt, r0_, "Effective rcpt0 strength");

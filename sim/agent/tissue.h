@@ -142,7 +142,7 @@ struct guidingtissue : public tissue<T>
     //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
     //! expression, which is essentially uniform across the retina.
-    morph::vVector<T> rcpt0_EphA4;
+    morph::vVector<T> rcpt0_EphA4_free;
     morph::vVector<T> rcpt0_EphA4_cis;
     //! Functional form for rcpt0_EphA4
     expression_form EphA4_form;
@@ -233,7 +233,7 @@ struct guidingtissue : public tissue<T>
         std::cout << "w_EphAx = " << this->w_EphAx << std::endl;
         this->EphA4_current_expression = this->EphA4_const_expression;
         this->rcpt.resize (this->posn.size());
-        this->rcpt0_EphA4.resize (this->posn.size());
+        this->rcpt0_EphA4_free.resize (this->posn.size());
         this->rcpt0_EphA4_cis.resize (this->posn.size());
         this->lgnd.resize (this->posn.size());
         this->rcpt_manipulated.resize (this->posn.size());
@@ -270,9 +270,9 @@ struct guidingtissue : public tissue<T>
                 this->lgnd[ri][3] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[3], ri), 3) + rnorm.get() * this->lgnd_noise_gain;
             }
             // EphA4 expression increases in same direction as rcpt[0]
-            this->rcpt0_EphA4[ri] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ri)) + rnorm.get() * this->rcpt_noise_gain;
+            this->rcpt0_EphA4_free[ri] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ri)) + rnorm.get() * this->rcpt_noise_gain;
 
-            this->rcpt0_EphA4_cis[ri] = this->EphA4_current_expression - this->rcpt0_EphA4[ri];
+            this->rcpt0_EphA4_cis[ri] = this->EphA4_current_expression - this->rcpt0_EphA4_free[ri];
         }
 
         this->compute_gradients();
@@ -620,7 +620,7 @@ struct guidingtissue : public tissue<T>
         morph::vVector<T> rtn (this->w);
         for (size_t j = 0; j < this->h; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
-                rtn[i] += this->rcpt0_EphA4[i+this->w*j] / static_cast<T>(this->h);
+                rtn[i] += this->rcpt0_EphA4_free[i+this->w*j] / static_cast<T>(this->h);
             }
         }
         return rtn;
@@ -824,13 +824,13 @@ struct guidingtissue : public tissue<T>
 
             if constexpr (special_epha_knockdown == knockdown_method::simple) {
                 // Take the rcpt0_EphA4 curve and knock it down
-                for (auto& r4 : rcpt0_EphA4) { r4 = r4 < amount ? T{0} : r4 - amount; }
+                for (auto& r4 : rcpt0_EphA4_free) { r4 = r4 < amount ? T{0} : r4 - amount; }
 
             } else if constexpr (special_epha_knockdown == knockdown_method::recompute) {
                 // Re-computation approach. Knock down the constant EphA4 expression, then recompute the curve.
                 for (size_t ii = 0; ii < this->posn.size(); ++ii) {
-                    this->rcpt0_EphA4[ii] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ii));
-                    rcpt0_EphA4_cis[ii] = this->EphA4_current_expression - rcpt0_EphA4[ii];
+                    this->rcpt0_EphA4_free[ii] = this->EphA4_expression_function (this->get_pos (this->rcpt_dirns[0], ii));
+                    rcpt0_EphA4_cis[ii] = this->EphA4_current_expression - rcpt0_EphA4_free[ii];
                 }
 
             } else if constexpr (special_epha_knockdown == knockdown_method::separate_function) {
@@ -839,14 +839,14 @@ struct guidingtissue : public tissue<T>
                     std::cout << "Selecting single (heterogeneous) EphA4 knockdown (kd = " << amount << " < 1).\n";
                     for (auto p : this->posn) {
                         T x = T{1}-p[0];
-                        rcpt0_EphA4[ii] = this->EphA4_kd_function (x);
+                        rcpt0_EphA4_free[ii] = this->EphA4_kd_function (x);
                         ++ii;
                     }
                 } else { // amount > 1
                     std::cout << "Selecting double (homogeneous) EphA4 knockdown (kd = " << amount << " >= 1).\n";
                     for (auto p : this->posn) {
                         T x = T{1}-p[0];
-                        rcpt0_EphA4[ii] = this->EphA4_kdkd_function (x);
+                        rcpt0_EphA4_free[ii] = this->EphA4_kdkd_function (x);
                         ++ii;
                     }
                 }

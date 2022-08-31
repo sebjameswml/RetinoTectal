@@ -76,7 +76,7 @@ public:
     }
 
     // The simplest expression for cluster size: 1/r_A4
-    T clustersz() const { return T{1} / this->rcpt0_EphA4; }
+    T clustersz() const { return T{1} / this->rcpt0_EphA4_free; }
 
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
     T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
@@ -115,7 +115,7 @@ public:
                 // knocked in EphA3 AND knocked down EphA4, then the push towards caudal
                 // seems to vanish - that's a collapse of the r2 receptor strength under
                 // these conditions.
-                bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4 < this->A4_thresh;
+                bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4_free < this->A4_thresh;
                 // If condition is met, then the effectiveness of r2 becomes very
                 // small. Otherwise, r2 has a slightly lower 'strength' in this
                 // "Special_EphA" condition.

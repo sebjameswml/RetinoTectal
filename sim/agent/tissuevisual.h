@@ -126,7 +126,7 @@ public:
 
         } else if (this->view == expression_view::epha4) {
             for (unsigned int i = 0; i < this->gtissue->posn.size(); ++i) {
-                this->dcolour[i] = this->gtissue->rcpt0_EphA4[i];
+                this->dcolour[i] = this->gtissue->rcpt0_EphA4_free[i];
                 this->dcolour2[i] = 0;
             }
         }
