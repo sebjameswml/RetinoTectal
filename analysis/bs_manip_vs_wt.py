@@ -168,6 +168,7 @@ grey = grey / 100
 #from fnmatch import fnmatch
 import os
 
+# For twinx graphs
 def squarify(fig):
     w, h = fig.get_size_inches()
     if w > h:
@@ -176,6 +177,21 @@ def squarify(fig):
         axs = h*(t-b)
         l = (1.-axs/w)/2
         fig.subplots_adjust(left=l, right=1-l)
+    else:
+        t = fig.subplotpars.right
+        b = fig.subplotpars.left
+        axs = w*(t-b)
+        l = (1.-axs/h)/2
+        fig.subplots_adjust(bottom=l, top=1-l)
+
+def hack_layout(ax):
+    w, h = ax.get_size_inches()
+    if w > h:
+        t = ax.subplotpars.top
+        b = ax.subplotpars.bottom
+        axs = h*(t-b)
+        l = (1.-axs/w)/2
+        ax.subplots_adjust(left=l, right=1-l)
     else:
         t = fig.subplotpars.right
         b = fig.subplotpars.left
@@ -293,7 +309,7 @@ for fb in filebases:
         all_rcs_manip.append (rcs_manip)
         #print ("wt mean: {0}({2}), manipulated mean: {1}({3})".format (np.mean(rcs_wt), np.mean(rcs_manip), rcs_wtstderr, rcs_manipstderr))
 
-    fig1,(ax) = plt.subplots (1, 1, figsize=(7,6))
+    fig1,(ax,ax2) = plt.subplots (2, 1, figsize=(7,12))
 
     # 1:1 line for reference
     ax.plot ([1,0],[0,1], color=C.grey45, linestyle='--', dashes=(9, 3))
@@ -335,13 +351,33 @@ for fb in filebases:
     ax.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax.set_ylabel('R {0} tectum {0} C'.format(u"\u27f6"))
 
-    axr = ax.twinx()
-    axr.plot (nt_vals, np.log(nt_bs_asl), color=clr3, linestyle=':')
-    axr.set_ylim([-10,0])
-    axr.set_ylabel('log(ASL)')
+    # These lines for a log(ASL) graph on a twin ax
+    #axr = ax.twinx()
+    #axr.plot (nt_vals, np.log(nt_bs_asl), color=clr3, linestyle=':')
+    #axr.set_ylim([-10,0])
+    #axr.set_ylabel('log(ASL)')
 
-    #ax.set_aspect('equal', 'box')
-    squarify(fig1)
+
+    # set_aspect to box ok for normal graphs, twinx requires squarify()
+    ax.set_aspect('equal', 'box', share=True)
+    #squarify(fig1)
+
+    bbox = ax.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+    ax_w, ax_h = bbox.width, bbox.height
+    print ('ax width/height: {0}/{1}'.format(ax_w, ax_h))
+
+    # How to set ax_w and ax_h into ax2? Seems to be non-trivial.
+    ax2.plot (nt_vals, np.log(nt_bs_asl), color=clr3, linestyle=':')
+    ax2.set_ylim([-10,0])
+    ax2.set_ylabel('log(ASL)')
+    ax2.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
+
+    # Try to make ax2 have same size as ax
+    #ax_pos = ax.get_position()
+    #print ('ax_pos: {0}'.format(ax_pos))
+    #ax2_pos = ax2.get_position()
+    #print ('ax2_pos: {0}'.format(ax2_pos))
+    #ax2.set_position([ax2_pos.x0,ax2_pos.y0,ax_pos.x1,ax2_pos.y1])
 
     #plt.tight_layout()
 

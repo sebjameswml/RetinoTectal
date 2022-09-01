@@ -118,7 +118,7 @@ public:
                 bool collapse_condition = this->rcpt[0] > this->Ax_thresh && this->rcpt0_EphA4_free < this->A4_thresh;
                 // If condition is met, then the effectiveness of r2 becomes very
                 // small. Otherwise, r2 has a slightly lower 'strength' in this
-                // "Special_EphA" condition.
+                // "Special_EphA" condition. r2 * 0.5 verified by running model with e_eph_wt-wt.json
                 r2 = collapse_condition ? this->rcpt[2]/T{10} : this->rcpt[2] * T{0.5};
 
             } else if (source_tissue->forward_interactions[0] == interaction::special_EphA_simple) {

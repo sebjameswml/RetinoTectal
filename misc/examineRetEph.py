@@ -59,6 +59,10 @@ def examineRetEph():
 
     w_EphA4 = w_EphAx * 0.611
 
+    ## Thresholds for EphA4 mechanisms
+    h_A4 = 1.1626
+    h_0 = 2
+
     B=0.26
     C=2.3
     D=1.05
@@ -112,11 +116,11 @@ def examineRetEph():
     fig, (ax1, ax2, ax21) = plt.subplots(1, 3, figsize=figsz)
 
     # WT
-    ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$r_0$ (EphA wildtype cells)')
-    ax1.plot (x, ephrinA, linestyle=':', color=clr_wt, label='$l_0$ (ephrinA)')
+    ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$\Sigma$EphA ($r_0$)')
+    ax1.plot (x, ephrinA, linestyle=':', color=clr_wt, label='ephrinA ($l_0)$ ')
     # EphA3 knockin
-    ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='$r_0 + ki$ (after EphA3 ki)')
-    ax1.plot ([0,1], [1.6, 1.6], linestyle=':', color=clr_red, label='$h_0$ (threshold)')
+    ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='EphA3 knock-in ($r_0 + ki$)')
+    ax1.plot ([0,1], [h_0, h_0], linestyle=':', color=clr_red, label='$\Sigma$EphA threshold ($h_0$)')
 
     ax1.legend()
     ax1.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
@@ -127,7 +131,7 @@ def examineRetEph():
     ax1.set_aspect(abs(x1-x0)/abs(y1-y0))
     ax1.text (0.52, 2.67, 'ki = {0}'.format(ki))
 
-    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4 expression, $r_{A4}$, wt')
+    ax2.plot (x, _epha4, linestyle=':', color=clr_wt, label='Total EphA4, wildtype ($r_{A4}$)')
     ax2.plot (x, _epha4_kd, linestyle=':', color=clr_knockdown, label='Total EphA4, kd ($r_{A4}^{kd}$)')
     ax2.plot (x, _p_epha4, linestyle='--', color=clr_wt, label='$r_{A4}^{cis}$ (cis-bound, wt)')
     ax2.plot (x, _p_epha4_kd, linestyle='--', color=clr_knockdown, label='$r_{A4}^{cis,kd}$ (cis-bound, kd)')
@@ -137,7 +141,7 @@ def examineRetEph():
 
     #if not simple_knockdown:
     #    ax2.plot (x, EphA4_free_kd2, linestyle='-', color=clr_knockdown2, label='$r_{A4} - kd$ (un-bound, kd/kd)')
-    ax2.plot ([0,1], [1.1626, 1.1626], linestyle=':', color=clr_red, label='$h_{A4}$ (threshold)')
+    ax2.plot ([0,1], [h_A4, h_A4], linestyle=':', color=clr_red, label='EphA4 threshold ($h_{A4}$)')
 
     show_sum_epha = 0
     if show_sum_epha:
@@ -166,7 +170,7 @@ def examineRetEph():
     ax21.plot (x, signal (EphAx,    clustersz_simple(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
-    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}$ (wildtype)','$(r_0 + ki)/r_{A4}^{free}$ (EphA3 ki)', '${r_0}/(r_{A4}^{free,kd})$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}^{free,kd})$ (ki + kd)'])
+    ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}^{free}$ (wildtype)','$(r_0 + ki)/r_{A4}^{free}$ (EphA3 ki)', '${r_0}/(r_{A4}^{free,kd})$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}^{free,kd})$ (ki + kd)'])
     ax21.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax21.set_ylabel('Signal')
     yl = ax21.get_ylim()

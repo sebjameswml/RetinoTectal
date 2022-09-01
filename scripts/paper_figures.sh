@@ -4,6 +4,9 @@
 # Generate all the paper figure graph elements, one after the other.
 #
 
+# First clear out rcnt
+rm -rf ./rcnt/*.h5
+
 # Tissue visualisation (no longer generated for Fig 1)
 # ./scripts/fig_expression.sh
 
