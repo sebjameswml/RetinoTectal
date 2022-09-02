@@ -399,8 +399,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="2.4663104"
-     inkscape:cy="266.73108"
+     inkscape:cx="118.75218"
+     inkscape:cy="254.84966"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -409,9 +409,9 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:window-width="2495"
-     inkscape:window-height="1501"
-     inkscape:window-x="-241"
-     inkscape:window-y="374"
+     inkscape:window-height="1320"
+     inkscape:window-x="0"
+     inkscape:window-y="41"
      inkscape:window-maximized="0"
      inkscape:snap-global="true"
      showguides="true" />
@@ -880,5 +880,27 @@
          y="25.403009"
          style="font-size:2.82222223px;stroke-width:0.26458332"
          id="tspan1312-9-3-9-5">y</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.93888855px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-30.474308"
+       y="13.293077"
+       id="text996"><tspan
+         sodipodi:role="line"
+         id="tspan994"
+         x="-30.474308"
+         y="13.293077"
+         style="stroke-width:0.26458332">A</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.93888855px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-30.547861"
+       y="61.576756"
+       id="text1000"><tspan
+         sodipodi:role="line"
+         id="tspan998"
+         x="-30.547861"
+         y="61.576756"
+         style="stroke-width:0.26458332">B</tspan></text>
   </g>
 </svg>

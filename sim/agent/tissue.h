@@ -149,7 +149,7 @@ struct guidingtissue : public tissue<T>
     T EphA4_const_expression = T{3.5};
     T EphA4_current_expression = T{3.5};
     T EphA4_knockdown_expression = T{2.5};
-    T w_EphAx = T{0.25};
+    T w_EphAx = T{0.25}; // NB: Only used to calculate w_EphA4 = 0.611 * w_EphAx.
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vVector<morph::Vector<T,2*N>> rcpt_grad;

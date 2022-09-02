@@ -122,6 +122,17 @@ def examineRetEph():
     ax1.plot (x, EphAx+ki, linestyle='-', color=clr_knockin, label='EphA3 knock-in ($r_0 + ki$)')
     ax1.plot ([0,1], [h_0, h_0], linestyle=':', color=clr_red, label='$\Sigma$EphA threshold ($h_0$)')
 
+    # Could look at cis/free EphAx in future, but avoid this complexity at present
+    study_EphAx_binding = 0
+    if study_EphAx_binding:
+        EphAx_cis = w_EphAx * EphAx * ephrinA
+        ax1.plot (x, EphAx_cis, linestyle='--', color=clr_wt, label='$\Sigma$EphA cis-bound')
+        ax1.plot (x, EphAx - EphAx_cis, linestyle='-.', color=clr_wt, label='$\Sigma$EphA free')
+        EphAx_ki_cis = w_EphAx * (EphAx+ki) * ephrinA
+        ax1.plot (x, EphAx_ki_cis, linestyle='--', color=clr_knockin, label='$\Sigma$EphA ki cis-bound')
+        ax1.plot (x, (EphAx+ki) - EphAx_ki_cis, linestyle='-.', color=clr_knockin, label='$\Sigma$EphA ki free')
+
+
     ax1.legend()
     ax1.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax1.set_ylabel('Expression')
@@ -170,6 +181,11 @@ def examineRetEph():
     ax21.plot (x, signal (EphAx,    clustersz_simple(EphAx, 0,  EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='-', color=clr_knockdown)
     ax21.plot (x, signal (EphAx+ki, clustersz_simple(EphAx, ki, EphA4_free_kd, _p_epha4_kd)), linestyle='--', color=clr_knockin, dashes=(5, 5))
+
+    if study_EphAx_binding:
+        ax21.plot (x, signal (EphAx - EphAx_cis,    clustersz_simple(EphAx - EphAx_cis, 0,  EphA4_free,    _p_epha4)), linestyle='-.', color=clr_wt)
+        ax21.plot (x, signal ((EphAx+ki) - EphAx_ki_cis,    clustersz_simple(EphAx+ki - EphAx_ki_cis, 0,  EphA4_free,    _p_epha4)), linestyle='-.', color=clr_knockin)
+
     ax21.legend([filled_line_wt, filled_line_ki, filled_line_kd, (dotted_line1, dotted_line2)], ['$r_0/r_{A4}^{free}$ (wildtype)','$(r_0 + ki)/r_{A4}^{free}$ (EphA3 ki)', '${r_0}/(r_{A4}^{free,kd})$ (EphA4 kd)', '$(r_0+ki)/(r_{A4}^{free,kd})$ (ki + kd)'])
     ax21.set_xlabel('N {0} retina {0} T'.format(u"\u27f6"))
     ax21.set_ylabel('Signal')
