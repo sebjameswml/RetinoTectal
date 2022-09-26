@@ -15,3 +15,7 @@ Mek4           EphA3                Hek,Hek4,Tyro4,Cek4
 Sek            EphA4                Sek1,Cek8,Hek8,Tyro1
 
 Cek7           EphA5                Hek7,Rek7,Ehk1,Bsk
+
+Cek5           EphB2                Nuk,Sek3
+
+Cek8           EphA4                Sek,Sek1,Hek8,Tyro1

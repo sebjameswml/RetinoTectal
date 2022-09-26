@@ -28,7 +28,7 @@ with h5py.File (filename, 'r') as f:
     # Frame001 has the curve from panel B
     frame = 'Frame{0:03}'.format(1)
     key = '{0}/signal/postproc/boxes/means_autoscaled'.format(frame)
-    ephrinB1_means = np.array(f[key])
+    ephrinB1_means = np.flip(np.array(f[key]))
 
     ax1 = fig.add_subplot (1,2,1)
     ax1.plot (ephrinB1_means, color=C.ephrinB1, label='ephrinB1', linewidth=3)
