@@ -1,0 +1,19 @@
+{
+    "Note on panels" : "A and B are EphB2; C and D are EphA4. I think panel A is the one to go for for EphB2 and panel C for EphA4.",
+    "thickness" : 0.05,
+    "Note on pixels_per_mm" : "Circa 50 px Scale bar in C is 300 um.",
+    "pixels_per_mm" : 167,
+    "bg_blur_screen_proportion" : 0.1667,
+    "bg_blur_subtraction_offset" : 180,
+    "save_per_pixel_data" : false,
+    "save_auto_align_data" : true,
+    "save_landmark_align_data" : true,
+    "rotate_landmark_one" : true,
+    "rotate_align_landmarks" : false,
+    "map_align_angle" : 3.14159267,
+
+    "slices": [
+        { "filename" : "Holash_Pasquale_Fig6_EphB2_and_EphA4.png", "x" : 0   },
+        { "filename" : "Holash_Pasquale_Fig6_EphB2_and_EphA4.png", "x" : 1   }
+    ]
+}
