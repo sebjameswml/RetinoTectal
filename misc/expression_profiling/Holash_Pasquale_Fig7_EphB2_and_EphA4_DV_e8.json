@@ -1,0 +1,18 @@
+{
+    "Note on panels" : "Only Fig7 inset is EphA4, rest are EphB2",
+    "thickness" : 0.05,
+    "Note on pixels_per_mm" : "C: 75 px is 300 um.",
+    "pixels_per_mm" : 250,
+    "bg_blur_screen_proportion" : 0.1667,
+    "bg_blur_subtraction_offset" : 180,
+    "save_per_pixel_data" : false,
+    "save_auto_align_data" : true,
+    "save_landmark_align_data" : true,
+    "rotate_landmark_one" : true,
+    "rotate_align_landmarks" : false,
+    "map_align_angle" : 3.14159267,
+
+    "slices": [
+        { "filename" : "Holash_Pasquale_Fig7_EphB2_and_EphA4_DV.png", "x" : 0   }
+    ]
+}
