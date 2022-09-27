@@ -275,6 +275,29 @@ struct guidingtissue : public tissue<T>
             this->rcpt0_EphA4_cis[ri] = this->EphA4_current_expression - this->rcpt0_EphA4_free[ri];
         }
 
+        // Tell the researcher what the max/min values of the receptor expressions are:
+        T maxre = std::numeric_limits<T>::min();
+        T minre = std::numeric_limits<T>::max();
+        for (auto re : this->rcpt) {
+            T maxe = re.max();
+            T mine = re.min();
+            maxre = maxe > maxre ? maxe : maxre;
+            minre = mine < minre ? mine : minre;
+        }
+        std::cout << "Maximum receptor expression value: " << maxre << std::endl;
+        std::cout << "Minimum receptor expression value: " << minre << std::endl;
+
+        maxre = std::numeric_limits<T>::min();
+        minre = std::numeric_limits<T>::max();
+        for (auto le : this->lgnd) {
+            T maxe = le.max();
+            T mine = le.min();
+            maxre = maxe > maxre ? maxe : maxre;
+            minre = mine < minre ? mine : minre;
+        }
+        std::cout << "Maximum ligand expression value: " << maxre << std::endl;
+        std::cout << "Minimum ligand expression value: " << minre << std::endl;
+
         this->compute_gradients();
 
         // Now build up the tissue's enclosing border - imagine a border of signalling
@@ -451,6 +474,21 @@ struct guidingtissue : public tissue<T>
         this->lgnd_grad.resize (this->lgnd.size());
         this->spacegrad2D (this->rcpt, this->rcpt_grad);
         this->spacegrad2D (this->lgnd, this->lgnd_grad);
+
+        // Let's tell the researcher the max/min of these gradients
+        T maxrg = std::numeric_limits<T>::min(); // max receptor gradient
+        for (auto gs : this->rcpt_grad) {
+            T maxe = std::abs(gs.longest());
+            maxrg = maxe > maxrg ? maxe : maxrg;
+        }
+        std::cout << "Maximum receptor gradient value: " << maxrg << std::endl;
+
+        T maxlg = std::numeric_limits<T>::min(); // max ligand gradient
+        for (auto gs : this->lgnd_grad) {
+            T maxe = std::abs(gs.longest());
+            maxlg = maxe > maxlg ? maxe : maxlg;
+        }
+        std::cout << "Maximum ligand gradient value: " << maxlg << std::endl;
     }
 
     T linear_expression (const T& x) const { return T{1.31} + T{2.3333} * x; }

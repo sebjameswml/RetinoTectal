@@ -1175,6 +1175,7 @@ struct Agent1
 
         if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
+            std::cout << "Create RETINA with a new guidingtissue instance.\n";
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                 ret_receptor_forms,
                                                 ret_ligand_forms,
@@ -1187,6 +1188,7 @@ struct Agent1
                                                 ret_lgnd_noise_gain, epha4_expression_form, epha4_const_expression,
                                                 this->mconf->getFloat ("w_EphAx", 0.25));
 
+            std::cout << "Create TECTUM with a new guidingtissue instance.\n";
             this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
                                                    tectum_ligand_forms,
