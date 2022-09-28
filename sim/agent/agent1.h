@@ -172,11 +172,19 @@ struct Agent1
     static constexpr float fontsz_letters = 0.095f; // letter font size - for A, B, C etc.
     static constexpr int fontres_letters = 42;
     // The graph font size for small subgraphs
-    static constexpr float fontsz_subgraph = 0.065;
+    static constexpr float fontsz_subgraph = 0.065f;
     static constexpr int fontres_subgraph = 34;
     // Orientation labels on tectal/retinal maps
     static constexpr float fontsz_olabel = 0.08f;
     static constexpr int fontres_olabel = 36;
+    // Map insets
+    static constexpr float fontsz_inset = 0.07f;
+    static constexpr int fontres_inset = 36;
+    // The graph font size for regular graphs
+    static constexpr float fontsz_graph = 0.08f;
+    static constexpr int fontres_graph = 36;
+    static constexpr float fontsz_rcntgraph = 0.075f;
+    static constexpr int fontres_rcntgraph = 36;
 
     Agent1 (morph::Config* cfg, morph::Config* mcfg)
     {
@@ -2167,7 +2175,7 @@ struct Agent1
             this->cv->radiusFixed = 0.02;
         }
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
@@ -2178,10 +2186,8 @@ struct Agent1
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->zoom = 0.45f;
         this->tcv->finalize();
-        this->tcv->addLabel ("Expected", {this->conf->getFloat("explabel_x", 0.32f), this->conf->getFloat("explabel_y", 0.55f), 0.0f},
-                             morph::colour::black, morph::VisualFont::Vera,
-                             this->conf->getFloat("fontsz_small", 0.03),
-                             this->conf->getInt("fontres", 24));
+        this->tcv->addLabel ("Expected", {0.12f, 0.48f, 0.0f},
+                             morph::colour::black, morph::VisualFont::Vera, fontsz_inset, fontres_inset);
         v->addVisualModel (this->tcv);
 
         // A 'text' only visual model to display the sim time
@@ -2190,24 +2196,28 @@ struct Agent1
         float ty = this->conf->getFloat("ty", 1.1f); // text y position
         float th = this->conf->getFloat("th", 0.1f); // text height
         float l_x = this->conf->getFloat("tx", 0.0f);
-        morph::TextGeometry lgm = jtvm->addLabel ("t=", {l_x, ty, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->sim_time_txt);
+        morph::TextGeometry lgm = jtvm->addLabel ("t=", {l_x, ty, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_inset, fontres_inset);
+        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->sim_time_txt, morph::colour::black, morph::VisualFont::DVSans, fontsz_inset, fontres_inset);
         ty -= th;
-        lgm = jtvm->addLabel (unicode::toUtf8(unicode::epsilon)+"=", {l_x, ty, 0.0f});
-        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->emetric_txt);
+        lgm = jtvm->addLabel (unicode::toUtf8(unicode::epsilon)+"=", {l_x, ty, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_inset, fontres_inset);
+        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->emetric_txt, morph::colour::black, morph::VisualFont::DVSans, fontsz_inset, fontres_inset);
         ty -= th;
-        lgm = jtvm->addLabel (unicode::toUtf8(unicode::eta)+"=", {l_x, ty, 0.0f});
-        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->crossings_txt);
+        lgm = jtvm->addLabel (unicode::toUtf8(unicode::eta)+"=", {l_x, ty, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_inset, fontres_inset);
+        jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->crossings_txt, morph::colour::black, morph::VisualFont::DVSans, fontsz_inset, fontres_inset);
         v->addVisualModel (jtvm);
 
         if (this->conf->getBool ("rc_vs_nt", false) == true) {
             // The R--C vs N--T graph
             this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
             this->gv->twodimensional = false;
+            this->gv->max_num_ticks = 3;
+            this->gv->min_num_ticks = 2;
             this->gv->setlimits (0, 1, 0, 1);
             this->gv->policy = morph::stylepolicy::markers;
             this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
             this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+            this->gv->fontsize = fontsz_graph;
+            this->gv->fontres = fontres_graph;
             this->gv->finalize();
             v->addVisualModel (this->gv);
         } else {
@@ -2220,8 +2230,10 @@ struct Agent1
             this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
             this->gv->xlabel = "t";
             this->gv->prepdata ("All");
-            this->gv->prepdata ("Surround");
+            this->gv->prepdata ("Surrnd");
             this->gv->prepdata ("Graft");
+            this->gv->fontsize = fontsz_graph;
+            this->gv->fontres = fontres_graph;
             this->gv->finalize();
             this->v->addVisualModel (this->gv);
         }
@@ -2279,7 +2291,7 @@ struct Agent1
         this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
         this->gv->xlabel = "t";
         this->gv->prepdata ("All");
-        this->gv->prepdata ("Surround");
+        this->gv->prepdata ("Surrnd");
         this->gv->prepdata ("Graft");
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
@@ -2447,7 +2459,7 @@ struct Agent1
         this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
         this->gv->xlabel = "t";
         this->gv->prepdata ("All");
-        this->gv->prepdata ("Surround");
+        this->gv->prepdata ("Surrnd");
         this->gv->prepdata ("Graft");
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
