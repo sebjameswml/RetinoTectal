@@ -164,6 +164,20 @@ enum class graph_layout { a, b, c, d, e, f, g, h, i, j, k, l };
 template<typename T, size_t N, typename B=branch<T, N>>
 struct Agent1
 {
+    // Font sizes for graphs
+    // The title label for a graph
+    static constexpr float fontsz_label = 0.08f;
+    static constexpr int fontres_label = 36;
+    // The figure letters
+    static constexpr float fontsz_letters = 0.095f; // letter font size - for A, B, C etc.
+    static constexpr int fontres_letters = 42;
+    // The graph font size for small subgraphs
+    static constexpr float fontsz_subgraph = 0.065;
+    static constexpr int fontres_subgraph = 34;
+    // Orientation labels on tectal/retinal maps
+    static constexpr float fontsz_olabel = 0.08f;
+    static constexpr int fontres_olabel = 36;
+
     Agent1 (morph::Config* cfg, morph::Config* mcfg)
     {
         this->conf = cfg;
@@ -443,7 +457,7 @@ struct Agent1
         {
             this->bv->reinit();  // Branches
             this->cv->reinit();  // Centroids to end
-            this->tcv->reinit(); // Experiment
+            this->tcv->reinit(); // Expected
             this->av->reinit();  // Selected axons
             this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
             if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
@@ -655,15 +669,15 @@ struct Agent1
     {
         // Tag tells us which of the orientation labels to draw
         if (tag == "Tectal") { // Caudal, Rostral, Medial, Lateral
-            vm->addLabel (std::string("C"), {0.5f, 1.05f, 0.0f});
-            vm->addLabel (std::string("R"), {0.5f, -0.1f, 0.0f});
-            vm->addLabel (std::string("M"), {-0.1f, 0.5f, 0.0f});
-            vm->addLabel (std::string("L"), {1.04f, 0.5f, 0.0f});
+            vm->addLabel (std::string("C"), {0.5f, 1.05f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
+            vm->addLabel (std::string("R"), {0.5f, -0.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
+            vm->addLabel (std::string("M"), {-0.1f, 0.5f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
+            vm->addLabel (std::string("L"), {1.04f, 0.5f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
         } else { // Retina: Dorsal, Ventral, Temporal, Nasal
-            vm->addLabel (std::string("D"), {0.5f, 1.05f, 0.0f});
-            vm->addLabel (std::string("V"), {0.5f, -0.1f, 0.0f});
-            vm->addLabel (std::string("T"), {-0.08f, 0.5f, 0.0f});
-            vm->addLabel (std::string("N"), {1.05f, 0.5f, 0.0f});
+            vm->addLabel (std::string("D"), {0.5f, 1.05f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
+            vm->addLabel (std::string("V"), {0.5f, -0.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
+            vm->addLabel (std::string("T"), {-0.1f, 0.5f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
+            vm->addLabel (std::string("N"), {1.05f, 0.5f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_olabel, fontres_olabel);
         }
     }
 
@@ -744,7 +758,7 @@ struct Agent1
         } else if (exview == expression_view::epha4) {
             ss << tag << " EphA4";
         }
-        tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f});
+        tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
 
         this->addOrientationLabels (tv, tag);
 
@@ -1803,7 +1817,7 @@ struct Agent1
         this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
         this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
@@ -1812,7 +1826,7 @@ struct Agent1
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
-        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        this->tcv->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         v->addVisualModel (this->tcv);
 
         // Selected axons: This one gives an 'axon view'
@@ -1823,7 +1837,7 @@ struct Agent1
         this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->av->target_scale.compute_autoscale (0, 1);
         this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         v->addVisualModel (this->av);
 
         offset[1] -= 1.4f;
@@ -1916,7 +1930,7 @@ struct Agent1
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->view = branchvisual_view::discs;
         this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         v->addVisualModel (this->bv);
 
@@ -1929,7 +1943,7 @@ struct Agent1
             this->cv->radiusFixed = 0.02;
         }
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
@@ -1954,12 +1968,10 @@ struct Agent1
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("C", g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("C", g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -1984,7 +1996,7 @@ struct Agent1
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_E, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
-        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        this->tcv->addLabel ("Expected", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->v->addVisualModel (this->tcv);
 
         // t=0
@@ -1992,7 +2004,7 @@ struct Agent1
         this->cv0->maxlen = this->conf->getDouble ("maxnetline", 1.0);
         this->cv0->viewmode = netvisual_viewmode::actual;
         this->cv0->finalize();
-        this->cv0->addLabel ("Axon centroids (t=0)", {0.0f, 1.1f, 0.0f});
+        this->cv0->addLabel ("Axon centroids (t=0)", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv0, std::string("Tectal"));
         this->v->addVisualModel (this->cv0);
 
@@ -2003,7 +2015,7 @@ struct Agent1
         this->cv1->finalize();
         std::stringstream ss1;
         ss1 << "t=" << this->freeze_times[1];
-        this->cv1->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f});
+        this->cv1->addLabel (ss1.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv1, std::string("Tectal"));
         this->v->addVisualModel (this->cv1);
 
@@ -2014,7 +2026,7 @@ struct Agent1
         this->cv->finalize();
         std::stringstream ssf;
         ssf << "t=" << this->conf->getInt("steps", -1);
-        this->cv->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel (ssf.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
@@ -2025,6 +2037,8 @@ struct Agent1
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 1.0f));
         this->gv->axislabelgap = 0.03f;
+        this->gv->fontsize = fontsz_subgraph;
+        this->gv->fontres = fontres_subgraph;
         //this->gv->axisstyle = morph::axisstyle::boxfullticks;
         this->gv->policy = morph::stylepolicy::lines;
         this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
@@ -2044,6 +2058,8 @@ struct Agent1
         this->gv2->setlimits (0, this->conf->getFloat ("steps", 1000),
                               0, this->conf->getFloat("graph_ymax2", 200.0f));
         this->gv2->axislabelgap = 0.03f;
+        this->gv2->fontsize = fontsz_subgraph;
+        this->gv2->fontres = fontres_subgraph;
         //this->gv2->axisstyle = morph::axisstyle::boxfullticks;
         this->gv2->policy = morph::stylepolicy::lines;
         this->gv2->ylabel = unicode::toUtf8 (unicode::eta);
@@ -2061,7 +2077,7 @@ struct Agent1
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->view = branchvisual_view::discs;
         this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->bv->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         this->v->addVisualModel (this->bv);
 
@@ -2072,22 +2088,20 @@ struct Agent1
         this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->av->target_scale.compute_autoscale (0, 1);
         this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        this->av->addLabel ("Selected axons", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->v->addVisualModel (this->av);
 
         // A 'text' only visual model to incorporate figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("C", g_C, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("D", g_D, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("E", g_E, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("F", g_F, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("G", g_G, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel ("H", g_H, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel ("A", g_A+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("B", g_B+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("C", g_C+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("D", g_D+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("E", g_E+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("F", g_F+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("G", g_G+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("H", g_H+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -2104,7 +2118,7 @@ struct Agent1
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->view = branchvisual_view::discs;
         this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         v->addVisualModel (this->bv);
 
@@ -2115,7 +2129,7 @@ struct Agent1
             this->cv->radiusFixed = 0.02;
         }
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
@@ -2131,14 +2145,12 @@ struct Agent1
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel (std::string({++sl}), g_B, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
-        jtvm->addLabel (std::string({++sl}), g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel (std::string({++sl}), g_B, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel (std::string({++sl}), g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -2155,7 +2167,7 @@ struct Agent1
             this->cv->radiusFixed = 0.02;
         }
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         v->addVisualModel (this->cv);
 
@@ -2166,7 +2178,7 @@ struct Agent1
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->zoom = 0.45f;
         this->tcv->finalize();
-        this->tcv->addLabel ("Experiment", {this->conf->getFloat("explabel_x", 0.32f), this->conf->getFloat("explabel_y", 0.55f), 0.0f},
+        this->tcv->addLabel ("Expected", {this->conf->getFloat("explabel_x", 0.32f), this->conf->getFloat("explabel_y", 0.55f), 0.0f},
                              morph::colour::black, morph::VisualFont::Vera,
                              this->conf->getFloat("fontsz_small", 0.03),
                              this->conf->getInt("fontres", 24));
@@ -2178,7 +2190,7 @@ struct Agent1
         float ty = this->conf->getFloat("ty", 1.1f); // text y position
         float th = this->conf->getFloat("th", 0.1f); // text height
         float l_x = this->conf->getFloat("tx", 0.0f);
-        morph::TextGeometry lgm = jtvm->addLabel ("t=", {l_x, ty, 0.0f});
+        morph::TextGeometry lgm = jtvm->addLabel ("t=", {l_x, ty, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         jtvm->addLabel ("0", {l_x+lgm.width(), ty, 0.0f}, this->sim_time_txt);
         ty -= th;
         lgm = jtvm->addLabel (unicode::toUtf8(unicode::epsilon)+"=", {l_x, ty, 0.0f});
@@ -2215,12 +2227,10 @@ struct Agent1
         }
         // Figure letters
         morph::Vector<float> ozero = {this->conf->getFloat ("figlet_x", -1.2f), this->conf->getFloat ("figlet_y", 1.1f), 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm2);
     }
 
@@ -2236,7 +2246,7 @@ struct Agent1
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
-        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        this->tcv->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->v->addVisualModel (this->tcv);
 
         // Branches
@@ -2245,7 +2255,7 @@ struct Agent1
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->view = branchvisual_view::discs;
         this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         this->v->addVisualModel (this->bv);
 
@@ -2256,7 +2266,7 @@ struct Agent1
             this->cv->radiusFixed = 0.02;
         }
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
@@ -2286,12 +2296,10 @@ struct Agent1
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -2306,7 +2314,7 @@ struct Agent1
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->finalize();
-        this->tcv->addLabel ("Experiment", {0.0f, 1.1f, 0.0f});
+        this->tcv->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->v->addVisualModel (this->tcv);
 
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_B, &this->branches, &this->ax_history);
@@ -2314,7 +2322,7 @@ struct Agent1
         this->bv->target_scale.compute_autoscale (0, 1);
         this->bv->view = branchvisual_view::discs;
         this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->bv, std::string("Tectal"));
         this->v->addVisualModel (this->bv);
 
@@ -2322,7 +2330,7 @@ struct Agent1
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
         this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
@@ -2348,12 +2356,10 @@ struct Agent1
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -2371,7 +2377,7 @@ struct Agent1
         this->cv1->finalize();
         std::stringstream ss1;
         ss1 << "t=" << this->freeze_times[1];
-        this->cv1->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f});
+        this->cv1->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv1, std::string("Tectal"));
         this->v->addVisualModel (this->cv1);
 
@@ -2382,7 +2388,7 @@ struct Agent1
         this->cv->finalize();
         std::stringstream ssf;
         ssf << "t=" << this->conf->getInt("steps", -1);
-        this->cv->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
@@ -2393,7 +2399,7 @@ struct Agent1
         this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->av->target_scale.compute_autoscale (0, 1);
         this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
+        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->v->addVisualModel (this->av);
 
         // Graph: A graph of the RMS diffs between axon position centroids and target positions from retina
@@ -2428,7 +2434,7 @@ struct Agent1
             this->cv->radiusFixed = 0.02;
         }
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
@@ -2458,12 +2464,10 @@ struct Agent1
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -2477,7 +2481,7 @@ struct Agent1
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->cv->viewmode = netvisual_viewmode::actual;
         this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
@@ -2503,12 +2507,10 @@ struct Agent1
 
         // Figure letters
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
@@ -2524,17 +2526,14 @@ struct Agent1
         this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
         this->av->target_scale.compute_autoscale (0, 1);
         this->av->finalize();
-        //this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f});
         this->v->addVisualModel (this->av);
 
         // Figure letter
         morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
-        float lfs = 0.08f; // letter font size
-        int lpts = 36; // letter point resolution
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, lfs, lpts);
+        jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm2);
     }
 
