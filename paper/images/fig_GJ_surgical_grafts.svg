@@ -10,9 +10,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="656.16669mm"
-   height="333.375mm"
-   viewBox="0 0 656.16669 333.375"
+   width="667.31879mm"
+   height="341.34457mm"
+   viewBox="0 0 667.31879 341.34457"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="1307.3008"
-     inkscape:cy="896.74443"
+     inkscape:zoom="0.35"
+     inkscape:cx="458.55393"
+     inkscape:cy="793.12894"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,11 +39,12 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="2560"
-     inkscape:window-height="1323"
-     inkscape:window-x="0"
-     inkscape:window-y="41"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="2488"
+     inkscape:window-height="1376"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -52,7 +53,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -60,33 +61,40 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(315.9881,66.802078)">
+     transform="translate(321.16061,74.078117)">
+    <rect
+       style="opacity:0.99299999;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.30472398;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+       id="rect1373"
+       width="667.31879"
+       height="341.34457"
+       x="-321.16061"
+       y="-74.078117" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecrot90_fig3A_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_tecrot90_fig3A_steps_1500.png"
-       width="328.08334"
-       height="166.6875"
-       preserveAspectRatio="none"
-       id="image893"
+       y="-66.802078"
        x="-315.9881"
-       y="-66.802078" />
+       id="image893"
+       preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecrot180_fig3B_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_tecrot180_fig3B_steps_1500.png"
-       width="328.08334"
-       height="166.6875"
-       preserveAspectRatio="none"
-       id="image955"
+       y="-66.802078"
        x="12.095245"
-       y="-66.802078" />
+       id="image955"
+       preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
     <image
        sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecswap_fig3C_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_tecswap_fig3C_steps_1500.png"
-       width="328.08334"
-       height="166.6875"
-       preserveAspectRatio="none"
-       id="image1017"
+       y="99.885422"
        x="-315.9881"
-       y="99.885422" />
+       id="image1017"
+       preserveAspectRatio="none"
+       height="166.6875"
+       width="328.08334" />
   </g>
 </svg>
