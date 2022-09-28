@@ -16,3 +16,12 @@ make -j4 # or however many cores you have
 # (no need to install, you'll run the simulations in place)
 popd
 ```
+
+There are actually two simulation codes in this repository. The
+original work was a reaction-diffusion style model found in
+sim/rd. The final model was an agent-based model in sim/agent/. The
+agent-based model was the one used as the basis for the paper.
+
+To run the simulations described in the paper, you can run:
+
+./scripts/paper_figures.sh
