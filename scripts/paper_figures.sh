@@ -17,6 +17,8 @@ rm -rf ./rcnt/*.h5
 ./build/sim/agent/agent1 configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_wt_fig2.json -co:exit=true -co:steps=1500
 # GJ model, Surgical manipulations
 ./scripts/fig_GJ_surgical.sh
+# GJ model tectal rotation visualisation for supplementary figure
+./build/sim/agent/tissuevis configs/simpler/m_ee_GJ_best_1.json configs/simpler/e_tecrot90_suppfig.json
 
 # GJ model. EphA3 and EphA4 manipulations
 # 1. EphA3 ki/+ and EphA4 +/+ (i.e. EphA4 is wildtype/unmodified)
