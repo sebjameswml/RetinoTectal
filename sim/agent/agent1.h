@@ -556,7 +556,7 @@ struct Agent1
             this->av->reinit();  // Selected axons
             this->gv->append ((float)stepnum, this->ax_centroids.rms(), 0); // RMS/Crossings
             if (stepnum > this->crosscount_from && stepnum%this->crosscount_every == 0) {
-                this->gv->append ((float)stepnum, this->ax_centroids.crosscount(), 1);
+                this->gv2->append ((float)stepnum, this->ax_centroids.crosscount(), 0);
             }
             break;
         }
@@ -2348,7 +2348,7 @@ struct Agent1
         this->addOrientationLabels (this->cv, std::string("Tectal"));
         this->v->addVisualModel (this->cv);
 
-        // NT vs RC graph here
+        // NT vs RC graph here.
         this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
         this->gv->twodimensional = false;
         this->gv->setlimits (0, 1, 0, 1);
@@ -2416,23 +2416,50 @@ struct Agent1
         this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
         this->v->addVisualModel (this->av);
 
-        // Graph: A graph of the RMS diffs between axon position centroids and target positions from retina
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
-        this->gv->axisstyle = morph::axisstyle::twinax;
+        // TWO graphs for epsilon (rms distance error) and eta (net crossings)
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
         this->gv->twodimensional = false;
-        this->gv->setsize (0.9f, 1.0f);
+        this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f),
-                             0, this->conf->getFloat("graph_ymax2", 200.0f));
+                             0, this->conf->getFloat("graph_ymax", 1.0f));
+        this->gv->max_num_ticks = 6;
+        this->gv->min_num_ticks = 3;
         this->gv->axislabelgap = 0.03f;
+        this->gv->fontsize = fontsz_subgraph;
+        this->gv->fontres = fontres_subgraph;
+        //this->gv->axisstyle = morph::axisstyle::boxfullticks;
         this->gv->policy = morph::stylepolicy::lines;
         this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
         this->gv->xlabel = "t";
-        this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
-        this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
+        morph::DatasetStyle ds(morph::stylepolicy::lines);
+        ds.linecolour = morph::colour::dodgerblue3;
+        ds.datalabel = unicode::toUtf8 (unicode::epsilon);
+        this->gv->prepdata (ds);
+        this->gv->legend = false;
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
+
+        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
+        this->gv2->twodimensional = false;
+        this->gv2->omit_x_tick_labels = true;
+        this->gv2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
+        this->gv2->setlimits (0, this->conf->getFloat ("steps", 1000),
+                              0, this->conf->getFloat("graph_ymax2", 200.0f));
+        this->gv2->max_num_ticks = 6;
+        this->gv2->min_num_ticks = 3;
+        this->gv2->axislabelgap = 0.03f;
+        this->gv2->fontsize = fontsz_subgraph;
+        this->gv2->fontres = fontres_subgraph;
+        //this->gv2->axisstyle = morph::axisstyle::boxfullticks;
+        this->gv2->policy = morph::stylepolicy::lines;
+        this->gv2->ylabel = unicode::toUtf8 (unicode::eta);
+        this->gv2->xlabel = "";
+        ds.linecolour = morph::colour::red3;
+        ds.datalabel = unicode::toUtf8 (unicode::eta);
+        this->gv2->prepdata (ds);
+        this->gv2->legend = false;
+        this->gv2->finalize();
+        this->v->addVisualModel (this->gv2);
     }
 
     // 1x2 graphs (centroids, selected)
