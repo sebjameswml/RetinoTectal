@@ -26,5 +26,5 @@
     "steps" : 1000,
 
     "graph_ymax" : 0.75,
-    "graph_ymax2" : 500
+    "graph_ymax2" : 1000
 }
