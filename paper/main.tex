@@ -1,20 +1,16 @@
-% Use the article doc class, with an 11 pt basic font size
-%\documentclass[11pt, a4paper, draft]{article}
-\documentclass[11pt, a4paper]{article}
+\documentclass[9pt,lineno]{elife}
 % Nice citations
-\usepackage{natbib}
+%\usepackage{natbib}
 % Set margins
-\usepackage[margin=2.5cm]{geometry}
+%\usepackage[margin=2.5cm]{geometry}
 % Multilingual support
-\usepackage[english]{babel}
+%\usepackage[english]{babel}
 % Nice mathematics and Left-right harpoons for kinetic equations
 \usepackage{amsmath,mathtools}
 % Control over maketitle
-\usepackage{titling,titlesec}
+%\usepackage{titling,titlesec}
 % Ability to use colour in text
-\usepackage[usenames]{color}
-\definecolor{grey}{rgb}{0.6, 0.6, 0.63}
-\definecolor{black}{rgb}{0, 0, 0}
+\usepackage{color}
 % For the \degree symbol
 \usepackage{textcomp,gensymb}
 % Allow includegraphics and wrapped figures
@@ -63,51 +59,28 @@
 \def\captionFont{\fontsize{10}{10} }
 
 % Caption font size to be small.
-\usepackage[font=small,labelfont=bf]{caption}
-
-% Make a dot for the dot product, call it vcdot for 'vector calculus dot'. Bigger than \cdot, smaller than \bullet.
-\makeatletter
-\newcommand*\vcdot{\mathpalette\vcdot@{.35}}
-\newcommand*\vcdot@[2]{\mathbin{\vcenter{\hbox{\scalebox{#2}{$\m@th#1\bullet$}}}}}
-\makeatother
-
-\def\firstAuthorLast{James}
-\def\Address{\\
-\affiliationListFont Department of Psychology,\\
- \affiliationListFont  The University of Sheffield, Sheffield, UK \\
-}
-\def\corrAuthor{Seb James}
-\def\corrAddress{Department of Psychology, The University of Sheffield,
-  Western Bank, Sheffield, S10 2TP, UK}
-\def\Authors{\authorListFont Sebastian~S.~James, Stuart~P.~Wilson  \Address}
-%  \corrAuthorFont $^{*}$ Correspondence: {seb.james@sheffield.ac.uk}}
-
-% A trick to get the bibliography to show up with 1. 2. etc in place of [1], [2] etc.:
-\makeatletter
-\renewcommand\@biblabel[1]{#1.}
-\makeatother
-
-% reduce separation between bibliography items if not using natbib:
-\let\OLDthebibliography\thebibliography
-\renewcommand\thebibliography[1]{
-  \OLDthebibliography{#1}
-  \setlength{\parskip}{0pt}
-  \setlength{\itemsep}{0pt plus 0.3ex}
-}
+%\usepackage[font=small,labelfont=bf]{caption}
 
 \title {
-Differential chemotaxis with competition as a mapping mechanism in the brain
+Competitive differential chemotaxis can explain the self-organisation of topographic maps
 }
-\date{} % No date please
-\author{\Authors}
 
+\author[1*]{Sebastian~S.~James}
+\author[1]{Stuart~P.~Wilson}
+\affil[1]{Department of Psychology, The University of Sheffield, Sheffield, United Kingdom.}
+\corr{seb.james@sheffield.ac.uk}{SSJ}
 %% END OF PREAMBLE
+
+% Seb to fix: Expected not experiment (in figs), Fig 8 - monochromes. Fig 1 - monochromes
+% Stuart to do: Intro/Start of results modifications
 
 \begin{document}
 %\setlength{\droptitle}{-1.8cm} % move the title up a suitable amount
 \maketitle
 
-\emph{The retinotectal projection, in which the axons of retinal ganglion cells form an ordered map in the optic tectum, is an important developmental system that has been studied for many decades. There is a large body of evidence, consisting of surgical and genetic manipulations, that give insight into how it behaves. Experimental work has uncovered a number of mechanisms that are involved in aspects of the mapping. However, a single, consistent theoretical framework has yet to describe all the patterns that are formed. Sperry's chemoaffinity theory provides an account of the wildtype pattern. Gierer formalised and extended this theory to incorporate competition to account for a subset of surgical manipulation experiments, but it was never tested against the full range of surgical manipulations. Other theoretical and computational studies have been partially successful in accounting for surgical manipulations, but to date, no single theory, operating only by local interactions, has accounted for every manipulation. We present a two-dimensional model of the retinotectal projection in which orthogonal pairs of opposing tectal ligand gradients combined with retinal gradients of receptors form Gierer's potential functions and then show that this receptor-ligand model accounts for the full range of surgical manipulations. We then extend the detail with which the receptor-ligand interactions are treated to successfully account for more recent genetic manipulation experiments.}
+\begin{abstract}
+The retinotectal projection, in which the axons of retinal ganglion cells form an ordered map in the optic tectum, is an important developmental system that has been studied for many decades. There is a large body of evidence, consisting of surgical and genetic manipulations, that give insight into how it behaves. Experimental work has uncovered a number of mechanisms that are involved in aspects of the mapping. However, a single, consistent theoretical framework has yet to describe all the patterns that are formed. Sperry's chemoaffinity theory provides an account of the wildtype pattern. Gierer formalised and extended this theory to incorporate competition to account for a subset of surgical manipulation experiments, but it was never tested against the full range of surgical manipulations. Other theoretical and computational studies have been partially successful in accounting for surgical manipulations, but to date, no single theory, operating only by local interactions, has accounted for every manipulation. We present a two-dimensional model of the retinotectal projection in which orthogonal pairs of opposing tectal ligand gradients combined with retinal gradients of receptors form Gierer's potential functions and then show that this receptor-ligand model accounts for the full range of surgical manipulations. We then extend the detail with which the receptor-ligand interactions are treated to successfully account for more recent genetic manipulation experiments.   
+\end{abstract}
 
 \section{Introduction}
 
@@ -154,15 +127,15 @@ With this model, we asked: i) Can a two-dimensional implementation of Gierer's m
 \section{Results}
 \subsection*{A model of chemotaxis and competition}
 
-In an agent-based model of chemotaxis and competition, the position, $\mathbf{x}_t$, of each branch $b$ on a simulated tectum can be updated according to $\mathbf{x}_{t+1} = \mathbf{x}_{t} + \mathbf{M}$ with the movement vector $\mathbf{M}$ given by
-\begin{equation} \label{e:M}
- \mathbf{M} = \mathbf{G} +  \mathbf{X} + \mathbf{B}.
+In an agent-based model of chemotaxis and competition, the position, $\mathbf{x}_t$, of each branch $b$ on a simulated tectum can be updated according to $\mathbf{x}_{t+1} = \mathbf{x}_{t} + \Delta \mathbf{x}$ with the movement vector given by
+\begin{equation} \label{e:dX}
+ \Delta \mathbf{x} = \mathbf{G} +  \mathbf{C} + \mathbf{B}.
 \end{equation}
-$\mathbf{G}$ is the movement due to the chemotaxis effect and $\mathbf{X}$ is the movement due to competitive interactions with other branches. 
+$\mathbf{G}$ is the movement due to the chemotaxis effect and $\mathbf{C}$ is the movement due to competitive interactions with other branches. 
 $\mathbf{B}$ is a movement applied close to the tissue boundary that ensures all branches remain within the tissue \citep{holt_target_1998}.
 
-\citet{simpson_simple_2011} investigated a model of this form in which a `placeholder' provided a chemotaxis-like movement for $\mathbf{G}$ and a form for $\mathbf{X}$ was studied.
-Their model, which successfully accounts for a wide range of experimental manipulations, found an $\mathbf{X}$ comprised of two components; a simple distance-based competition between \emph{all} branches ($\mathbf{C}$), along with an axon-axon interaction based on the relative levels of the receptor EphA expressed by each interacting axon ($\mathbf{I}$).  
+\citet{simpson_simple_2011} investigated a model of this form in which a `placeholder' provided a chemotaxis-like movement for $\mathbf{G}$ and a form for $\mathbf{C}$ was studied.
+Their model, which successfully accounts for a wide range of experimental manipulations, found a $\mathbf{C}$ comprised of two components; a simple distance-based competition between \emph{all} branches, along with an axon-axon interaction based on the relative levels of the receptor EphA expressed by each interacting axon.  
 We asked i) if the placeholder mechanism for $\mathbf{G}$, in which a `global supervisor' informs each branch of the vector along which it should travel to approach its target, could be replaced by a true chemotaxis mechanism based on graded signalling molecule expression and ii) if the competition mechanism found by Simpson and Goodhill was the simplest possible mechanism that could explain all of the surgical and genetic manipulations accounted for by their model.
 
 \subsection*{A gradient based model of chemotaxis}
@@ -202,10 +175,10 @@ While we do not explicitly name $r_0$, $r_1$, etc.~as \emph{EphA}, \emph{EphB}, 
 
 \subsection*{A signalling model for competition}
  
- We modelled competition as a distance-based competitive movement vector, $\mathbf{X}$, which is a sum of interactions that are `switched on' via receptor-ligand signalling:
+ We modelled competition as a distance-based competitive movement vector, $\mathbf{C}$, which is a sum of interactions that are `switched on' via receptor-ligand signalling:
 %
 \begin{equation} \label{e:X}
-\mathbf{X} = \frac{m_{\!_X}}{|B_{b}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W\,Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}).
+\mathbf{C} = \frac{m_{\!_X}}{|B_{b}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W\,Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}).
 \end{equation}
 %
 $r_{\!_X}$ is the receptor-ligand interaction radius, $W$ is the distance based weighting ($W = 1-\frac{d_{kb}}{2r_{\!_X}}~\mathrm{if}~  d_{kb}\leq 2r_{\!_X}$, otherwise $0$) and $B_{b}$ is the set of branches that are within interaction distance ($2 r_{\!_X}$) of $b$. $m_{\!_X}$ is a scalar parameter, $nM$ is the total number of branches and $\hat{\mathbf{x}}_{kb}$ is the unit vector from $k$ to $b$.
@@ -231,18 +204,18 @@ $Q$ is set to 1 only if at least one repulsive signal exceeds $s$ and the distan
 The model has four free parameters; $m_{\!_G}$, $m_{\!_X}$, $r_{\!_X}$ and $s$. We fixed $m_{\!_G}$ to the value $0.0012$ and used a numerical optimization process to find the competition parameters that would balance this level of chemotaxis.
 We performed a simulated annealing optimization to minimize an objective function for the wildtype pattern (Fig.\,\ref{f:GJ}E) at simulation time 1000, reasoning that evolution would optimize the arrangement of this phenotype.
 
-We used a combination of pattern metrics to define the objective function. $\epsilon$ is the mean distance error of the axon centroids, given by:
+We used a combination of pattern metrics to define the objective function. $\epsilon$ is the mean distance error of the axon centroids, given by $\epsilon = \sqrt{\left(\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2\right)/n}$,
 %
-\begin{equation}\label{e:eps}
-\epsilon = \sqrt{\frac{\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
-\end{equation}
+%\begin{equation}\label{e:eps}
+%\epsilon = \sqrt{\frac{\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
+%\end{equation}
 %
 where $\mathbf{x}_{k}$ is the location of the centroid of the branches of axon $k$ and $\mathbf{x}'_{k}$ the target tectal location for axon $k$.
 $n$ is the number of RGC axons in the system.
 %
 $\epsilon$ tends to 0 as the pattern approaches the target layout.
 However, two patterns may have the same non-zero value for $\epsilon$, despite one being qualitatively more disordered than the other. 
-For this reason, we also used the number of crossings in the fish net plot of the axon centroids (see Fig.\,\ref{f:GJ}D) as a second metric, called $\eta$, which tends towards an expected target number of crossings, $\eta_t$ as the pattern approaches the target layout. The annealing objective function, $\xi$, combined these metrics: $\xi = \epsilon^2 (1+\frac{\eta}{100})$.
+For this reason, we also used the number of crossings in the fishnet plot of the axon centroids (see Fig.\,\ref{f:GJ}D) as a second metric, called $\eta$, which tends towards an expected target number of crossings, $\eta_t$ as the pattern approaches the target layout. The annealing objective function, $\xi$, combined these metrics: $\xi = \epsilon^2 (1+\frac{\eta}{100})$.
 The parameters returned by the simulated annealing were
 $m_{\!_X} = 0.2078$, $r_{\!_X} = 0.0759$ and $s = 4.815$. 
 
@@ -251,7 +224,7 @@ Fig.\,\ref{f:GJ}A indicates the colour code used for retinal cell position; dors
 Fig.\,\ref{f:GJ}E shows the expected layout of retinal ganglion cell axons on the tectum.
 The axons retain the colour of their originating cell on the retina.
 Nasal cell axons should be arranged caudally; dorsal axons laterally; axons should be evenly spaced and the pattern should span the entire tectum.
-Fig.\,\ref{f:GJ}, panels B--D show `fish net' plots of the average location of the 4 branches of each axon (the axon's centroid) at three timepoints. 
+Fig.\,\ref{f:GJ}, panels B--D show `fishnet' plots of the average location of the 4 branches of each axon (the axon's centroid) at three timepoints. 
 Fig.\,\ref{f:GJ}B indicates the randomised placement of axon branches at the rostral end of the tectum as specified by the initial conditions (Eq.\,\ref{e:ic}).
 In these plots, lines are drawn between axons that are expected to arrange themselves adjacently to one another by the end of the simulation. 
 The number of line crossings in this plot gives an indication of the disorder in the arrangement.
@@ -265,13 +238,13 @@ Fig.\,\ref{f:GJ}H shows selected axons (one from the centre and one from each co
 
 \subsection*{Surgical manipulations}
 
-After finding an optimum set of parameters for the wildtype arrangement, we tested our model with a number of simulations of surgical manipulations (for reviews, see \citet{udin_formation_1988} and \citet{goodhill_retinotectal_1999}). 
+After finding an optimum set of parameters for the wildtype arrangement, we tested the model with a number of simulations of surgical manipulations (for reviews, see \citet{udin_formation_1988} and \citet{goodhill_retinotectal_1999}). 
 Figs.~\ref{f:GJsurg_grafts}A and \ref{f:GJsurg_grafts}B show the results of tectal graft rotation manipulations in which a square patch of tectal tissue is cut out and rotated $90\degree$ or $180\degree$ \citep{chung_observations_1978}. 
 %
 To simulate the surgery, we rotated an $8\times8$ square of the tectum shown in Fig\,\ref{f:ex}D, carrying the ligand expressions with the rotation (resulting in Fig.\,\ref{f:trot90}, left column). 
 After the manipulation, we re-computed the tectal ligand expression gradients. Fig.\,\ref{f:trot90} demonstrates that the most significant change in the gradient is around the border of the graft, due to discontinuities in the ligand expression. 
 The manipulated gradients, interacting with unchanged axon branches, led to a qualitative rotation of axons that were destined for the graft area, indicated by a 90$\degree$ or 180$\degree$ `twist' of the axon centroid colours. 
-Long connecting lines in the fish net show that a number of axons from near the edges of the tectum were drawn into the graft region. 
+Long connecting lines in the fishnet show that a number of axons from near the edges of the tectum were drawn into the graft region. 
 The pattern metric, $\epsilon$, is shown in the right hand graphs of Fig.\,\ref{f:GJsurg_grafts}A \& B. 
 We plot $\epsilon$ (the distance error) for the entire map (blue) along with the error for the graft region (gold) and the surround region (red). 
 The overall distance error for the rotation manipulations (0.182 or 0.2752)  is greater than for the wildtype system (0.04). 
@@ -284,12 +257,12 @@ There is considerable disorder in the simulated pattern of axon centroids but a 
 Fig.\,\ref{f:GJsurg_ablate}A shows the result of a retinal ablation, in which the temporal half of the retina is surgically removed and the remaining RGC axons are allowed to develop on the unmanipulated tectum.
 According to a pure chemoaffinity theory, the surviving retinal axons should retain their chemical labels and they would be expected to find their usual locations on the tectum, resulting in a tectum which is only half populated with axons. 
 The experimental observation is that the axons arrange themselves across the whole tectum, retaining their topographic order (inset, \citet{attardi_preferential_1963,schmidt_expansion_1978}). 
-The fish-net plot of the simulation indicates that the competition in the system successfully `stretches out' the surviving axons to achieve a close representation of the experimentally observed result. 
+The fishnet plot of the simulation indicates that the competition in the system successfully `stretches out' the surviving axons to achieve a close representation of the experimentally observed result. 
 In this figure, the right-hand graph shows the simulated position of each axon centroid on the rostro-caudal (R--C) tectal axis plotted against its position on the nasal-temporal (N--T) retinal axis in red triangles, with the experimental positions plotted in blue squares.
 %
-Fig.\,\ref{f:GJsurg_ablate}B shows the result of a tectal ablation. Here the retina is left un-modified, but the caudal half of the tectum is surgically removed. Experimental observation \citep{yoon_reorganization_1971,sharma_reformation_1972} shows that RGC axons `crush up' on the remaining rostral section, retaining topographic order and creating a complete map on the available tectal tissue. Our model clearly replicates this result, indicated by both fish-net and tectal/retinal axes graphs, because the chemotaxis component of the model is based on balanced, relative interactions between opposing gradients, rather than absolute labels or expression measurements.
+Fig.\,\ref{f:GJsurg_ablate}B shows the result of a tectal ablation. Here the retina is left un-modified, but the caudal half of the tectum is surgically removed. Experimental observation \citep{yoon_reorganization_1971,sharma_reformation_1972} shows that RGC axons `crush up' on the remaining rostral section, retaining topographic order and creating a complete map on the available tectal tissue. The model clearly replicates this result, indicated by both fishnet and tectal/retinal axes graphs, because the chemotaxis component of the model is based on balanced, relative interactions between opposing gradients, rather than absolute labels or expression measurements.
 %
-A related ablation experiment is the so-called `mismatch', in which the temporal half of the retina is ablated along with the caudal part of the tectum to which it normally maps, again challenging the pure chemoaffinity model \citep{horder_retention_1971}. Our model replicates this manipulation (Fig.\,\ref{f:GJsurg_ablate}C) for the same reason as in the simple tectal ablation of Fig.\,\ref{f:GJsurg_ablate}B; opposing gradients remain on the surviving tectum allowing RGC axons to find their relative ordering.
+A related ablation experiment is the so-called `mismatch', in which the temporal half of the retina is ablated along with the caudal part of the tectum to which it normally maps, again challenging the pure chemoaffinity model \citep{horder_retention_1971}. The competitive differential chemotaxis model replicates this manipulation (Fig.\,\ref{f:GJsurg_ablate}C) for the same reason as in the simple tectal ablation of Fig.\,\ref{f:GJsurg_ablate}B; opposing gradients remain on the surviving tectum allowing RGC axons to find their relative ordering.
 %
 The final surgical manipulation which we investigated was the `compound eye' experiment, in which two nasal retina halves are fused together \citep{gaze_retino-tectal_1963,fawcett_retinotectal_1982}. Within the compound retina there exist matched pairs of retinal ganglion cells, one from each nasal half, whose receptor and ligand expressions cannot be distinguished. These form overlaid maps, each of which spans the entire tectum (Fig.\,\ref{f:GJsurg_ablate}D).
 
@@ -302,11 +275,11 @@ For the strongest knock-in (a homozygote manipulation) two maps were formed, wit
 By enhancing the quantity of EphA receptors expressed by half of all retinotectal axons, they demonstrated the importance of retinal receptor expression for the arrangement of the tectal map. 
 In the weaker, heterozygote manipulation, the maps were still separated, but the separation `collapsed' towards the rostral end of the tectum (see \citet{brown_topographic_2000}, Fig\,5). 
 This led to a second study showing that with an additional knock-down of EphA4 receptors in \emph{all} RGCs, the retinal origin of the collapse point was shifted temporally and all heterozygote EphA3 knock-in cells were pushed even further rostrally (\citet{reber_relative_2004}, their Fig.\,3e). 
-For our model to successfully reproduce these results, it should therefore: i)~Demonstrate a complete separation of maps for a `large' knock-in of EphA3; ii)~Show a separation of maps for a smaller knock-in of EphA3 that is greater for axons of nasal origin. iii)~For the smaller knock-in, a collapse point at 76\% of the N--T axis; iv)~Show a considerable rostral shift of cells for which EphA3 is knocked in and EphA4 is knocked down; and v)~Show a collapse point for the knock-in/knock-down cells and knock-down only cells at around 88\% of the N--T axis.
+For the model to successfully reproduce these results, it should therefore: i)~Demonstrate a complete separation of maps for a `large' knock-in of EphA3; ii)~Show a separation of maps for a smaller knock-in of EphA3 that is greater for axons of nasal origin. iii)~For the smaller knock-in, a collapse point at 76\% of the N--T axis; iv)~Show a considerable rostral shift of cells for which EphA3 is knocked in and EphA4 is knocked down; and v)~Show a collapse point for the knock-in/knock-down cells and knock-down only cells at around 88\% of the N--T axis.
 
 An assumption made in these papers is that all EphA receptor sub-types contribute to a summed EphA expression level, $\sum\mathrm{EphA}$, which increases from a low level at the nasal side of the retina, to a high level at the temporal side. 
 The precise contribution of each sub-type to the overall level is assumed not to be important. 
-In our model, receptor $r_0$ increases in the retina in a nasal to temporal direction (Fig.\,\ref{f:ex}B) and so we treated $r_0$ as being equivalent to $\sum\mathrm{EphA}$ and manipulated it to attempt a recreation of the \citet{brown_topographic_2000}~and \citet{reber_relative_2004}~experiments. 
+In this model, receptor $r_0$ increases in the retina in a nasal to temporal direction (Fig.\,\ref{f:ex}B) and so we treated $r_0$ as being equivalent to $\sum\mathrm{EphA}$ and manipulated it to attempt a recreation of the \citet{brown_topographic_2000}~and \citet{reber_relative_2004}~experiments. 
 In half of the RGCs, we knocked EphA3 in by adding to the value of $r_0$ in these cells either 0.8 (heterozygote EphA3 ki/+) or 3.2 (homozygote EphA3 ki/ki). 
 To include the additional heterozygote knock-down of EphA4 (EphA4 +/-) from \citet{reber_relative_2004}, we subtracted 1.2 from $r_0$ in \emph{all} RGCs.
 Fig.\,\ref{f:GJeph}A shows, for the single EphA3 knock-in (EphA3 ki/+), branch positions, a plot of axon centroids and final rostral-caudal position on the tectum versus the originating nasal-temporal retinal coordinate for time step 1500. 
@@ -328,7 +301,7 @@ The significant rostral movement of the treated axons seen in \citet{reber_relat
 In fact, the knock-in/knock-down cells find locations slightly more \emph{caudal} than those in Fig.\,\ref{f:GJeph}A, because while $r_0$ is increased by 0.8 from the knock-in, the knock-down of 1.2 reduces these cells' interaction with tectal ephrinA ($L_0$) compared with those in the EphA3 knock-in/EphA4 wildtype simulation.
 
 It is important to note that these results emerge purely from modifications to the receptor expression levels; the model is otherwise unchanged. 
-The lack of collapse points or the more rostral positions of knock-in/knock-down cells suggests that there is an interaction effect between EphA4 and other EphA receptors that has not been captured by the differential chemotaxis with competition model.
+The lack of collapse points or the more rostral positions of knock-in/knock-down cells suggests that there is an interaction effect between EphA4 and other EphA receptors that has not been captured by the competitive differential chemotaxis model.
 We address possible interaction effects in the next section.
 
 \subsection*{Two mechanisms to address the genetic results: Cluster size and $r_2$ collapse}
@@ -433,15 +406,15 @@ Two receptor classes have been identified; Frizzled, a receptor mediating attrac
 We note that it is possible to restrict $N$ to 2, as long as some other stopping mechanism is chosen. 
 \citet{naoki_revisiting_2017} did just this in a gradient model with two orthogonal gradients and a proposition for a stopping mechanism based on a switch within growth cones from repulsion to attraction at a critical level (not unlike that of the Wnt3/Ryk/Frizzled system). 
 This work concentrated on the mechanism by which the repulsion/attraction switch could occur and did not model system level behaviour as we do here. 
-It is possible that Naoki's mechanism would be compatible with this model, replacing $\mathbf{G}$ in Eq.\,\ref{e:M} and it would be interesting to examine this mechanism within the current agent-based modelling framework in a future study.
+It is possible that Naoki's mechanism would be compatible with this model, replacing $\mathbf{G}$ in Eq.\,\ref{e:dX} and it would be interesting to examine this mechanism within the current agent-based modelling framework in a future study.
 
 \subsection*{Competition}
 
 Because many of the ligands expressed on the tectum are also expressed by retinal ganglion cells, there exists the possibility for inter-RGC signalling via receptor-ligand binding (forward interactions). 
 We chose to model this kind of interaction between RGCs, noting that if a forward interaction on the tectum leads to growth cones moving away from a region of high ligand expression (ephrin-A/EphA interactions act in this way), then the equivalent axon-axon interaction would also be expected to be repulsive. An interaction between one branch dense with receptors and another with a large number of ligands would have a high chance of repelling; an interaction between branches each with low levels of receptor/ligand expression would have a low chance of repelling.
 
-Note that if there was a \emph{single} ligand type, $l_i$, expressed in the retina and its form was $1/r_i$, then $\mathbf{X}$ from Eq.\,\ref{e:M} would be equivalent to Simpson \& Goodhill's $\mathbf{I}_b$, which is a threshold-activated signal based on the ratio of $r_{i,b}/r_{i,k}$. 
-However, because we intended for $\mathbf{X}$ to be the only mechanism for competition, we found that the minimum number of ligands that were required to be expressed on the retina was 2, expressed in opposing directions (Fig.\,\ref{f:ex}B). If only a single receptor-ligand pair participated in competition, then many axons experienced no competitive interaction and such a system was unable to reproduce experimental observations.
+Note that if there was a \emph{single} ligand type, $l_i$, expressed in the retina and its form was $1/r_i$, then $\mathbf{C}$ from Eq.\,\ref{e:dX} would be equivalent to Simpson \& Goodhill's $\mathbf{I}_b$, which is a threshold-activated signal based on the ratio of $r_{i,b}/r_{i,k}$. 
+However, because we intended for $\mathbf{C}$ to be the only mechanism for competition, we found that the minimum number of ligands that were required to be expressed on the retina was 2, expressed in opposing directions (Fig.\,\ref{f:ex}B). If only a single receptor-ligand pair participated in competition, then many axons experienced no competitive interaction and such a system was unable to reproduce experimental observations.
 
 Competition appears to be necessary for all of the surgical manipulations. 
 It is most obviously useful for the ablation experiments, allowing axons to spread out over the full tectum even if half of the RGCs have been removed.
@@ -454,8 +427,8 @@ This `interaction distance for competition' is similar to that found by \citet{s
 It suggests not that the range of competitive interaction between growth cones should be many multiples of their diameter, but rather that there should be enough interacting growth cones so that the expected spacing between growth cones in the map is equivalent to the range over which they can send signals to each other.
 
 % Single axon behaviour
-\citet{gosse_retinotopic_2008} argued that competition is not required to form the retinotectal map in zebrafish. They showed that in a system with no competition (achieved by transplanting single RGCs into mutants that would otherwise have none), only minor changes in the tectal targetting of these cells would occur.
-The chemotaxis component of our model ensures that single axons will be drawn to approximately the correct location.
+\citet{gosse_retinotopic_2008} argued that competition is not required to form the retinotectal map in zebrafish. They showed that in a system with no competition (achieved by transplanting single RGCs into mutants that would otherwise have none), only minor changes in the tectal targeting of these cells would occur.
+The chemotaxis component of the model ensures that single axons will be drawn to approximately the correct location.
 The lack of a competitive effect results in axons that would be targeted towards the edge of the tectal tissue finding their way to slightly more central locations, leading to a compressed, but topographically accurate map.
 This is not inconsistent with \citet{gosse_retinotopic_2008}, who found some differences in targeting behaviour between the different experimental conditions.
 
@@ -501,17 +474,10 @@ Instead, it models development of simple growth cone agents which find their way
 
 % Restate significant findings and implications
 
-% Bibliography here
-\selectlanguage{English}
-\bibliographystyle{apalike}
-\bibliography{RetinoTectal}
-
-\appendix
-
-\section*{Method details}
+\section{Method details}
 
 \subsection*{Border effect} % border effect description
-The border effect ($\mathbf{B}$ in Eq.\,\ref{e:M}) was based on gradient-following by assuming that there is some other molecular signal which acts on all branches near the boundary of the tectal tissue. For a branch with position $(x,y)$, $\mathbf{B}$ is given by:
+The border effect ($\mathbf{B}$ in Eq.\,\ref{e:dX}) was based on gradient-following by assuming that there is some other molecular signal which acts on all branches near the boundary of the tectal tissue. For a branch with position $(x,y)$, $\mathbf{B}$ is given by:
 %
 \begin{equation}\label{e:B}
 B_x = \begin{cases}
@@ -536,9 +502,9 @@ Each RGC axon $k$ was assigned a random initial position coordinate:
 where U(p,q) is a number selected from a random uniform distribution in the range $[p,q)$. Each of the 4 branches per RGC axon was given its parent axon's initial position, plus a randomly generated offset with coordinates derived from a normal distribution of mean 0 and standard deviation 0.1.
 % end initial conditions
 
-\subsection*{Bootstrap analyses of R-C tectal position vs.~N-T retinal origin}
+\subsection*{Bootstrap analyses of R--C tectal position vs.~N--T retinal origin}
 
-To test whether a manipulation affected the mean rostro-caudal position as a function of the origin location of the nasal-temporal retinal axis, we applied a \emph{Studentized, bootstrapped test of the equality of means} of two distributions of R-C positions obtained for the $n=20$ different dorso-ventral origins for each N-T location. 
+To test whether a manipulation affected the mean rostro-caudal position as a function of the origin location of the nasal-temporal retinal axis, we applied a \emph{Studentized, bootstrapped test of the equality of means} of two distributions of R--C positions obtained for the $n=20$ different dorso-ventral origins for each N--T location. 
 The test follows Algorithm 16.2 of~\cite{efron_introduction_1993} and has the null hypothesis, H$_0$: \emph{the means are the same}.
 Consider two samples, $\textbf{z}$ and $\textbf{y}$ (both of size $n$); which are the positions obtained for the wildtype and manipulated cells of Fig.\,\ref{f:GJeph}.
 The \emph{observed value} of this test, $t(\textbf{x})$, is a Studentized (meaning the variances are accounted for) difference of the means of $\textbf{z}$ and $\textbf{y}$, given by:
@@ -566,12 +532,25 @@ The smaller the ASL is, the less probable is H$_0$, and the more significant is 
 The test makes no assumption about the shape of the distributions which generated the samples, but it does assume that $\bar{z} > \bar{y}$.
 %% End bootstrap desc
 
+\section{Data Availability}
+
+All data and code required to reproduce the results in this work are available in the public repository 
+\url{https://github.com/sebjameswml/RetinoTectal}.
+The software was built using the library morphologica \citep{james_morphologica_2022}.
+
+\section{Acknowledgements}
+
+This work was supported by grant 220020516 from the James S. McDonnell Foundation.
+
+\bibliography{RetinoTectal}
+
 %
 % FIGURES
 %
 
 % FIGURE 1
 % Expand panel A to be able to lose B-D.
+% Full page width
 \begin{figure}
 \includegraphics[width=\linewidth]{./images/expressions_fig.png}
 \caption{Schematic diagrams of retinotectal mapping and gene expression. Coloured lines indicate that temporal retinal ganglion cells project to the rostral part of the contra-lateral tectum; nasal cells to caudal tectum; dorsal cells find their way to the lateral tectum and ventral retinal cells project to the medial tectum.
@@ -584,11 +563,12 @@ The test makes no assumption about the shape of the distributions which generate
 %
 }
 \label{f:ex}
-\end{figure}
+\end{figure}    
 
 % FIGURE 2
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/j4_ee_GJ_best_1_wt_fig2_exit_true_steps_1500.png}
+\begin{fullwidth}
+\includegraphics[width=0.95\linewidth]{./images/j4_ee_GJ_best_1_wt_fig2_exit_true_steps_1500.png}
 \caption{Receptor-ligand model of chemotaxis and competition. 
 \textbf{A} The origin position on the retina gives axons a colour according to a dual-colour map. Axons in panels B-H that are red are those which originated in the most naso-ventral corner of the square simulated retina. 
 \textbf{B}-\textbf{D} Axon centroid positions on the simulated tectum (dashed line) at time 0, 40 and 1500 units. Lines show adjacency relationships between the axons' origin positions on the retina. 
@@ -598,6 +578,7 @@ The test makes no assumption about the shape of the distributions which generate
 \textbf{H} Selected axon locations at t=1500, with path histories in grey. 
 \emph{Abbreviations: D dorsal, V ventral, T temporal, N nasal, C caudal, R rostral, M medial, L lateral.}}
 \label{f:GJ}
+\end{fullwidth}
 \end{figure}
 
 % FIGURE 3 ./scripts/fig_GJ_surgical_grafts.svg (graphs generated with fig_GJ_surgical.sh)
@@ -606,28 +587,32 @@ The test makes no assumption about the shape of the distributions which generate
 % b: ablation (as simulated in 1D by Gierer)
 % c: mismatch/compound (as extensions of Gierer)
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_GJ_surgical_grafts.png}
+\begin{fullwidth}
+\includegraphics[width=0.95\linewidth]{./images/fig_GJ_surgical_grafts.png}
 \caption{Performance of the receptor-ligand model with surgical graft manipulations. Here, we made a number of simulated surgical manipulations of the tectum and retina and applied the same model shown in Fig\,\ref{f:GJ}. \textbf{A.} Graft rotation. An 8$\times$8 square patch of tectum has been rotated by 90$\degree$, altering the tectal ligand expression pattern. High gradients form around the new discontinuities at the edge of the patch (see Fig\,\ref{f:trot90}), driving axons to follow the rotation of the patch. The left graph shows the axon centroid positions after 1500 time steps, the smaller inset graph shows the (idealised) anticipated layout seen in experiments \citep{levine_deployment_1974}. The right-hand graph shows the time-course of the pattern quality metric, $\epsilon$ (i.e.~how closely the centroid pattern matches the inset) for the entire tectum (blue), the graft region (yellow) and the surround (red). The axons within the graft are slightly less well ordered than those outside. \textbf{B} Shows the same type of graft rotation as \textbf{A} for a 180$\degree$ rotation \citep{yoon_retention_1973}. \textbf{C.} A simulated graft swap experiment. Two 12$\times$4 rectangular regions of tectum are cut out and grafted back in swapped positions \citep{hope_arrow_1976,gaze_visuotectal_1983}. While there is disorder in the simulated pattern of axon centroids, a line of red/yellow agents that would been located caudally has advanced rostrally and a number of green agents are more caudal than in the wildtype arrangement. Note that here, the pattern metric shown for `Graft' (yellow curve) is computed from a square covering both grafts.}
 \label{f:GJsurg_grafts}
+\end{fullwidth}
 \end{figure}
 
 % FIGURE 4
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/fig_GJ_surgical_ablations.png}
+\begin{fullwidth}
+\includegraphics[width=0.95\linewidth]{./images/fig_GJ_surgical_ablations.png}
 \caption{Retinal and tectal ablation simulations. \textbf{A} The temporal half of the retina is removed in this manipulation. Axons from the nasal half grow onto an unmodified tectum. This manipulation is problematic for the pure chemoaffinity theory, because axons from the middle of the retina now grow towards the rostral side of the tectum; the topographic map of the remaining retina expands across the entire tectum. In this work, it is the competition that achieves this effect. The axon centroid graphs are plotted as in Fig.\,\ref{f:GJsurg_grafts}, but right hand graph indicates the rostro-caudal tectal position of each axon centroid as a function only of its naso-temporal origin on the retina. \textbf{B} Axons from an unmanipulated retina grow onto a tectum whose caudal half has been removed. As in experiments \citep{yoon_reorganization_1971,finlay_orderly_1979}, the axons `crush up' to form a complete map of the retina over the half tectum. \textbf{C} A `mismatch' experiment \citep{horder_retention_1971}. The axons from the surviving nasal half of an ablated retina, which would usually map to the caudal half of the tectum arrange themselves into a map on the \emph{rostral} half of the tectum as the caudal portion has been removed. As with the other ablations, the model achieves this due to variable interactions with the tectal ligand gradient and competitive interactions. \textbf{D} Compound eye. If two nasal retina halves are grafted together, two overlaid maps form on the tectum \citep{gaze_retino-tectal_1963}. The simulation reproduces this result because axons from corresponding locations on the naso-temporal retinal axis interact equally with the tectal gradients and arrive in similar locations.}
 \label{f:GJsurg_ablate}
+\end{fullwidth}
 \end{figure}
 
 % FIGURE 5
 \begin{figure}
-\includegraphics[width=0.95\linewidth]{./images/EphA_manipulations.png}
+\includegraphics[width=\linewidth]{./images/EphA_manipulations.png}
 \caption{Three genetic manipulations applied to the receptor-ligand model simulating those performed by \citet{brown_topographic_2000} and \citet{reber_relative_2004}. In each manipulation, the left graph shows axon branch agents (colour coded by retinal origin) at the end of a simulation ($t=1500$), the centre graph shows corresponding axon centroids, with the colour blue indicating axons with no selective manipulation and red indicating those axons with a selective genetic knock-in of EphA3. In the right hand graph, the final tectal rostro-caudal locations of axons from each naso-temporal origin in the retina are plotted as violin plots (bars indicate the max/min datum in each group and shading indicates the data distribution). Inset graphs show experimental results from  \citet{brown_topographic_2000} and \citet{reber_relative_2004}. \textbf{A} We simulated the heterozygous EphA3 knock-in (EphA3 ki/+) of \citet{brown_topographic_2000} by selecting half of the retinal cells at random, and in these cells adding the value 0.8 to $r_0$ (which, as its expression increases towards the temporal retina, is our analogue for EphA). The affected cells experienced altered interaction with tectal ligand gradients and were shifted rostrally. The rostral shift was largest for nasal cells bound for the caudal tectum. These experience the strongest interaction with $L_0$ (which is highest in caudal tectum). Temporal cells with the manipulation experience a smaller change in their final location because $L_0$ expression is low at their target location (thus the $r_0$-$L_0$ interaction is minimal). However, there is no evidence of the observed map collapse at around 0.8 on the N--T axis, as seen in the inset graph. \textbf{B} To increase the magnitude of the manipulation of EphA3, \citet{brown_topographic_2000} added a homozygous EphA3 knock-in (modelled as a knock-in of 3.2) which pushed manipulated cells further towards the rostral tectum. Here, we observed a separation into two maps, one for the wildtype cells and one for the manipulated cells, in agreement with \citet{brown_topographic_2000} (inset is from their Fig.\,5C). \textbf{C} Simulation of EphA3 ki/+ selective knock-in and EphA4 knock-down (all cells) from \citet{reber_relative_2004}. The knock-down was applied by reducing $r_0$ in all cells by 1.2. The system fails to reproduce either the map collapse at around 0.9 on the N--T axis, nor the strong rostral pull for selective knock-in cells seen in experiments. Instead, selective knock-in cells are drawn in the \emph{caudal} direction, because the knock-down of 1.2 undoes the effect of the knock-in.}  
 \label{f:GJeph}
 \end{figure}
 
 % FIGURE 6
 \begin{figure}
-\includegraphics[width=0.95\linewidth]{./images/EphA_manipulations_explanation.png}
+\includegraphics[width=\linewidth]{./images/EphA_manipulations_explanation.png}
 \caption{Two new mechanisms to account for the genetic manipulation results: cluster-size and $r_2$ collapse. To account for map collapse (\citet{brown_topographic_2000} and Fig.\,\ref{f:GJeph}A), and for the significant rostral termination of knock-in/knock-down cells (\citet{reber_relative_2004} and Fig.\,\ref{f:GJeph}C), we assumed that i) retinal EphA interactions with tectal ephrinA ligands are modulated by EphA4 receptors through a `side-binding' mechanism and ii) EphA3 and EphA4 receptors interact with the receptors which mediate the chemotaxis effect that \emph{opposes} EphA (i.e.~with $r_2$). 
 \textbf{A} \emph{EphA/ephrinA expression.} As described in the text, EphA ($r_0 \equiv \sum_{i\neq 4}\mathrm{EphA}i$) is expressed according to $r_0 = 1.05 + 0.26 \exp(2.3 u)$ (green curve) where $u$ is the N--T retinal position. Knock-in is simulated by adding 0.8 to this function (giving the purple curve). Retinal ephrinA expression is a reversed version of EphA expression (green dotted curve). A threshold, $h_0$, used by the $r_2$ collapse mechanism is shown as a red dotted line, with a green dash-dot line indicating the intersection of $\Sigma\mathrm{EphA}$ and $h_0$. 
 \textbf{B} \emph{EphA4 expression.} Overall EphA4 expression across the retina is constant (green dotted line, value 3.5) but retinal ephrinA ($l_0$) can bind to EphA4 ($r_{A4}$), modelled here as a multiplicative interaction to give cis-bound EphA4, $r_{A4}^{\mathrm{cis}} = w_{A4} \times r_{A4} \times l_0$ (green dashed curve), where $w_{A4}$ is a binding weight described in the text. The remaining, un-bound, free EphA4 receptors, $r_{A4}^{\mathrm{free}} = r_{A4} - r_{A4}^{\mathrm{cis}}$ (green solid curve). We model genetic knock-down of EphA4 by subtracting 2.1 from $r_{A4}$, then recomputing $r_{A4}^{\mathrm{cis}}$ and $r_{A4}^{\mathrm{free}}$ to give the cyan curves. 
@@ -638,7 +623,7 @@ The test makes no assumption about the shape of the distributions which generate
 
 % FIGURE 7
 \begin{figure}
-\includegraphics[width=0.95\linewidth]{./images/EphA_manipulations_clustertheory_r2collapse.png}
+\includegraphics[width=\linewidth]{./images/EphA_manipulations_clustertheory_r2collapse.png}
 \caption{Model results with the mechanisms described in Fig.\,\ref{f:clustermech}. 
 \textbf{A} EphA3 knock-in result for ki=0.8. The graph appears similar to that in Fig.\,\ref{f:GJeph}A but crucially, the distributions of tectal locations begin to overlap at about 80\% of the N--T axis, in agreement with experiment (inset). This is caused by the cluster size effect, in which the signal increase due to the knock-in is reduced for temporal RGCs compared with nasal cells (See Fig.\,\ref{f:clustermech}C, green/purple solid curves). 
 %FOR TEXT: It is confirmed by an increased achieved significance level (ASL) from a bootstrapped, studentized t-test comparing the red and blue distributions at each N--T location. 
@@ -654,24 +639,54 @@ The test makes no assumption about the shape of the distributions which generate
 
 % FIGURE S1
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/Tissuevisb.png}
-\caption{(Supplementary) Visualisation of ligand expression and gradients on the tectum for the
-graft-rotate 90 degrees simulated surgical manipulations.}
+\begin{fullwidth}
+\includegraphics[width=0.95\linewidth]{./images/Tissuevisb.png}
+\caption{(Supplementary) Visualisation of ligand expression and gradients on the simulated, square tectum for the
+graft-rotate 90 degrees surgical manipulations. 
+\textbf{A} Ligand expression. 
+The expression of four ligand types, $L_i$,  $i = 0$--$3$, is visualised with two duochrome maps. 
+The lefthand map shows values for ligands $L_0$ and $L_1$ with red saturation indicating the $L_0$ expression value and green indicating the expression of $L_1$. 
+Elements which have high expression of both $L_0$ and $L_1$ are coloured yellow; those with expression of neither are black. The $8\times8$ square in the centre of the 
+The righthand map shows values for $L_2$ and $L_3$, using magenta and cyan, respectively. 
+\textbf{B} Visualisations of the $x$ components of the ligand gradients computed from the maps in A. 
+For each ligand $L_i$, the gradient $\nabla_x(L_i)$ is shown (where $x$ indicates the M--L axis). 
+The $x$ gradient is computed discretely as the mean difference between expression values in the neighbouring elements along the $x$ axis.
+Full saturation indicates a positive gradient; white indicates a negative gradient.
+For the surrounding, non-graft tissue, only the $L_1$ (green) and $L_3$ (cyan) $x$ gradients vary along the M--L axis. 
+Strong discontinuities in $\nabla_x$ are seen on the medial and lateral edges of the patch.
+\textbf{C} Corresponding visualisations of $\nabla_y(L_i)$, with strong discontinuities in this gradient along the caudal and rostral edges of the square graft.}
 \label{f:trot90}
+\end{fullwidth}
 \end{figure}
 
 % FIGURE S2
 \begin{figure}
-\includegraphics[width=\linewidth]{./images/expression_profiles_EphBs.png}
-\caption{(Supplementary) EphB and ephrin B gene expression. Here, we used Stalefish \citep{james_comparing_2022} to quantitatively analyse gene expression of EphB2 and ephrinB1/B2 from images published in the literature \textbf{A} Retinal expression of EphB2. We analysed Fig.\,7 of \citet{holash_polarized_1995} using `dual curves' to delineate the expression region in the Stalefish application. The resulting, normalized expression is shown in the graph for the E4 data, with an inset showing corresponding data for the E6 data. In the right-hand graph, we show an expansion of a portion of the E4 data to which we applied a linear fit to determine the RMS deviation from the mean to estimate the noise in the receptor signal. The mean RMS error was 0.06. \textbf{B} Stalefish screenshots and expression graphs for retinal ephrinB1 and ephrinB2 expression, using data from Fig.\,1 of \citet{braisted_graded_1997}. \textbf{C} Screenshots and expression graphs for tectal ephrinB1 expression, using data from Fig.\,4 of \citet{braisted_graded_1997}.}
+\begin{fullwidth}
+\includegraphics[width=0.95\linewidth]{./images/expression_profiles_EphBs.png}
+\caption{(Supplementary) EphB and ephrin B gene expression. 
+Here, we used Stalefish \citep{james_comparing_2022} to quantitatively analyse gene expression of EphB2 and ephrinB1/B2 from images published in the literature. 
+\textbf{A} Retinal expression of EphB2. 
+We analysed Fig.\,7 of \citet{holash_polarized_1995} using `dual curves' to delineate the expression region in the Stalefish application. 
+The resulting, normalized expression is shown in the graph for the E4 data, with an inset showing corresponding data for the E6 data. 
+In the right-hand graph, we show an expansion of a portion of the E4 data to which we applied a linear fit to determine the RMS deviation from the mean to estimate the noise in the receptor signal. 
+The mean RMS error was 0.06. 
+\textbf{B} Stalefish screenshots and expression graphs for retinal ephrinB1 and ephrinB2 expression, using data from Fig.\,1 of \citet{braisted_graded_1997}. 
+\textbf{C} Screenshots and expression graphs for tectal ephrinB1 expression, using data from Fig.\,4 of \citet{braisted_graded_1997}.}
 \label{f:expr_ephb}
+\end{fullwidth}
 \end{figure}
 
 % FIGURE S3
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{./images/noise_contribution.png}
-\caption{(Supplementary) Response of the model to noise. \textbf{A} Adding 3\% gradient measurement noise (normally distributed, standard deviation, $\sigma = 0.19$) has negligible effect on the pattern. \textbf{B} 3\% retinal receptor noise ($\sigma = 0.08$). \textbf{C} 3\% tectal ligand noise ($\sigma = 0.08$). \textbf{D} Combined effect of retinal receptor, tectal ligand and gradient measurement noise is dominated by the tectal ligand noise.}
+\begin{fullwidth}
+\includegraphics[width=0.95\linewidth]{./images/noise_contribution.png}
+\caption{(Supplementary) Response of the model to noise.
+\textbf{A} Adding 3\% gradient measurement noise (normally distributed, standard deviation, $\sigma = 0.19$) has negligible effect on the pattern. 
+\textbf{B} 3\% retinal receptor noise ($\sigma = 0.08$). 
+\textbf{C} 3\% tectal ligand noise ($\sigma = 0.08$). 
+\textbf{D} Combined effect of retinal receptor, tectal ligand and gradient measurement noise is dominated by the tectal ligand noise.}
 \label{f:noise}
+\end{fullwidth}
 \end{figure}
 
 \end{document}
