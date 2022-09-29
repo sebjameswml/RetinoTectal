@@ -3,7 +3,7 @@ from ephcolour import ephcol as C
 
 # Set plotting font defaults
 import matplotlib
-fs = 18
+fs = 28
 fnt = {'family' : 'Arial',
        'weight' : 'regular',
        'size'   : fs}
@@ -56,5 +56,6 @@ with h5py.File (filename2, 'r') as f:
     ax2.set_ylabel ('Normalised expression (E8)')
     ax2.legend()
 
+pl.tight_layout()
 pl.savefig('Braisted_EphnB1_Fig4BJ.svg', transparent=True)
 pl.show()

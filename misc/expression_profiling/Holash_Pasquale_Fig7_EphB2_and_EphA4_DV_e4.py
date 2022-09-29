@@ -4,7 +4,7 @@ from numpy.polynomial import Polynomial as Poly
 
 # Set plotting font defaults
 import matplotlib
-fs = 18
+fs = 28
 fnt = {'family' : 'Arial',
        'weight' : 'regular',
        'size'   : fs}
@@ -91,5 +91,6 @@ with h5py.File (filename, 'r') as f, h5py.File (filename2, 'r') as f2, h5py.File
     ax4.set_ylabel ('Normalised expression')
     ax4.legend()
 
+#pl.tight_layout()
 pl.savefig('Holash_Pasquale_Fig7_EphB2_and_EphA4_DV_e468.svg', transparent=True)
 pl.show()
