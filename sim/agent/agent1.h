@@ -2046,6 +2046,8 @@ struct Agent1
         this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
                              0, this->conf->getFloat("graph_ymax", 1.0f));
+        this->gv->min_num_ticks = 2;
+        this->gv->max_num_ticks = 6;
         this->gv->axislabelgap = 0.03f;
         this->gv->fontsize = fontsz_subgraph;
         this->gv->fontres = fontres_subgraph;
