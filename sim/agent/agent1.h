@@ -699,7 +699,7 @@ struct Agent1
     }
 
     // Show x/y gradients in an alternative colour map (Twilight)?
-    static constexpr bool grads_in_jet = false;
+    static constexpr bool grads_in_altmap = false;
 
     // Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
     tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
@@ -711,7 +711,7 @@ struct Agent1
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         if (exview == expression_view::ligand_grad_x_single || exview == expression_view::ligand_grad_y_single) {
-            if constexpr (grads_in_jet == false) {
+            if constexpr (grads_in_altmap == false) {
                 tv->cm.setType (morph::ColourMapType::Monochrome);
                 // Hue from pair_to_view.
                 switch (pair_to_view) {
@@ -732,12 +732,12 @@ struct Agent1
                     break;
                 }
             } else {
-                tv->cm.setType (morph::ColourMapType::Twilight);
+                tv->cm.setType (morph::ColourMapType::Greyscale);
             }
         } else {
             tv->cm.setType (morph::ColourMapType::Duochrome);
             if (alt_cmap == 1) {
-                tv->cm.setHueCM();
+                tv->cm.setHueMC();
             } else if (alt_cmap == 2) {
                 tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
             } else {
@@ -1575,16 +1575,17 @@ struct Agent1
         this->tvv->setSceneTransZ(-5.1);
         this->tvv->setCurrent();
 
+        morph::Vector<float> offset_toprow = { -1.5f+1.4f, 1.4f*1.2f, 0.0f };
         morph::Vector<float> offset = { -1.5f, 0.0f, 0.0f };
         morph::Vector<float> offset2 = offset;
         size_t show_pair = 0; // 0 means show gradients for ligands 0 and 1.
         float sqside = 1.4f;
 
         // Tectal expression for 0/1
-        //offset2[1] -= sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        tvv->addVisualModel (this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+
         // Tectal gradients for 0/1
-        offset2[0] += sqside;
+        //offset2[0] += (sqside * 1.2);
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 0));
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 1));
@@ -1596,12 +1597,13 @@ struct Agent1
         }
 
         offset2 = offset;
-        offset2[1] -= sqside;
+        offset2[1] -= (sqside * 1.2);
         if constexpr (N>2) {
             show_pair = 1; // 1 means show for ligands 2 and 3.
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            offset_toprow += morph::Vector<float>({1.4f,0,0});
+            tvv->addVisualModel (this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
         }
-        offset2[0] += sqside;
+        //offset2[0] += (sqside * 1.2);
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 0));
         offset2[0] += sqside;
         tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 1));
