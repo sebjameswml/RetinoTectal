@@ -363,8 +363,7 @@ public:
         }
 
         // Set up the Gaussian convolution kernel on a circular HexGrid.
-        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0,
-                              morph::HexDomainShape::Boundary);
+        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0);
         kernel.setCircularBoundary (Flt{6}*this->mNoiseSigma);
         std::vector<Flt> kerneldata (kernel.num(), 0.0f);
         // Once-only parts of the calculation of the Gaussian.
@@ -629,7 +628,7 @@ public:
         // Set up the Gaussian kernel for smoothing ahat
         if constexpr (smooth_ahat == true || smooth_divahat == true) {
             Flt ahat_sigma = this->hextohex_d * Flt{1};
-            this->ahat_kernel = new morph::HexGrid (this->hextohex_d, ahat_sigma*Flt{7}, 0, morph::HexDomainShape::Boundary);
+            this->ahat_kernel = new morph::HexGrid (this->hextohex_d, ahat_sigma*Flt{7}, 0);
             this->ahat_kernel->setCircularBoundary (Flt{3}*ahat_sigma);
             this->ahat_kerneldata.resize (this->ahat_kernel->num(), 0.0f);
             // Once-only parts of the calculation of the Gaussian.

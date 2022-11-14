@@ -341,8 +341,7 @@ public:
         }
 
         // Set up the Gaussian convolution kernel on a circular HexGrid.
-        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0,
-                              morph::HexDomainShape::Boundary);
+        morph::HexGrid kernel(this->hextohex_d, Flt{20}*this->mNoiseSigma, 0);
         kernel.setCircularBoundary (Flt{6}*this->mNoiseSigma);
         std::vector<Flt> kerneldata (kernel.num(), 0.0f);
         // Once-only parts of the calculation of the Gaussian.
