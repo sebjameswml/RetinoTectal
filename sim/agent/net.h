@@ -6,15 +6,15 @@
 
 #include <vector>
 #include <set>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/MathAlgo.h>
 #include "tissue.h"
 
-// Comparison for std::set of Vectors
+// Comparison for std::set of vecs
 struct ncmp
 {
-    bool operator() (morph::Vector<size_t, 2> a, morph::Vector<size_t, 2> b) const
+    bool operator() (morph::vec<size_t, 2> a, morph::vec<size_t, 2> b) const
     {
         return a.lexical_lessthan(b);
     }
@@ -29,8 +29,8 @@ struct net
     // To aid with visualisation, store the distance for each unit step in the grid
     size_t domain_w = 0;
     size_t domain_h = 0;
-    morph::Vector<float, 2> dx = {1,1};
-    morph::Vector<float, 2> domain_offs = {0,0};
+    morph::vec<float, 2> dx = {1,1};
+    morph::vec<float, 2> domain_offs = {0,0};
 
     //! Initialize a rectangular net of width w and height h. Note that this resizes p
     //! and arranges c, but does not fill p with positions.
@@ -52,13 +52,13 @@ struct net
         for (size_t y = 0; y < _h-1; ++y) {
             for (size_t x = 0; x < _w; ++x) {
                 // Connect down
-                this->c.insert (morph::Vector<size_t, 2>({x+y*_w, x+(y+1)*_w}));
+                this->c.insert (morph::vec<size_t, 2>({x+y*_w, x+(y+1)*_w}));
             }
         }
         for (size_t x = 0; x < _w-1; ++x) {
             for (size_t y = 0; y < _h; ++y) {
                 // Connect right
-                this->c.insert (morph::Vector<size_t, 2>({x+y*_w, 1+x+y*_w}));
+                this->c.insert (morph::vec<size_t, 2>({x+y*_w, 1+x+y*_w}));
             }
         }
     }
@@ -72,13 +72,13 @@ struct net
         size_t cc = 0;
 
         // Have to iterate the std::set
-        typename std::set<morph::Vector<size_t, 2>, ncmp>::iterator ci = this->c.begin();
+        typename std::set<morph::vec<size_t, 2>, ncmp>::iterator ci = this->c.begin();
 
-        typename std::set< std::set<morph::Vector<size_t, 2>, ncmp>> pairs_tested;
+        typename std::set< std::set<morph::vec<size_t, 2>, ncmp>> pairs_tested;
 
         // Can this be OpenMPed?
         while (ci != this->c.end()) {
-            typename std::set<morph::Vector<size_t, 2>, ncmp>::iterator cj = this->c.begin();
+            typename std::set<morph::vec<size_t, 2>, ncmp>::iterator cj = this->c.begin();
             while (cj != this->c.end()) {
 
                 if (cj == ci) { // then skip
@@ -86,10 +86,10 @@ struct net
                     continue;
                 }
 
-                morph::Vector<float, 2> p1 = this->p[(*ci)[0]].less_one_dim();
-                morph::Vector<float, 2> q1 = this->p[(*ci)[1]].less_one_dim();
-                morph::Vector<float, 2> p2 = this->p[(*cj)[0]].less_one_dim();
-                morph::Vector<float, 2> q2 = this->p[(*cj)[1]].less_one_dim();
+                morph::vec<float, 2> p1 = this->p[(*ci)[0]].less_one_dim();
+                morph::vec<float, 2> q1 = this->p[(*ci)[1]].less_one_dim();
+                morph::vec<float, 2> p2 = this->p[(*cj)[0]].less_one_dim();
+                morph::vec<float, 2> q2 = this->p[(*cj)[1]].less_one_dim();
 
                 if (p1 == p2 || p1 == q2 || q1 == p2 || q1 == q2) {
                     // Don't count intersections between line segments that are connected in the net ANYWAY
@@ -98,7 +98,7 @@ struct net
                 }
 
                 // Have we already considered ci, cj as cj, ci?
-                std::set<morph::Vector<size_t, 2>, ncmp> linepair;
+                std::set<morph::vec<size_t, 2>, ncmp> linepair;
                 linepair.insert (*ci);
                 linepair.insert (*cj);
                 if (pairs_tested.count (linepair)) { // skip this pair as we already considered it in another order
@@ -134,9 +134,9 @@ struct net
     T sos() const { return ((p-targ).sos()[0]); }
 
     //! Return sum of squared distances between p and targ for a patch inside the (2D) square defined by 2 corners
-    T sos_inside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    T sos_inside (const morph::vec<T, 3>& corner1, const morph::vec<T, 3>& corner2) const
     {
-        morph::vVector<T> mask (p.size());
+        morph::vvec<T> mask (p.size());
         for (unsigned int i = 0; i < p.size(); ++i) {
             // Mask set to 1 for targets inside the corners
             mask[i] = (targ[i][0] >= corner1[0]
@@ -144,14 +144,14 @@ struct net
                        && targ[i][0] <= corner2[0]
                        && targ[i][1] <= corner2[1]) ? T{1} : T{0};
         }
-        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        morph::vvec<morph::vec<T, 3>> p_minus_targ = (p - targ) * mask;
         return (p_minus_targ.sos()[0]);
     }
 
     //! Return sum of squared distances between p and targ for a patch outside the (2D) square defined by 2 corners
-    T sos_outside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    T sos_outside (const morph::vec<T, 3>& corner1, const morph::vec<T, 3>& corner2) const
     {
-        morph::vVector<T> mask (p.size());
+        morph::vvec<T> mask (p.size());
         for (unsigned int i = 0; i < p.size(); ++i) {
             // Mask set to 1 for targets outside the corners
             mask[i] = (targ[i][0] < corner1[0]
@@ -159,7 +159,7 @@ struct net
                        || targ[i][0] > corner2[0]
                        || targ[i][1] > corner2[1]) ? T{1} : T{0};
         }
-        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        morph::vvec<morph::vec<T, 3>> p_minus_targ = (p - targ) * mask;
         return (p_minus_targ.sos()[0]);
     }
 
@@ -167,9 +167,9 @@ struct net
     T rms() const { return std::sqrt(((p-targ).sos()[0]) / this->targ.size()); }
 
     //! Return mean distances between p and targ for a patch inside the (2D) square defined by 2 corners
-    T rms_inside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    T rms_inside (const morph::vec<T, 3>& corner1, const morph::vec<T, 3>& corner2) const
     {
-        morph::vVector<T> mask (p.size());
+        morph::vvec<T> mask (p.size());
         for (unsigned int i = 0; i < p.size(); ++i) {
             // Mask set to 1 for targets inside the corners
             mask[i] = (targ[i][0] >= corner1[0]
@@ -177,14 +177,14 @@ struct net
                        && targ[i][0] <= corner2[0]
                        && targ[i][1] <= corner2[1]) ? T{1} : T{0};
         }
-        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        morph::vvec<morph::vec<T, 3>> p_minus_targ = (p - targ) * mask;
         return std::sqrt((p_minus_targ.sos()[0])/mask.sum());
     }
 
     //! Return mean distances between p and targ for a patch outside the (2D) square defined by 2 corners
-    T rms_outside (const morph::Vector<T, 3>& corner1, const morph::Vector<T, 3>& corner2) const
+    T rms_outside (const morph::vec<T, 3>& corner1, const morph::vec<T, 3>& corner2) const
     {
-        morph::vVector<T> mask (p.size());
+        morph::vvec<T> mask (p.size());
         for (unsigned int i = 0; i < p.size(); ++i) {
             // Mask set to 1 for targets outside the corners
             mask[i] = (targ[i][0] < corner1[0]
@@ -192,20 +192,20 @@ struct net
                        || targ[i][0] > corner2[0]
                        || targ[i][1] > corner2[1]) ? T{1} : T{0};
         }
-        morph::vVector<morph::Vector<T, 3>> p_minus_targ = (p - targ) * mask;
+        morph::vvec<morph::vec<T, 3>> p_minus_targ = (p - targ) * mask;
         return std::sqrt((p_minus_targ.sos()[0])/mask.sum());
     }
 
     //! Positions of the vertices of the net
-    morph::vVector<morph::Vector<T, 3>> p;
+    morph::vvec<morph::vec<T, 3>> p;
     //! Colours of the vertices of the net
     std::vector<std::array<float, 3>> clr;
 
     //! Connections of the net. The indices into p that are the ends of line segments
-    std::set<morph::Vector<size_t, 2>, ncmp> c;
+    std::set<morph::vec<size_t, 2>, ncmp> c;
 
     //! Target positions of the net, to allow the net to be used to provide a SOS metric for how close the pattern is to ideal
-    morph::vVector<morph::Vector<T, 3>> targ;
+    morph::vvec<morph::vec<T, 3>> targ;
 };
 
 // A retinal ganglion cell net specialised to know about graft rotations/swaps etc
@@ -226,7 +226,7 @@ struct rgcnet : public net<T>
     void targ_squish_bottomup() { for (auto& t : this->targ) { t[1] = t[1] * T{0.5} + T{0.5}; } }
 
     //! Apply a graft rotation to the targs
-    void targ_graftrotate (morph::Vector<size_t,2> x1, size_t sz, size_t quarter_rotations)
+    void targ_graftrotate (morph::vec<size_t,2> x1, size_t sz, size_t quarter_rotations)
     {
         if (quarter_rotations%4 == 0) { return; }
 
@@ -235,7 +235,7 @@ struct rgcnet : public net<T>
             throw std::runtime_error ("Patch for rotation is off the edge of the net");
         }
 
-        morph::vVector<morph::Vector<T,3>> targ_graft (sz*sz);
+        morph::vvec<morph::vec<T,3>> targ_graft (sz*sz);
 
         for (size_t rot = 1; rot <= quarter_rotations; ++rot) {
             // Copy the square
@@ -256,16 +256,16 @@ struct rgcnet : public net<T>
 
     // Tell this function if the target positions have been transformed with respect to
     // their location in the array, because it needs to know.
-    void targ_graftswap (morph::Vector<size_t,2> x1,
-                         morph::Vector<size_t,2> sz,
-                         morph::Vector<size_t,2> x2)
+    void targ_graftswap (morph::vec<size_t,2> x1,
+                         morph::vec<size_t,2> sz,
+                         morph::vec<size_t,2> x2)
     {
         // I copied this from tissue, which does the swap by index and so I need to
         // cover two situations; one where I swap row by row, and one where, if
         // mirrored, I swap col by col.
         if (mirrored == true) {
             // move transformed section of targ row by row.
-            morph::vVector<morph::Vector<T,3>> graft (sz[1]);
+            morph::vvec<morph::vec<T,3>> graft (sz[1]);
 
             size_t idx1 = x1[1] + this->w * x1[0];
             size_t idx2 = x2[1] + this->w * x2[0];
@@ -290,7 +290,7 @@ struct rgcnet : public net<T>
 
         } else {
             // move section of targ row by row
-            morph::vVector<morph::Vector<T,3>> graft (sz[0]);
+            morph::vvec<morph::vec<T,3>> graft (sz[0]);
 
             size_t idx1 = x1[0] + this->w * x1[1];
             size_t idx2 = x2[0] + this->w * x2[1];
@@ -317,9 +317,9 @@ struct rgcnet : public net<T>
     // NOT the same as tissue::compound tissue. For the *targets* we expect two overlaid nets.
     void targ_compound_tissue (tissue_region retina_mirrored = tissue_region::left_half)
     {
-        morph::Vector<T,3> fac2y = {1, 2, 1};
-        morph::Vector<T,3> facm2y = {1, -2, 1};
-        morph::Vector<T,3> offstwoy = {0, 2, 0};
+        morph::vec<T,3> fac2y = {1, 2, 1};
+        morph::vec<T,3> facm2y = {1, -2, 1};
+        morph::vec<T,3> offstwoy = {0, 2, 0};
         switch (retina_mirrored) {
         case tissue_region::right_half:
         case tissue_region::top_half:
@@ -352,8 +352,8 @@ struct rgcnet : public net<T>
     // guidingtissue::receptor_knockin/out/down. I'm not sure this is actually used.
     void targ_reber()
     {
-        morph::Vector<T,3> fac2y = {1, 2, 1};
-        morph::Vector<T,3> offshalfy = {0, 0.5, 0};
+        morph::vec<T,3> fac2y = {1, 2, 1};
+        morph::vec<T,3> offshalfy = {0, 0.5, 0};
 
         // Reber expt: knockdown one EphR, selectively knockin another. Both are equivalent to our rcpt[0].
         // Brown expt: Just do the selective knockin on its own.

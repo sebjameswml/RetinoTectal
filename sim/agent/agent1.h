@@ -58,13 +58,13 @@ struct AgentMetrics
     // The number of agents
     size_t n_agents = 0;
     // Sum of squared errors
-    morph::vVector<T> sos;
+    morph::vvec<T> sos;
     // RMS error = sqrt(sos/n_agents)
-    morph::vVector<T> rms;
+    morph::vvec<T> rms;
     // Number of crossings
-    morph::vVector<T> crosscount;
+    morph::vvec<T> crosscount;
     // Sim time
-    morph::vVector<unsigned int> t;
+    morph::vvec<unsigned int> t;
     // Number of time steps to average over for output
     size_t averaging_time = 50;
     // Output a string
@@ -82,13 +82,13 @@ struct AgentMetrics
             if (!this->crosscount.empty()) { ss << this->crosscount.back(); }
         } else {
             // Split off averaging time?
-            typename morph::vVector<T>::const_iterator it = this->sos.end();
+            typename morph::vvec<T>::const_iterator it = this->sos.end();
             if (this->sos.size() > this->averaging_time) {
                 it -= this->averaging_time+1;
             } else {
                 it = this->sos.begin();
             }
-            morph::vVector<T> sos_ma;
+            morph::vvec<T> sos_ma;
             std::copy (it, this->sos.end(), std::back_inserter(sos_ma));
 
             it = this->rms.end();
@@ -97,7 +97,7 @@ struct AgentMetrics
             } else {
                 it = this->rms.begin();
             }
-            morph::vVector<T> rms_ma;
+            morph::vvec<T> rms_ma;
             std::copy (it, this->rms.end(), std::back_inserter(rms_ma));
 
             it = this->crosscount.end();
@@ -106,10 +106,10 @@ struct AgentMetrics
             } else {
                 it = this->crosscount.begin();
             }
-            morph::vVector<T> crosscount_ma;
+            morph::vvec<T> crosscount_ma;
             std::copy (it, this->crosscount.end(), std::back_inserter(crosscount_ma));
             // Have to remove any -1s from crosscount:
-            typename morph::vVector<T>::iterator it2 = crosscount_ma.begin();
+            typename morph::vvec<T>::iterator it2 = crosscount_ma.begin();
             while (it2 != crosscount_ma.end()) {
                 if (*it2 == -1) {
                     it2 = crosscount_ma.erase(it2);
@@ -243,7 +243,7 @@ struct Agent1
         std::chrono::steady_clock::time_point laststep = std::chrono::steady_clock::now();
 
         typename std::vector<B>::iterator pending_br_it = this->pending_branches.begin();
-        typename morph::vVector<size_t>::iterator pb_sz_it = this->pb_sizes.begin();
+        typename morph::vvec<size_t>::iterator pb_sz_it = this->pb_sizes.begin();
         // How often to introduce groups of axons? 0 means 'all at once'
         unsigned int intro_every = this->mconf->getUInt ("intro_every", 0);
         if (intro_every == 0) {
@@ -315,10 +315,10 @@ struct Agent1
             // Update retinal NT position vs tectal RC position graph for the 'd' layout:
             if (this->layout == graph_layout::d || this->layout == graph_layout::e) {
 
-                morph::vVector<T>nt;
-                morph::vVector<T>rc;
-                morph::vVector<T>nt_m; // manipulated
-                morph::vVector<T>rc_m;
+                morph::vvec<T>nt;
+                morph::vvec<T>rc;
+                morph::vvec<T>nt_m; // manipulated
+                morph::vvec<T>rc_m;
 
                 size_t ii = 0;
                 for (ii = 0; ii < this->ret->posn.size(); ++ii) {
@@ -365,9 +365,9 @@ struct Agent1
             } else if (this->layout == graph_layout::h || this->layout == graph_layout::k ||
                        (this->layout == graph_layout::f && this->conf->getBool("rc_vs_nt", false) == true)) {
                 // Graph layout h/k shows the nt vs rc (for the mid band of the retina/central column of the tectum?).
-                morph::vVector<T>nt;
-                morph::vVector<T>rc;
-                morph::vVector<T>rc_expt;
+                morph::vvec<T>nt;
+                morph::vvec<T>rc;
+                morph::vvec<T>rc_expt;
                 size_t ii = 0;
                 for (ii = 0; ii < this->ret->posn.size(); ++ii) {
                     nt.push_back(1-this->ret->posn[ii][0]);
@@ -635,21 +635,21 @@ struct Agent1
         // Mac compiler didn't like omp parallel for in front of a for(auto...
 #pragma omp parallel for
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
-            morph::Vector<T, 2*N> rns;
+            morph::vec<T, 2*N> rns;
             this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
             this->branches[i].compute_next (this->branches, this->ret, this->tectum, this->m, rns);
         }
 #else
         if constexpr (debug_compute_branch == true) {
             for (auto& b : this->branches) {
-                morph::Vector<T, 2*N> rns;
+                morph::vec<T, 2*N> rns;
                 this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
                 b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
             }
         } else {
 #pragma omp parallel for
             for (auto& b : this->branches) {
-                morph::Vector<T, 2*N> rns;
+                morph::vec<T, 2*N> rns;
                 this->gradient_rng->get (rns);
                 b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
             }
@@ -690,7 +690,7 @@ struct Agent1
     }
 
     // Create a tissue visual, to reduce boilerplate code in init()
-    tissuevisual<float, N>* createTissueVisual (morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
+    tissuevisual<float, N>* createTissueVisual (morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
                                                 expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
@@ -703,7 +703,7 @@ struct Agent1
 
     // Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
     tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
-                                                morph::Vector<T,3>& offset, guidingtissue<T, N>* gtissue,
+                                                morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                 const std::string& tag,
                                                 expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
@@ -782,9 +782,9 @@ struct Agent1
     static constexpr bool use_ortho = false;
     static constexpr bool use_ortho_tvv = false;
 
-    morph::Vector<expression_direction, N> get_directions (const std::string& dirns_tag)
+    morph::vec<expression_direction, N> get_directions (const std::string& dirns_tag)
     {
-        morph::Vector<expression_direction, N> dirns;
+        morph::vec<expression_direction, N> dirns;
         for (auto& dd : dirns) { dd = expression_direction::x_increasing; }
         nlohmann::json arr = this->mconf->get (dirns_tag);
         if (arr.size() > 0) {
@@ -812,9 +812,9 @@ struct Agent1
         return dirns;
     }
 
-    morph::Vector<interaction, N> get_interactions (const std::string& interactions_tag)
+    morph::vec<interaction, N> get_interactions (const std::string& interactions_tag)
     {
-        morph::Vector<interaction, N> interactions;
+        morph::vec<interaction, N> interactions;
         for (auto& ii : interactions) { ii = interaction::null; }
         nlohmann::json arr = this->mconf->get (interactions_tag);
         if (arr.size() > 0) {
@@ -842,9 +842,9 @@ struct Agent1
         return interactions;
     }
 
-    morph::Vector<expression_form, N> get_forms (const std::string& tag)
+    morph::vec<expression_form, N> get_forms (const std::string& tag)
     {
-        morph::Vector<expression_form, N> function_forms;
+        morph::vec<expression_form, N> function_forms;
         for (auto& ff : function_forms) { ff = expression_form::unexpressed; }
         nlohmann::json arr = this->mconf->get (tag);
         if (arr.size() > 0) {
@@ -947,7 +947,7 @@ struct Agent1
             rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
 
             // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
-            morph::Vector<T, 3> initpos;
+            morph::vec<T, 3> initpos;
             if (totally_random == true) {
                 if (branch_model == "gebhardt") {
                     // In Gebhardt model, arrange randomly along x axis
@@ -958,8 +958,8 @@ struct Agent1
                     initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
                 }
             } else {
-                morph::Vector<T, 2> init_offset = { T{0}, T{-0.5} };
-                morph::Vector<T, 2> init_mult = { T{1}, T{0.2} };
+                morph::vec<T, 2> init_offset = { T{0}, T{-0.5} };
+                morph::vec<T, 2> init_mult = { T{1}, T{0.2} };
                 initpos.set_from ((this->pending_branches[i].target*init_mult) + init_offset);
                 initpos[0] += rn_p0[2*i];
                 initpos[1] += rn_p0[2*i+1];
@@ -994,7 +994,7 @@ struct Agent1
             // accordingly.
 
             // To convert from retinal position to tectal position, x'=y and y'=x.
-            morph::Vector<T,2> tpos = this->ret->posn[ri];
+            morph::vec<T,2> tpos = this->ret->posn[ri];
             tpos.rotate();
 
             this->ax_centroids.targ[ri].set_from (tpos);
@@ -1015,11 +1015,11 @@ struct Agent1
         } else {
             std::vector<B> pending_branches_reordered;
             // FIXME. Should this be 8 or bpa?
-            morph::vVector<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
+            morph::vvec<size_t> x_breaks = {this->ret->w/8, 2*(this->ret->w/8), 3*(this->ret->w/8), this->ret->w/2};
             size_t xstart = this->ret->w/2;
 
             //for (auto xx : x_breaks) { std::cout << "x_break: " << xx << std::endl; }
-            morph::vVector<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
+            morph::vvec<size_t> y_breaks = {this->ret->h/8, 2*(this->ret->h/8), 3*(this->ret->h/8), this->ret->h/2};
             for (size_t i = 0; i < 4; ++i) {
                 // copy elements from pending_branches in a square from
                 // (w/2-x_breaks[i],h/2-y_breaks[i]) to (w/2+x_breaks[i],h/2+y_breaks[i])
@@ -1027,7 +1027,7 @@ struct Agent1
                 for (size_t yy = this->ret->h/2-y_breaks[i]; yy < this->ret->h/2+y_breaks[i]; ++yy) {
                     for (size_t xx = xstart-x_breaks[i]; xx < xstart+x_breaks[i]; ++xx) {
                         // Try to find branches with target xx,yy
-                        morph::Vector<T,2> coord = this->ret->coord (xx, yy);
+                        morph::vec<T,2> coord = this->ret->coord (xx, yy);
                         // Now go through pending_branches finding bpa branches to add to pending_branches_reordered
                         typename std::vector<B>::iterator it = this->pending_branches.begin();
                         while (it != this->pending_branches.end()) {
@@ -1143,13 +1143,13 @@ struct Agent1
         this->m[4] = this->mconf->getDouble ("mborder", 0.5); // B
     }
 
-    // Graftswap "locn1" parameter from JSON, stored as a Vector. Member as it's used
+    // Graftswap "locn1" parameter from JSON, stored as a vec. Member as it's used
     // in setup_expt_suggests
-    morph::Vector<size_t, 2> l1v;
-    // Graftswap "locn2" parameter from JSON, stored as a Vector.
-    morph::Vector<size_t, 2> l2v;
+    morph::vec<size_t, 2> l1v;
+    // Graftswap "locn2" parameter from JSON, stored as a vec.
+    morph::vec<size_t, 2> l2v;
     // Graftswap "patchsize" parameter from Json.
-    morph::Vector<size_t, 2> psv;
+    morph::vec<size_t, 2> psv;
 
     // Simulation init
     void init()
@@ -1163,21 +1163,21 @@ struct Agent1
         T gr = T{1}/gr_denom; // gr is grid element length
 
         // Get tissue parameters - expression directions, forms, interactions - from JSON
-        morph::Vector<expression_form, N> ret_receptor_forms = this->get_forms ("ret_receptor_forms");
-        morph::Vector<expression_form, N> ret_ligand_forms = this->get_forms ("ret_ligand_forms");
-        morph::Vector<expression_direction, N> ret_receptor_directions = this->get_directions ("ret_receptor_directions");
-        morph::Vector<expression_direction, N> ret_ligand_directions = this->get_directions ("ret_ligand_directions");
-        morph::Vector<interaction, N> ret_forward_interactions = this->get_interactions ("ret_forward_interactions");
+        morph::vec<expression_form, N> ret_receptor_forms = this->get_forms ("ret_receptor_forms");
+        morph::vec<expression_form, N> ret_ligand_forms = this->get_forms ("ret_ligand_forms");
+        morph::vec<expression_direction, N> ret_receptor_directions = this->get_directions ("ret_receptor_directions");
+        morph::vec<expression_direction, N> ret_ligand_directions = this->get_directions ("ret_ligand_directions");
+        morph::vec<interaction, N> ret_forward_interactions = this->get_interactions ("ret_forward_interactions");
         // Set reverse interactions same as forward for now:
-        morph::Vector<interaction, N> ret_reverse_interactions = this->get_interactions ("ret_forward_interactions");
+        morph::vec<interaction, N> ret_reverse_interactions = this->get_interactions ("ret_forward_interactions");
         // Retinal receptor-receptor interactions. This models rcpt[i]-to-rcpt[i]
         // interactions. What about rcpt[i]-to-rcpt[j]? Could be a 4x4 matrix.
-        morph::Vector<interaction, N> ret_rcptrcpt_interactions = this->get_interactions ("ret_rcptrcpt_interactions");
+        morph::vec<interaction, N> ret_rcptrcpt_interactions = this->get_interactions ("ret_rcptrcpt_interactions");
 
-        morph::Vector<expression_form, N> tectum_receptor_forms = this->get_forms ("tectum_receptor_forms");
-        morph::Vector<expression_form, N> tectum_ligand_forms = this->get_forms ("tectum_ligand_forms");
-        morph::Vector<expression_direction, N> tectum_receptor_directions =  this->get_directions ("tectum_receptor_directions");
-        morph::Vector<expression_direction, N> tectum_ligand_directions =  this->get_directions ("tectum_ligand_directions");
+        morph::vec<expression_form, N> tectum_receptor_forms = this->get_forms ("tectum_receptor_forms");
+        morph::vec<expression_form, N> tectum_ligand_forms = this->get_forms ("tectum_ligand_forms");
+        morph::vec<expression_direction, N> tectum_receptor_directions =  this->get_directions ("tectum_receptor_directions");
+        morph::vec<expression_direction, N> tectum_ligand_directions =  this->get_directions ("tectum_ligand_directions");
 
         // Get noise gains
         T ret_rcpt_noise_gain = this->mconf->getDouble ("ret_rcpt_noise_gain", T{0});
@@ -1186,9 +1186,9 @@ struct Agent1
 
         // Tectum interactions don't matter - they don't have an effect, nor are they
         // visualised, but a value is needed for guidingtissue constructor.
-        morph::Vector<interaction, N> tectum_forward_interactions;
+        morph::vec<interaction, N> tectum_forward_interactions;
         for (auto& ii : tectum_forward_interactions) { ii = interaction::repulsion; }
-        morph::Vector<interaction, N> tectum_reverse_interactions;
+        morph::vec<interaction, N> tectum_reverse_interactions;
         for (auto& ii : tectum_reverse_interactions) { ii = interaction::repulsion; }
 
         // Expression form. Default of 6 means 'unexpressed'
@@ -1440,8 +1440,8 @@ struct Agent1
 
         this->tvv->setCurrent();
 
-        morph::Vector<float> offset = { -1.5f, -2.5f, 0.0f };
-        morph::Vector<float> offset2 = offset;
+        morph::vec<float> offset = { -1.5f, -2.5f, 0.0f };
+        morph::vec<float> offset2 = offset;
         size_t show_pair = 0; // 0 means show gradients for receptor/ligands 0 and 1.
 
         float sqside = 1.4f;
@@ -1463,13 +1463,13 @@ struct Agent1
         _vm->policy = morph::stylepolicy::lines;
         _vm->ylabel = "Expression";
         _vm->xlabel = "T.................N";
-        morph::vVector<T> rcpt0 = ret->rcpt_average_x_axis (0);
+        morph::vvec<T> rcpt0 = ret->rcpt_average_x_axis (0);
         std::cout << "rcpt0 = " << rcpt0 << std::endl;
-        morph::vVector<T> rcpt0_EphA4_free = ret->epha4_average_x_axis();
+        morph::vvec<T> rcpt0_EphA4_free = ret->epha4_average_x_axis();
         std::cout << "ret->EphA4_current_expression = " << ret->EphA4_current_expression << std::endl;
-        morph::vVector<T> rcpt0_EphA4_cis = -rcpt0_EphA4_free + ret->EphA4_current_expression;
-        morph::vVector<T> ratio = rcpt0/rcpt0_EphA4_free;
-        morph::vVector<T> nt = ret->x_axis_positions();
+        morph::vvec<T> rcpt0_EphA4_cis = -rcpt0_EphA4_free + ret->EphA4_current_expression;
+        morph::vvec<T> ratio = rcpt0/rcpt0_EphA4_free;
+        morph::vvec<T> nt = ret->x_axis_positions();
         _vm->setdata (nt, rcpt0, "EphAx");
         _vm->setdata (nt, rcpt0_EphA4_free, "EphA4");
         std::cout << "rcpt0_EphA4_free = " << rcpt0_EphA4_free << std::endl;
@@ -1478,7 +1478,7 @@ struct Agent1
         _vm->setdata (nt, ratio, "EphAx/EphA4");
         // Add threshold. Where's the threshold? It's A4_thresh.
         float a4_thresh = this->mconf->getFloat("A4_thresh", 1.5f);
-        morph::vVector<float> a4_thresh_arr (nt);
+        morph::vvec<float> a4_thresh_arr (nt);
         a4_thresh_arr.set_from(a4_thresh);
         std::cout << "nt = " << nt << std::endl;
         _vm->setdata (nt, a4_thresh_arr, "h_A4");
@@ -1495,8 +1495,8 @@ struct Agent1
         _vm2->ylabel = "Expression";
         _vm2->xlabel = "T.................N";
         _vm2->setlimits_y (0.0f, 2.5f);
-        morph::vVector<T> cluster_size = T{1} / rcpt0_EphA4_free;
-        morph::vVector<T> r0_ = rcpt0 * cluster_size;
+        morph::vvec<T> cluster_size = T{1} / rcpt0_EphA4_free;
+        morph::vvec<T> r0_ = rcpt0 * cluster_size;
         _vm2->setdata (nt, cluster_size, "Cluster size");
         _vm2->setdata (nt, r0_, "Effective rcpt0 strength");
         _vm2->finalize();
@@ -1575,9 +1575,9 @@ struct Agent1
         this->tvv->setSceneTransZ(-5.1);
         this->tvv->setCurrent();
 
-        morph::Vector<float> offset_toprow = { -1.5f+1.4f, 1.4f*1.2f, 0.0f };
-        morph::Vector<float> offset = { -1.5f, 0.0f, 0.0f };
-        morph::Vector<float> offset2 = offset;
+        morph::vec<float> offset_toprow = { -1.5f+1.4f, 1.4f*1.2f, 0.0f };
+        morph::vec<float> offset = { -1.5f, 0.0f, 0.0f };
+        morph::vec<float> offset2 = offset;
         size_t show_pair = 0; // 0 means show gradients for ligands 0 and 1.
         float sqside = 1.4f;
 
@@ -1600,7 +1600,7 @@ struct Agent1
         offset2[1] -= (sqside * 1.2);
         if constexpr (N>2) {
             show_pair = 1; // 1 means show for ligands 2 and 3.
-            offset_toprow += morph::Vector<float>({1.4f,0,0});
+            offset_toprow += morph::vec<float>({1.4f,0,0});
             tvv->addVisualModel (this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
         }
         //offset2[0] += (sqside * 1.2);
@@ -1635,7 +1635,7 @@ struct Agent1
         this->tvv = new morph::Visual (ww, wh, "Tissuevisg");
         this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
         this->tvv->setCurrent();
-        morph::Vector<float> offset = { 0.0f, 0.0f, 0.0f };
+        morph::vec<float> offset = { 0.0f, 0.0f, 0.0f };
         tvv->addVisualModel (this->createTissueVisual (offset, tectum, "Tectal", expression_view::ligand_exp, 0));
     }
 
@@ -1646,7 +1646,7 @@ struct Agent1
         this->tvv = new morph::Visual (ww, wh, "Tissuevish");
         this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
         this->tvv->setCurrent();
-        morph::Vector<float> offset = { 0.0f, 0.0f, 0.0f };
+        morph::vec<float> offset = { 0.0f, 0.0f, 0.0f };
         tvv->addVisualModel (this->createTissueVisual (offset, ret, "Retinal", expression_view::receptor_exp, 0));
     }
 
@@ -1771,7 +1771,7 @@ struct Agent1
     // This chooses which graph_layout function to call
     void set_graph_layout()
     {
-        morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
+        morph::vec<float> offset = { -1.5f, -0.5f, 0.0f };
         const std::string sl = this->conf->getString ("startletter", "A");
         if (this->layout == graph_layout::a           // 2 rows, 3 cols. Standard layout for investigations
             || this->layout == graph_layout::d) {     // Standard layout tweaked with graphs like in Brown et al
@@ -1802,9 +1802,9 @@ struct Agent1
     }
 
     // 2 rows, 3 cols. Standard layout for investigations, or similar, tweaked with graphs for Reber/Brown
-    void graph_layout_ad (const morph::Vector<float>& offset0)
+    void graph_layout_ad (const morph::vec<float>& offset0)
     {
-        morph::Vector<float> offset = offset0;
+        morph::vec<float> offset = offset0;
         // Top left
         v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
 
@@ -1929,11 +1929,11 @@ struct Agent1
     }
 
     // 1x3 graphs (branches, centroids, error)
-    void graph_layout_b (const morph::Vector<float>& offset0)
+    void graph_layout_b (const morph::vec<float>& offset0)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.7f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.3f, 0.0f, 0.0f});
+        morph::vec<float> g_C = offset0 + morph::vec<float>({2.7f, 0.0f, 0.0f});
 
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
         this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
@@ -1977,27 +1977,27 @@ struct Agent1
         this->v->addVisualModel (this->gv);
 
         // Figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
         jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("C", g_C+morph::Vector<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("C", g_C+morph::vec<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
     // Create a layout with diff. time end points. 2x4.
-    void graph_layout_c (const morph::Vector<float>& offset0)
+    void graph_layout_c (const morph::vec<float>& offset0)
     {
         // This is a 2x4 layout
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.6f, 0.0f, 0.0f});
-        morph::Vector<float> g_D = offset0 + morph::Vector<float>({3.9f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.3f, 0.0f, 0.0f});
+        morph::vec<float> g_C = offset0 + morph::vec<float>({2.6f, 0.0f, 0.0f});
+        morph::vec<float> g_D = offset0 + morph::vec<float>({3.9f, 0.0f, 0.0f});
 
-        morph::Vector<float> g_E = offset0 + morph::Vector<float>({0.0f, -1.6f, 0.0f});
-        morph::Vector<float> g_F = offset0 + morph::Vector<float>({1.3f, -1.6f, 0.0f});
-        morph::Vector<float> g_G = offset0 + morph::Vector<float>({2.6f, -1.6f, 0.0f});
-        morph::Vector<float> g_H = offset0 + morph::Vector<float>({3.9f, -1.6f, 0.0f});
+        morph::vec<float> g_E = offset0 + morph::vec<float>({0.0f, -1.6f, 0.0f});
+        morph::vec<float> g_F = offset0 + morph::vec<float>({1.3f, -1.6f, 0.0f});
+        morph::vec<float> g_G = offset0 + morph::vec<float>({2.6f, -1.6f, 0.0f});
+        morph::vec<float> g_H = offset0 + morph::vec<float>({3.9f, -1.6f, 0.0f});
 
         // A Retinal cell positions
         this->v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, g_A, ret, "Retinal", expression_view::cell_positions, 0, 2));
@@ -2041,7 +2041,7 @@ struct Agent1
         this->v->addVisualModel (this->cv);
 
         // TWO graphs for epsilon (rms distance error) and eta (net crossings)
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
         this->gv->twodimensional = false;
         this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
@@ -2063,7 +2063,7 @@ struct Agent1
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
 
-        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
+        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
         this->gv2->twodimensional = false;
         this->gv2->omit_x_tick_labels = true;
         this->gv2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
@@ -2104,25 +2104,25 @@ struct Agent1
         this->v->addVisualModel (this->av);
 
         // A 'text' only visual model to incorporate figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel ("A", g_A+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("B", g_B+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("C", g_C+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("D", g_D+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("E", g_E+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("F", g_F+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("G", g_G+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel ("H", g_H+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("A", g_A+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("B", g_B+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("C", g_C+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("D", g_D+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("E", g_E+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("F", g_F+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("G", g_G+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel ("H", g_H+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
     // Branches, centroids and RT/NT graph
-    void graph_layout_e (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_e (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.3f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({2.7f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.3f, 0.0f, 0.0f});
+        morph::vec<float> g_C = offset0 + morph::vec<float>({2.7f, 0.0f, 0.0f});
 
         // Branches: Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
@@ -2156,21 +2156,21 @@ struct Agent1
         v->addVisualModel (this->gv);
 
         // Figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
-        jtvm->addLabel (std::string({sl}), g_A+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel (std::string({++sl}), g_B+morph::Vector<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
-        jtvm->addLabel (std::string({++sl}), g_C+morph::Vector<float>({-0.1f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel (std::string({sl}), g_A+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel (std::string({++sl}), g_B+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
+        jtvm->addLabel (std::string({++sl}), g_C+morph::vec<float>({-0.1f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
 
     // A single graph with an inset for the expt layout.
-    void graph_layout_f (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_f (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({this->conf->getFloat("graphb_x", 1.7f), 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({this->conf->getFloat("graphb_x", 1.7f), 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
@@ -2184,8 +2184,8 @@ struct Agent1
         v->addVisualModel (this->cv);
 
         // Experiment: Another NetVisual view showing the target locations
-        morph::Vector<float> expoff = {this->conf->getFloat("expoff_x", 1.05f), this->conf->getFloat("expoff_y", -0.15f), 0.01f};
-        morph::Vector<float> g_A_inset = g_A + expoff;
+        morph::vec<float> expoff = {this->conf->getFloat("expoff_x", 1.05f), this->conf->getFloat("expoff_y", -0.15f), 0.01f};
+        morph::vec<float> g_A_inset = g_A + expoff;
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A_inset, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
         this->tcv->zoom = 0.45f;
@@ -2242,7 +2242,7 @@ struct Agent1
             this->v->addVisualModel (this->gv);
         }
         // Figure letters
-        morph::Vector<float> ozero = {this->conf->getFloat ("figlet_x", -1.2f), this->conf->getFloat ("figlet_y", 1.1f), 0.0f};
+        morph::vec<float> ozero = {this->conf->getFloat ("figlet_x", -1.2f), this->conf->getFloat ("figlet_y", 1.1f), 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
@@ -2251,12 +2251,12 @@ struct Agent1
     }
 
     // 1x4 graphs (expt, branches, centroids, selected)
-    void graph_layout_g (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_g (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({3.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_D = offset0 + morph::Vector<float>({4.5f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
+        morph::vec<float> g_C = offset0 + morph::vec<float>({3.0f, 0.0f, 0.0f});
+        morph::vec<float> g_D = offset0 + morph::vec<float>({4.5f, 0.0f, 0.0f});
 
         // Expt net
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
@@ -2311,7 +2311,7 @@ struct Agent1
         v->addVisualModel (errvm);
 
         // Figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
@@ -2320,12 +2320,12 @@ struct Agent1
     }
 
     // 1x4 graphs (expt, branches, centroids, ret NT vs tec RC)
-    void graph_layout_h (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_h (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({3.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_D = offset0 + morph::Vector<float>({4.5f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
+        morph::vec<float> g_C = offset0 + morph::vec<float>({3.0f, 0.0f, 0.0f});
+        morph::vec<float> g_D = offset0 + morph::vec<float>({4.5f, 0.0f, 0.0f});
 
         this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
         this->tcv->viewmode = netvisual_viewmode::targetplus;
@@ -2371,7 +2371,7 @@ struct Agent1
         v->addVisualModel (errvm);
 
         // Figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
@@ -2379,12 +2379,12 @@ struct Agent1
         this->v->addVisualModel (jtvm);
     }
 
-    void graph_layout_i (const morph::Vector<float>& offset0)
+    void graph_layout_i (const morph::vec<float>& offset0)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
-        morph::Vector<float> g_C = offset0 + morph::Vector<float>({3.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_D = offset0 + morph::Vector<float>({4.5f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
+        morph::vec<float> g_C = offset0 + morph::vec<float>({3.0f, 0.0f, 0.0f});
+        morph::vec<float> g_D = offset0 + morph::vec<float>({4.5f, 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         this->cv1 = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
@@ -2419,7 +2419,7 @@ struct Agent1
         this->v->addVisualModel (this->av);
 
         // TWO graphs for epsilon (rms distance error) and eta (net crossings)
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
+        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
         this->gv->twodimensional = false;
         this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
         this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
@@ -2441,7 +2441,7 @@ struct Agent1
         this->gv->finalize();
         this->v->addVisualModel (this->gv);
 
-        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::Vector<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
+        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
         this->gv2->twodimensional = false;
         this->gv2->omit_x_tick_labels = true;
         this->gv2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
@@ -2465,10 +2465,10 @@ struct Agent1
     }
 
     // 1x2 graphs (centroids, selected)
-    void graph_layout_j (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_j (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
@@ -2506,7 +2506,7 @@ struct Agent1
         v->addVisualModel (errvm);
 
         // Figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
@@ -2515,10 +2515,10 @@ struct Agent1
     }
 
     // 1x4 graphs (expt, branches, centroids, ret NT vs tec RC)
-    void graph_layout_k (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_k (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
-        morph::Vector<float> g_B = offset0 + morph::Vector<float>({1.5f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
@@ -2549,7 +2549,7 @@ struct Agent1
         v->addVisualModel (errvm);
 
         // Figure letters
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
@@ -2558,9 +2558,9 @@ struct Agent1
     }
 
     // A single graph of the path of selected axons (this is for e_single.json really).
-    void graph_layout_l (const morph::Vector<float>& offset0, const std::string& startletter)
+    void graph_layout_l (const morph::vec<float>& offset0, const std::string& startletter)
     {
-        morph::Vector<float> g_A = offset0 + morph::Vector<float>({0.0f, 0.0f, 0.0f});
+        morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
 
         // Selected axons
         this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
@@ -2572,7 +2572,7 @@ struct Agent1
         this->v->addVisualModel (this->av);
 
         // Figure letter
-        morph::Vector<float> ozero = {-0.2f, 1.1f, 0.0f};
+        morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
         morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
@@ -2605,21 +2605,21 @@ struct Agent1
     guidingtissue<T, N>* tectum;
     // Parameters vector (See Table 2 in the paper)
     //                        G        C       I        J        B
-    morph::Vector<T, 5> m = { T{0.02}, T{0.2}, T{0.15}, T{0.15}, T{0.1}};
+    morph::vec<T, 5> m = { T{0.02}, T{0.2}, T{0.15}, T{0.15}, T{0.1}};
     // The centre coordinate
-    morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME bit of a hack, this.
+    morph::vec<T,2> centre = { T{0.5}, T{0.5} }; // FIXME bit of a hack, this.
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<B> branches;
     // Branches are initialised in pending_branches, and introduced into branches in groups
     std::vector<B> pending_branches;
     // If pending_branches contains 'groups' of axons to introduce, then the sizes of each group are given in this container
-    morph::vVector<size_t> pb_sizes;
+    morph::vvec<size_t> pb_sizes;
     // Centroid of the branches for each axon
     rgcnet<T> ax_centroids;
     // Has a genetic manipulation been applied?
     bool genetic_manipulation = false;
     // Path history is a map indexed by axon id. 3D as it's used for vis.
-    std::map<size_t, morph::vVector<morph::Vector<T, 3>>> ax_history;
+    std::map<size_t, morph::vvec<morph::vec<T, 3>>> ax_history;
     // Receptor max and min - used across init() and visinit()
     T rcpt_max = -1e9;
     T rcpt_min = 1e9;
@@ -2644,7 +2644,7 @@ struct Agent1
     NetVisual<T>* cv2 = nullptr;
     NetVisual<T>* cv3 = nullptr;
     // Simulation times to stop updating graphs (see graph_layout::c)
-    morph::Vector<size_t, 4> freeze_times;
+    morph::vec<size_t, 4> freeze_times;
     // Centroid visual for targets
     NetVisual<T>* tcv = nullptr;
     // A graph for the RMS metric (epsilon)

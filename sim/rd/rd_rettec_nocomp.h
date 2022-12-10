@@ -6,11 +6,9 @@
 
 #include "rd_ag_nocomp.h"
 #include "retarrange.h"
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <cmath>
 #include <iostream>
-
-#define scf(a) static_cast<Flt>(a)
 
 template <class Flt>
 class RD_RetTec_NoComp : public RD_AG_NoComp<Flt>, public RetArrange<Flt>
@@ -44,7 +42,7 @@ protected:
         for (unsigned int i = 0; i < this->N; ++i) {
             for (unsigned int m_idx = 0; m_idx < 2; ++m_idx) {
                 // With noise on gammas?
-                if (this->sigma_gamma == scf(0.0)) {
+                if (this->sigma_gamma == Flt{0}) {
                     this->setGamma (m_idx, i, this->G * (this->ret_coords[i][m_idx]));
                 } else {
                     this->setGamma (m_idx, i, this->G * (this->ret_coords[i][m_idx] + this->gamma_noise->get()));
@@ -76,7 +74,7 @@ public:
     {
         this->stepCount++;
         // 0. Rebuild g, with a new set of random samples, if necessary
-        if (this->sigma_rho != scf(0.0)) {
+        if (this->sigma_rho != Flt{0}) {
             this->build_g();
             this->compute_divg_over3d();
         }
@@ -96,7 +94,7 @@ protected:
         // First zero g.
         this->zero_vector_vector_array_vector (this->g, this->N, this->M);
 
-        if (this->sigma_rho == scf(0.0)) {
+        if (this->sigma_rho == Flt{0}) {
             // No noise
             for (unsigned int i=0; i<this->N; ++i) {
                 for (auto h : this->hg->hexen) {

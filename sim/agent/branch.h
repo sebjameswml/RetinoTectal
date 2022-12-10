@@ -4,8 +4,7 @@
 
 #include <vector>
 #include <bitset>
-#include <morph/vVector.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/MathAlgo.h>
 #include "tissue.h"
 
@@ -41,15 +40,15 @@ public:
     // Simp and Goodhill signalling ratio param
     T si = T{1.1};
     // Track rcpt-rcpt interaction sizes
-    morph::Vector<T, N> minses;
-    morph::Vector<T, N> maxes;
+    morph::vec<T, N> minses;
+    morph::vec<T, N> maxes;
 
     // Interaction effect may have a history - after a cone's receptors are activated,
     // assume that the movement induced has some lifetime (hardcoded here as size of
     // Ihist container)
     static constexpr bool store_interaction_history = false;
     static constexpr size_t ihs = 1; // History size
-    morph::Vector<morph::Vector<T, 2>, ihs> Ihist;
+    morph::vec<morph::vec<T, 2>, ihs> Ihist;
     size_t ihp = 0;
 
     // zero out the interaction history in init
@@ -58,13 +57,13 @@ public:
     // Compile time decision as to whether to add small performance hit of random noise
     static constexpr bool add_simple_gradient_noise = true;
     // Storage for randomly generated numbers
-    morph::Vector<T, 2*N> rn;
+    morph::vec<T, 2*N> rn;
     // Estimate the ligand gradient, given the true ligand gradient
-    virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& true_lgnd_grad,
-                                                            morph::Vector<T,N>& true_lgnd_exp)
+    virtual morph::vec<T, 2*N> estimate_ligand_gradient (morph::vec<T,2*N>& true_lgnd_grad,
+                                                            morph::vec<T,N>& true_lgnd_exp)
     {
         // This is the non-stochastic implementation...
-        morph::Vector<T, 2*N> lg = true_lgnd_grad;
+        morph::vec<T, 2*N> lg = true_lgnd_grad;
         // ...unless this if is entered into
         if (add_simple_gradient_noise == true && this->noise_gain > T{0}) {
             this->rn.randomizeN (T{0}, this->noise_gain); // Randomize normally
@@ -80,11 +79,11 @@ public:
     T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
 
     // A subroutine of compute_next
-    morph::Vector<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
+    morph::vec<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
                                        const guidingtissue<T, N>* tissue)
     {
-        morph::Vector<T, 2> b = this->current;
-        morph::Vector<T, 2> G;
+        morph::vec<T, 2> b = this->current;
+        morph::vec<T, 2> G;
 
         if constexpr (N==4) {
             // First, find the ligand gradients close to the current location b.  Adding
@@ -92,9 +91,9 @@ public:
             // a Gaussian distribution with mean 1. But need to think carefully and be
             // prepared to justify it with reference to the Mortimer paper. Updated: I
             // have a possibly better way to do this. See branch_stochastic.h.
-            morph::Vector<T, 8> lg0 = tissue->lgnd_grad_at (b);
-            morph::Vector<T, 4> l0 = tissue->lgnd_at (b);
-            morph::Vector<T, 8> lg = this->estimate_ligand_gradient (lg0, l0);
+            morph::vec<T, 8> lg0 = tissue->lgnd_grad_at (b);
+            morph::vec<T, 4> l0 = tissue->lgnd_at (b);
+            morph::vec<T, 8> lg = this->estimate_ligand_gradient (lg0, l0);
 
             // 4 receptors and 4 ligand gradients.
             // let receptor 0 interact primarily with ligand 0 [gradients (0,1)]
@@ -138,7 +137,7 @@ public:
                        + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
 
         } else if constexpr (N==2) {
-            morph::Vector<T, 4> lg = tissue->lgnd_grad_at (b);
+            morph::vec<T, 4> lg = tissue->lgnd_grad_at (b);
             G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
             + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2]);
             G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1])
@@ -157,7 +156,7 @@ public:
     // axon-axon interaction. Argument kp is "pointer to branch k"
     std::bitset<3>
     compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
-                        morph::Vector<T, 2>& C, morph::Vector<T, 2>& I, morph::Vector<T, 2>& J)
+                        morph::vec<T, 2>& C, morph::vec<T, 2>& I, morph::vec<T, 2>& J)
     {
         // Holds flags to say if we should add to C, I or J.
         std::bitset<3> rtn;
@@ -165,7 +164,7 @@ public:
         // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
         // sums these. However, that gives a competition term with a sign error. So
         // here, sum up the unit vectors kb.
-        morph::Vector<T, 2> kb = this->current - kp->current;
+        morph::vec<T, 2> kb = this->current - kp->current;
         T d = kb.length();
         kb.renormalize(); // vector kb is a unit vector
 
@@ -187,7 +186,7 @@ public:
         //
         // The S & G axon-axon interaction is based on the receptor expression only and
         // (guided by Reber) looks at the relative levels
-        morph::Vector<T,N> QI;
+        morph::vec<T,N> QI;
         QI.zero();
         W = d <= this->two_r_i ? (T{1} - d/this->two_r_i) : T{0};
         QI = this->rcpt/kp->rcpt;
@@ -211,7 +210,7 @@ public:
         // One important difference is the lack of a distance based weighting (cf C and
         // I effects). In early 2022, I tried adding this, and as far as I could tell,
         // it makes little difference to the result.
-        morph::Vector<T,N> QJar;
+        morph::vec<T,N> QJar;
         for (size_t i = 0; i < N; ++i) {
             bool repulsei = source_tissue->forward_interactions[i] == interaction::repulsion
             || source_tissue->forward_interactions[i] == interaction::special_EphA
@@ -224,7 +223,7 @@ public:
         if (d <= this->two_r_j) {
 
             // Add to competition if any of the mass-action interactions is true.
-            // *Note1: use <= operator which is true if EVERY member of the Vector is <=
+            // *Note1: use <= operator which is true if EVERY member of the vec is <=
             // threshold. *Note2: There's NO QJar.abs() here, so attractive elements of
             // QJar (which are -ve) will NEVER trigger the threshold, even if they are
             // strong.
@@ -253,9 +252,9 @@ public:
     }
 
     // A subroutine of compute_next
-    morph::Vector<T, 2> apply_border_effect (const guidingtissue<T, N>* tissue, morph::Vector<T, 2>& nonB)
+    morph::vec<T, 2> apply_border_effect (const guidingtissue<T, N>* tissue, morph::vec<T, 2>& nonB)
     {
-        morph::Vector<T, 2> B = {0,0};
+        morph::vec<T, 2> B = {0,0};
 
         // Gradient based border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
         if (this->current[0] < (tissue->x_min()+r)) {
@@ -280,19 +279,19 @@ public:
     void compute_next (const std::vector<branch<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 5>& m,
-                       const morph::Vector<T, 2*N>& rns)
+                       const morph::vec<T, 5>& m,
+                       const morph::vec<T, 2*N>& rns)
     {
         // Current location is named b
-        morph::Vector<T, 2> b = this->current;
+        morph::vec<T, 2> b = this->current;
         // Chemotaxis, graded by origin position (i.e termination zone) of each retinal axon
-        morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
+        morph::vec<T, 2> G = this->compute_chemo (source_tissue, tissue);
 
         // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
         // over the other branches
-        morph::Vector<T, 2> C = {0, 0};
-        morph::Vector<T, 2> I = {0, 0};
-        morph::Vector<T, 2> J = {0, 0};
+        morph::vec<T, 2> C = {0, 0};
+        morph::vec<T, 2> I = {0, 0};
+        morph::vec<T, 2> J = {0, 0};
 
         // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
@@ -322,13 +321,13 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
+        morph::vec<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
-        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
+        morph::vec<T, 2> B = this->apply_border_effect (tissue, nonB);
 
         // The change in b from the model and border effects:
-        morph::Vector<T, 2> db = (nonB + B * m[4]);
+        morph::vec<T, 2> db = (nonB + B * m[4]);
 
         // Finally add b and db to get next
         this->next = b + db;

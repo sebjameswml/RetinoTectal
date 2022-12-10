@@ -1,7 +1,7 @@
 #include "net.h"
 #include "netvisual.h"
 #include <morph/Visual.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <string>
 #include <sstream>
 
@@ -16,12 +16,12 @@ int main()
     size_t i = 0;
     for (size_t x = 0; x < nside; ++x) {
         for (size_t y = 0; y < nside; ++y) {
-            n.p[i++] = morph::Vector<float,3>({ unit*x, unit*y, 0.0f });
+            n.p[i++] = morph::vec<float,3>({ unit*x, unit*y, 0.0f });
         }
     }
 
     // Move top right point so that there is one additional crossing.
-    n.p[8] += morph::Vector<float,3>({-1.2f*unit, -0.45f*unit, 0.0f});
+    n.p[8] += morph::vec<float,3>({-1.2f*unit, -0.45f*unit, 0.0f});
 
     // The points of interest are n.p[8], the one that would be below it, which is
     // n.p[7] and the one to its left; n.p[5] and finally, the central point, n.p[4].
@@ -32,7 +32,7 @@ int main()
     morph::Visual* v = new morph::Visual (1024, 768, tt);
     v->lightingEffects();
     // Offset for visuals
-    morph::Vector<float> offset = { -0.0f, -0.0f, 0.0f };
+    morph::vec<float> offset = { -0.0f, -0.0f, 0.0f };
     v->setCurrent();
 
     NetVisual<float>* nv = new NetVisual<float> (v->shaderprog, v->tshaderprog, offset, &n);

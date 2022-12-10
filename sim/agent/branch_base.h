@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
 // termination zone, and the algorithm for computing the next position. Could derive
@@ -17,17 +17,17 @@ struct branch_base
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
     // place current into next and move on to next time step.
-    morph::Vector<T, 2> current;
-    morph::Vector<T, 2> next;
+    morph::vec<T, 2> current;
+    morph::vec<T, 2> next;
 
     // The 'target' location for the axon/branch. This is the origin location in the source tissue (retina)
-    morph::Vector<T, 2> target;
+    morph::vec<T, 2> target;
 
     // Interaction parameters for this branch, taken from the soma in the source
     // tissue. This is the N receptor expressions at the growth cone.
-    morph::Vector<T, N> rcpt;
+    morph::vec<T, N> rcpt;
     // Ligands on the RGCs may interact with receptors in the tectal tissue
-    morph::Vector<T, N> lgnd;
+    morph::vec<T, N> lgnd;
 
     // The base level of EphA4 in the retina, copied from the source tissue. Not dynamic.
     T rcpt0_EphA4_base = T{0}; // Base level, before any cis interactions

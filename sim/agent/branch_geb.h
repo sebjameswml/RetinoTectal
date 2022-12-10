@@ -3,10 +3,10 @@
 #include "branch_base.h"
 
 #include <vector>
-#include <morph/vVector.h>
-#include <morph/Vector.h>
+#include <morph/vvec.h>
+#include <morph/vec.h>
 #include <morph/Random.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include "tissue.h"
 
 // A branch model inspired by Gebhardt et al 2012 (Balancing of ephrin/Eph forward and
@@ -33,8 +33,8 @@ public:
     // For random angle choice
     morph::RandUniform<T> rng;
     T s; // unused, dummy.
-    morph::Vector<T, N> minses; // unused, dummy.
-    morph::Vector<T, N> maxes; // unused, dummy.
+    morph::vec<T, N> minses; // unused, dummy.
+    morph::vec<T, N> maxes; // unused, dummy.
 
     // No init for branch_geb
     virtual void init() {}
@@ -47,21 +47,21 @@ public:
     void compute_next (const std::vector<branch_geb<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 5>& m,
-                       const morph::Vector<T, 2*N>& rns)
+                       const morph::vec<T, 5>& m,
+                       const morph::vec<T, 2*N>& rns)
     {
         // Sums
-        morph::Vector<T, N> LFRT; // reverse fibre-target signal (for N receptors, N ligands)
-        morph::Vector<T, N> LFRF; // reverse cis (fibre-self) signal
-        morph::Vector<T, N> LFRf; // reverse fibre - other fibres signal
+        morph::vec<T, N> LFRT; // reverse fibre-target signal (for N receptors, N ligands)
+        morph::vec<T, N> LFRF; // reverse cis (fibre-self) signal
+        morph::vec<T, N> LFRf; // reverse fibre - other fibres signal
 
-        morph::Vector<T, N> RFLT; // forward fibre-target signal
-        morph::Vector<T, N> RFLF; // forward cis (fibre-self) signal
-        morph::Vector<T, N> RFLf; // forward fibre - other fibres signal
+        morph::vec<T, N> RFLT; // forward fibre-target signal
+        morph::vec<T, N> RFLF; // forward cis (fibre-self) signal
+        morph::vec<T, N> RFLf; // forward fibre - other fibres signal
 
         // Will need to run through other branches to determine the R_f/L_f
-        morph::vVector<morph::Vector<T, N>> Rf(tissue->posn.size());
-        morph::vVector<morph::Vector<T, N>> Lf(tissue->posn.size());
+        morph::vvec<morph::vec<T, N>> Rf(tissue->posn.size());
+        morph::vvec<morph::vec<T, N>> Lf(tissue->posn.size());
         for (auto k : branches) {
             if (k.id == this->id) { continue; }
             // From location of k (k.current) figure out an idx on the target tissue and
@@ -88,17 +88,17 @@ public:
         // under the cone.
 
         // Use this->current and a range of adjacent locations on a circle to determine next location.
-        morph::vVector<morph::Vector<T,2>> candposns;
+        morph::vvec<morph::vec<T,2>> candposns;
         candposns.push_back (this->current);
         // Choose a random direction to move a distance r (2r?) and evaluate that (G' in Gebhardt et al)
         T angle = this->rng.get() * T{morph::TWO_PI_D};
-        morph::Vector<T,2> randvec = { this->r * std::sin(angle), this->r * std::cos(angle) };
+        morph::vec<T,2> randvec = { this->r * std::sin(angle), this->r * std::cos(angle) };
         candposns.push_back (this->current+randvec);
 
         //std::cout << "Current and candidate positions: " << candposns[0] << ", " << candposns[1] << std::endl;
 
         // Candidate probabilities
-        morph::vVector<T> pdG (2, T{0});;
+        morph::vvec<T> pdG (2, T{0});;
 
         for (size_t j = 0; j<candposns.size(); ++j) {
 
@@ -113,23 +113,23 @@ public:
 
             const T a = T{100};
             for (unsigned int i = 0; i < tissue->posn.size(); ++i) {
-                morph::Vector<T,2> pvec = tissue->posn[i] - candposns[j];
+                morph::vec<T,2> pvec = tissue->posn[i] - candposns[j];
                 T Gaussian = std::exp (-(a*(pvec[0]*pvec[0]) + a*(pvec[1]*pvec[1])));
                 //std::cout << "Gaussian = " << Gaussian << std::endl;
                 //if (pvec.length() <= this->r) { // Actually, in the Gebhardt work, r is defined by the Gaussian getting to 0.01
                 if (Gaussian >= T{0.01}) {
                     // then posn[i] is under our cone!
-                    morph::Vector<T, N> LgndGauss = this->lgnd * Gaussian;
-                    morph::Vector<T, N> RcptGauss = this->rcpt * Gaussian;
+                    morph::vec<T, N> LgndGauss = this->lgnd * Gaussian;
+                    morph::vec<T, N> RcptGauss = this->rcpt * Gaussian;
 
                     // My scheme is that receptor 0 interacts with ligand 1 etc. to achieve
                     // rotation of tectum wrt retina.
-                    morph::Vector<T, N> LgndGaussR = LgndGauss;
-                    morph::Vector<T, N> RcptGaussR = RcptGauss;
-                    morph::Vector<T, N> tissueRcptR = tissue->rcpt[i];
-                    morph::Vector<T, N> tissueLgndR = tissue->lgnd[i];
-                    morph::Vector<T, N> RfR = Rf[i];
-                    morph::Vector<T, N> LfR = Lf[i];
+                    morph::vec<T, N> LgndGaussR = LgndGauss;
+                    morph::vec<T, N> RcptGaussR = RcptGauss;
+                    morph::vec<T, N> tissueRcptR = tissue->rcpt[i];
+                    morph::vec<T, N> tissueLgndR = tissue->lgnd[i];
+                    morph::vec<T, N> RfR = Rf[i];
+                    morph::vec<T, N> LfR = Lf[i];
                     LgndGaussR.rotate_pairs();
                     RcptGaussR.rotate_pairs();
                     tissueRcptR.rotate_pairs();
@@ -159,9 +159,9 @@ public:
                       << ", RFLF: " << RFLF
                       << ", RFLf: " << RFLf << std::endl;
 #endif
-            morph::Vector<T, N> G_num = LFRT + LFRF + LFRf;
-            morph::Vector<T, N> G_denom = RFLT + RFLF + RFLf;
-            morph::Vector<T, N> G;
+            morph::vec<T, N> G_num = LFRT + LFRF + LFRf;
+            morph::vec<T, N> G_denom = RFLT + RFLF + RFLf;
+            morph::vec<T, N> G;
             if (G_denom.sum()) {
                 G = (G_num / G_denom);
             } else {

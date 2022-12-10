@@ -46,7 +46,7 @@ template <typename T=float, size_t N=4>
 T objfn (Agent1<T, N, branch<T, N>>& model1,
          morph::Config* mconf,
          const std::vector<std::string>& params,
-         const morph::vVector<T>& param_values)
+         const morph::vvec<T>& param_values)
 {
     // Set params in model(s)
     for (size_t i = 0; i < params.size(); ++i) {
@@ -96,7 +96,7 @@ void signalHandler (int signum)
 
 #ifdef OPTVIS
 void tav_setup (morph::TriaxesVisual<float>* tav, const size_t start_idx, const size_t dimensions,
-                const morph::vVector<float>& param_range_min, const morph::vVector<float>& param_range_max,
+                const morph::vvec<float>& param_range_min, const morph::vvec<float>& param_range_max,
                 const std::vector<std::string>& params)
 {
     size_t _0 = start_idx % dimensions;
@@ -209,8 +209,8 @@ int main (int argc, char **argv)
 
     // Open s_*.json and get the array "params".
     std::vector<std::string> params;
-    morph::vVector<double> param_values;
-    morph::vVector<morph::Vector<double,2>> param_ranges;
+    morph::vvec<double> param_values;
+    morph::vvec<morph::vec<double,2>> param_ranges;
     json params_j = sconf->get("params");
     for (auto p : params_j) {
         params.push_back (p.get<std::string>());
@@ -219,40 +219,40 @@ int main (int argc, char **argv)
         if (params.back() == "r_c") {
             json r_c_range = sconf->get("r_c_range");
             // Fixme: Check r_c_range contains 2 entries
-            param_ranges.push_back (morph::Vector<double, 2>{r_c_range[0].get<double>(), r_c_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{r_c_range[0].get<double>(), r_c_range[1].get<double>()});
         } else if (params.back() == "r_i") {
             json r_i_range = sconf->get("r_i_range");
-            param_ranges.push_back (morph::Vector<double, 2>{r_i_range[0].get<double>(), r_i_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{r_i_range[0].get<double>(), r_i_range[1].get<double>()});
         } else if (params.back() == "r_j") {
             json r_j_range = sconf->get("r_j_range");
-            param_ranges.push_back (morph::Vector<double, 2>{r_j_range[0].get<double>(), r_j_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{r_j_range[0].get<double>(), r_j_range[1].get<double>()});
         } else if (params.back() == "s") {
             json s_range = sconf->get("s_range");
-            param_ranges.push_back (morph::Vector<double, 2>{s_range[0].get<double>(), s_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{s_range[0].get<double>(), s_range[1].get<double>()});
         } else if (params.back() == "m_g") {
             json m_g_range = sconf->get("m_g_range");
-            param_ranges.push_back (morph::Vector<double, 2>{m_g_range[0].get<double>(), m_g_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{m_g_range[0].get<double>(), m_g_range[1].get<double>()});
         } else if (params.back() == "m_c") {
             json m_c_range = sconf->get("m_c_range");
-            param_ranges.push_back (morph::Vector<double, 2>{m_c_range[0].get<double>(), m_c_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{m_c_range[0].get<double>(), m_c_range[1].get<double>()});
         } else if (params.back() == "m_i") {
             json m_i_range = sconf->get("m_i_range");
-            param_ranges.push_back (morph::Vector<double, 2>{m_i_range[0].get<double>(), m_i_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{m_i_range[0].get<double>(), m_i_range[1].get<double>()});
         } else if (params.back() == "m_j") {
             json m_j_range = sconf->get("m_j_range");
-            param_ranges.push_back (morph::Vector<double, 2>{m_j_range[0].get<double>(), m_j_range[1].get<double>()});
+            param_ranges.push_back (morph::vec<double, 2>{m_j_range[0].get<double>(), m_j_range[1].get<double>()});
         }
     }
-    morph::vVector<float> param_range_max(param_ranges.size(), float{0});
-    morph::vVector<float> param_range_min(param_ranges.size(), float{0});
-    morph::vVector<float> one_over_param_maxes(param_ranges.size(), float{0});
+    morph::vvec<float> param_range_max(param_ranges.size(), float{0});
+    morph::vvec<float> param_range_min(param_ranges.size(), float{0});
+    morph::vvec<float> one_over_param_maxes(param_ranges.size(), float{0});
     for (size_t i = 0; i < param_ranges.size(); ++i) {
         one_over_param_maxes[i] = static_cast<float>(1.0/param_ranges[i][1]);
         param_range_min[i] = param_ranges[i][0];
         param_range_max[i] = param_ranges[i][1];
     }
-    morph::vVector<float> param_range_diff = param_range_max - param_range_min;
-    morph::vVector<float> param_range_offs = param_range_min / param_range_diff;
+    morph::vvec<float> param_range_diff = param_range_max - param_range_min;
+    morph::vvec<float> param_range_offs = param_range_min / param_range_diff;
 
     optimiser = new morph::Anneal<double>(param_values, param_ranges);
     // Anneal ASA params from sconf:
@@ -277,7 +277,7 @@ int main (int argc, char **argv)
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
     pv = &v;
-    morph::Vector<float, 3> offset = { -0.7, 0.0, 0.0 };
+    morph::vec<float, 3> offset = { -0.7, 0.0, 0.0 };
 
     // First a scatter plot that can be updated. Just using a ScatterVisual for this.
     size_t sv_start_idx_last = v.start_idx;
@@ -329,7 +329,7 @@ int main (int argc, char **argv)
     v.addVisualModel (graph3);
 
     // Text labels to show additional information that might update
-    morph::Vector<float> lpos = {-0.08f, 0.03f, 0.0f};
+    morph::vec<float> lpos = {-0.08f, 0.03f, 0.0f};
     morph::VisualTextModel* fps_tm;
     v.addLabel ("Unset", lpos, fps_tm);
 
@@ -383,7 +383,7 @@ int main (int argc, char **argv)
 #endif
         while (optimiser->state != morph::Anneal_State::ReadyToStop) {
             if (optimiser->state == morph::Anneal_State::NeedToCompute) {
-                morph::vVector<float> xc = optimiser->x_cand.as_float();
+                morph::vvec<float> xc = optimiser->x_cand.as_float();
                 optimiser->f_x_cand = objfn (model1, mconf, params, xc);
                 if constexpr (debug_json_config_on_every_step ==  true) {
                     // Save model params and objective into json for analysis
@@ -411,9 +411,9 @@ int main (int argc, char **argv)
             graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
 
             // Add parameter set to the scattervisual. Scale coords by param_maxes
-            morph::vVector<float> x_cand_dbl (optimiser->x_cand.size());
+            morph::vvec<float> x_cand_dbl (optimiser->x_cand.size());
             std::copy (optimiser->x_cand.begin(), optimiser->x_cand.end(), x_cand_dbl.begin());
-            morph::vVector<float> coord = (x_cand_dbl / param_range_diff) - param_range_offs;
+            morph::vvec<float> coord = (x_cand_dbl / param_range_diff) - param_range_offs;
             // Deal with < 3 coords
             size_t sz = coord.size();
             if (sz < 3) {
@@ -432,15 +432,15 @@ int main (int argc, char **argv)
                 // rebuild the scatter, start by clearing it
                 sv->clear();
                 // Make a single container of params from the Anneal object
-                morph::vVector<morph::vVector<double>> param_hist = optimiser->param_hist_rejected;
-                morph::vVector<float> f_param_hist = optimiser->f_param_hist_rejected.as_float();
+                morph::vvec<morph::vvec<double>> param_hist = optimiser->param_hist_rejected;
+                morph::vvec<float> f_param_hist = optimiser->f_param_hist_rejected.as_float();
                 std::cout << "param_hist from rejected size is " << param_hist.size() << std::endl;
                 param_hist.insert (param_hist.end(), optimiser->param_hist_accepted.begin(), optimiser->param_hist_accepted.end());
                 f_param_hist.insert (f_param_hist.end(), optimiser->f_param_hist_accepted.begin(), optimiser->f_param_hist_accepted.end());
                 std::cout << "param_hist with accepted size is " << param_hist.size() << std::endl;
                 // Now add all the points
                 for (size_t i = 0; i < param_hist.size(); ++i) {
-                    morph::vVector<float> c = (param_hist[i].as_float() / param_range_diff) - param_range_offs;
+                    morph::vvec<float> c = (param_hist[i].as_float() / param_range_diff) - param_range_offs;
                     std::cout << "coordinate c = " << c << " has obj f value " << f_param_hist[i] << std::endl;
                     sv->add ({c[v.start_idx%v.dimensions], c[(v.start_idx+1)%v.dimensions], c[(v.start_idx+2)%v.dimensions]},
                              f_param_hist[i], (f_param_hist[i]/blob_divisor > scatter_max_sz ? scatter_max_sz : f_param_hist[i]/blob_divisor));
@@ -498,7 +498,7 @@ int main (int argc, char **argv)
             sconf->write (fname_conf);
         }
 
-        morph::vVector<double> final_params = optimiser->x_best;
+        morph::vvec<double> final_params = optimiser->x_best;
         if (params.size() != final_params.size()) { throw std::runtime_error ("Uh oh"); }
         for (size_t i = 0; i < params.size(); ++i) {
             std::cout << params[i] << " = " << final_params[i] << std::endl;

@@ -10,7 +10,7 @@
 #include <morph/ColourMap.h>
 #include <morph/Scale.h>
 #include <morph/MathAlgo.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -45,7 +45,7 @@ class tissuevisual : public morph::VisualModel
 {
 public:
     //! Single constructor for simplicity
-    tissuevisual(GLuint sp, GLuint tsp, const guidingtissue<T, N>* _r, const morph::Vector<float> _offset)
+    tissuevisual(GLuint sp, GLuint tsp, const guidingtissue<T, N>* _r, const morph::vec<float> _offset)
     {
         this->shaderprog = sp;
         this->tshaderprog = tsp;
@@ -150,7 +150,7 @@ public:
         //std::cout << "dcolour2 scale range_min/max: " << this->colourScale.range_min << "/" << this->colourScale.range_max << std::endl;
 
         // Loop and make rectangles out of 4 triangles. Could be 2, but I converted code from CartGrid.
-        morph::Vector<float> vtx_0, vtx_1, vtx_2;
+        morph::vec<float> vtx_0, vtx_1, vtx_2;
         float z = 0.0f;
         for (unsigned int ri = 0; ri < this->gtissue->num(); ++ri) {
 
@@ -183,9 +183,9 @@ public:
             // HexGridVisual will be coloured the same as the front. To get lighting
             // effects to look really good, the back of the surface could need the
             // opposite normal.
-            morph::Vector<float> plane1 = vtx_1 - vtx_0;
-            morph::Vector<float> plane2 = vtx_2 - vtx_0;
-            morph::Vector<float> vnorm = plane2.cross (plane1);
+            morph::vec<float> plane1 = vtx_1 - vtx_0;
+            morph::vec<float> plane2 = vtx_2 - vtx_0;
+            morph::vec<float> vnorm = plane2.cross (plane1);
             vnorm.renormalize();
             this->vertex_push (vnorm, this->vertexNormals);
             this->vertex_push (vnorm, this->vertexNormals);

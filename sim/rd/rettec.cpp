@@ -49,7 +49,7 @@ namespace sighandling {
 # include "rd_rettec_nocomp.h"
 #endif
 
-#include <morph/Vector.h>
+#include <morph/vec.h>
 // Shape analysis utilities
 #include <morph/ShapeAnalysis.h>
 //! Included for directory manipulation code
@@ -367,7 +367,7 @@ int main (int argc, char **argv)
     std::vector<unsigned int> guidegrad_grids;
 
     // Spatial offset
-    morph::Vector<float, 3> spatOff;
+    morph::vec<float, 3> spatOff;
 
     // Start at a negative value which is determined by plot_a, plot_c and N.
     float xzero = 0.0f;
@@ -522,9 +522,9 @@ int main (int argc, char **argv)
 
     std::vector<FLT> zeromap (RD.nhex, static_cast<FLT>(0.0));
 
-    std::vector<morph::Vector<FLT,3>> zerovecs;
+    std::vector<morph::vec<FLT,3>> zerovecs;
     zerovecs.resize (RD.N);
-    std::vector<morph::Vector<float,3>> zerovecsf;
+    std::vector<morph::vec<float,3>> zerovecsf;
     zerovecsf.resize (RD.N);
 
     if (plot_contours) {
@@ -597,10 +597,10 @@ int main (int argc, char **argv)
         // Plot coordinates of the Retinal neurons.
         xzero +=  (1.7 * RD.hg->width());
         spatOff = { xzero, 0.0, 0.0 };
-        std::vector<morph::Vector<float, 3>> ret_coordinates;
+        std::vector<morph::vec<float, 3>> ret_coordinates;
         for (unsigned int c = 0; c < RD.ret_coords.size(); ++c) {
             std::array<FLT, 2> rc = RD.ret_coords[c];
-            morph::Vector<float, 3> rc3;
+            morph::vec<float, 3> rc3;
             rc3[0] = (float)rc[0];
             rc3[1] = (float)rc[1];
             rc3[2] = 0.0f;
@@ -700,7 +700,7 @@ int main (int argc, char **argv)
     }
     if (hexidx == -1) { hexidx = 0; }
 
-    morph::Vector<float, 3> spatOff_grph = {2, 1, 0};
+    morph::vec<float, 3> spatOff_grph = {2, 1, 0};
     morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
     graph1->setdarkbg(); // colours axes and text
     graph1->twodimensional = false;
@@ -720,7 +720,7 @@ int main (int argc, char **argv)
 #endif
 
 #if 1
-    morph::Vector<float, 3> spatOff_grph = {2, -2, 0};
+    morph::vec<float, 3> spatOff_grph = {2, -2, 0};
     morph::GraphVisual<FLT>* graph2 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
     graph2->setdarkbg(); // colours axes and text
     graph2->twodimensional = false;
@@ -815,7 +815,7 @@ int main (int argc, char **argv)
                     mdlptr = (VdmPtr)v1.getVisualModel (dr_grid);
                     mdlptr->updateData (&RD.regions);
                     // Plot the difference vectors here.
-                    std::vector<morph::Vector<float, 3>> regcs;
+                    std::vector<morph::vec<float, 3>> regcs;
                     for (auto rc : RD.reg_centroids) {
                         regcs.push_back ({static_cast<float>(rc.second.first),
                                           static_cast<float>(rc.second.second), 0.0f});

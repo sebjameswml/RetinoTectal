@@ -4,7 +4,7 @@
 
 #include "rd_barrel.h"
 #include "retarrange.h"
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <cmath>
 #include <iostream>
 

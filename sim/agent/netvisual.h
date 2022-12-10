@@ -16,7 +16,7 @@
 # include <GL3/gl3.h>
 #endif
 #include <morph/VisualModel.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Scale.h>
 #include <vector>
 #include <array>
@@ -35,7 +35,7 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset, net<Flt>* _locations)
+    NetVisual(GLuint sp, GLuint tsp, const morph::vec<float, 3> _offset, net<Flt>* _locations)
     {
         this->locations = _locations;
         this->shaderprog = sp;
@@ -64,20 +64,20 @@ public:
         VBOint idx = 0;
 
         // Discs at the net vertices
-        morph::Vector<float,3> puckthick = { 0, 0, 0.002 };
+        morph::vec<float,3> puckthick = { 0, 0, 0.002 };
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
             this->computeTube (idx,
                                (this->locations->p[i]+puckthick)*zoom,
                                (this->locations->p[i]-puckthick)*zoom,
-                               morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                               morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
                                this->locations->clr[i], this->locations->clr[i],
                                this->radiusFixed*zoom, 16);
         }
         // Connection lines
         if (this->viewmode == netvisual_viewmode::actual) {
             for (auto c : this->locations->c) {
-                morph::Vector<Flt, 3> c1 = this->locations->p[c[0]] * zoom;
-                morph::Vector<Flt, 3> c2 = this->locations->p[c[1]] * zoom;
+                morph::vec<Flt, 3> c1 = this->locations->p[c[0]] * zoom;
+                morph::vec<Flt, 3> c2 = this->locations->p[c[1]] * zoom;
                 std::array<float, 3> clr1 = this->locations->clr[c[0]];
                 std::array<float, 3> clr2 = this->locations->clr[c[1]];
                 if ((c1-c2).length() < maxlen) {
@@ -99,14 +99,14 @@ public:
             this->computeTube (idx,
                                (this->locations->targ[i]+puckthick)*zoom,
                                (this->locations->targ[i]-puckthick)*zoom,
-                               morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                               morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
                                this->locations->clr[i], this->locations->clr[i],
                                this->radiusFixed*zoom, 16);
         }
         // Connections
         for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]] * zoom;
-            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
+            morph::vec<Flt, 3> c1 = this->locations->targ[c[0]] * zoom;
+            morph::vec<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             //if ((c1-c2).length() < Flt{0.2}) {
@@ -129,7 +129,7 @@ public:
             this->computeTube (idx,
                                (this->locations->targ[i]+puckthick)*zoom,
                                (this->locations->targ[i]-puckthick)*zoom,
-                               morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                               morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
                                this->locations->clr[i], this->locations->clr[i],
                                this->radiusFixed*zoom, 16);
 
@@ -145,15 +145,15 @@ public:
                 this->computeTube (idx,
                                    (this->locations->p[i]+actualpuckoffs+puckthick)*zoom,
                                    (this->locations->p[i]+actualpuckoffs-puckthick)*zoom,
-                                   morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                                   morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
                                    this->locations->clr[i], this->locations->clr[i],
                                    this->radiusFixed*0.667*zoom, 16);
             }
         }
         // Connections
         for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->targ[c[0]] * zoom;
-            morph::Vector<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
+            morph::vec<Flt, 3> c1 = this->locations->targ[c[0]] * zoom;
+            morph::vec<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
@@ -175,23 +175,23 @@ public:
         float _z = puckthick[2]*float{0.5001}; // Ensure boundary is visible above rest of drawing
 
         this->computeFlatDashedLine (idx,
-                                     morph::Vector<Flt, 3>({0, 0, _z}),
-                                     morph::Vector<Flt, 3>({w, 0, _z}),
+                                     morph::vec<Flt, 3>({0, 0, _z}),
+                                     morph::vec<Flt, 3>({w, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({w, 0, _z}), morph::Vector<Flt, 3>({w, h, _z}),
+        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({w, 0, _z}), morph::vec<Flt, 3>({w, h, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({w, h, _z}), morph::Vector<Flt, 3>({0, h, _z}),
+        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({w, h, _z}), morph::vec<Flt, 3>({0, h, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::Vector<Flt, 3>({0, h, _z}), morph::Vector<Flt, 3>({0, 0, _z}),
+        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({0, h, _z}), morph::vec<Flt, 3>({0, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
@@ -215,11 +215,11 @@ public:
     bool draw_actual = false;
     //! The maximum length of a line betwen two vertices for it to be visualised
     Flt maxlen = 1e9;
-    morph::Vector<float,3> puckthick = { 0, 0, 0.002 };
+    morph::vec<float,3> puckthick = { 0, 0, 0.002 };
     // An offset to the puck for the actual position
-    morph::Vector<float,3> actualpuckoffs = { 0, 0, 0.01 };
+    morph::vec<float,3> actualpuckoffs = { 0, 0, 0.01 };
     // What to show
     netvisual_viewmode viewmode = netvisual_viewmode::actual;
     //! A normal vector, fixed as pointing up
-    morph::Vector<float, 3> uz = {0,0,1};
+    morph::vec<float, 3> uz = {0,0,1};
 };

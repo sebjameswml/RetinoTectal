@@ -4,7 +4,7 @@
  */
 #pragma once
 #include <morph/Random.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 // brng: "branch random number generator"
 class brng
 {
@@ -21,7 +21,7 @@ public:
     float get() { return this->rng->get(); }
 
     template<size_t arraysz = 2>
-    void get(morph::Vector<float,arraysz>& ar) { return this->rng->get(ar); }
+    void get(morph::vec<float,arraysz>& ar) { return this->rng->get(ar); }
 
     morph::RandUniform<float>* rng;
 };

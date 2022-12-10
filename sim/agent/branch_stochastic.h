@@ -14,28 +14,28 @@ struct branch_stochastic : public branch<T,N>
 
     // Integrate estimates of the ligand gradient in which this branch is moving
     static constexpr size_t gh_size = 30;
-    morph::Vector<morph::Vector<T, 2*N>, gh_size> gradient_history;
+    morph::vec<morph::vec<T, 2*N>, gh_size> gradient_history;
     size_t gh_i = 0;
 
     // Estimate the ligand gradient, given the true ligand gradient and receptor noise
     // \param mu true ligand gradient
     // \param gamma true ligand expression
     // \return Estimate of ligand gradient
-    virtual morph::Vector<T, 2*N> estimate_ligand_gradient (morph::Vector<T,2*N>& mu,
-                                                            morph::Vector<T,N>& gamma)
+    virtual morph::vec<T, 2*N> estimate_ligand_gradient (morph::vec<T,2*N>& mu,
+                                                         morph::vec<T,N>& gamma)
     {
         // Compile-time assertion that R is odd
         static_assert (R%2 == 1);
 
         // Choose a set of R locations across the growth cone.
-        morph::Vector<T, R> r; // The positions, r across the growth cone. Must be -ve to +ve
-        morph::Vector<T, R> c; // The concentration of ligand, c
-        morph::Vector<T, R> p; // The probability of binding, p
-        morph::Vector<bool, R> b; // The state of binding
-        morph::Vector<T, 2*N> lg; // Current ligand gradient estimate container
+        morph::vec<T, R> r; // The positions, r across the growth cone. Must be -ve to +ve
+        morph::vec<T, R> c; // The concentration of ligand, c
+        morph::vec<T, R> p; // The probability of binding, p
+        morph::vec<bool, R> b; // The state of binding
+        morph::vec<T, 2*N> lg; // Current ligand gradient estimate container
 
         //morph::RandUniform<T, std::mt19937> rng;
-        morph::Vector<T, R> rns;
+        morph::vec<T, R> rns;
 
         static constexpr bool debug_stochastic = false;
         static constexpr bool debug_stochastic2 = false;
@@ -48,7 +48,7 @@ struct branch_stochastic : public branch<T,N>
         for (size_t i = 0; i < N; ++i) { // For each receptor-ligand pairing
             for (size_t d = 0; d < 2; ++d) { // For each dimension
 
-                morph::vVector<T> bound; // posns of bound receptors
+                morph::vvec<T> bound; // posns of bound receptors
                 brng::i()->get(rns);
 
                 for (size_t ir = 0; ir < R; ++ir) { // For each of R evenly spaced samples
@@ -71,7 +71,7 @@ struct branch_stochastic : public branch<T,N>
                     std::cout << "bound=" << bound << std::endl;
                 }
                 // Linear fit to the bound receptors, weighted by position
-                morph::vVector<T> bound_w = bound.abs();
+                morph::vvec<T> bound_w = bound.abs();
                 if (bound.size() < 2) {
                     lg[2*i+d] = T{0};
                 } else {
@@ -97,19 +97,19 @@ struct branch_stochastic : public branch<T,N>
     void compute_next (const std::vector<branch_stochastic<T, N, R>>& branches,
                        const guidingtissue<T, N>* source_tissue,
                        const guidingtissue<T, N>* tissue,
-                       const morph::Vector<T, 5>& m,
-                       const morph::Vector<T, 2*N>& rns)
+                       const morph::vec<T, 5>& m,
+                       const morph::vec<T, 2*N>& rns)
     {
         // Current location is named b
-        morph::Vector<T, 2> b = this->current;
+        morph::vec<T, 2> b = this->current;
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
-        morph::Vector<T, 2> G = this->compute_chemo (source_tissue, tissue);
+        morph::vec<T, 2> G = this->compute_chemo (source_tissue, tissue);
 
         // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
         // over the other branches
-        morph::Vector<T, 2> C = {0, 0};
-        morph::Vector<T, 2> I = {0, 0};
-        morph::Vector<T, 2> J = {0, 0};
+        morph::vec<T, 2> C = {0, 0};
+        morph::vec<T, 2> I = {0, 0};
+        morph::vec<T, 2> J = {0, 0};
 
         // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
@@ -139,13 +139,13 @@ struct branch_stochastic : public branch<T,N>
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-        morph::Vector<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
+        morph::vec<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
-        morph::Vector<T, 2> B = this->apply_border_effect (tissue, nonB);
+        morph::vec<T, 2> B = this->apply_border_effect (tissue, nonB);
 
         // The change in b from the model and border effects:
-        morph::Vector<T, 2> db = (nonB + B * m[4]);
+        morph::vec<T, 2> db = (nonB + B * m[4]);
 
         // Finally add b and db to get next
         this->next = b + db;

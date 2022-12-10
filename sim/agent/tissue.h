@@ -1,7 +1,7 @@
 #pragma once
 
-#include <morph/vVector.h>
-#include <morph/Vector.h>
+#include <morph/vvec.h>
+#include <morph/vec.h>
 #include <morph/Random.h>
 #include <algorithm>
 #include <bitset>
@@ -14,11 +14,11 @@ struct tissue
     size_t h;
     const size_t num() const { return w * h; }
     //! The distance from neuron to neuron; horizontally and vertically.
-    morph::Vector<T,2> dx;
+    morph::vec<T,2> dx;
     //! Position of bottom left neuron
-    morph::Vector<T,2> x0;
+    morph::vec<T,2> x0;
     //! Positions stored in raster fashion from bottom left
-    morph::vVector<morph::Vector<T,2>> posn;
+    morph::vvec<morph::vec<T,2>> posn;
 
     const T x_min() const { return this->posn[0][0]; }
     const T x_max() const { return this->posn[this->posn.size()-1][0]; }
@@ -26,12 +26,12 @@ struct tissue
     const T y_max() const { return this->posn[this->posn.size()-1][1]; }
 
     // Find the coordinate closest to the indexed position xx, yy and return
-    morph::Vector<T,2> coord (size_t xx, size_t yy) const
+    morph::vec<T,2> coord (size_t xx, size_t yy) const
     {
-        morph::Vector<T,2> c = {0,0};
+        morph::vec<T,2> c = {0,0};
 
         // The x/y position to find has to be constructed from the index args xx and yy
-        morph::Vector<T,2> xy = { x0[0] + xx * dx[0], x0[1] + yy * dx[1] };
+        morph::vec<T,2> xy = { x0[0] + xx * dx[0], x0[1] + yy * dx[1] };
 
         // Now find the first posn in the tissue grid which is close to xy
         for (auto p : this->posn) {
@@ -44,7 +44,7 @@ struct tissue
         return c;
     }
 
-    tissue(size_t _w, size_t _h, morph::Vector<T,2> _dx, morph::Vector<T,2> _x0)
+    tissue(size_t _w, size_t _h, morph::vec<T,2> _dx, morph::vec<T,2> _x0)
         : w(_w), h(_h), dx(_dx), x0(_x0)
     {
         this->posn.resize(w*h);
@@ -115,20 +115,20 @@ template<typename T, size_t N>
 struct guidingtissue : public tissue<T>
 {
     //! With what kind of function are receptors expressed?
-    morph::Vector<expression_form, N> rcpt_form;
+    morph::vec<expression_form, N> rcpt_form;
     //! With what kind of function are ligands expressed?
-    morph::Vector<expression_form, N> lgnd_form;
+    morph::vec<expression_form, N> lgnd_form;
     //! Directions of receptor expression gradients
-    morph::Vector<expression_direction, N> rcpt_dirns;
+    morph::vec<expression_direction, N> rcpt_dirns;
     //! Directions of ligand expression gradients
-    morph::Vector<expression_direction, N> lgnd_dirns;
+    morph::vec<expression_direction, N> lgnd_dirns;
 
     // Forward signalling interactions when receptors in this tissue are activated
-    morph::Vector<interaction, N> forward_interactions;
+    morph::vec<interaction, N> forward_interactions;
     // Reverse signalling interactions when ligands in this tissue are activated
-    morph::Vector<interaction, N> reverse_interactions;
+    morph::vec<interaction, N> reverse_interactions;
     // Signalling interactions when receptors in this tissue are triggered by other receptors. Potentially an NxN matrix.
-    morph::Vector<interaction, N> rcptrcpt_interactions;
+    morph::vec<interaction, N> rcptrcpt_interactions;
 
     // How much to perturb receptor and ligand noise?
     T rcpt_noise_gain = T{0};
@@ -137,13 +137,13 @@ struct guidingtissue : public tissue<T>
     //! A left-right interaction parameter and an up-down interaction parameter for each
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
     //! expressions for each cell.
-    morph::vVector<morph::Vector<T,N>> rcpt;
+    morph::vvec<morph::vec<T,N>> rcpt;
 
     //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
     //! expression, which is essentially uniform across the retina.
-    morph::vVector<T> rcpt0_EphA4_free;
-    morph::vVector<T> rcpt0_EphA4_cis;
+    morph::vvec<T> rcpt0_EphA4_free;
+    morph::vvec<T> rcpt0_EphA4_cis;
     //! Functional form for rcpt0_EphA4
     expression_form EphA4_form;
     T EphA4_const_expression = T{3.5};
@@ -152,16 +152,16 @@ struct guidingtissue : public tissue<T>
     T w_EphAx = T{0.25}; // NB: Only used to calculate w_EphA4 = 0.611 * w_EphAx.
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
-    morph::vVector<morph::Vector<T,2*N>> rcpt_grad;
+    morph::vvec<morph::vec<T,2*N>> rcpt_grad;
     // Set fields true if the receptor expression has been manipulated
-    morph::vVector<std::bitset<N>> rcpt_manipulated;
+    morph::vvec<std::bitset<N>> rcpt_manipulated;
 
     //! The tissue also has an expression of ligands to interact with receptors of other
     //! cells/agents
-    morph::vVector<morph::Vector<T,N>> lgnd;
-    morph::vVector<morph::Vector<T,2*N>> lgnd_grad;
+    morph::vvec<morph::vec<T,N>> lgnd;
+    morph::vvec<morph::vec<T,2*N>> lgnd_grad;
     // Set fields true if the ligand expression has been manipulated
-    morph::vVector<std::bitset<N>> lgnd_manipulated;
+    morph::vvec<std::bitset<N>> lgnd_manipulated;
 
     //! Get the relevant axis position (or its inverse) for the position index pi and
     //! the given expression direction, so that an expression value can be computed.
@@ -203,14 +203,14 @@ struct guidingtissue : public tissue<T>
 
     //! Init the wildtype tissue's receptors and ligands.
     guidingtissue(size_t _w, size_t _h,
-                  morph::Vector<T,2> _dx, morph::Vector<T,2> _x0,
-                  morph::Vector<expression_form, N> _rcpt_form,
-                  morph::Vector<expression_form, N> _lgnd_form,
-                  morph::Vector<expression_direction, N> _rcpt_dirn,
-                  morph::Vector<expression_direction, N> _lgnd_dirn,
-                  morph::Vector<interaction, N> _for_int,
-                  morph::Vector<interaction, N> _rev_int,
-                  morph::Vector<interaction, N> _rcptrcpt_int,
+                  morph::vec<T,2> _dx, morph::vec<T,2> _x0,
+                  morph::vec<expression_form, N> _rcpt_form,
+                  morph::vec<expression_form, N> _lgnd_form,
+                  morph::vec<expression_direction, N> _rcpt_dirn,
+                  morph::vec<expression_direction, N> _lgnd_dirn,
+                  morph::vec<interaction, N> _for_int,
+                  morph::vec<interaction, N> _rev_int,
+                  morph::vec<interaction, N> _rcptrcpt_int,
                   T _rcpt_noise_gain = T{0},
                   T _lgnd_noise_gain = T{0},
                   expression_form _EphA4_form = expression_form::exp,
@@ -313,17 +313,17 @@ struct guidingtissue : public tissue<T>
     /*!
      * Computes the gradient at an element from the expression in the neighbouring elements
      *
-     * \param f Variable vector (vVector) containing Vectors which encode N scalar fields.
+     * \param f Variable vector (vvec) containing vecs which encode N scalar fields.
      *
-     * \param gradf Output. Each Vector in gradf has twice as many fields as the Vectors
+     * \param gradf Output. Each vec in gradf has twice as many fields as the vecs
      * in f. The gradients are:
      *
      *  gradf[0]: f[0] x gradient          gradf[1]: f[0] y gradient
      *  gradf[2]: f[1] x gradient          gradf[3]: f[1] y gradient
      *  ... etc
      */
-    void spacegrad2D (morph::vVector<morph::Vector<T,N>>& f,
-                      morph::vVector<morph::Vector<T,(2*N)>>& gradf)
+    void spacegrad2D (morph::vvec<morph::vec<T,N>>& f,
+                      morph::vvec<morph::vec<T,(2*N)>>& gradf)
     {
         //#pragma omp parallel for schedule(static)
         for (size_t x = 0; x < this->w; ++x) {
@@ -411,10 +411,10 @@ struct guidingtissue : public tissue<T>
         static constexpr float one_over_sigma_root_2_pi = 1.0f / sigma * 2.506628275f;
         static constexpr float two_sigma_sq = 2.0f * sigma * sigma;
 
-        morph::Vector<morph::Vector<float, N>, 21> kernel_x;
-        morph::Vector<morph::Vector<float, N>, 21> kernel_y;
-        morph::Vector<float, N> sum_r; // use for x too
-        morph::Vector<float, N> sum_l; // use for y too
+        morph::vec<morph::vec<float, N>, 21> kernel_x;
+        morph::vec<morph::vec<float, N>, 21> kernel_y;
+        morph::vec<float, N> sum_r; // use for x too
+        morph::vec<float, N> sum_l; // use for y too
         sum_r.zero();
         sum_l.zero();
 
@@ -620,31 +620,31 @@ struct guidingtissue : public tissue<T>
     //! makes it easy to perform tissue manipulations on target (tectal) tissue in the
     //! same way as for source (retinal) tissue. This can also potentially return border
     //! gradients for regions outside the nominal tissue area.
-    morph::Vector<T,2*N> lgnd_grad_at (const morph::Vector<T,2>& x) const
+    morph::vec<T,2*N> lgnd_grad_at (const morph::vec<T,2>& x) const
     {
-        morph::vVector<morph::Vector<T,2>> p = this->posn - x;
+        morph::vvec<morph::vec<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->lgnd_grad[idx];
     }
 
-    morph::Vector<T,N> lgnd_at (const morph::Vector<T,2>& x) const
+    morph::vec<T,N> lgnd_at (const morph::vec<T,2>& x) const
     {
-        morph::vVector<morph::Vector<T,2>> p = this->posn - x;
+        morph::vvec<morph::vec<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->lgnd[idx];
     }
 
-    morph::Vector<T,N> rcpt_at (const morph::Vector<T,2>& x) const
+    morph::vec<T,N> rcpt_at (const morph::vec<T,2>& x) const
     {
-        morph::vVector<morph::Vector<T,2>> p = this->posn - x;
+        morph::vvec<morph::vec<T,2>> p = this->posn - x;
         size_t idx = p.argshortest();
         return this->rcpt[idx];
     }
 
     //! Return a vector of the average rcpt expression of given index along the x axis
-    morph::vVector<T> rcpt_average_x_axis (const size_t idx) const
+    morph::vvec<T> rcpt_average_x_axis (const size_t idx) const
     {
-        morph::vVector<T> rtn (this->w);
+        morph::vvec<T> rtn (this->w);
         for (size_t j = 0; j < this->h; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
                 rtn[i] += this->rcpt[i+this->w*j][idx] / static_cast<T>(this->h);
@@ -653,9 +653,9 @@ struct guidingtissue : public tissue<T>
         return rtn;
     }
 
-    morph::vVector<T> epha4_average_x_axis() const
+    morph::vvec<T> epha4_average_x_axis() const
     {
-        morph::vVector<T> rtn (this->w);
+        morph::vvec<T> rtn (this->w);
         for (size_t j = 0; j < this->h; ++j) {
             for (size_t i = 0; i < this->w; ++i) {
                 rtn[i] += this->rcpt0_EphA4_free[i+this->w*j] / static_cast<T>(this->h);
@@ -665,9 +665,9 @@ struct guidingtissue : public tissue<T>
     }
 
 
-    morph::vVector<T> x_axis_positions() const
+    morph::vvec<T> x_axis_positions() const
     {
-        morph::vVector<T> positions(this->w);
+        morph::vvec<T> positions(this->w);
         for (size_t i = 0; i < this->w; ++i) {
             positions[i] = this->posn[i][0];
         }
@@ -698,11 +698,11 @@ struct guidingtissue : public tissue<T>
     {
         size_t newsize = (this->w/2)*this->h;
 
-        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
-        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
-        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+        morph::vvec<morph::vec<T,2>> posn_new(newsize);
+        morph::vvec<morph::vec<T,N>> rcpt_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> rcpt_grad_new(newsize);
+        morph::vvec<morph::vec<T,N>> lgnd_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> lgnd_grad_new(newsize);
 
         // Copy the left hand half to keep
         size_t k = 0;
@@ -729,11 +729,11 @@ struct guidingtissue : public tissue<T>
     {
         size_t newsize = (this->w/2)*this->h;
 
-        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
-        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
-        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+        morph::vvec<morph::vec<T,2>> posn_new(newsize);
+        morph::vvec<morph::vec<T,N>> rcpt_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> rcpt_grad_new(newsize);
+        morph::vvec<morph::vec<T,N>> lgnd_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> lgnd_grad_new(newsize);
 
         // Copy the right hand half to keep
         size_t k = 0;
@@ -760,11 +760,11 @@ struct guidingtissue : public tissue<T>
     {
         size_t newsize = this->w*(this->h/2);
 
-        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
-        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
-        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+        morph::vvec<morph::vec<T,2>> posn_new(newsize);
+        morph::vvec<morph::vec<T,N>> rcpt_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> rcpt_grad_new(newsize);
+        morph::vvec<morph::vec<T,N>> lgnd_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> lgnd_grad_new(newsize);
 
         // Copy the bottom half to keep
         size_t k = 0;
@@ -792,11 +792,11 @@ struct guidingtissue : public tissue<T>
     {
         size_t newsize = this->w*(this->h/2);
 
-        morph::vVector<morph::Vector<T,2>> posn_new(newsize);
-        morph::vVector<morph::Vector<T,N>> rcpt_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> rcpt_grad_new(newsize);
-        morph::vVector<morph::Vector<T,N>> lgnd_new(newsize);
-        morph::vVector<morph::Vector<T,2*N>> lgnd_grad_new(newsize);
+        morph::vvec<morph::vec<T,2>> posn_new(newsize);
+        morph::vvec<morph::vec<T,N>> rcpt_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> rcpt_grad_new(newsize);
+        morph::vvec<morph::vec<T,N>> lgnd_new(newsize);
+        morph::vvec<morph::vec<T,2*N>> lgnd_grad_new(newsize);
 
         // Copy the top half to keep
         size_t k = 0;
@@ -916,7 +916,7 @@ struct guidingtissue : public tissue<T>
         if (affected < T{0} || affected > T{1}) { throw std::runtime_error ("'affected' proportion out of range"); }
         static constexpr bool debug_rcpt0_min = true;
         if constexpr (debug_rcpt0_min == true) {
-            morph::vVector<T> dvec;
+            morph::vvec<T> dvec;
             for (size_t ri = 0; ri < this->rcpt.size(); ++ri) {
                 dvec.push_back (rcpt[ri][idx]);
             }
@@ -971,7 +971,7 @@ struct guidingtissue : public tissue<T>
     }
 
     //! Cut a square patch (side legnth sz) of the tissue out and rotate it by a number of quarter_rotations
-    void graftrotate (morph::Vector<size_t,2> x1, size_t sz, size_t quarter_rotations)
+    void graftrotate (morph::vec<size_t,2> x1, size_t sz, size_t quarter_rotations)
     {
         if (quarter_rotations%4 == 0) { return; }
 
@@ -980,8 +980,8 @@ struct guidingtissue : public tissue<T>
             throw std::runtime_error ("Patch for rotation is off the edge of the tissue");
         }
 
-        morph::vVector<morph::Vector<T,N>> rcpt_graft (sz*sz);
-        morph::vVector<morph::Vector<T,N>> lgnd_graft (sz*sz);
+        morph::vvec<morph::vec<T,N>> rcpt_graft (sz*sz);
+        morph::vvec<morph::vec<T,N>> lgnd_graft (sz*sz);
 
         for (size_t rot = 1; rot <= quarter_rotations; ++rot) {
             // Copy the square
@@ -1006,12 +1006,12 @@ struct guidingtissue : public tissue<T>
 
     //! Move a rectangular patch of tissue at indexed location x1, of size
     //! sz, and swap it with another region of the tissue at x2.
-    void graftswap (morph::Vector<size_t,2> x1,
-                    morph::Vector<size_t,2> sz,
-                    morph::Vector<size_t,2> x2)
+    void graftswap (morph::vec<size_t,2> x1,
+                    morph::vec<size_t,2> sz,
+                    morph::vec<size_t,2> x2)
     {
         // This is all about moving a section of rcpt. Have to move row by row though.
-        morph::vVector<morph::Vector<T,N>> graft (sz[0]);
+        morph::vvec<morph::vec<T,N>> graft (sz[0]);
 
         size_t idx1 = x1[0] + this->w * x1[1];
         size_t idx2 = x2[0] + this->w * x2[1];

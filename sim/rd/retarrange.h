@@ -3,7 +3,7 @@
  */
 
 #include <morph/MathAlgo.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/Random.h>
 #include <cmath>
 #include <iostream>
@@ -41,9 +41,9 @@ public:
     //! The Cartesian coordinates of the equivalent locations of the retinal neurons
     //! on the tectum. To compute these (from ret_coords) we use ellipse_a and
     //! ellipse_b.
-    std::vector<morph::Vector<Flt, 3>> tec_coords;
+    std::vector<morph::vec<Flt, 3>> tec_coords;
     //! tec_offsets = tec_coords - reg_centroids
-    std::vector<morph::Vector<Flt, 3>> tec_offsets;
+    std::vector<morph::vec<Flt, 3>> tec_offsets;
     //! sum of squared lengths of tec_offsets. Provides a scalar for the quality of the
     //! pattern.
     Flt tec_sos = Flt{0};
