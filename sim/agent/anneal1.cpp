@@ -281,20 +281,20 @@ int main (int argc, char **argv)
 
     // First a scatter plot that can be updated. Just using a ScatterVisual for this.
     size_t sv_start_idx_last = v.start_idx;
-    morph::ScatterVisual<double>* sv = new morph::ScatterVisual<double> (v.shaderprog, offset);
+    auto sv = std::make_unique<morph::ScatterVisual<double>> (v.shaders, offset);
     sv->radiusFixed = 0.002f;
     sv->colourScale.compute_autoscale (0, 30);
     sv->cm.setType (morph::ColourMapType::Plasma);
     sv->finalize();
-    v.addVisualModel (sv);
+    auto svp = v.addVisualModel (sv);
 
-    morph::TriaxesVisual<float>* tav = new morph::TriaxesVisual<float> (v.shaderprog, v.tshaderprog, offset);
-    tav_setup (tav, v.start_idx, v.dimensions, param_range_min, param_range_max, params);
-    v.addVisualModel (tav);
+    auto tav = std::make_unique<morph::TriaxesVisual<float>> (v.shaders, offset);
+    tav_setup (tav.get(), v.start_idx, v.dimensions, param_range_min, param_range_max, params);
+    auto tavp = v.addVisualModel (tav);
 
     offset[0] += 2.0f;
     // Add a graph to track T_i and T_cost
-    morph::GraphVisual<double>* graph1 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
+    auto graph1 = std::make_unique<morph::GraphVisual<double>> (v.shaders, offset);
     graph1->twodimensional = false;
     graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
@@ -303,10 +303,10 @@ int main (int argc, char **argv)
     graph1->prepdata ("Tparam");
     graph1->prepdata ("Tcost");
     graph1->finalize();
-    v.addVisualModel (graph1);
+    auto graph1p = v.addVisualModel (graph1);
 
     offset[0] += 1.4f;
-    morph::GraphVisual<double>* graph2 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
+    auto graph2 = std::make_unique<morph::GraphVisual<double>> (v.shaders, offset);
     graph2->twodimensional = false;
     graph2->setlimits (0, 1000, 0.0f, 2.0f);
     graph2->policy = morph::stylepolicy::lines;
@@ -315,10 +315,10 @@ int main (int argc, char **argv)
     graph2->prepdata ("f_x");
     graph2->prepdata ("f_x_best");
     graph2->finalize();
-    v.addVisualModel (graph2);
+    auto graph2p = v.addVisualModel (graph2);
 
     offset[0] += 1.4f;
-    morph::GraphVisual<double>* graph3 = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, offset);
+    auto graph3 = std::make_unique<morph::GraphVisual<double>> (v.shaders, offset);
     graph3->twodimensional = false;
     graph3->setlimits (0, 1000, -1.0f, 100.0f);
     graph3->policy = morph::stylepolicy::lines;
@@ -326,7 +326,7 @@ int main (int argc, char **argv)
     graph3->xlabel = "Anneal time";
     graph3->prepdata ("f_x_cand");
     graph3->finalize();
-    v.addVisualModel (graph3);
+    auto graph3p = v.addVisualModel (graph3);
 
     // Text labels to show additional information that might update
     morph::vec<float> lpos = {-0.08f, 0.03f, 0.0f};
@@ -404,11 +404,11 @@ int main (int argc, char **argv)
             // Append to the 2D graph of sums:
             double tkmean = optimiser->T_k.mean();
             double tcostmean = optimiser->T_cost.mean();
-            graph1->append ((float)optimiser->steps, std::log(tkmean), 0);
-            graph1->append ((float)optimiser->steps, std::log(tcostmean), 1);
-            graph2->append ((float)optimiser->steps, optimiser->f_x, 0);
-            graph2->append ((float)optimiser->steps, optimiser->f_x_best, 1);
-            graph3->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
+            graph1p->append ((float)optimiser->steps, std::log(tkmean), 0);
+            graph1p->append ((float)optimiser->steps, std::log(tcostmean), 1);
+            graph2p->append ((float)optimiser->steps, optimiser->f_x, 0);
+            graph2p->append ((float)optimiser->steps, optimiser->f_x_best, 1);
+            graph3p->append ((float)optimiser->steps, optimiser->f_x_cand, 0);
 
             // Add parameter set to the scattervisual. Scale coords by param_maxes
             morph::vvec<float> x_cand_dbl (optimiser->x_cand.size());
@@ -430,7 +430,7 @@ int main (int argc, char **argv)
             if (v.start_idx != sv_start_idx_last) {
                 std::cout << "Rebuilding the scatter plot!\n";
                 // rebuild the scatter, start by clearing it
-                sv->clear();
+                svp->clear();
                 // Make a single container of params from the Anneal object
                 morph::vvec<morph::vvec<double>> param_hist = optimiser->param_hist_rejected;
                 morph::vvec<float> f_param_hist = optimiser->f_param_hist_rejected.as_float();
@@ -442,17 +442,17 @@ int main (int argc, char **argv)
                 for (size_t i = 0; i < param_hist.size(); ++i) {
                     morph::vvec<float> c = (param_hist[i].as_float() / param_range_diff) - param_range_offs;
                     std::cout << "coordinate c = " << c << " has obj f value " << f_param_hist[i] << std::endl;
-                    sv->add ({c[v.start_idx%v.dimensions], c[(v.start_idx+1)%v.dimensions], c[(v.start_idx+2)%v.dimensions]},
-                             f_param_hist[i], (f_param_hist[i]/blob_divisor > scatter_max_sz ? scatter_max_sz : f_param_hist[i]/blob_divisor));
+                    svp->add ({c[v.start_idx%v.dimensions], c[(v.start_idx+1)%v.dimensions], c[(v.start_idx+2)%v.dimensions]},
+                              f_param_hist[i], (f_param_hist[i]/blob_divisor > scatter_max_sz ? scatter_max_sz : f_param_hist[i]/blob_divisor));
                 }
                 // Change the Triaxes visual
-                tav->clear();
-                tav->idx = 0;
-                tav_setup (tav, v.start_idx, v.dimensions, param_range_min, param_range_max, params);
+                tavp->clear();
+                tavp->idx = 0;
+                tav_setup (tavp, v.start_idx, v.dimensions, param_range_min, param_range_max, params);
                 sv_start_idx_last = v.start_idx;
             }
-            sv->add ({coord[v.start_idx%v.dimensions], coord[(v.start_idx+1)%v.dimensions], coord[(v.start_idx+2)%v.dimensions]},
-                     optimiser->f_x_cand, (optimiser->f_x_cand/blob_divisor > scatter_max_sz ? scatter_max_sz : optimiser->f_x_cand/blob_divisor));
+            svp->add ({coord[v.start_idx%v.dimensions], coord[(v.start_idx+1)%v.dimensions], coord[(v.start_idx+2)%v.dimensions]},
+                      optimiser->f_x_cand, (optimiser->f_x_cand/blob_divisor > scatter_max_sz ? scatter_max_sz : optimiser->f_x_cand/blob_divisor));
 
             max_repeats_so_far = max_repeats_so_far < optimiser->f_x_best_repeats ? optimiser->f_x_best_repeats : max_repeats_so_far;
             std::stringstream ss;

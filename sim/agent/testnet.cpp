@@ -35,7 +35,7 @@ int main()
     morph::vec<float> offset = { -0.0f, -0.0f, 0.0f };
     v->setCurrent();
 
-    NetVisual<float>* nv = new NetVisual<float> (v->shaderprog, v->tshaderprog, offset, &n);
+    auto nv = std::make_unique<NetVisual<float>> (v->shaders, offset, &n);
     nv->viewmode = netvisual_viewmode::actual;
     nv->finalize();
     std::stringstream ss;
