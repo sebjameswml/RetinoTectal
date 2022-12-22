@@ -2135,7 +2135,7 @@ struct Agent1
         avup->target_scale.compute_autoscale (0, 1);
         avup->finalize();
         avup->addLabel ("Selected axons", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->v->addVisualModel (avup);
+        this->av = this->v->addVisualModel (avup);
 
         // A 'text' only visual model to incorporate figure letters
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
