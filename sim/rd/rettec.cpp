@@ -67,8 +67,6 @@ namespace sighandling {
 // All the Visual models here derive from VisualDataModel
 # include <morph/VisualDataModel.h>
 # include <morph/GraphVisual.h>
-// Alias VisualDataModel<FLT>* as VdmPtr, to neaten code
-typedef morph::VisualDataModel<FLT>* VdmPtr;
 // We're visualizing HexGrids...
 # include <morph/HexGridVisual.h>
 // and doing quiver plots...
@@ -358,10 +356,10 @@ int main (int argc, char **argv)
     morph::Scale<FLT, float> cscale; cscale.compute_autoscale (0, 1);
 
     // Identifiers for the various VisualModels that will be added to the Visual scene
-    unsigned int c_ctr_grid = 0;
-    unsigned int a_ctr_grid = 0;
-    unsigned int dr_grid = 0;
-    unsigned int quiv_grid = 0;
+    morph::HexGridVisual<FLT>* c_ctr_grid = nullptr;
+    morph::HexGridVisual<FLT>* a_ctr_grid = nullptr;
+    morph::HexGridVisual<FLT>* dr_grid = nullptr;
+    morph::QuiverVisual<FLT>* quiv_grid = nullptr;
 
     std::vector<unsigned int> guide_grids;
     std::vector<unsigned int> guidegrad_grids;
@@ -378,14 +376,14 @@ int main (int argc, char **argv)
 # endif
 
     // The a variable
-    std::vector<unsigned int> agrids (RD.N, 0);
+    std::vector<morph::HexGridVisual<FLT>*> agrids (RD.N, nullptr);
     unsigned int side = static_cast<unsigned int>(floor (sqrt (RD.N)));
     if (plot_a) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&(RD.a[i]));
             hgv->zScale.setParams (_m/10.0f, _c/10.0f);
             hgv->cm.setType (morph::ColourMapType::Monochrome);
@@ -405,14 +403,14 @@ int main (int argc, char **argv)
 
 # ifdef AXONCOMP
     // ahat/div_ahat - not runtime selectable - used only for debugging
-    std::vector<unsigned int> ahatgrids (RD.N, 0);
+    std::vector<morph::HexGridVisual<FLT>*> ahatgrids (RD.N, nullptr);
     static constexpr bool plot_ahat = false;
     if constexpr (plot_ahat == true) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&(RD.ahat[i]));
             hgv->zScale.setParams (0.1f, 0.0f);
             hgv->colourScale.setParams (0.1f, 0.0f);
@@ -430,13 +428,13 @@ int main (int argc, char **argv)
         xzero = spatOff[0] + RD.hg->width();
     }
 
-    std::vector<unsigned int> divahatgrids (RD.N, 0);
+    std::vector<morph::HexGridVisual<FLT>*> divahatgrids (RD.N, nullptr);
     if constexpr (plot_ahat == true) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&(RD.div_ahat[i]));
             hgv->zScale.setParams (0.001f, -0.5f);
             hgv->colourScale.setParams (0.1f, 0.0f);
@@ -456,13 +454,13 @@ int main (int argc, char **argv)
 #endif
 
     // The c variable
-    std::vector<unsigned int> cgrids (RD.N, 0);
+    std::vector<morph::HexGridVisual<FLT>*> cgrids (RD.N, nullptr);
     if (plot_c) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&RD.c[i]);
             hgv->zScale.setParams (_m/10.0f, _c/10.0f);
             hgv->colourScale.compute_autoscale (0, 1);
@@ -483,30 +481,29 @@ int main (int argc, char **argv)
     morph::Scale<FLT, float> zscale2; zscale2.setParams (1.0f/5.0f, 0.0f);
     morph::Scale<FLT, float> cscale2; cscale2.setParams (1.0f, 0.0f);
     // The f variable
-    std::vector<unsigned int> fgrids;
+    std::vector<morph::HexGridVisual<FLT>*> fgrids (RD.N, nullptr);
     if (plot_f) {
         spatOff = {xzero, 0.0, 0.0 };
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&RD.f[i]);
             hgv->zScale.setParams (1.0f/5.0f, 0.0f);
             hgv->colourScale.setParams (1.0f, 0.0f);
             hgv->cm.setHue ((float)i/(float)RD.N);
             hgv->cm.setType (morph::ColourMapType::Monochrome);
             hgv->hexVisMode = morph::HexVisMode::Triangles;
-            unsigned int idx = v1.addVisualModel (hgv);
-            fgrids.push_back (idx);
+            fgrids[i] = v1.addVisualModel (hgv);
         }
         xzero = spatOff[0] + RD.hg->width();
     }
 # endif
     // n
-    unsigned int ngrid = 0;
+    morph::HexGridVisual<FLT>* ngrid = nullptr;
     if (plot_n) {
         spatOff = { xzero, 0.0, 0.0 };
-        morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
         hgv->setScalarData (&(RD.n));
         hgv->zScale.setParams (_m/10.0f, _c/10.0f);
         hgv->setCScale (cscale);
@@ -531,7 +528,7 @@ int main (int argc, char **argv)
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
-        morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
         //hgv->colourScale.setParams (1.0f, 0.0f); // <-- no good?
@@ -546,7 +543,7 @@ int main (int argc, char **argv)
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
         //hgv->colourScale.setParams (1.0f, 0.0f); // <-- no good?
@@ -560,7 +557,7 @@ int main (int argc, char **argv)
 
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
-        morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
         //hgv->colourScale.setParams (1.0f, 0.0f); // <-- no good?
@@ -568,13 +565,13 @@ int main (int argc, char **argv)
         hgv->cm.setType (morph::ColourMapType::RainbowZeroWhite);
         hgv->finalize();
         dr_grid = v1.addVisualModel (hgv);
-
-        quiv_grid = v1.addVisualModel (new morph::QuiverVisual<FLT> (v1.shaderprog,
-                                                                     &zerovecsf,
-                                                                     spatOff,
-                                                                     &zerovecs,
-                                                                     morph::ColourMapType::Fixed,
-                                                                     0.2f));
+        auto qvis = std::make_unique<morph::QuiverVisual<FLT>> (v1.shaders,
+                                                                &zerovecsf,
+                                                                spatOff,
+                                                                &zerovecs,
+                                                                morph::ColourMapType::Fixed,
+                                                                0.2f);
+        quiv_grid = v1.addVisualModel (qvis);
         xzero +=  (1.2 * RD.hg->width());
     }
 
@@ -585,7 +582,7 @@ int main (int argc, char **argv)
         gd_cscale.do_autoscale = true;
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&RD.rho[j]);
             hgv->zScale.setParams (0.0f, 0.0f);
             hgv->cm.setType (morph::ColourMapType::Inferno);
@@ -612,7 +609,7 @@ int main (int argc, char **argv)
         }
         float scatRad = RD.ring_d/10.0f;
         morph::Scale<float, float> ctr_cscale_f; ctr_cscale_f.setParams (1.0f, 0.0f);
-        morph::ScatterVisual<float>* svm = new morph::ScatterVisual<float> (v1.shaderprog, spatOff);
+        auto svm = std::make_unique<morph::ScatterVisual<float>> (v1.shaders, spatOff);
         svm->setDataCoords (&ret_coordinates);
         svm->setScalarData (&neuronColourData);
         svm->radiusFixed = scatRad;
@@ -657,7 +654,7 @@ int main (int argc, char **argv)
             gg_c = -(gg_m * ming);
             morph::Scale<FLT, float> gd_cscale; gd_cscale.setParams (gg_m, gg_c);
             // Create the grids
-            morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&gx[j]);
             hgv->zScale.setParams (0.0f, 0.0f);
             hgv->cm.setType (morph::ColourMapType::Jet);
@@ -666,7 +663,7 @@ int main (int argc, char **argv)
 
             spatOff[0] += RD.hg->width();
 
-            hgv = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+            hgv = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
             hgv->setScalarData (&gy[j]);
             hgv->zScale.setParams (0.0f, 0.0f);
             hgv->cm.setType (morph::ColourMapType::Jet);
@@ -701,7 +698,7 @@ int main (int argc, char **argv)
     if (hexidx == -1) { hexidx = 0; }
 
     morph::vec<float, 3> spatOff_grph = {2, 1, 0};
-    morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
+    auto graph1 = std::make_unique<morph::GraphVisual<FLT>> (v1.shaders, spatOff_grph);
     graph1->setdarkbg(); // colours axes and text
     graph1->twodimensional = false;
     graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_single_ymax", 1.0f));
@@ -716,12 +713,12 @@ int main (int argc, char **argv)
         graph1->prepdata (ss.str());
     }
     graph1->finalize();
-    v1.addVisualModel (static_cast<morph::VisualModel*>(graph1));
+    auto graph1ptr = v1.addVisualModel (graph1);
 #endif
 
 #if 1
     morph::vec<float, 3> spatOff_grph = {2, -2, 0};
-    morph::GraphVisual<FLT>* graph2 = new morph::GraphVisual<FLT> (v1.shaderprog, v1.tshaderprog, spatOff_grph);
+    auto graph2 = std::make_unique<morph::GraphVisual<FLT>> (v1.shaders, spatOff_grph);
     graph2->setdarkbg(); // colours axes and text
     graph2->twodimensional = false;
     graph2->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_single_ymax", 1.0f));
@@ -730,7 +727,7 @@ int main (int argc, char **argv)
     graph2->xlabel = "Sim time";
     graph2->prepdata ("tec_sos");
     graph2->finalize();
-    v1.addVisualModel (static_cast<morph::VisualModel*>(graph2));
+    auto graph2ptr = v1.addVisualModel (graph2);
 #endif
 
     // Saving of t=0 images in log folder
@@ -739,8 +736,6 @@ int main (int argc, char **argv)
     // if using plotting, then set up the render clock
     std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
 
-    // A pointer to access the data layer of HexGridVisual objects.
-    morph::VisualDataModel<FLT>* mdlptr = (VdmPtr)0;
 #endif // COMPILE_PLOTTING
 
     // Innocent until proven guilty
@@ -763,66 +758,45 @@ int main (int argc, char **argv)
                 // Do a plot of the ctrs as found.
                 std::vector<FLT> ctrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.c, RD.contour_threshold);
 
-                if (plot_contours) {
-                    mdlptr = (VdmPtr)v1.getVisualModel (c_ctr_grid);
-                    mdlptr->updateData (&ctrmap);
-                }
+                if (plot_contours) { c_ctr_grid->updateData (&ctrmap); }
 
                 if (plot_a_contours) {
                     std::vector<FLT> actrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.a, RD.contour_threshold);
-                    mdlptr = (VdmPtr)v1.getVisualModel (a_ctr_grid);
-                    mdlptr->updateData (&actrmap);
+                    a_ctr_grid->updateData (&actrmap);
                 }
 
                 if (plot_a) {
                     for (unsigned int i = 0; i<RD.N; ++i) {
-                        mdlptr = (VdmPtr)v1.getVisualModel (agrids[i]);
-                        mdlptr->updateData (&RD.a[i]);
+                        agrids[i]->updateData (&RD.a[i]);
 # ifdef AXONCOMP
                         if constexpr (plot_ahat == true) {
-                            mdlptr = (VdmPtr)v1.getVisualModel (ahatgrids[i]);
-                            mdlptr->colourScale.autoscale_from (RD.ahat[i]);
-                            //mdlptr->zScale.autoscale_from (RD.ahat[i]);
-                            mdlptr->updateData (&RD.ahat[i]);
-                            mdlptr = (VdmPtr)v1.getVisualModel (divahatgrids[i]);
-                            mdlptr->colourScale.autoscale_from (RD.div_ahat[i]);
-                            //mdlptr->zScale.autoscale_from (RD.div_ahat[i]);
-                            mdlptr->updateData (&RD.div_ahat[i]);
+                            ahatgrids[i]->colourScale.autoscale_from (RD.ahat[i]);
+                            ahatgrids[i]->updateData (&RD.ahat[i]);
+                            divahatgrids[i]->colourScale.autoscale_from (RD.div_ahat[i]);
+                            divahatgrids[i]->updateData (&RD.div_ahat[i]);
                         }
 # endif
                     }
                 }
                 if (plot_c) {
-                    for (unsigned int i = 0; i<RD.N; ++i) {
-                        mdlptr = (VdmPtr)v1.getVisualModel (cgrids[i]);
-                        mdlptr->updateData (&RD.c[i]);
-                    }
+                    for (unsigned int i = 0; i<RD.N; ++i) { cgrids[i]->updateData (&RD.c[i]); }
                 }
 #ifndef AXONCOMP
                 if (plot_f) {
-                    for (unsigned int i = 0; i<RD.N; ++i) {
-                        mdlptr = (VdmPtr)v1.getVisualModel (fgrids[i]);
-                        mdlptr->updateData (&RD.f[i]);
-                    }
+                    for (unsigned int i = 0; i<RD.N; ++i) { fgrids[i]->updateData (&RD.f[i]); }
                 }
 #endif
-                if (plot_n) {
-                    mdlptr = (VdmPtr)v1.getVisualModel (ngrid);
-                    mdlptr->updateData (&RD.n);
-                }
+                if (plot_n) { ngrid->updateData (&RD.n); }
                 if (plot_dr) {
                     RD.spatialAnalysis();
-                    mdlptr = (VdmPtr)v1.getVisualModel (dr_grid);
-                    mdlptr->updateData (&RD.regions);
+                    dr_grid->updateData (&RD.regions);
                     // Plot the difference vectors here.
                     std::vector<morph::vec<float, 3>> regcs;
                     for (auto rc : RD.reg_centroids) {
                         regcs.push_back ({static_cast<float>(rc.second.first),
                                           static_cast<float>(rc.second.second), 0.0f});
                     }
-                    mdlptr = (VdmPtr)v1.getVisualModel (quiv_grid);
-                    mdlptr->updateData (&regcs, &RD.tec_offsets);
-
+                    quiv_grid->updateData (&regcs, &RD.tec_offsets);
                 }
                 // Save to PNG
                 if (vidframes) {
@@ -853,12 +827,12 @@ int main (int argc, char **argv)
                 RD.saveSpatial();
 
 #ifdef COMPILE_PLOTTING
-                graph2->append ((float)RD.stepCount * RD.get_dt(), RD.tec_sos, 0);
+                graph2ptr->append ((float)RD.stepCount * RD.get_dt(), RD.tec_sos, 0);
 # ifdef DEBUG_GRAPH
                 // Update the graph(s)
                 for (unsigned int i = 0; i < RD.N; ++i) {
                     //std::cout << "Append data (" << RD.stepCount << "," << RD.a[0][hexidx] << ")\n";
-                    graph1->append ((float)RD.stepCount*RD.get_dt(), RD.a[i][hexidx], i);
+                    graph1ptr->append ((float)RD.stepCount*RD.get_dt(), RD.a[i][hexidx], i);
                 }
 # endif
 #endif

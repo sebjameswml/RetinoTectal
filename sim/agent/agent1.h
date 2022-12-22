@@ -690,24 +690,23 @@ struct Agent1
     }
 
     // Create a tissue visual, to reduce boilerplate code in init()
-    tissuevisual<float, N>* createTissueVisual (morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
-                                                const std::string& tag,
-                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
+    std::unique_ptr<tissuevisual<float, N>> createTissueVisual (morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
+                                                                const std::string& tag,
+                                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
-        return this->createTissueVisual (this->tvv->shaderprog, this->tvv->tshaderprog,
-                                         offset, gtissue, tag, exview, pair_to_view, alt_cmap);
+        return this->createTissueVisual (this->tvv->shaders, offset, gtissue, tag, exview, pair_to_view, alt_cmap);
     }
 
     // Show x/y gradients in an alternative colour map (Twilight)?
     static constexpr bool grads_in_altmap = false;
 
     // Create a tissue visual, to reduce boilerplate code in init(). Use either shader/tshader progs
-    tissuevisual<float, N>* createTissueVisual (GLuint shad_prog, GLuint tshad_prog,
-                                                morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
-                                                const std::string& tag,
-                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
+    std::unique_ptr<tissuevisual<float, N>> createTissueVisual (morph::gl::shaderprogs& _shaders,
+                                                                morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
+                                                                const std::string& tag,
+                                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
-        tissuevisual<float, N>* tv = new tissuevisual<float, N>(shad_prog, tshad_prog, gtissue, offset);
+        auto tv = std::make_unique<tissuevisual<float, N>>(_shaders, gtissue, offset);
         tv->view = exview;
         tv->pair_to_view = pair_to_view;
         if (exview == expression_view::ligand_grad_x_single || exview == expression_view::ligand_grad_y_single) {
@@ -768,7 +767,7 @@ struct Agent1
         }
         tv->addLabel (ss.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
 
-        this->addOrientationLabels (tv, tag);
+        this->addOrientationLabels (tv.get(), tag);
 
         tv->finalize();
 
@@ -1451,11 +1450,12 @@ struct Agent1
         // Extra for EphA4
         offset2[1] += sqside;
         offset2[0] -= sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::epha4, 0));
+        auto up = this->createTissueVisual (offset2, ret, "Retinal", expression_view::epha4, 0);
+        tvv->addVisualModel (up);
 
         offset2[1] += sqside;
         // Place graph
-        morph::GraphVisual<T>* _vm = new morph::GraphVisual<T> (this->tvv->shaderprog, this->tvv->tshaderprog, offset2);
+        auto _vm = std::make_unique<morph::GraphVisual<T>> (this->tvv->shaders, offset2);
         _vm->twodimensional = false;
         _vm->setsize (0.9f, 1.0f);
         _vm->setlimits_y (0.0f, 5.0f);
@@ -1487,7 +1487,7 @@ struct Agent1
 
         // Another graph (cluster size theory)
         offset2[1] += sqside * 1.2;
-        morph::GraphVisual<T>* _vm2 = new morph::GraphVisual<T> (this->tvv->shaderprog, this->tvv->tshaderprog, offset2);
+        auto _vm2 = std::make_unique<morph::GraphVisual<T>> (this->tvv->shaders, offset2);
         _vm2->twodimensional = false;
         _vm2->setsize (0.9f, 1.0f);
         _vm2->axislabelgap = 0.03f;
@@ -1506,30 +1506,38 @@ struct Agent1
         offset2[1] -= sqside;
 
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair));
+        auto up0 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair);
+        tvv->addVisualModel (up0);
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair));
+        auto up1 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair);
+        tvv->addVisualModel (up1);
 
 #ifdef SHOW_RET_GRADS
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+        auto up2 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair);
+        tvv->addVisualModel (up2);
         offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+        auto up3 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair);
+        tvv->addVisualModel (up3);
         offset2[1] -= sqside;
 #endif
 
         // Tectum
         if constexpr (show_tectal_receptors == true) {
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair));
+            auto up4 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair);
+            tvv->addVisualModel (up4);
         }
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        auto up5 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair);
+        tvv->addVisualModel (up5);
         // Tectal gradients for 0/1
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+        auto up6 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair);
+        tvv->addVisualModel (up6);
         offset2[1] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+        auto up7 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
+        tvv->addVisualModel (up7);
         offset2[1] -= sqside;
 
         if constexpr (N>2) {
@@ -1539,28 +1547,36 @@ struct Agent1
             // Retina
             offset2[1] += sqside;
             // true means cyan-magenta
-            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1));
+            auto up8 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1);
+            tvv->addVisualModel (up8);
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1));
+            auto up9 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1);
+            tvv->addVisualModel (up9);
 #ifdef SHOW_RET_GRADS
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair));
+            auto up10 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair);
+            tvv->addVisualModel (up10);
             offset2[1] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair));
+            auto up11 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair);
+            tvv->addVisualModel (up11);
             offset2[1] -= sqside;
 #endif
             // Tectum
             if constexpr (show_tectal_receptors == true) {
                 offset2[0] += sqside;
-                tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1));
+                auto up12 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1);
+                tvv->addVisualModel (up12);
             }
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            auto up13 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
+            tvv->addVisualModel (up13);
             offset2[0] += sqside;
             offset2[1] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair));
+            auto up14 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair);
+            tvv->addVisualModel (up14);
             offset2[1] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+            auto up15 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
+            tvv->addVisualModel (up15);
             offset2[1] -= sqside;
         }
     }
@@ -1582,18 +1598,23 @@ struct Agent1
         float sqside = 1.4f;
 
         // Tectal expression for 0/1
-        tvv->addVisualModel (this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair));
+        auto up0 = this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair);
+        tvv->addVisualModel (up0);
 
         // Tectal gradients for 0/1
         //offset2[0] += (sqside * 1.2);
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 0));
+        auto up1 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 0);
+        tvv->addVisualModel (up1);
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 1));
+        auto up2 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 1);
+        tvv->addVisualModel (up2);
         if constexpr (N>2) {
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 2));
+            auto up3 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 2);
+            tvv->addVisualModel (up3);
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 3));
+            auto up4 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 3);
+            tvv->addVisualModel (up4);
         }
 
         offset2 = offset;
@@ -1601,28 +1622,36 @@ struct Agent1
         if constexpr (N>2) {
             show_pair = 1; // 1 means show for ligands 2 and 3.
             offset_toprow += morph::vec<float>({1.4f,0,0});
-            tvv->addVisualModel (this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            auto up5 = this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
+            tvv->addVisualModel (up5);
         }
         //offset2[0] += (sqside * 1.2);
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 0));
+        auto up6 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 0);
+        tvv->addVisualModel (up6);
         offset2[0] += sqside;
-        tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 1));
+        auto up7 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 1);
+        tvv->addVisualModel (up7);
         if constexpr (N>2) {
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 2));
+            auto up8 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 2);
+            tvv->addVisualModel (up8);
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 3));
+            auto up9 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 3);
+            tvv->addVisualModel (up9);
         }
 
         if constexpr (N>2) {
 #if 0
             show_pair = 1; // 1 means show for ligands 2 and 3.
             offset2 = offset;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1));
+            auto up10 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
+            tvv->addVisualModel (up10);
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, show_pair));
+            auto up11 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, show_pair);
+            tvv->addVisualModel (up11);
             offset2[0] += sqside;
-            tvv->addVisualModel (this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair));
+            auto up12 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
+            tvv->addVisualModel (up12);
 #endif
         }
     }
@@ -1636,7 +1665,8 @@ struct Agent1
         this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
         this->tvv->setCurrent();
         morph::vec<float> offset = { 0.0f, 0.0f, 0.0f };
-        tvv->addVisualModel (this->createTissueVisual (offset, tectum, "Tectal", expression_view::ligand_exp, 0));
+        auto up = this->createTissueVisual (offset, tectum, "Tectal", expression_view::ligand_exp, 0);
+        tvv->addVisualModel (up);
     }
 
     void tvislayout_h()
@@ -1647,7 +1677,8 @@ struct Agent1
         this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
         this->tvv->setCurrent();
         morph::vec<float> offset = { 0.0f, 0.0f, 0.0f };
-        tvv->addVisualModel (this->createTissueVisual (offset, ret, "Retinal", expression_view::receptor_exp, 0));
+        auto up = this->createTissueVisual (offset, ret, "Retinal", expression_view::receptor_exp, 0);
+        tvv->addVisualModel (up);
     }
 
     // Updatable simulation time text
@@ -1806,81 +1837,83 @@ struct Agent1
     {
         morph::vec<float> offset = offset0;
         // Top left
-        v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, offset, ret, "Retinal", expression_view::cell_positions, 0, 2));
+        // HMMMM HOW TO FIX?
+        auto up = this->createTissueVisual (v->shaders, offset, ret, "Retinal", expression_view::cell_positions, 0, 2);
+        v->addVisualModel (up);
 
         offset[1] -= 1.4f;
         // Branches: Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->bv->target_scale.compute_autoscale (0, 1);
-        //this->bv->view = branchvisual_view::detail;
-        this->bv->view = branchvisual_view::discs;
-        //this->bv->view = branchvisual_view::discint;
-        this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
-        this->addOrientationLabels (this->bv, std::string("Tectal"));
-        v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, offset, &this->branches, &this->ax_history);
+        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->target_scale.compute_autoscale (0, 1);
+        //bvup->view = branchvisual_view::detail;
+        bvup->view = branchvisual_view::discs;
+        //bvup->view = branchvisual_view::discint;
+        bvup->finalize();
+        bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        this->addOrientationLabels (bvup.get(), std::string("Tectal"));
+        this->bv = v->addVisualModel (bvup);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-        this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, offset, &this->ax_centroids);
+        cvup->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        cvup->viewmode = netvisual_viewmode::actual;
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = v->addVisualModel (cvup);
 
         // Experiment: Another NetVisual view showing the target locations
         offset[1] += 1.4f;
-        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-        this->tcv->viewmode = netvisual_viewmode::targetplus;
-        this->tcv->finalize();
-        this->tcv->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        v->addVisualModel (this->tcv);
+        auto tcvup = std::make_unique<NetVisual<T>> (v->shaders, offset, &this->ax_centroids);
+        tcvup->viewmode = netvisual_viewmode::targetplus;
+        tcvup->finalize();
+        tcvup->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->tcv = v->addVisualModel (tcvup);
 
         // Selected axons: This one gives an 'axon view'
         offset[0] += 1.5f;
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, offset, &this->branches, &this->ax_history);
-        this->av->view = branchvisual_view::axonview;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        v->addVisualModel (this->av);
+        auto avup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, offset, &this->branches, &this->ax_history);
+        avup->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
+        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->target_scale.compute_autoscale (0, 1);
+        avup->finalize();
+        avup->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->av = v->addVisualModel (avup);
 
         offset[1] -= 1.4f;
 
         // Graph: A graph of the RMS diffs between axon position centroids and target positions from retina
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, offset);
-        this->gv->twodimensional = false;
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, offset);
+        gvup->twodimensional = false;
         if (this->layout == graph_layout::a) {
-            this->gv->axisstyle = morph::axisstyle::twinax;
-            this->gv->setsize (0.9f, 1.0f);
-            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                                 0, this->conf->getFloat("graph_ymax", 1.0f),
-                                 0, this->conf->getFloat("graph_ymax2", 200.0f));
-            this->gv->axislabelgap = 0.03f;
-            this->gv->policy = morph::stylepolicy::lines;
-            this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
-            this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
-            this->gv->xlabel = "t";
-            this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
-            this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
+            gvup->axisstyle = morph::axisstyle::twinax;
+            gvup->setsize (0.9f, 1.0f);
+            gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                             0, this->conf->getFloat("graph_ymax", 1.0f),
+                             0, this->conf->getFloat("graph_ymax2", 200.0f));
+            gvup->axislabelgap = 0.03f;
+            gvup->policy = morph::stylepolicy::lines;
+            gvup->ylabel = unicode::toUtf8 (unicode::epsilon);
+            gvup->ylabel2 = unicode::toUtf8 (unicode::eta);
+            gvup->xlabel = "t";
+            gvup->prepdata (unicode::toUtf8 (unicode::epsilon));
+            gvup->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
         } else {
-            this->gv->setlimits (0, 1, 0, 1);
-            this->gv->policy = morph::stylepolicy::markers;
-            this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-            this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
-            //this->gv->prepdata ("0"); // without this, GraphVisual code crashes at first render.
+            gvup->setlimits (0, 1, 0, 1);
+            gvup->policy = morph::stylepolicy::markers;
+            gvup->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+            gvup->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+            //gvup->prepdata ("0"); // without this, GraphVisual code crashes at first render.
         }
-        this->gv->finalize();
-        v->addVisualModel (this->gv);
+        gvup->finalize();
+        this->gv = v->addVisualModel (gvup);
 
         // A 'text' only visual model to list the parameters and incorporate figure letters
         offset[0] += 1.4f;
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, offset);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, offset);
         float ty = 1.0f; // text y position
         float th = 0.1f; // text height
         float cw = 0.17f;
@@ -1935,50 +1968,50 @@ struct Agent1
         morph::vec<float> g_B = offset0 + morph::vec<float>({1.3f, 0.0f, 0.0f});
         morph::vec<float> g_C = offset0 + morph::vec<float>({2.7f, 0.0f, 0.0f});
 
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->bv->target_scale.compute_autoscale (0, 1);
-        this->bv->view = branchvisual_view::discs;
-        this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->bv, std::string("Tectal"));
-        v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_A, &this->branches, &this->ax_history);
+        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->target_scale.compute_autoscale (0, 1);
+        bvup->view = branchvisual_view::discs;
+        bvup->finalize();
+        bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (bvup.get(), std::string("Tectal"));
+        this->bv = v->addVisualModel (bvup);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
-        //this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        //this->cv->viewmode = netvisual_viewmode::actual_nolines;
-        this->cv->viewmode = netvisual_viewmode::actual;
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_B, &this->ax_centroids);
+        //cvup->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        //cvup->viewmode = netvisual_viewmode::actual_nolines;
+        cvup->viewmode = netvisual_viewmode::actual;
         if (this->layout == graph_layout::b) {
-            this->cv->radiusFixed = 0.02;
+            cvup->radiusFixed = 0.02;
         }
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        v->addVisualModel (this->cv);
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = v->addVisualModel (cvup);
 
         // Selected axons: This one gives an 'axon view'
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_C);
-        this->gv->axisstyle = morph::axisstyle::twinax;
-        this->gv->twodimensional = false;
-        this->gv->setsize (0.9f, 1.0f);
-        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f),
-                             0, this->conf->getFloat("graph_ymax2", 200.0f));
-        this->gv->axislabelgap = 0.03f;
-        this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->ylabel2 = unicode::toUtf8 (unicode::eta);
-        this->gv->xlabel = "t";
-        this->gv->prepdata (unicode::toUtf8 (unicode::epsilon));
-        this->gv->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
-        this->gv->legend = false;
-        this->gv->finalize();
-        this->v->addVisualModel (this->gv);
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_C);
+        gvup->axisstyle = morph::axisstyle::twinax;
+        gvup->twodimensional = false;
+        gvup->setsize (0.9f, 1.0f);
+        gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                         0, this->conf->getFloat("graph_ymax", 1.0f),
+                         0, this->conf->getFloat("graph_ymax2", 200.0f));
+        gvup->axislabelgap = 0.03f;
+        gvup->policy = morph::stylepolicy::lines;
+        gvup->ylabel = unicode::toUtf8 (unicode::epsilon);
+        gvup->ylabel2 = unicode::toUtf8 (unicode::eta);
+        gvup->xlabel = "t";
+        gvup->prepdata (unicode::toUtf8 (unicode::epsilon));
+        gvup->prepdata (unicode::toUtf8 (unicode::eta), morph::axisside::right);
+        gvup->legend = false;
+        gvup->finalize();
+        this->gv = this->v->addVisualModel (gvup);
 
         // Figure letters
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("C", g_C+morph::vec<float>({-0.1,0,0}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
@@ -2000,112 +2033,113 @@ struct Agent1
         morph::vec<float> g_H = offset0 + morph::vec<float>({3.9f, -1.6f, 0.0f});
 
         // A Retinal cell positions
-        this->v->addVisualModel (this->createTissueVisual (v->shaderprog, v->tshaderprog, g_A, ret, "Retinal", expression_view::cell_positions, 0, 2));
+        auto up = this->createTissueVisual (v->shaders, g_A, ret, "Retinal", expression_view::cell_positions, 0, 2);
+        this->v->addVisualModel (up);
 
         // B Experiment: Another NetVisual view showing the target locations
-        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_E, &this->ax_centroids);
-        this->tcv->viewmode = netvisual_viewmode::targetplus;
-        this->tcv->finalize();
-        this->tcv->addLabel ("Expected", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->v->addVisualModel (this->tcv);
+        auto tcvup = std::make_unique<NetVisual<T>> (v->shaders, g_E, &this->ax_centroids);
+        tcvup->viewmode = netvisual_viewmode::targetplus;
+        tcvup->finalize();
+        tcvup->addLabel ("Expected", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->tcv = this->v->addVisualModel (tcvup);
 
         // t=0
-        this->cv0 = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
-        this->cv0->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        this->cv0->viewmode = netvisual_viewmode::actual;
-        this->cv0->finalize();
-        this->cv0->addLabel ("Axon centroids (t=0)", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv0, std::string("Tectal"));
-        this->v->addVisualModel (this->cv0);
+        auto cv0up = std::make_unique<NetVisual<T>> (v->shaders, g_B, &this->ax_centroids);
+        cv0up->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        cv0up->viewmode = netvisual_viewmode::actual;
+        cv0up->finalize();
+        cv0up->addLabel ("Axon centroids (t=0)", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cv0up.get(), std::string("Tectal"));
+        this->cv0 = this->v->addVisualModel (cv0up);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv1 = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
-        this->cv1->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        this->cv1->viewmode = netvisual_viewmode::actual;
-        this->cv1->finalize();
+        auto cv1up = std::make_unique<NetVisual<T>> (v->shaders, g_C, &this->ax_centroids);
+        cv1up->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        cv1up->viewmode = netvisual_viewmode::actual;
+        cv1up->finalize();
         std::stringstream ss1;
         ss1 << "t=" << this->freeze_times[1];
-        this->cv1->addLabel (ss1.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv1, std::string("Tectal"));
-        this->v->addVisualModel (this->cv1);
+        cv1up->addLabel (ss1.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cv1up.get(), std::string("Tectal"));
+        this->cv1 = this->v->addVisualModel (cv1up);
 
         // Axon centroids, final positions
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_D, &this->ax_centroids);
-        this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        this->cv->finalize();
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_D, &this->ax_centroids);
+        cvup->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        cvup->viewmode = netvisual_viewmode::actual;
+        cvup->finalize();
         std::stringstream ssf;
         ssf << "t=" << this->conf->getInt("steps", -1);
-        this->cv->addLabel (ssf.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        this->v->addVisualModel (this->cv);
+        cvup->addLabel (ssf.str(), {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = this->v->addVisualModel (cvup);
 
         // TWO graphs for epsilon (rms distance error) and eta (net crossings)
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
-        this->gv->twodimensional = false;
-        this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
-        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f));
-        this->gv->min_num_ticks = 2;
-        this->gv->max_num_ticks = 6;
-        this->gv->axislabelgap = 0.03f;
-        this->gv->fontsize = fontsz_subgraph;
-        this->gv->fontres = fontres_subgraph;
-        //this->gv->axisstyle = morph::axisstyle::boxfullticks;
-        this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->xlabel = "t";
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_F + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
+        gvup->twodimensional = false;
+        gvup->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
+        gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                         0, this->conf->getFloat("graph_ymax", 1.0f));
+        gvup->min_num_ticks = 2;
+        gvup->max_num_ticks = 6;
+        gvup->axislabelgap = 0.03f;
+        gvup->fontsize = fontsz_subgraph;
+        gvup->fontres = fontres_subgraph;
+        //gvup->axisstyle = morph::axisstyle::boxfullticks;
+        gvup->policy = morph::stylepolicy::lines;
+        gvup->ylabel = unicode::toUtf8 (unicode::epsilon);
+        gvup->xlabel = "t";
         morph::DatasetStyle ds(morph::stylepolicy::lines);
         ds.linecolour = morph::colour::dodgerblue3;
         ds.datalabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->prepdata (ds);
-        this->gv->legend = false;
-        this->gv->finalize();
-        this->v->addVisualModel (this->gv);
+        gvup->prepdata (ds);
+        gvup->legend = false;
+        gvup->finalize();
+        this->gv = this->v->addVisualModel (gvup);
 
-        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_F + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
-        this->gv2->twodimensional = false;
-        this->gv2->omit_x_tick_labels = true;
-        this->gv2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
-        this->gv2->setlimits (0, this->conf->getFloat ("steps", 1000),
-                              0, this->conf->getFloat("graph_ymax2", 200.0f));
-        this->gv2->axislabelgap = 0.03f;
-        this->gv2->fontsize = fontsz_subgraph;
-        this->gv2->fontres = fontres_subgraph;
-        //this->gv2->axisstyle = morph::axisstyle::boxfullticks;
-        this->gv2->policy = morph::stylepolicy::lines;
-        this->gv2->ylabel = unicode::toUtf8 (unicode::eta);
-        this->gv2->xlabel = "";
+        auto gv2up = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_F + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
+        gv2up->twodimensional = false;
+        gv2up->omit_x_tick_labels = true;
+        gv2up->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
+        gv2up->setlimits (0, this->conf->getFloat ("steps", 1000),
+                          0, this->conf->getFloat("graph_ymax2", 200.0f));
+        gv2up->axislabelgap = 0.03f;
+        gv2up->fontsize = fontsz_subgraph;
+        gv2up->fontres = fontres_subgraph;
+        //gv2up->axisstyle = morph::axisstyle::boxfullticks;
+        gv2up->policy = morph::stylepolicy::lines;
+        gv2up->ylabel = unicode::toUtf8 (unicode::eta);
+        gv2up->xlabel = "";
         ds.linecolour = morph::colour::red3;
         ds.datalabel = unicode::toUtf8 (unicode::eta);
-        this->gv2->prepdata (ds);
-        this->gv2->legend = false;
-        this->gv2->finalize();
-        this->v->addVisualModel (this->gv2);
+        gv2up->prepdata (ds);
+        gv2up->legend = false;
+        gv2up->finalize();
+        this->gv2 = this->v->addVisualModel (gv2up);
 
         // Branches: Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_G, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->bv->target_scale.compute_autoscale (0, 1);
-        this->bv->view = branchvisual_view::discs;
-        this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->bv, std::string("Tectal"));
-        this->v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_G, &this->branches, &this->ax_history);
+        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->target_scale.compute_autoscale (0, 1);
+        bvup->view = branchvisual_view::discs;
+        bvup->finalize();
+        bvup->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (bvup.get(), std::string("Tectal"));
+        this->bv = this->v->addVisualModel (bvup);
 
         // C Selected axons: This one gives an 'axon view'
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_H, &this->branches, &this->ax_history);
-        this->av->view = branchvisual_view::axonview;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->v->addVisualModel (this->av);
+        auto avup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_H, &this->branches, &this->ax_history);
+        avup->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
+        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->target_scale.compute_autoscale (0, 1);
+        avup->finalize();
+        avup->addLabel ("Selected axons", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->v->addVisualModel (avup);
 
         // A 'text' only visual model to incorporate figure letters
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel ("A", g_A+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("B", g_B+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("C", g_C+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
@@ -2125,41 +2159,39 @@ struct Agent1
         morph::vec<float> g_C = offset0 + morph::vec<float>({2.7f, 0.0f, 0.0f});
 
         // Branches: Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->bv->target_scale.compute_autoscale (0, 1);
-        this->bv->view = branchvisual_view::discs;
-        this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->bv, std::string("Tectal"));
-        v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_A, &this->branches, &this->ax_history);
+        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->target_scale.compute_autoscale (0, 1);
+        bvup->view = branchvisual_view::discs;
+        bvup->finalize();
+        bvup->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (bvup.get(), std::string("Tectal"));
+        this->bv = this->v->addVisualModel (bvup);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        if (this->layout == graph_layout::b) {
-            this->cv->radiusFixed = 0.02;
-        }
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_B, &this->ax_centroids);
+        cvup->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) { cvup->radiusFixed = 0.02; }
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = v->addVisualModel (cvup);
 
         // The position graph, like Brown/Reber and S&G papers
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_C);
-        this->gv->twodimensional = false;
-        this->gv->setlimits (0, 1, 0, 1);
-        this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
-        this->gv->finalize();
-        v->addVisualModel (this->gv);
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_C);
+        gvup->twodimensional = false;
+        gvup->setlimits (0, 1, 0, 1);
+        gvup->policy = morph::stylepolicy::markers;
+        gvup->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+        gvup->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+        gvup->finalize();
+        this->gv = v->addVisualModel (gvup);
 
         // Figure letters
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel (std::string({sl}), g_A+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel (std::string({++sl}), g_B+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel (std::string({++sl}), g_C+morph::vec<float>({-0.1f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
@@ -2173,30 +2205,28 @@ struct Agent1
         morph::vec<float> g_B = offset0 + morph::vec<float>({this->conf->getFloat("graphb_x", 1.7f), 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        if (this->layout == graph_layout::b) {
-            this->cv->radiusFixed = 0.02;
-        }
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_A, &this->ax_centroids);
+        cvup->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) { cvup->radiusFixed = 0.02; }
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = v->addVisualModel (cvup);
 
         // Experiment: Another NetVisual view showing the target locations
         morph::vec<float> expoff = {this->conf->getFloat("expoff_x", 1.05f), this->conf->getFloat("expoff_y", -0.15f), 0.01f};
         morph::vec<float> g_A_inset = g_A + expoff;
-        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A_inset, &this->ax_centroids);
-        this->tcv->viewmode = netvisual_viewmode::targetplus;
-        this->tcv->zoom = 0.45f;
-        this->tcv->finalize();
-        this->tcv->addLabel ("Expected", {0.12f, 0.48f, 0.0f},
-                             morph::colour::black, morph::VisualFont::Vera, fontsz_inset, fontres_inset);
-        v->addVisualModel (this->tcv);
+        auto tcvup = std::make_unique<NetVisual<T>> (v->shaders, g_A_inset, &this->ax_centroids);
+        tcvup->viewmode = netvisual_viewmode::targetplus;
+        tcvup->zoom = 0.45f;
+        tcvup->finalize();
+        tcvup->addLabel ("Expected", {0.12f, 0.48f, 0.0f},
+                         morph::colour::black, morph::VisualFont::Vera, fontsz_inset, fontres_inset);
+        this->tcv = v->addVisualModel (tcvup);
 
         // A 'text' only visual model to display the sim time
         g_A[0] += 1.05f;
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_A);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, g_A);
         float ty = this->conf->getFloat("ty", 1.1f); // text y position
         float th = this->conf->getFloat("th", 0.1f); // text height
         float l_x = this->conf->getFloat("tx", 0.0f);
@@ -2212,40 +2242,40 @@ struct Agent1
 
         if (this->conf->getBool ("rc_vs_nt", false) == true) {
             // The R--C vs N--T graph
-            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
-            this->gv->twodimensional = false;
-            this->gv->max_num_ticks = 3;
-            this->gv->min_num_ticks = 2;
-            this->gv->setlimits (0, 1, 0, 1);
-            this->gv->policy = morph::stylepolicy::markers;
-            this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-            this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
-            this->gv->fontsize = fontsz_graph;
-            this->gv->fontres = fontres_graph;
-            this->gv->finalize();
-            v->addVisualModel (this->gv);
+            auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_B);
+            gvup->twodimensional = false;
+            gvup->max_num_ticks = 3;
+            gvup->min_num_ticks = 2;
+            gvup->setlimits (0, 1, 0, 1);
+            gvup->policy = morph::stylepolicy::markers;
+            gvup->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+            gvup->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+            gvup->fontsize = fontsz_graph;
+            gvup->fontres = fontres_graph;
+            gvup->finalize();
+            this->gv = v->addVisualModel (gvup);
         } else {
             // A graph of the RMS diffs between axon position centroids and target positions from retina
-            this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
-            this->gv->twodimensional = false;
-            this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                                 0, this->conf->getFloat("graph_ymax", 1.0f));
-            this->gv->policy = morph::stylepolicy::lines;
-            this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
-            this->gv->xlabel = "t";
-            this->gv->prepdata ("All");
-            this->gv->prepdata ("Surrnd");
-            this->gv->prepdata ("Graft");
-            this->gv->fontsize = fontsz_graph;
-            this->gv->fontres = fontres_graph;
-            this->gv->finalize();
-            this->v->addVisualModel (this->gv);
+            auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_B);
+            gvup->twodimensional = false;
+            gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                             0, this->conf->getFloat("graph_ymax", 1.0f));
+            gvup->policy = morph::stylepolicy::lines;
+            gvup->ylabel = unicode::toUtf8(unicode::epsilon);
+            gvup->xlabel = "t";
+            gvup->prepdata ("All");
+            gvup->prepdata ("Surrnd");
+            gvup->prepdata ("Graft");
+            gvup->fontsize = fontsz_graph;
+            gvup->fontres = fontres_graph;
+            gvup->finalize();
+            this->gv = this->v->addVisualModel (gvup);
         }
         // Figure letters
         morph::vec<float> ozero = {this->conf->getFloat ("figlet_x", -1.2f), this->conf->getFloat ("figlet_y", 1.1f), 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm2 = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm2);
     }
@@ -2259,49 +2289,47 @@ struct Agent1
         morph::vec<float> g_D = offset0 + morph::vec<float>({4.5f, 0.0f, 0.0f});
 
         // Expt net
-        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
-        this->tcv->viewmode = netvisual_viewmode::targetplus;
-        this->tcv->finalize();
-        this->tcv->addLabel ("Expected", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->v->addVisualModel (this->tcv);
+        auto tcvup = std::make_unique<NetVisual<T>> (v->shaders, g_A, &this->ax_centroids);
+        tcvup->viewmode = netvisual_viewmode::targetplus;
+        tcvup->finalize();
+        tcvup->addLabel ("Expected", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->tcv = this->v->addVisualModel (tcvup);
 
         // Branches
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_B, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->bv->target_scale.compute_autoscale (0, 1);
-        this->bv->view = branchvisual_view::discs;
-        this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->bv, std::string("Tectal"));
-        this->v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_B, &this->branches, &this->ax_history);
+        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->target_scale.compute_autoscale (0, 1);
+        bvup->view = branchvisual_view::discs;
+        bvup->finalize();
+        bvup->addLabel ("Branches", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (bvup.get(), std::string("Tectal"));
+        this->bv = this->v->addVisualModel (bvup);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        if (this->layout == graph_layout::b) {
-            this->cv->radiusFixed = 0.02;
-        }
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        this->v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_C, &this->ax_centroids);
+        cvup->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) { cvup->radiusFixed = 0.02; }
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = this->v->addVisualModel (cvup);
 
         // A graph of the RMS diffs between axon position centroids and target positions from retina
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
-        this->gv->twodimensional = false;
-        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f));
-        this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
-        this->gv->xlabel = "t";
-        this->gv->prepdata ("All");
-        this->gv->prepdata ("Surrnd");
-        this->gv->prepdata ("Graft");
-        this->gv->finalize();
-        this->v->addVisualModel (this->gv);
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_D);
+        gvup->twodimensional = false;
+        gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                         0, this->conf->getFloat("graph_ymax", 1.0f));
+        gvup->policy = morph::stylepolicy::lines;
+        gvup->ylabel = unicode::toUtf8(unicode::epsilon);
+        gvup->xlabel = "t";
+        gvup->prepdata ("All");
+        gvup->prepdata ("Surrnd");
+        gvup->prepdata ("Graft");
+        gvup->finalize();
+        this->gv = this->v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
+        auto errvm = std::make_unique<morph::VisualModel> (v->shaders, g_D);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
@@ -2314,7 +2342,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
@@ -2327,41 +2355,41 @@ struct Agent1
         morph::vec<float> g_C = offset0 + morph::vec<float>({3.0f, 0.0f, 0.0f});
         morph::vec<float> g_D = offset0 + morph::vec<float>({4.5f, 0.0f, 0.0f});
 
-        this->tcv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
-        this->tcv->viewmode = netvisual_viewmode::targetplus;
-        this->tcv->finalize();
-        this->tcv->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->v->addVisualModel (this->tcv);
+        auto tcvup = std::make_unique<NetVisual<T>> (v->shaders, g_A, &this->ax_centroids);
+        tcvup->viewmode = netvisual_viewmode::targetplus;
+        tcvup->finalize();
+        tcvup->addLabel ("Expected", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->tcv = this->v->addVisualModel (tcvup);
 
-        this->bv = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_B, &this->branches, &this->ax_history);
-        this->bv->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->bv->target_scale.compute_autoscale (0, 1);
-        this->bv->view = branchvisual_view::discs;
-        this->bv->finalize();
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->bv, std::string("Tectal"));
-        this->v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_B, &this->branches, &this->ax_history);
+        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->target_scale.compute_autoscale (0, 1);
+        bvup->view = branchvisual_view::discs;
+        bvup->finalize();
+        bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (bvup.get(), std::string("Tectal"));
+        this->bv = this->v->addVisualModel (bvup);
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_C, &this->ax_centroids);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        this->v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_C, &this->ax_centroids);
+        cvup->viewmode = netvisual_viewmode::actual;
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = this->v->addVisualModel (cvup);
 
         // NT vs RC graph here.
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D);
-        this->gv->twodimensional = false;
-        this->gv->setlimits (0, 1, 0, 1);
-        this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
-        this->gv->finalize();
-        v->addVisualModel (this->gv);
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_D);
+        gvup->twodimensional = false;
+        gvup->setlimits (0, 1, 0, 1);
+        gvup->policy = morph::stylepolicy::markers;
+        gvup->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+        gvup->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+        gvup->finalize();
+        this->gv = v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_D);
+        auto errvm = std::make_unique<morph::VisualModel> (v->shaders, g_D);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
@@ -2374,7 +2402,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
@@ -2387,81 +2415,81 @@ struct Agent1
         morph::vec<float> g_D = offset0 + morph::vec<float>({4.5f, 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv1 = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
-        this->cv1->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        this->cv1->viewmode = netvisual_viewmode::actual;
-        this->cv1->finalize();
+        auto cv1up = std::make_unique<NetVisual<T>> (v->shaders, g_A, &this->ax_centroids);
+        cv1up->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        cv1up->viewmode = netvisual_viewmode::actual;
+        cv1up->finalize();
         std::stringstream ss1;
         ss1 << "t=" << this->freeze_times[1];
-        this->cv1->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv1, std::string("Tectal"));
-        this->v->addVisualModel (this->cv1);
+        cv1up->addLabel (ss1.str(), {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cv1up.get(), std::string("Tectal"));
+        this->cv1 = this->v->addVisualModel (cv1up);
 
         // Axon centroids, final positions
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_B, &this->ax_centroids);
-        this->cv->maxlen = this->conf->getDouble ("maxnetline", 1.0);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        this->cv->finalize();
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_B, &this->ax_centroids);
+        cvup->maxlen = this->conf->getDouble ("maxnetline", 1.0);
+        cvup->viewmode = netvisual_viewmode::actual;
+        cvup->finalize();
         std::stringstream ssf;
         ssf << "t=" << this->conf->getInt("steps", -1);
-        this->cv->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        this->v->addVisualModel (this->cv);
+        cvup->addLabel (ssf.str(), {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = this->v->addVisualModel (cvup);
 
         // Selected axons: This one gives an 'axon view'
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_C, &this->branches, &this->ax_history);
-        this->av->view = branchvisual_view::axonview;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->av->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->v->addVisualModel (this->av);
+        auto avup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_C, &this->branches, &this->ax_history);
+        avup->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
+        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->target_scale.compute_autoscale (0, 1);
+        avup->finalize();
+        avup->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->av = this->v->addVisualModel (avup);
 
         // TWO graphs for epsilon (rms distance error) and eta (net crossings)
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
-        this->gv->twodimensional = false;
-        this->gv->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
-        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f));
-        this->gv->max_num_ticks = 6;
-        this->gv->min_num_ticks = 3;
-        this->gv->axislabelgap = 0.03f;
-        this->gv->fontsize = fontsz_subgraph;
-        this->gv->fontres = fontres_subgraph;
-        //this->gv->axisstyle = morph::axisstyle::boxfullticks;
-        this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->xlabel = "t";
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_D + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), 0.0f, 0.0f}));
+        gvup->twodimensional = false;
+        gvup->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
+        gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                         0, this->conf->getFloat("graph_ymax", 1.0f));
+        gvup->max_num_ticks = 6;
+        gvup->min_num_ticks = 3;
+        gvup->axislabelgap = 0.03f;
+        gvup->fontsize = fontsz_subgraph;
+        gvup->fontres = fontres_subgraph;
+        //gvup->axisstyle = morph::axisstyle::boxfullticks;
+        gvup->policy = morph::stylepolicy::lines;
+        gvup->ylabel = unicode::toUtf8 (unicode::epsilon);
+        gvup->xlabel = "t";
         morph::DatasetStyle ds(morph::stylepolicy::lines);
         ds.linecolour = morph::colour::dodgerblue3;
         ds.datalabel = unicode::toUtf8 (unicode::epsilon);
-        this->gv->prepdata (ds);
-        this->gv->legend = false;
-        this->gv->finalize();
-        this->v->addVisualModel (this->gv);
+        gvup->prepdata (ds);
+        gvup->legend = false;
+        gvup->finalize();
+        this->gv = this->v->addVisualModel (gvup);
 
-        this->gv2 = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_D + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
-        this->gv2->twodimensional = false;
-        this->gv2->omit_x_tick_labels = true;
-        this->gv2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
-        this->gv2->setlimits (0, this->conf->getFloat ("steps", 1000),
-                              0, this->conf->getFloat("graph_ymax2", 200.0f));
-        this->gv2->max_num_ticks = 6;
-        this->gv2->min_num_ticks = 3;
-        this->gv2->axislabelgap = 0.03f;
-        this->gv2->fontsize = fontsz_subgraph;
-        this->gv2->fontres = fontres_subgraph;
-        //this->gv2->axisstyle = morph::axisstyle::boxfullticks;
-        this->gv2->policy = morph::stylepolicy::lines;
-        this->gv2->ylabel = unicode::toUtf8 (unicode::eta);
-        this->gv2->xlabel = "";
+        auto gvup2 = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_D + morph::vec<float>({this->conf->getFloat("subgraph_leftoffset", 0.05f), this->conf->getFloat("subgraph_vertoffset", 0.6f), 0.0f}));
+        gvup2->twodimensional = false;
+        gvup2->omit_x_tick_labels = true;
+        gvup2->setsize (0.9f, this->conf->getFloat("subgraph_height", 0.45f));
+        gvup2->setlimits (0, this->conf->getFloat ("steps", 1000),
+                          0, this->conf->getFloat("graph_ymax2", 200.0f));
+        gvup2->max_num_ticks = 6;
+        gvup2->min_num_ticks = 3;
+        gvup2->axislabelgap = 0.03f;
+        gvup2->fontsize = fontsz_subgraph;
+        gvup2->fontres = fontres_subgraph;
+        //gvup2->axisstyle = morph::axisstyle::boxfullticks;
+        gvup2->policy = morph::stylepolicy::lines;
+        gvup2->ylabel = unicode::toUtf8 (unicode::eta);
+        gvup2->xlabel = "";
         ds.linecolour = morph::colour::red3;
         ds.datalabel = unicode::toUtf8 (unicode::eta);
-        this->gv2->prepdata (ds);
-        this->gv2->legend = false;
-        this->gv2->finalize();
-        this->v->addVisualModel (this->gv2);
+        gvup2->prepdata (ds);
+        gvup2->legend = false;
+        gvup2->finalize();
+        this->gv2 = this->v->addVisualModel (gvup2);
     }
 
     // 1x2 graphs (centroids, selected)
@@ -2471,32 +2499,30 @@ struct Agent1
         morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        if (this->layout == graph_layout::b) {
-            this->cv->radiusFixed = 0.02;
-        }
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        this->v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_A, &this->ax_centroids);
+        cvup->viewmode = netvisual_viewmode::actual;
+        if (this->layout == graph_layout::b) { cvup->radiusFixed = 0.02; }
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = this->v->addVisualModel (cvup);
 
         // A graph of the RMS diffs between axon position centroids and target positions from retina
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
-        this->gv->twodimensional = false;
-        this->gv->setlimits (0, this->conf->getFloat ("steps", 1000),
-                             0, this->conf->getFloat("graph_ymax", 1.0f));
-        this->gv->policy = morph::stylepolicy::lines;
-        this->gv->ylabel = unicode::toUtf8(unicode::epsilon);
-        this->gv->xlabel = "t";
-        this->gv->prepdata ("All");
-        this->gv->prepdata ("Surrnd");
-        this->gv->prepdata ("Graft");
-        this->gv->finalize();
-        this->v->addVisualModel (this->gv);
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_B);
+        gvup->twodimensional = false;
+        gvup->setlimits (0, this->conf->getFloat ("steps", 1000),
+                         0, this->conf->getFloat("graph_ymax", 1.0f));
+        gvup->policy = morph::stylepolicy::lines;
+        gvup->ylabel = unicode::toUtf8(unicode::epsilon);
+        gvup->xlabel = "t";
+        gvup->prepdata ("All");
+        gvup->prepdata ("Surrnd");
+        gvup->prepdata ("Graft");
+        gvup->finalize();
+        this->gv = this->v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_B);
+        auto errvm = std::make_unique<morph::VisualModel> (v->shaders, g_B);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
@@ -2509,7 +2535,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
@@ -2521,25 +2547,25 @@ struct Agent1
         morph::vec<float> g_B = offset0 + morph::vec<float>({1.5f, 0.0f, 0.0f});
 
         // Axon centroids: Centroids of branches viewed with a NetVisual
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, g_A, &this->ax_centroids);
-        this->cv->viewmode = netvisual_viewmode::actual;
-        this->cv->finalize();
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
-        this->addOrientationLabels (this->cv, std::string("Tectal"));
-        this->v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, g_A, &this->ax_centroids);
+        cvup->viewmode = netvisual_viewmode::actual;
+        cvup->finalize();
+        cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
+        this->addOrientationLabels (cvup.get(), std::string("Tectal"));
+        this->cv = this->v->addVisualModel (cvup);
 
         // NT vs RC graph here
-        this->gv = new morph::GraphVisual<T> (v->shaderprog, v->tshaderprog, g_B);
-        this->gv->twodimensional = false;
-        this->gv->setlimits (0, 1, 0, 1);
-        this->gv->policy = morph::stylepolicy::markers;
-        this->gv->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
-        this->gv->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
-        this->gv->finalize();
-        v->addVisualModel (this->gv);
+        auto gvup = std::make_unique<morph::GraphVisual<T>> (v->shaders, g_B);
+        gvup->twodimensional = false;
+        gvup->setlimits (0, 1, 0, 1);
+        gvup->policy = morph::stylepolicy::markers;
+        gvup->ylabel = "R " + unicode::toUtf8 (unicode::longrightarrow) + " tectum " + unicode::toUtf8 (unicode::longrightarrow) + " C";
+        gvup->xlabel = "N " + unicode::toUtf8 (unicode::longrightarrow) + " retina " + unicode::toUtf8 (unicode::longrightarrow) + " T";
+        gvup->finalize();
+        this->gv = v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        morph::VisualModel* errvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, g_B);
+        auto errvm = std::make_unique<morph::VisualModel> (v->shaders, g_B);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
         float th = 0.1f; // text height
@@ -2552,7 +2578,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
     }
@@ -2563,19 +2589,19 @@ struct Agent1
         morph::vec<float> g_A = offset0 + morph::vec<float>({0.0f, 0.0f, 0.0f});
 
         // Selected axons
-        this->av = new BranchVisual<T, N, B> (v->shaderprog, v->tshaderprog, g_A, &this->branches, &this->ax_history);
-        this->av->view = branchvisual_view::axonview;
-        for (auto sa : this->seeaxons) { this->av->seeaxons.insert(sa); }
-        this->av->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
-        this->av->target_scale.compute_autoscale (0, 1);
-        this->av->finalize();
-        this->v->addVisualModel (this->av);
+        auto avup = std::make_unique<BranchVisual<T, N, B>> (v->shaders, g_A, &this->branches, &this->ax_history);
+        avup->view = branchvisual_view::axonview;
+        for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
+        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->target_scale.compute_autoscale (0, 1);
+        avup->finalize();
+        this->av = this->v->addVisualModel (avup);
 
         // Figure letter
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        morph::VisualModel* jtvm2 = new morph::VisualModel (v->shaderprog, v->tshaderprog, ozero);
+        auto jtvm2 = std::make_unique<morph::VisualModel> (v->shaders, ozero);
         jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm2);
     }

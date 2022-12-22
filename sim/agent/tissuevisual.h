@@ -45,10 +45,9 @@ class tissuevisual : public morph::VisualModel
 {
 public:
     //! Single constructor for simplicity
-    tissuevisual(GLuint sp, GLuint tsp, const guidingtissue<T, N>* _r, const morph::vec<float> _offset)
+    tissuevisual(morph::gl::shaderprogs& _shaders, const guidingtissue<T, N>* _r, const morph::vec<float> _offset)
     {
-        this->shaderprog = sp;
-        this->tshaderprog = tsp;
+        this->shaders = _shaders;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
         // Defaults for z and colourScale

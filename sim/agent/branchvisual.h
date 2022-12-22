@@ -36,7 +36,7 @@ template <typename Flt, size_t N, typename B=branch<Flt, N>>
 class BranchVisual : public morph::VisualModel
 {
 public:
-    BranchVisual(GLuint sp, GLuint tsp, const morph::vec<float, 3> _offset,
+    BranchVisual(morph::gl::shaderprogs& _shaders, const morph::vec<float, 3> _offset,
                  std::vector<B>* _branches,
                  std::map<size_t, morph::vvec<morph::vec<Flt, 3>>>* _ax_history,
                  branchvisual_view _view = branchvisual_view::detailed)
@@ -44,8 +44,7 @@ public:
         this->branches = _branches;
         this->ax_history = _ax_history;
         this->view = _view;
-        this->shaderprog = sp;
-        this->tshaderprog = tsp;
+        this->shaders = _shaders;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
