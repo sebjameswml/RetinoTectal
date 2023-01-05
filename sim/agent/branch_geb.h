@@ -173,7 +173,7 @@ public:
             std::cout << "G: " << G << ", abs(log(G.sum()): " << GFi << std::endl;
             T sigma = 0.12;
             // Store candidate G as probability density:
-            pdG[j] = (T{1}/(sigma*T{morph::TWO_PI_D})) * std::exp ( - GFi * GFi / (2*sigma*sigma));
+            pdG[j] = (T{1}/(sigma*morph::mathconst<T>::two_pi)) * std::exp ( - GFi * GFi / (2*sigma*sigma));
             std::cout << "pdG[candidate] = " << pdG[j] <<std::endl;
         }
 
