@@ -35,7 +35,7 @@ public:
     Flt ret_inner = Flt{0.0};
     Flt ret_outer = Flt{1.0};
     Flt ret_startangle = Flt{0.0};
-    Flt ret_endangle = scf(morph::TWO_PI_D);
+    Flt ret_endangle = morph::mathconst<float>::two_pi;
     //! The Cartesian coordinates of the retinal neurons. This vector is of size N.
     std::vector<std::array<Flt, 2>> ret_coords;
     //! The Cartesian coordinates of the equivalent locations of the retinal neurons
@@ -60,13 +60,13 @@ public:
     morph::RandNormal<Flt>* gamma_noise = (morph::RandNormal<Flt>*)0;
     //! The standard deviation of the gamma_noise; noise to apply to the gammas. This
     //! is the sigma of a normal distribution of mean 0.
-    Flt sigma_gamma = static_cast<Flt>(0.0);
+    Flt sigma_gamma = Flt{0};
 
     //! A random distribution of noise to add to the determination of the gradient of
     //! rho.
     morph::RandNormal<Flt>* rho_noise = (morph::RandNormal<Flt>*)0;
     //! Standard deviation for rho_noise
-    Flt sigma_rho = static_cast<Flt>(0.0);
+    Flt sigma_rho = Flt{0};
 
     //! Number of neurons. A duplicate of the RD_Barrel class's N
     unsigned int NN;
@@ -157,8 +157,8 @@ protected:
         // This loop puts all the lengths of the rings in ringlens adn all the numbers of dots on
         // each ring in ringnums. ntot should agree with number returned by numDotsOnRings
         while (r <= this->ret_outer) {
-            Flt prop = abs(this->ret_endangle - this->ret_startangle) / scf(morph::TWO_PI_D);
-            Flt alen = (prop * scf(morph::TWO_PI_D) * r);
+            Flt prop = abs(this->ret_endangle - this->ret_startangle) / morph::mathconst<float>::two_pi;
+            Flt alen = (prop * morph::mathconst<float>::two_pi * r);
             std::cout << "Ring/arc r=" << r << " has length " << alen << std::endl;
             ringlens.push_back (alen);
             tlen += ringlens.back();
@@ -232,7 +232,7 @@ protected:
             // The angle between each dot
             Flt a = this->ret_endangle - this->ret_startangle;
             Flt d_angle = Flt{0.0};
-            if (a == scf(morph::TWO_PI_D)) {
+            if (a == morph::mathconst<float>::two_pi) {
                 d_angle = a/scf(dots_in_ring[ri]);
                 // Set up the starting angle
                 d_angle_start = (d_angle_start == Flt{0.0}) ? (d_angle/Flt{2.0}) : Flt{0.0};
