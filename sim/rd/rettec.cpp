@@ -142,7 +142,7 @@ int main (int argc, char **argv)
     const float ellipse_b = conf.getFloat ("ellipse_b", 0.7f);
     // Full origin retina, or just a pie slice?
     const double ret_startangle = conf.getDouble ("ret_startangle", 0.0);
-    const double ret_endangle = conf.getDouble ("ret_endangle", morph::TWO_PI_D);
+    const double ret_endangle = conf.getDouble ("ret_endangle", morph::mathconst<double>::two_pi);
     bool overwrite_logs = conf.getBool ("overwrite_logs", false);
     std::string logpath = conf.getString ("logpath", "fromfilename");
     std::string logbase = "";
