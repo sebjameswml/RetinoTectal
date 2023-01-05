@@ -91,7 +91,7 @@ public:
         morph::vvec<morph::vec<T,2>> candposns;
         candposns.push_back (this->current);
         // Choose a random direction to move a distance r (2r?) and evaluate that (G' in Gebhardt et al)
-        T angle = this->rng.get() * T{morph::TWO_PI_D};
+        T angle = this->rng.get() * morph::mathconst<T>::two_pi;
         morph::vec<T,2> randvec = { this->r * std::sin(angle), this->r * std::cos(angle) };
         candposns.push_back (this->current+randvec);
 
