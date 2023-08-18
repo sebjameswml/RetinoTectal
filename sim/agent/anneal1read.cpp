@@ -174,7 +174,8 @@ int main (int argc, char** argv)
     morph::vec<float, 3> offset = { -0.7, 0.0, 0.0 };
 
     // First a scatter plot that can be updated. Just using a ScatterVisual for this.
-    auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
+    auto sv = std::make_unique<morph::ScatterVisual<float>> (offset);
+    v.bindmodel (sv);
     sv->radiusFixed = 0.002f;
     sv->colourScale.compute_autoscale (0, 30);
     sv->cm.setType (morph::ColourMapType::Jet);
@@ -184,7 +185,8 @@ int main (int argc, char** argv)
     sv->finalize();
     v.addVisualModel (sv);
 
-    auto sv2 = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
+    auto sv2 = std::make_unique<morph::ScatterVisual<float>> (offset);
+    v.bindmodel (sv2);
     sv2->radiusFixed = 0.002f;
     sv2->colourScale.compute_autoscale (0, 30);
     sv2->cm.setType (morph::ColourMapType::Plasma);
@@ -198,7 +200,8 @@ int main (int argc, char** argv)
     v.addVisualModel (sv2);
 
     // Show the best one or best few:
-    auto sv3 = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
+    auto sv3 = std::make_unique<morph::ScatterVisual<float>> (offset);
+    v.bindmodel (sv3);
     sv3->radiusFixed = 0.01f;
     sv3->colourScale.compute_autoscale (0, 1);
     sv3->cm.setType (morph::ColourMapType::Jet);
@@ -233,7 +236,8 @@ int main (int argc, char** argv)
 
     v.addVisualModel (sv3);
 
-    auto tav = std::make_unique<morph::TriaxesVisual<float>> (v.shaders, offset);
+    auto tav = std::make_unique<morph::TriaxesVisual<float>> (offset);
+    v.bindmodel (tav);
     tav->axisstyle = morph::axisstyle::L;
     tav->input_min = range_min;
     tav->input_max = range_max;
@@ -245,7 +249,8 @@ int main (int argc, char** argv)
 
     offset[0] += 2.0f;
     // Add a graph to track T_i and T_cost
-    auto graph1 = std::make_unique<morph::GraphVisual<float>> (v.shaders, offset);
+    auto graph1 = std::make_unique<morph::GraphVisual<float>> (offset);
+    v.bindmodel (graph1);
     graph1->twodimensional = false;
     graph1->policy = morph::stylepolicy::lines;
     graph1->ylabel = "log(T)";
@@ -256,7 +261,8 @@ int main (int argc, char** argv)
     v.addVisualModel (graph1);
 
     offset[0] += 1.4f;
-    auto graph2 = std::make_unique<morph::GraphVisual<float>> (v.shaders, offset);
+    auto graph2 = std::make_unique<morph::GraphVisual<float>> (offset);
+    v.bindmodel (graph2);
     graph2->twodimensional = false;
     graph2->policy = morph::stylepolicy::lines;
     graph2->ylabel = "obj value";
@@ -267,7 +273,8 @@ int main (int argc, char** argv)
     v.addVisualModel (graph2);
 #if 0
     offset[0] += 1.4f;
-    auto graph3 = std::make_unique<morph::GraphVisual<float>> (v.shaders, offset);
+    auto graph3 = std::make_unique<morph::GraphVisual<float>> (offset);
+    v.bindmodel (graph3);
     graph3->twodimensional = false;
     graph3->setlimits (0, 1000, -1.0f, 100.0f);
     graph3->policy = morph::stylepolicy::lines;

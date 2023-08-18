@@ -45,9 +45,8 @@ class tissuevisual : public morph::VisualModel
 {
 public:
     //! Single constructor for simplicity
-    tissuevisual(morph::gl::shaderprogs& _shaders, const guidingtissue<T, N>* _r, const morph::vec<float> _offset)
+    tissuevisual(const guidingtissue<T, N>* _r, const morph::vec<float> _offset)
     {
-        this->shaders = _shaders;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
         // Defaults for z and colourScale
@@ -137,7 +136,7 @@ public:
             this->colourScale.compute_autoscale (0,1);
         }
         this->colourScale.transform (this->dcolour, this->dcolour);
-        this->colourScale.autoscaled = false;
+        this->colourScale.reset();
 
         std::pair<float,float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);
         //std::cout << "dcolour2 min/max: " << mm2.second << "/" << mm2.first << std::endl;

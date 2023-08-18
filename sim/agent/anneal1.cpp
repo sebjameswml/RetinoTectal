@@ -281,20 +281,23 @@ int main (int argc, char **argv)
 
     // First a scatter plot that can be updated. Just using a ScatterVisual for this.
     size_t sv_start_idx_last = v.start_idx;
-    auto sv = std::make_unique<morph::ScatterVisual<double>> (v.shaders, offset);
+    auto sv = std::make_unique<morph::ScatterVisual<double>> (offset);
+    v.bindmodel (sv);
     sv->radiusFixed = 0.002f;
     sv->colourScale.compute_autoscale (0, 30);
     sv->cm.setType (morph::ColourMapType::Plasma);
     sv->finalize();
     auto svp = v.addVisualModel (sv);
 
-    auto tav = std::make_unique<morph::TriaxesVisual<float>> (v.shaders, offset);
+    auto tav = std::make_unique<morph::TriaxesVisual<float>> (offset);
+    v.bindmodel (tav);
     tav_setup (tav.get(), v.start_idx, v.dimensions, param_range_min, param_range_max, params);
     auto tavp = v.addVisualModel (tav);
 
     offset[0] += 2.0f;
     // Add a graph to track T_i and T_cost
-    auto graph1 = std::make_unique<morph::GraphVisual<double>> (v.shaders, offset);
+    auto graph1 = std::make_unique<morph::GraphVisual<double>> (offset);
+    v.bindmodel (graph1);
     graph1->twodimensional = false;
     graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
@@ -306,7 +309,8 @@ int main (int argc, char **argv)
     auto graph1p = v.addVisualModel (graph1);
 
     offset[0] += 1.4f;
-    auto graph2 = std::make_unique<morph::GraphVisual<double>> (v.shaders, offset);
+    auto graph2 = std::make_unique<morph::GraphVisual<double>> (offset);
+    v.bindmodel (graph2);
     graph2->twodimensional = false;
     graph2->setlimits (0, 1000, 0.0f, 2.0f);
     graph2->policy = morph::stylepolicy::lines;
@@ -318,7 +322,8 @@ int main (int argc, char **argv)
     auto graph2p = v.addVisualModel (graph2);
 
     offset[0] += 1.4f;
-    auto graph3 = std::make_unique<morph::GraphVisual<double>> (v.shaders, offset);
+    auto graph3 = std::make_unique<morph::GraphVisual<double>> (offset);
+    v.bindmodel (graph3);
     graph3->twodimensional = false;
     graph3->setlimits (0, 1000, -1.0f, 100.0f);
     graph3->policy = morph::stylepolicy::lines;

@@ -33,9 +33,10 @@ int main()
     v->lightingEffects();
     // Offset for visuals
     morph::vec<float> offset = { -0.0f, -0.0f, 0.0f };
-    v->setCurrent();
+    v->setContext();
 
-    auto nv = std::make_unique<NetVisual<float>> (v->shaders, offset, &n);
+    auto nv = std::make_unique<NetVisual<float>> (offset, &n);
+    v->bindmodel (nv);
     nv->viewmode = netvisual_viewmode::actual;
     nv->finalize();
     std::stringstream ss;
