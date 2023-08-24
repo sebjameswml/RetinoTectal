@@ -59,7 +59,6 @@ public:
     //! Draw vertices for the net's actual locations p
     void initv_actual()
     {
-        std::cout << "Start, idx: " << this->idx << std::endl;
         // Discs at the net vertices
         morph::vec<float,3> puckthick = { 0, 0, 0.002 };
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
@@ -84,9 +83,7 @@ public:
                 }
             }
         }
-        std::cout << "Drawing boundary...\n";
         this->drawBoundary();
-        std::cout << "I drawed it\n";
     }
 
     //! Draw where the net vertices are EXPECTED (according to their targ attribute)
@@ -167,7 +164,6 @@ public:
         }
         float _z = puckthick[2]*float{0.5001}; // Ensure boundary is visible above rest of drawing
 
-        std::cout << "1\n";
         // Spins in here... (FIXME)
         this->computeFlatDashedLine (this->idx,
                                      morph::vec<Flt, 3>({0, 0, _z}),
@@ -176,25 +172,24 @@ public:
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        std::cout << "2\n";
+
         this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({w, 0, _z}), morph::vec<Flt, 3>({w, h, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        std::cout << "3\n";
+
         this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({w, h, _z}), morph::vec<Flt, 3>({0, h, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        std::cout << "4\n";
+
         this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({0, h, _z}), morph::vec<Flt, 3>({0, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        std::cout << "5\n";
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
