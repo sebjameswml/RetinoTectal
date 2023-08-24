@@ -46,37 +46,48 @@ public:
         this->view = _view;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
+
+        if (use_hsv_cmaps) {
+            this->cmap.setType (morph::ColourMapType::HSV);
+            this->cmap.setHueRotation (-morph::mathconst<float>::pi);
+        } else {
+            this->cmap.setType (morph::ColourMapType::Duochrome);
+            this->cmap.setHueRG();
+        }
     }
+
+    // A colour map for the simpler branch visuals
+    morph::ColourMap<float> cmap;
 
     // Receptor and ligand need to be scaled
     morph::Scale<Flt, Flt> rcpt_scale;
     // Target location will have a different scale
     morph::Scale<Flt, Flt> target_scale;
 
-    void drawBoundary (VBOint& idx)
+    void drawBoundary()
     {
         std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
         float w = 1.0f, h = 1.0f;
         float _z = float{0.001};
 
-        this->computeFlatDashedLine (idx,
+        this->computeFlatDashedLine (this->idx,
                                      morph::vec<Flt, 3>({0, 0, _z}),
                                      morph::vec<Flt, 3>({w, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->blinewidth, 0.0f,
                                      this->blinewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({w, 0, _z}), morph::vec<Flt, 3>({w, h, _z}),
+        this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({w, 0, _z}), morph::vec<Flt, 3>({w, h, _z}),
                                      this->uz,
                                      gry,
                                      this->blinewidth, 0.0f,
                                      this->blinewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({w, h, _z}), morph::vec<Flt, 3>({0, h, _z}),
+        this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({w, h, _z}), morph::vec<Flt, 3>({0, h, _z}),
                                      this->uz,
                                      gry,
                                      this->blinewidth, 0.0f,
                                      this->blinewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({0, h, _z}), morph::vec<Flt, 3>({0, 0, _z}),
+        this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({0, h, _z}), morph::vec<Flt, 3>({0, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->blinewidth, 0.0f,
@@ -84,13 +95,13 @@ public:
 #if 0
         std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
         float w = 1, h = 1;
-        this->computeLine (idx, morph::vec<Flt, 3>({0, 0, 0}), morph::vec<Flt, 3>({w, 0, 0}),
+        this->computeLine (this->idx, morph::vec<Flt, 3>({0, 0, 0}), morph::vec<Flt, 3>({w, 0, 0}),
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
-        this->computeLine (idx, morph::vec<Flt, 3>({w, 0, 0}), morph::vec<Flt, 3>({w, h, 0}),
+        this->computeLine (this->idx, morph::vec<Flt, 3>({w, 0, 0}), morph::vec<Flt, 3>({w, h, 0}),
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
-        this->computeLine (idx, morph::vec<Flt, 3>({w, h, 0}), morph::vec<Flt, 3>({0, h, 0}),
+        this->computeLine (this->idx, morph::vec<Flt, 3>({w, h, 0}), morph::vec<Flt, 3>({0, h, 0}),
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
-        this->computeLine (idx, morph::vec<Flt, 3>({0, h, 0}), morph::vec<Flt, 3>({0, 0, 0}),
+        this->computeLine (this->idx, morph::vec<Flt, 3>({0, h, 0}), morph::vec<Flt, 3>({0, 0, 0}),
                            this->uz, gry, gry, this->blinewidth, this->blinewidth/4);
 #endif
     }
@@ -108,13 +119,12 @@ public:
             //std::cout << "radiusFixed: " << radiusFixed << " rad_interaction: " << rad_interaction << std::endl;
         }
 
-        VBOint idx = 0;
         // For each branch,simply draw a sphere for the current location, with a second
         // colour for the rcpt expression.
         for (auto b : *this->branches) {
             // Colour should come from original target location, rather than receptor value, to emphasise swaps in location.
-            std::array<float, 3> clr = { this->target_scale.transform_one(b.target[0]),
-                                         this->target_scale.transform_one(b.target[1]), 0 }; // position colour
+            std::array<float, 3> clr;
+            clr = this->cmap.convert (this->target_scale.transform_one(b.target[0]), this->target_scale.transform_one(b.target[1]));
 
             // A sphere at the last location. Tune number of rings (second last arg) in
             // sphere to change size of clr2 disc at top
@@ -133,33 +143,33 @@ public:
                 std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
                                                 0,
                                                 this->rcpt_scale.transform_one(b.lgnd[3]) };
-                this->computeDiscA (idx, cur, clr,
+                this->computeDiscA (cur, clr,
                                     clr_r0, clr_r1, clr_r2, clr_r3,
                                     clr_l0, clr_l1, clr_l2, clr_l3,
                                     this->radiusFixed);
                 // Draw ring for the interaction, if it's larger than radiusFixed
                 if (rad_interaction > 0.0f) {
-                    this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
+                    this->computeRing (this->idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
                 }
 
             } else if (this->view == branchvisual_view::discs) {
-                this->computeTube (idx, cur, cur-morph::vec<float,3>({0,0,this->radiusFixed*0.1f}), this->ux, this->uy,
+                this->computeTube (this->idx, cur, cur-morph::vec<float,3>({0,0,this->radiusFixed*0.1f}), this->ux, this->uy,
                                    clr, clr,
                                    this->radiusFixed, 20);
             } else if (this->view == branchvisual_view::discint) {
-                this->computeTube (idx, cur, cur-morph::vec<float,3>({0,0,this->radiusFixed*0.1f}), this->ux, this->uy,
+                this->computeTube (this->idx, cur, cur-morph::vec<float,3>({0,0,this->radiusFixed*0.1f}), this->ux, this->uy,
                                    clr, clr,
                                    this->radiusFixed, 20);
                 if (this->rad_interaction > 0.0f) {
-                    this->computeRing (idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 20);
+                    this->computeRing (this->idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 20);
                 }
             }
         }
-        this->drawBoundary (idx);
+        this->drawBoundary();
     }
 
     // A special puck/disc with colours to show receptor and ligand expression
-    void computeDiscA (VBOint& idx, morph::vec<float> so,
+    void computeDiscA (morph::vec<float> so,
                        std::array<float, 3> sc, // Main colour
                        std::array<float, 3> r0, // Rcpt 0 colour
                        std::array<float, 3> r1,
@@ -184,19 +194,19 @@ public:
         this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
         this->vertex_push (this->uz, this->vertexNormals);
         this->vertex_push (r0, this->vertexColors);
-        capMiddle[0] = idx++;
+        capMiddle[0] = this->idx++;
         this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
         this->vertex_push (this->uz, this->vertexNormals);
         this->vertex_push (r1, this->vertexColors);
-        capMiddle[1] = idx++;
+        capMiddle[1] = this->idx++;
         this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
         this->vertex_push (this->uz, this->vertexNormals);
         this->vertex_push (r2, this->vertexColors);
-        capMiddle[2] = idx++;
+        capMiddle[2] = this->idx++;
         this->vertex_push (so[0], so[1], so[2], this->vertexPositions);
         this->vertex_push (this->uz, this->vertexNormals);
         this->vertex_push (r3, this->vertexColors);
-        capMiddle[3] = idx++;
+        capMiddle[3] = this->idx++;
 
         // Centre circle
         for (int jj = 0; jj < 4; ++jj) { // jj indexes quarters
@@ -219,12 +229,12 @@ public:
                 this->vertex_push (so[0]+x1, so[1]+y1, so[2], this->vertexPositions);
                 this->vertex_push (this->uz, this->vertexNormals);
                 this->vertex_push (rclrs[jj], this->vertexColors);
-                this->indices.push_back (idx++);
+                this->indices.push_back (this->idx++);
 
                 this->vertex_push (so[0]+x1n, so[1]+y1n, so[2], this->vertexPositions);
                 this->vertex_push (this->uz, this->vertexNormals);
                 this->vertex_push (rclrs[jj], this->vertexColors);
-                this->indices.push_back (idx++);
+                this->indices.push_back (this->idx++);
             }
         }
 
@@ -246,7 +256,7 @@ public:
             morph::vec<float> c2 = {xout, yout, 0};
             morph::vec<float> c3 = {xout_n, yout_n, 0};
             morph::vec<float> c4 = {xin_n, yin_n, 0};
-            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, white);
+            this->computeFlatQuad (this->idx, so+c1, so+c2, so+c3, so+c4, white);
         }
 
         // Ligands ring
@@ -268,7 +278,7 @@ public:
             morph::vec<float> c2 = {xout, yout, 0};
             morph::vec<float> c3 = {xout_n, yout_n, 0};
             morph::vec<float> c4 = {xin_n, yin_n, 0};
-            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, lclrs[jj]);
+            this->computeFlatQuad (this->idx, so+c1, so+c2, so+c3, so+c4, lclrs[jj]);
         }
 
         // White spacer ring
@@ -289,7 +299,7 @@ public:
             morph::vec<float> c2 = {xout, yout, 0};
             morph::vec<float> c3 = {xout_n, yout_n, 0};
             morph::vec<float> c4 = {xin_n, yin_n, 0};
-            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, white);
+            this->computeFlatQuad (this->idx, so+c1, so+c2, so+c3, so+c4, white);
         }
 
         // Outer ring
@@ -310,7 +320,7 @@ public:
             morph::vec<float> c2 = {xout, yout, 0};
             morph::vec<float> c3 = {xout_n, yout_n, 0};
             morph::vec<float> c4 = {xin_n, yin_n, 0};
-            this->computeFlatQuad (idx, so+c1, so+c2, so+c3, so+c4, sc);
+            this->computeFlatQuad (this->idx, so+c1, so+c2, so+c3, so+c4, sc);
         }
     }
 
@@ -319,8 +329,6 @@ public:
         // Set radius from the first branch
         if (!this->branches->empty()) { this->radiusFixed = (*this->branches)[0].getr(); }
 
-        VBOint idx = 0;
-
         if (this->ax_history->empty()) { return; }
 
         // Now vis meanpaths
@@ -328,26 +336,33 @@ public:
             std::array<float, 3> clr = {0.5f, 0.5f, 0.5f};
             for (unsigned int i = 1; i < mp.second.size(); ++i) {
                 // draw line from mp[i-1] to mp[i]
-                this->computeFlatLineRnd (idx, mp.second[i-1], mp.second[i], this->uz, clr, this->linewidth, 0.0f, true, false);
+                this->computeFlatLineRnd (this->idx, mp.second[i-1], mp.second[i], this->uz, clr, this->linewidth, 0.0f, true, false);
             }
         }
 
         // For each branch, draw spheres for the current location, with a second colour
         // for the rcpt expression. Also lines from end of common path to each sphere.
+
+        // Secondary colourmap
+        morph::ColourMap<float> cmap2 (morph::ColourMapType::Duochrome);
+        cmap2.setHueRB();
+
         for (auto b : *this->branches) {
             if (!this->seeaxons.count(b.aid)) { continue; }
-            std::array<float, 3> clr = { this->target_scale.transform_one(b.target[0]),
-                                         this->target_scale.transform_one(b.target[1]), 0 }; // position colour
-            std::array<float, 3> clr2 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0,
-                                          this->rcpt_scale.transform_one(b.rcpt[1]) }; // rcpt expr colour
+
+            // position colour
+            std::array<float, 3> clr = this->cmap.convert (this->target_scale.transform_one(b.target[0]), this->target_scale.transform_one(b.target[1]));
+            // receptor expression colour
+            std::array<float, 3> clr2 = cmap2.convert (this->target_scale.transform_one(b.rcpt[0]), this->target_scale.transform_one(b.rcpt[1]));
+
             morph::vec<float, 3> cur = { 0, 0, 0 };
             cur[0] = b.next[0]; // or path.back()?
             cur[1] = b.next[1];
-            this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
-            this->computeFlatLineRnd (idx, (*this->ax_history)[b.aid].back(), cur, this->uz, clr, this->linewidth/2.0f, 0.0f, true, false);
+            this->computeSphere (this->idx, cur, clr, clr2, this->radiusFixed, 14, 12);
+            this->computeFlatLineRnd (this->idx, (*this->ax_history)[b.aid].back(), cur, this->uz, clr, this->linewidth/2.0f, 0.0f, true, false);
         }
 
-        this->drawBoundary (idx);
+        this->drawBoundary();
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
@@ -358,9 +373,9 @@ public:
     }
 
     //! Pointer to a vector of branches to visualise
-    std::vector<B>* branches = (std::vector<B>*)0;
+    std::vector<B>* branches = nullptr;
     //! Pointer to axon history, if required.
-    std::map<size_t, morph::vvec<morph::vec<Flt, 3>>>* ax_history = (std::map<size_t, morph::vvec<morph::vec<Flt, 3>>>*)0;
+    std::map<size_t, morph::vvec<morph::vec<Flt, 3>>>* ax_history = nullptr;
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;

@@ -49,7 +49,7 @@ int main (int argc, char **argv)
     size_t num_guiders = mconf->getInt("num_guiders", 4);
     if (num_guiders != 4) { delete mconf; return -4; }
 
-    morph::Config* econf = (morph::Config*)0;
+    morph::Config* econf = nullptr;
     std::vector<std::string> e_manips;
     std::vector<AgentMetrics<float>> e_manips_results;
     // Add all the manipulation experiments to evaluate here

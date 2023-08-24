@@ -9,6 +9,7 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/MathAlgo.h>
+#include <morph/ColourMap.h>
 #include "tissue.h"
 
 // Comparison for std::set of vecs
@@ -41,11 +42,19 @@ struct net
         this->p.resize(_w*_h);
         this->targ.resize(_w*_h);
         this->clr.resize(_w*_h);
-        // Set up colours. Hack. Hardcoded.
+        // Encode colours in the net, using a ColourMap for help
+        morph::ColourMap<float> cmap;
+        if (use_hsv_cmaps == true) {
+            cmap.setType (morph::ColourMapType::HSV);
+            cmap.setHueRotation (-morph::mathconst<float>::pi);
+        } else {
+            cmap.setType (morph::ColourMapType::Duochrome);
+            cmap.setHueRG();
+        }
         size_t i = 0;
         for (size_t y = 0; y < _h; ++y) {
             for (size_t x = 0; x < _w; ++x) {
-                this->clr[i++] = {(float)x/(float)w, (float)y/(float)h, 0.0f};
+                this->clr[i++] = cmap.convert ((float)x/(float)w, (float)y/(float)h);
             }
         }
         // Set up connections

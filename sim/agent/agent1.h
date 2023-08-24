@@ -24,6 +24,9 @@ static constexpr bool debug_compute_branch = false;
 #include <morph/Random.h>
 #include <morph/HdfData.h>
 
+// Should we use the Simpson & Goodhill like HSV colour maps for position?
+static constexpr bool use_hsv_cmaps = true;
+
 #include "branch.h"
 #include "branch_stochastic.h"
 #include "branch_geb.h"
@@ -734,13 +737,20 @@ struct Agent1
                 tv->cm.setType (morph::ColourMapType::Greyscale);
             }
         } else {
-            tv->cm.setType (morph::ColourMapType::Duochrome);
-            if (alt_cmap == 1) {
-                tv->cm.setHueMC();
-            } else if (alt_cmap == 2) {
-                tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
+            if constexpr (use_hsv_cmaps == true) {
+                tv->cm.setType (morph::ColourMapType::HSV);
+                if (exview == expression_view::cell_positions) {
+                    tv->cm.setHueRotation (-morph::mathconst<float>::pi);
+                }
             } else {
-                tv->cm.setHueRG(); // WAS setHueRB, but when mixed you get magenta, so need RG for these maps still
+                tv->cm.setType (morph::ColourMapType::Duochrome);
+                if (alt_cmap == 1) {
+                    tv->cm.setHueMC();
+                } else if (alt_cmap == 2) {
+                    tv->cm.setHueRG(); // Special - for Retinal positions (hence RG map)
+                } else {
+                    tv->cm.setHueRG(); // WAS setHueRB, but when mixed you get magenta, so need RG for these maps still
+                }
             }
         }
         std::stringstream ss;

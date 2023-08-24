@@ -69,8 +69,6 @@ public:
         float dy = (float)this->gtissue->dx[1];
         float vy = 0.5f * dy;
 
-        unsigned int idx = 0;
-
         // Use the interaction parameter of the retina object to set the colours of the elements
         this->dcolour.resize (this->gtissue->rcpt.size());
         this->dcolour2.resize (this->gtissue->rcpt.size());
@@ -199,23 +197,23 @@ public:
             this->vertex_push (clr, this->vertexColors);
 
             // Define indices now to produce the 4 triangles in the hex
-            this->indices.push_back (idx+1);
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+2);
+            this->indices.push_back (this->idx+1);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+2);
 
-            this->indices.push_back (idx+2);
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+3);
+            this->indices.push_back (this->idx+2);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+3);
 
-            this->indices.push_back (idx+3);
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+4);
+            this->indices.push_back (this->idx+3);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+4);
 
-            this->indices.push_back (idx+4);
-            this->indices.push_back (idx);
-            this->indices.push_back (idx+1);
+            this->indices.push_back (this->idx+4);
+            this->indices.push_back (this->idx);
+            this->indices.push_back (this->idx+1);
 
-            idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
+            this->idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
         }
     }
 
@@ -236,6 +234,8 @@ protected:
     {
         std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
         if (this->cm.getType() == morph::ColourMapType::Duochrome) {
+            clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
+        } else if (this->cm.getType() == morph::ColourMapType::HSV) {
             clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
         } else {
             clr = this->cm.convert (this->dcolour[hi]);

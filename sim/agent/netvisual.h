@@ -59,12 +59,11 @@ public:
     //! Draw vertices for the net's actual locations p
     void initv_actual()
     {
-        VBOint idx = 0;
-
+        std::cout << "Start, idx: " << this->idx << std::endl;
         // Discs at the net vertices
         morph::vec<float,3> puckthick = { 0, 0, 0.002 };
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
-            this->computeTube (idx,
+            this->computeTube (this->idx,
                                (this->locations->p[i]+puckthick)*zoom,
                                (this->locations->p[i]-puckthick)*zoom,
                                morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
@@ -80,21 +79,21 @@ public:
                 std::array<float, 3> clr2 = this->locations->clr[c[1]];
                 if ((c1-c2).length() < maxlen) {
                     // omit long lines for a bit more clarity
-                    this->computeLine (idx, c1, c2, this->uz, clr1, clr2,
+                    this->computeLine (this->idx, c1, c2, this->uz, clr1, clr2,
                                        this->linewidth*zoom, this->linewidth/4*zoom);
                 }
             }
         }
-        this->drawBoundary (idx);
+        std::cout << "Drawing boundary...\n";
+        this->drawBoundary();
+        std::cout << "I drawed it\n";
     }
 
     //! Draw where the net vertices are EXPECTED (according to their targ attribute)
     void initv_target()
     {
-        VBOint idx = 0;
-
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
-            this->computeTube (idx,
+            this->computeTube (this->idx,
                                (this->locations->targ[i]+puckthick)*zoom,
                                (this->locations->targ[i]-puckthick)*zoom,
                                morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
@@ -107,24 +106,20 @@ public:
             morph::vec<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            //if ((c1-c2).length() < Flt{0.2}) {
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
-            //}
+            this->computeLine (this->idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
         }
 
-        this->drawBoundary (idx);
+        this->drawBoundary();
     }
 
     //! Draw where the net vertices are EXPECTED (according to their targ attribute) AND
     //! where the centroid is using an arrow for the difference
     void initv_target2()
     {
-        VBOint idx = 0;
-
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
 
             // The puck for the target position
-            this->computeTube (idx,
+            this->computeTube (this->idx,
                                (this->locations->targ[i]+puckthick)*zoom,
                                (this->locations->targ[i]-puckthick)*zoom,
                                morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
@@ -133,14 +128,14 @@ public:
 
             if (this->draw_actual == true) {
                 // A line (cyl. tube) from target to actual position
-                this->computeTube (idx,
+                this->computeTube (this->idx,
                                    this->locations->targ[i]*zoom,
                                    (this->locations->p[i]+actualpuckoffs)*zoom,
                                    this->locations->clr[i], this->locations->clr[i],
                                    this->puckthick[2]*zoom, 8);
 
                 // A slightly smaller puck for actual position
-                this->computeTube (idx,
+                this->computeTube (this->idx,
                                    (this->locations->p[i]+actualpuckoffs+puckthick)*zoom,
                                    (this->locations->p[i]+actualpuckoffs-puckthick)*zoom,
                                    morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
@@ -154,15 +149,15 @@ public:
             morph::vec<Flt, 3> c2 = this->locations->targ[c[1]] * zoom;
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
+            this->computeLine (this->idx, c1, c2, this->uz, clr1, clr2, this->linewidth*zoom, this->linewidth/4*zoom);
         }
 
         // Finally, draw a square around the domain
-        this->drawBoundary (idx);
+        this->drawBoundary();
     }
 
     // The tissue boundary, indicated by dashed lines
-    void drawBoundary (VBOint& idx)
+    void drawBoundary()
     {
         std::array<float, 3> gry = { 0.2, 0.2, 0.2 };
         float w = zoom, h = zoom;
@@ -172,28 +167,34 @@ public:
         }
         float _z = puckthick[2]*float{0.5001}; // Ensure boundary is visible above rest of drawing
 
-        this->computeFlatDashedLine (idx,
+        std::cout << "1\n";
+        // Spins in here... (FIXME)
+        this->computeFlatDashedLine (this->idx,
                                      morph::vec<Flt, 3>({0, 0, _z}),
                                      morph::vec<Flt, 3>({w, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({w, 0, _z}), morph::vec<Flt, 3>({w, h, _z}),
+        std::cout << "2\n";
+        this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({w, 0, _z}), morph::vec<Flt, 3>({w, h, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({w, h, _z}), morph::vec<Flt, 3>({0, h, _z}),
+        std::cout << "3\n";
+        this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({w, h, _z}), morph::vec<Flt, 3>({0, h, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
-        this->computeFlatDashedLine (idx, morph::vec<Flt, 3>({0, h, _z}), morph::vec<Flt, 3>({0, 0, _z}),
+        std::cout << "4\n";
+        this->computeFlatDashedLine (this->idx, morph::vec<Flt, 3>({0, h, _z}), morph::vec<Flt, 3>({0, 0, _z}),
                                      this->uz,
                                      gry,
                                      this->linewidth*zoom, 0.0f,
                                      this->linewidth*5.0f, 0.4f);
+        std::cout << "5\n";
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
@@ -204,7 +205,7 @@ public:
     }
 
     //! Pointer to a vector of locations to visualise
-    net<Flt>* locations = (net<Flt>*)0;
+    net<Flt>* locations = nullptr;
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.004;
     //! Zoom the size of the netvisual

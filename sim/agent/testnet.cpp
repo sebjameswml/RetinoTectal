@@ -1,3 +1,4 @@
+static constexpr bool use_hsv_cmaps = false;
 #include "net.h"
 #include "netvisual.h"
 #include <morph/Visual.h>
@@ -28,24 +29,23 @@ int main()
     size_t n_cross = n.crosscount();
     std::cout << "number of crossings: " << n_cross << std::endl;
 
-    std::string tt("Testing a net and its netvisual");
-    morph::Visual* v = new morph::Visual (1024, 768, tt);
-    v->lightingEffects();
+    morph::Visual v (1024, 768, "Testing a net and its netvisual");
+    v.lightingEffects();
     // Offset for visuals
     morph::vec<float> offset = { -0.0f, -0.0f, 0.0f };
-    v->setContext();
+    v.setContext();
 
     auto nv = std::make_unique<NetVisual<float>> (offset, &n);
-    v->bindmodel (nv);
+    v.bindmodel (nv);
+
     nv->viewmode = netvisual_viewmode::actual;
-    nv->finalize();
     std::stringstream ss;
     ss << "A net thing with " << n_cross << " segment(s) crossed";
     nv->addLabel (ss.str(), {0.0f, 0.4f, 0.0f});
-    v->addVisualModel (nv);
+    nv->finalize();
+    v.addVisualModel (nv);
 
-    v->render();
-    v->keepOpen();
+    v.keepOpen();
 
     return 0;
 }

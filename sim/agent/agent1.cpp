@@ -59,8 +59,8 @@ int main (int argc, char **argv)
         morph::Tools::copyStringToFile ("{}\n", paramsfile);
     }
 
-    morph::Config* conf = (morph::Config*)0;
-    morph::Config* mconf = (morph::Config*)0;
+    morph::Config* conf = nullptr;
+    morph::Config* mconf = nullptr;
 
     bool need_exit = false;
     std::cout << "Opening params config files " << paramsfile << " and model config " << paramsfile_mdl << std::endl;
