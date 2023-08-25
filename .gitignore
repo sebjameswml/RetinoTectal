@@ -1,7 +1,5 @@
 build
 morphologica
 a1.json
-picture.png
-Agent_based*.png
-Optimization_progress*.png
-Retinal_and_Tectal_expression.png
+*.png
+.gdb_history
