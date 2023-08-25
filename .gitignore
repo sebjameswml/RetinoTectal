@@ -1,4 +1,4 @@
 build
 a1.json
-*.png
+./*.png
 .gdb_history
