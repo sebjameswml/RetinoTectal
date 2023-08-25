@@ -692,14 +692,6 @@ struct Agent1
         }
     }
 
-    // Create a tissue visual, to reduce boilerplate code in init()
-    std::unique_ptr<tissuevisual<float, N>> createTissueVisual (morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
-                                                                const std::string& tag,
-                                                                expression_view exview, size_t pair_to_view, int alt_cmap=0)
-    {
-        return this->createTissueVisual (this->tvv, offset, gtissue, tag, exview, pair_to_view, alt_cmap);
-    }
-
     // Show x/y gradients in an alternative colour map (Twilight)?
     static constexpr bool grads_in_altmap = false;
 
@@ -1460,7 +1452,7 @@ struct Agent1
         // Extra for EphA4
         offset2[1] += sqside;
         offset2[0] -= sqside;
-        auto up = this->createTissueVisual (offset2, ret, "Retinal", expression_view::epha4, 0);
+        auto up = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::epha4, 0);
         tvv->addVisualModel (up);
 
         offset2[1] += sqside;
@@ -1518,18 +1510,18 @@ struct Agent1
         offset2[1] -= sqside;
 
         offset2[0] += sqside;
-        auto up0 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair);
+        auto up0 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::receptor_exp, show_pair);
         tvv->addVisualModel (up0);
         offset2[0] += sqside;
-        auto up1 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair);
+        auto up1 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::ligand_exp, show_pair);
         tvv->addVisualModel (up1);
 
 #ifdef SHOW_RET_GRADS
         offset2[0] += sqside;
-        auto up2 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair);
+        auto up2 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair);
         tvv->addVisualModel (up2);
         offset2[1] += sqside;
-        auto up3 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair);
+        auto up3 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair);
         tvv->addVisualModel (up3);
         offset2[1] -= sqside;
 #endif
@@ -1537,18 +1529,18 @@ struct Agent1
         // Tectum
         if constexpr (show_tectal_receptors == true) {
             offset2[0] += sqside;
-            auto up4 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair);
+            auto up4 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair);
             tvv->addVisualModel (up4);
         }
         offset2[0] += sqside;
-        auto up5 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair);
+        auto up5 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair);
         tvv->addVisualModel (up5);
         // Tectal gradients for 0/1
         offset2[0] += sqside;
-        auto up6 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair);
+        auto up6 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair);
         tvv->addVisualModel (up6);
         offset2[1] += sqside;
-        auto up7 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
+        auto up7 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
         tvv->addVisualModel (up7);
         offset2[1] -= sqside;
 
@@ -1559,35 +1551,35 @@ struct Agent1
             // Retina
             offset2[1] += sqside;
             // true means cyan-magenta
-            auto up8 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1);
+            auto up8 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::receptor_exp, show_pair, 1);
             tvv->addVisualModel (up8);
             offset2[0] += sqside;
-            auto up9 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1);
+            auto up9 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::ligand_exp, show_pair, 1);
             tvv->addVisualModel (up9);
 #ifdef SHOW_RET_GRADS
             offset2[0] += sqside;
-            auto up10 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair);
+            auto up10 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::receptor_grad_x, show_pair);
             tvv->addVisualModel (up10);
             offset2[1] += sqside;
-            auto up11 = this->createTissueVisual (offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair);
+            auto up11 = this->createTissueVisual (this->tvv, offset2, ret, "Retinal", expression_view::receptor_grad_y, show_pair);
             tvv->addVisualModel (up11);
             offset2[1] -= sqside;
 #endif
             // Tectum
             if constexpr (show_tectal_receptors == true) {
                 offset2[0] += sqside;
-                auto up12 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1);
+                auto up12 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::receptor_exp, show_pair, 1);
                 tvv->addVisualModel (up12);
             }
             offset2[0] += sqside;
-            auto up13 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
+            auto up13 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
             tvv->addVisualModel (up13);
             offset2[0] += sqside;
             offset2[1] += sqside;
-            auto up14 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair);
+            auto up14 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x, show_pair);
             tvv->addVisualModel (up14);
             offset2[1] += sqside;
-            auto up15 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
+            auto up15 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
             tvv->addVisualModel (up15);
             offset2[1] -= sqside;
         }
@@ -1610,22 +1602,22 @@ struct Agent1
         float sqside = 1.4f;
 
         // Tectal expression for 0/1
-        auto up0 = this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair);
+        auto up0 = this->createTissueVisual (this->tvv, offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair);
         tvv->addVisualModel (up0);
 
         // Tectal gradients for 0/1
         //offset2[0] += (sqside * 1.2);
-        auto up1 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 0);
+        auto up1 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 0);
         tvv->addVisualModel (up1);
         offset2[0] += sqside;
-        auto up2 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 1);
+        auto up2 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 1);
         tvv->addVisualModel (up2);
         if constexpr (N>2) {
             offset2[0] += sqside;
-            auto up3 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 2);
+            auto up3 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 2);
             tvv->addVisualModel (up3);
             offset2[0] += sqside;
-            auto up4 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 3);
+            auto up4 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, 3);
             tvv->addVisualModel (up4);
         }
 
@@ -1634,21 +1626,21 @@ struct Agent1
         if constexpr (N>2) {
             show_pair = 1; // 1 means show for ligands 2 and 3.
             offset_toprow += morph::vec<float>({1.4f,0,0});
-            auto up5 = this->createTissueVisual (offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
+            auto up5 = this->createTissueVisual (this->tvv, offset_toprow, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
             tvv->addVisualModel (up5);
         }
         //offset2[0] += (sqside * 1.2);
-        auto up6 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 0);
+        auto up6 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 0);
         tvv->addVisualModel (up6);
         offset2[0] += sqside;
-        auto up7 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 1);
+        auto up7 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 1);
         tvv->addVisualModel (up7);
         if constexpr (N>2) {
             offset2[0] += sqside;
-            auto up8 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 2);
+            auto up8 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 2);
             tvv->addVisualModel (up8);
             offset2[0] += sqside;
-            auto up9 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 3);
+            auto up9 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y_single, 3);
             tvv->addVisualModel (up9);
         }
 
@@ -1656,13 +1648,13 @@ struct Agent1
 #if 0
             show_pair = 1; // 1 means show for ligands 2 and 3.
             offset2 = offset;
-            auto up10 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
+            auto up10 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_exp, show_pair, 1);
             tvv->addVisualModel (up10);
             offset2[0] += sqside;
-            auto up11 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, show_pair);
+            auto up11 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_x_single, show_pair);
             tvv->addVisualModel (up11);
             offset2[0] += sqside;
-            auto up12 = this->createTissueVisual (offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
+            auto up12 = this->createTissueVisual (this->tvv, offset2, tectum, "Tectal", expression_view::ligand_grad_y, show_pair);
             tvv->addVisualModel (up12);
 #endif
         }
@@ -1677,7 +1669,7 @@ struct Agent1
         this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
         this->tvv->setContext();
         morph::vec<float> offset = { 0.0f, 0.0f, 0.0f };
-        auto up = this->createTissueVisual (offset, tectum, "Tectal", expression_view::ligand_exp, 0);
+        auto up = this->createTissueVisual (this->tvv, offset, tectum, "Tectal", expression_view::ligand_exp, 0);
         tvv->addVisualModel (up);
     }
 
@@ -1689,7 +1681,7 @@ struct Agent1
         this->tvv->setSceneTrans(-0.485459f, -0.508987308f, -2.900002f);
         this->tvv->setContext();
         morph::vec<float> offset = { 0.0f, 0.0f, 0.0f };
-        auto up = this->createTissueVisual (offset, ret, "Retinal", expression_view::receptor_exp, 0);
+        auto up = this->createTissueVisual (this->tvv, offset, ret, "Retinal", expression_view::receptor_exp, 0);
         tvv->addVisualModel (up);
     }
 
@@ -1849,9 +1841,8 @@ struct Agent1
     {
         morph::vec<float> offset = offset0;
         // Top left
-        // HMMMM HOW TO FIX?
-        auto up = this->createTissueVisual (offset, ret, "Retinal", expression_view::cell_positions, 0, 2);
-        v->bindmodel (up);
+        auto up = this->createTissueVisual (this->v, offset, ret, "Retinal", expression_view::cell_positions, 0, 2);
+        // createTissueVisual calls bindmodel()
         v->addVisualModel (up);
 
         offset[1] -= 1.4f;
@@ -2056,8 +2047,7 @@ struct Agent1
         morph::vec<float> g_H = offset0 + morph::vec<float>({3.9f, -1.6f, 0.0f});
 
         // A Retinal cell positions
-        auto up = this->createTissueVisual (g_A, ret, "Retinal", expression_view::cell_positions, 0, 2);
-        this->v->bindmodel (up);
+        auto up = this->createTissueVisual (this->v, g_A, ret, "Retinal", expression_view::cell_positions, 0, 2);
         this->v->addVisualModel (up);
 
         // B Experiment: Another NetVisual view showing the target locations
