@@ -26,7 +26,7 @@ int main (int argc, char **argv)
     std::string m_id("");
     std::string e_id("");
 
-    if (argc >= 2) {
+    if (argc > 2) {
         // If given two arguments, then the first is the model config and the second is the expt/sim config
         paramsfile_mdl = std::string(argv[1]);
         std::string fname = paramsfile_mdl; // e.g.: m_el.json
