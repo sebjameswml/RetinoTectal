@@ -1,14 +1,21 @@
 # RetinoTectal
 A model of the self-organization of the retino-tectal projection
 
-To build, first install morphologica dependences, as described in morphologica's [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/master/README.install.linux.md) or [README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/master/README.install.mac.md), the follow this recipe:
+This model uses [morphologica](https://github.com/ABRG-Models/morphologica/) for visualization, which is cloned as a submodule.
+
+To build, first install morphologica dependences, as described in morphologica's [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/master/README.install.linux.md) or [README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/master/README.install.mac.md), then follow this recipe:
 
 ```bash
-# If you didn't already, then clone RetinoTectal:
-git clone https://github.com/sebjameswml/RetinoTectal.git
+# If you didn't already, then clone RetinoTectal, with the --recurse-submodules switch:
+git clone --recurse-submodules https://github.com/sebjameswml/RetinoTectal.git
+
+# If you ALREADY did a git clone *without* --recurse-submodules, then don't panic! just do:
+# cd RetinoTectal
+# git submodule init
+# git submodule update
+
+# Now build the software:
 cd RetinoTectal
-# Clone the header-only morphologica in-tree:
-git clone https://github.com/ABRG-Models/morphologica.git
 mkdir build
 pushd build
 cmake ..
