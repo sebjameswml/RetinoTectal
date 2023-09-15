@@ -45,6 +45,10 @@
 \newcommand{\e}{\emph}
 \newcommand{\code}[1]{\textsf{#1}}
 \newcommand{\dvrg}{\nabla\vcdot\nabla}
+
+\definecolor{colcmnt}        {rgb} {0.7098, 0.0745, 0.0431}
+\newcommand{\redcmnt}[1]{\textcolor{colcmnt}{#1}}
+
 %% END aliases
 
 % Custom font defs
@@ -65,10 +69,10 @@
 Competitive differential chemotaxis can explain the self-organisation of retinotopic maps
 }
 
-\author[1*]{Sebastian~S.~James}
-\author[1]{Stuart~P.~Wilson}
+\author[1]{Sebastian~S.~James}
+\author[1*]{Stuart~P.~Wilson}
 \affil[1]{Department of Psychology, The University of Sheffield, Sheffield, United Kingdom.}
-\corr{seb.james@sheffield.ac.uk}{SSJ}
+\corr{s.wilson@sheffield.ac.uk}{SW}
 %% END OF PREAMBLE
 
 % Seb to fix: Expected not experiment (in figs), Fig 8 - monochromes. Fig 1 - monochromes
@@ -88,11 +92,11 @@ Since the pioneering work of Sperry \citep{sperry_reestablishment_1942,sperry_vi
 
 One important class of theories assumes that map formation is driven by chemotaxis, influenced by pairs of anti-parallel expression gradients in the tectum, with the balance of influences in each axon determined by a receptor density specific to its origin in the retina (\citealp{Gierer1983,Gierer1987,Simpson2011}; see also \citealp{Karbowski2004,James2020}). A second class of theories assumes that a single gradient is primarily responsible for chemotaxis and that maps reflect additional processes such as competition \citep{Triplett2011}, Hebbian activity \citep{Tsigankov2006,Tsigankov2010}, or marker induction \citep{Prestige1975,Willshaw2006}.
 
-A key test of the validity of recent models is their ability to account for data from a set of genetic manipulation studies by \cite{brown_topographic_2000} and \cite{reber_relative_2004}, in which axons from a subset of retinal ganglia cells treated with a Eph-A3 knock-in form a separate, rostrally shifted topographic map, which becomes indistinct from that formed by untreated cells, at a ‘collapse point’ on the rostral side. \cite{Sterratt2013} found that a mixture of counter-gradients and an additional competition term provided the best account of these data. A follow-up study in which a range of different computational models were systematically compared \citep{hjorth_quantitative_2015} found that one focused on competition
+A key test of the validity of recent models is their ability to account for data from a set of genetic manipulation studies by \cite{brown_topographic_2000} and \cite{reber_relative_2004}, in which axons from a subset of retinal ganglia cells treated with a Eph-A3 knock-in form a separate, rostrally shifted topographic map, which becomes indistinct from that formed by untreated cells, at a ‘collapse point’ on the rostral side. \cite{Sterratt2013} found that a mixture of counter-gradients and an additional competition term provided the best account of these data. A follow-up study in which a range of different computational models were systematically compared \citep{hjorth_quantitative_2015} found that \redcmnt{one focused on competition
 % Stuart: I think the model is Koulakov's, not Triplett's. In Triplett2011 they give evidence for a competition model (like Koulakov's) by reducing the number of RGCs in the Math5 mutant mouse. *Hjorth* shows that the Koulakov model is the best one at reproducing the collapse in the EphA3 ki experiment.
-by \cite{Triplett2011} could best account for several such experimental findings, and that the other types of model could not explain the collapse point.
+by \cite{Triplett2011}} could best account for several such experimental findings, and that the other types of model could not explain the collapse point.
 
-The model of \cite{Triplett2011} describes maps as minima of an energy function, whose structure can be obtained via a stochastic optimisation process. Accordingly, the energy is the sum of three terms, relating to the influences of chemical gradients, axon density (competition), and activity-dependent growth processes. Maps that optimise this function can be obtained by starting with a random map and then substituting connections at random, accepting those substitutions with a probability that increases if they reduce the energy, and repeating until the algorithm converges on a pattern of connections corresponding to a minimal energy state.
+\redcmnt{The model of \cite{Triplett2011} describes maps as minima of an energy function}, whose structure can be obtained via a stochastic optimisation process. Accordingly, the energy is the sum of three terms, relating to the influences of chemical gradients, axon density (competition), and activity-dependent growth processes. Maps that optimise this function can be obtained by starting with a random map and then substituting connections at random, accepting those substitutions with a probability that increases if they reduce the energy, and repeating until the algorithm converges on a pattern of connections corresponding to a minimal energy state.
 
 The ability of this model to explain the collapse point in the Eph-A3 knockin studies can be understood in terms of its relationship to simpler models developed previously, with which it shares (via the activity-dependent term in the energy function) similar assumptions \citep{Koulakov2004}. According to this earlier model, pairs of adjacent axons on the tectum are evaluated iteratively and the probability of their positions being switched increases with an energy defined by the product of the difference in Eph receptor density and the difference in ephrin ligand density. As the retinal receptor and tectum ligand densities express anti-parallel gradients, a positive energy is translated into a pairwise switch of axon positions with high probability. Eph knock-ins are assigned higher receptor density values, and the map collapse point emerges when differences in receptor density (due to retina position and treatment condition) are offset by differences in ephrin ligand density in the tectum. The two terms are balanced at a point that shifts further in the direction of cells with a more temporal retina origin for a stronger (i.e., homozygous) knock-in, as observed experimentally.
 
@@ -137,15 +141,18 @@ exclusively in terms of receptor-ligand interactions.
 
 %% * receptors are expressed by RGCs as f(x,y)=... (Eq. 1)
 
-We adopt the same form for the expression of receptors on retinal ganglion cells as
+Each of $n$ retinal ganglion cells (RGC) projects $M$ growth cones (referred to as \emph{branches}) which carry a set of $N$ different receptor types, expressed at levels determined by the cell soma's location on the retinal grid. RGC growth cones and cells on the tectum are also assumed to express $N$ different ligand types which interact with RGC receptors.
+%
+We adopt the same form for the expression of receptors by retinal ganglion cells as
 \citet{simpson_simple_2011}:
 \begin{equation} \label{e:f}
   f(x,y) = 1.05 + 0.26 \exp(2.3 u),
 \end{equation}
 where $u$ gives the direction with which the expression increases and may be substituted by $(1-x)$, $(1-y)$, $x$ or $y$. We defined $x$ as an axis from temporal to the nasal retina and $y$ from ventral to dorsal retina.
 
+
 %% * Simpson and Goodhill modelled according to deltax = B + C + G (Eq 2)
-In \citet{simpson_simple_2011}'s model of chemotaxis and competition, the position, $\mathbf{x}_t$, of each branch $b$ on a simulated tectum can be updated according to $\mathbf{x}_{t+1} = \mathbf{x}_{t} + \Delta \mathbf{x}$ with the movement vector given by
+In Simpson \& GoodHill's model of chemotaxis and competition, the position, $\mathbf{x}_t$, of each branch $b$ on a simulated tectum can be updated according to $\mathbf{x}_{t+1} = \mathbf{x}_{t} + \Delta \mathbf{x}$ with the movement vector given by
 % Maybe re-order the terms?
 \begin{equation} \label{e:dX}
  \Delta \mathbf{x} = \mathbf{B} + \mathbf{C} + \mathbf{G}.
@@ -182,9 +189,7 @@ and $\mathbf{G}$ is the movement vector given rise to by the chemotaxis effect.
 \subsubsection*{A signalling model for competition}
 
 Simpson \& Goodhill's model had a $\mathbf{C}$ comprised of two components; a simple distance-based competition between \emph{all} branches, along with an axon-axon interaction based on the relative levels of the receptor EphA expressed by each interacting axon.
-
 %Although the model incorporated EphA expression, the distance-based competitive interaction was given no mechanism of operation.
-
 To provide an explicit mechanism of operation for the competition, we modelled it as a sum of interactions that are `switched on' via receptor-ligand signalling, meaning that some axons would have no competitive interaction, while others would repel strongly.
 This single-component competitive movement vector for a branch $b$ is
 
@@ -192,13 +197,14 @@ This single-component competitive movement vector for a branch $b$ is
 \mathbf{C} = \frac{m_{\!_X}}{|B_{b}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W\,Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}).
 \end{equation}
 %
-$m_{\!_X}$ is a scalar parameter, $nM$ is the total number of branches and $\hat{\mathbf{x}}_{kb}$ is the unit vector from branch $k$ to $b$.
+$m_{\!_X}$ is a scalar parameter and $B_{b}$ is the set of branches that are within interaction distance ($2 r_{\!_X}$) of $b$. $r_{\!_X}$ is the receptor-ligand interaction radius. $nM$ is the total number of branches in the system and $\hat{\mathbf{x}}_{kb}$ is the unit vector from branch $k$ to $b$.
 %
-$W$ is the distance based weighting ($W = 1-\frac{d_{kb}}{2r_{\!_X}}~\mathrm{if}~  d_{kb}\leq 2r_{\!_X}$, otherwise $0$) and $B_{b}$ is the set of branches that are within interaction distance ($2 r_{\!_X}$) of $b$. $r_{\!_X}$ is the receptor-ligand interaction radius.
+$W$ is the distance based weighting ($W = 1-\frac{d_{kb}}{2r_{\!_X}}~\mathrm{if}~  d_{kb}\leq 2r_{\!_X}$, otherwise $0$).
 %
 The distance-based weighting can be interpreted as being related to the probability with which a ligand may bind to a receptor and mediate the interaction.
 %
-$Q$ is a signalling threshold function which depends on the distance $d_{kb}$ between branches $b$ and $k$, the receptor expression on $b$ ($\mathbf{r}_b$) and the ligand expression on $k$ ($\mathbf{l}_k$):
+$Q$ is a signalling threshold function which depends on the distance $d_{kb}$ between branches $b$ and $k$, the receptor expression on $b$ ($\mathbf{r}_b$) and the ligand expression on $k$ ($\mathbf{l}_k$).
+$Q$ is set to 1 only if at least one repulsive signal exceeds a positive signal threshold, $s$, and the distance from branch $b$ to branch $k$ is smaller than $2 r_{\!_X}$:
 %
 \begin{equation}
 Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}) = \begin{cases}
@@ -210,9 +216,7 @@ Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}) = \begin{cases}
 %
 $l_{i,k}$ (the expression of ligand $i$ on branch $k$) is the $i^{\mathrm{th}}$ element of $\mathbf{l}_k$ and $r_{i,b}$ is the $i^{\mathrm{th}}$ element of $\mathbf{r}_b$.
 $F_i$, defined in Eq.\,\ref{e:G}, is -1 if the $r_{i}\,l_{i}$ interaction signals repulsion and +1 if it signals attraction.
-$s$ is a positive signal threshold for interaction.
 With the constraint $s>0$ comes the assumption that attractive interactions will have no effect on the competitive movement vector---a receptor-ligand pair that signals attraction cannot cause $Q$ to take the value 1.
-$Q$ is set to 1 only if at least one repulsive signal exceeds $s$ and the distance from branch $b$ to branch $k$ is smaller than $2 r_{\!_X}$.
 
 
 \subsubsection*{A gradient based model of chemotaxis}
@@ -221,12 +225,8 @@ $Q$ is set to 1 only if at least one repulsive signal exceeds $s$ and the distan
 % that always points towards...
 % This may come later
 
-
-* The S\&G chemotaxis was a placeholder because they chose G to be a vector
-  pointing to a predetermined target location. In order to make this a local
-  model we do the following....
-
-We also imagine ligand expression on the tectum (L) - describe these here.
+\citet{simpson_simple_2011} chose a placeholder mechanism for the chemotaxis effect, using a global supervisor to set $\mathbf{G}$ to a vector which would always point to the predetermined target location for each branch.
+In order to make this a local model we replaced the global supervisor with an interaction between RGC receptors and ligands expressed on the tectum. We used forms for the ligand expression, $L(\mathbf{x})$, which matched those used for the RGC receptor expression.
 
 We assumed a purely linear receptor binding model, and set the chemotactic movement vector of the branch $b$ at location $\mathbf{x}$ on the tectum to be
 
@@ -241,53 +241,28 @@ We assumed that all receptor-ligand signalled interactions are repulsive ($F_i=-
 %
 $m_{\!_G}$ is a scalar parameter which controls how much movement is generated for a given level of receptor-ligand gradient signalling.
 
-%%%%% Describing the simulation TAKE THIS TO METHOD DETAILS
-We simulated the retina and tectum as unit square regions and defined retinal receptor expression and tectal ligand expression across these squares in the directions defined in Fig.\,\ref{f:ex}.
-The simulated retina possessed $n$=400 (20$\times$20) retinal ganglion cells; the tectum was similarly arranged as 20$\times$20 discrete, square elements, with defined levels of expression for each ligand.
-One spatial unit corresponds to 2~mm on the retina or tectum for mouse \citep{reber_relative_2004}.
-%%%%%%%%%%%%%
-
-% Keep, but say M grown cones. (M=4 specified in method details)
-% ALSO: Put M near competition equation where it's used!
-Each retinal ganglion cell (RGC) projects $M=4$ growth cones (referred to as \emph{branches}) which carry a set of $N$ receptors, $r_i$, indexed by $i$ and expressed at levels determined by the cell soma's location on the retinal grid.
-
-The expression of each receptor varies only with respect to one spatial dimension.
-
-% Thi sis in the righ tplace here
-We defined 4 receptor expression gradients arranged in orthogonal pairs with the gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose gradient is opposite to $r_0$, was orthogonal to $r_3$ (Fig.\,\ref{f:ex}B). Thus the model is of \emph{differential chemotaxis}.
-
-% NO NEED FOR This sentence/bit
-Because there is convincing evidence that EphA and EphB receptors are expressed in exponentially increasing patterns \citep{reber_relative_2004,feldheim_genetic_2000,brown_topographic_2000,koulakov_stochastic_2004}, we use an exponential form for retinal receptor expressions, in common with other modelling studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
+Each of the $M$ RGC growth cones carry a set of $N$ receptors, $r_i$, indexed by $i$ and expressed at levels determined by the cell soma's location on the retinal grid.
 %
-We adopt the same precise form for the retinal receptor expression as \citet{simpson_simple_2011}, $f(x,y) = 1.05 + 0.26 \exp(2.3 u)$, where $u$ gives the direction with which the expression increases and is substituted by $(1-x)$ for $r_0$, $(1-y)$ for $r_1$, $x$ for $r_2$ and by $y$ for $r_3$ (Fig.\,\ref{f:ex}).
+%The expression of each receptor varies only with respect to one spatial dimension.
+%
+We defined 4 receptor expression gradients (each varying only wrt one spatial dimension) arranged in orthogonal pairs with the gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose gradient is opposite to $r_0$, was orthogonal to $r_3$ (Fig.\,\ref{f:ex}B). Thus the model is of \emph{differential chemotaxis}.
+
+% NO NEED FOR This sentence/bit (keep comment in case for discussion)
+%Because there is convincing evidence that EphA and EphB receptors are expressed in exponentially increasing patterns \citep{reber_relative_2004,feldheim_genetic_2000,brown_topographic_2000,koulakov_stochastic_2004}, we use an exponential form for retinal receptor expressions, in common with other modelling studies~\citep{reber_relative_2004,koulakov_stochastic_2004,simpson_simple_2011}.
+%
+% Already said this:
+%We adopt the same precise form for the retinal receptor expression as \citet{simpson_simple_2011}, $f(x,y) = 1.05 + 0.26 \exp(2.3 u)$, where $u$ gives the direction with which the expression increases and is substituted by $(1-x)$ for $r_0$, $(1-y)$ for $r_1$, $x$ for $r_2$ and by $y$ for $r_3$ (Fig.\,\ref{f:ex}).
 
 Cells on the tectum express ligands, $L_i$, for the retinal receptors, also in orthogonal pairs of gradients.
 Although several studies model tectal ligand expression with exponential functions \citep{koulakov_stochastic_2004}, the experimental evidence for the form of tectal ligand expression is more ambiguous than that for retinal receptor expression (For example data, see Fig.\,\ref{f:expr_ephb} which shows expression patterns for EphB/ephrinB).
 We kept in mind the possibility that tectal ligand expression may be modelled by another function, but initially, we set it to the same exponential used for retinal expression and used the substitutions $y$, $x$, $(1-y)$ or $(1-x)$ in place of $u$ to obtain the ligand expression functions for $L_0$, $L_1$, $L_2$ and $L_3$ (Fig.\,\ref{f:ex}).
 
-While we do not explicitly name $r_0$, $r_1$, etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ could include EphA, EphB, Ryk \citep{schmitt_wntryk_2006} and Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $L$ could include the ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a r\^ole in retinotectal map formation.
+%While we do not explicitly name $r_0$, $r_1$, etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ could include EphA, EphB, Ryk \citep{schmitt_wntryk_2006} and Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $L$ could include the ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a r\^ole in retinotectal map formation.
 %%%%%%%%%%%%%%%%%
 
-\subsection*{Simulation} % MOST OF THIS GOES TO METHOD DETAILS, just keep
-                         % first sentence, have list of values used in sims, then 'see method details',
+\subsubsection*{Simulation}
 
-The model has four free parameters; $m_{\!_G}$, $m_{\!_X}$, $r_{\!_X}$ and $s$. We fixed $m_{\!_G}$ to the value $0.0012$ and used a numerical optimization process to find the competition parameters that would balance this level of chemotaxis.
-We performed a simulated annealing optimization to minimize an objective function for the wildtype pattern (Fig.\,\ref{f:GJ}E) at simulation time 1000, reasoning that evolution would optimize the arrangement of this phenotype.
-
-We used a combination of pattern metrics to define the objective function. $\epsilon$ is the mean distance error of the axon centroids, given by $\epsilon = \sqrt{\left(\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2\right)/n}$,
-%
-%\begin{equation}\label{e:eps}
-%\epsilon = \sqrt{\frac{\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
-%\end{equation}
-%
-where $\mathbf{x}_{k}$ is the location of the centroid of the branches of axon $k$ and $\mathbf{x}'_{k}$ the target tectal location for axon $k$.
-$n$ is the number of RGC axons in the system.
-%
-$\epsilon$ tends to 0 as the pattern approaches the target layout.
-However, two patterns may have the same non-zero value for $\epsilon$, despite one being qualitatively more disordered than the other.
-For this reason, we also used the number of crossings in the fishnet plot of the axon centroids (see Fig.\,\ref{f:GJ}D) as a second metric, called $\eta$, which tends towards an expected target number of crossings, $\eta_t$ as the pattern approaches the target layout. The annealing objective function, $\xi$, combined these metrics: $\xi = \epsilon^2 (1+\frac{\eta}{100})$.
-The parameters returned by the simulated annealing were
-$m_{\!_X} = 0.2078$, $r_{\!_X} = 0.0759$ and $s = 4.815$.
+The model has four free parameters; $m_{\!_G}$, $m_{\!_X}$, $r_{\!_X}$ and $s$. We fixed $m_{\!_G}$ to the value $0.0012$ and used a numerical optimization process to find the competition parameters that would balance this level of chemotaxis. The parameters found were $m_{\!_X} = 0.2078$, $r_{\!_X} = 0.0759$ and $s = 4.815$ (see method details).
 
 % Results proper here Leave this as is for now
 \subsection*{Retinotectal map self-organization}
@@ -463,6 +438,12 @@ A strong rostral shift of cells could be caused by increased vigour in the mecha
 We suggested that a genetic logic operation based on comparing EphA and EphA4 receptor levels against thresholds could cause the collapse of the $r_2$/$L_2$ mediated gradient climbing and reproduce the strong rostral movement of knock-in/knock-down cells observed in \citet{reber_relative_2004}.
 We demonstrated that these two mechanisms could closely reproduce the genetic manipulation experiments and found that they do not alter the other results (wildtype map reproduction and surgical manipulations).
 
+\subsubsection*{Outtakes}
+
+Previously in results:
+
+While we do not explicitly name $r_0$, $r_1$, etc.~as \emph{EphA}, \emph{EphB}, the suggestion is that $r$ could include EphA, EphB, Ryk \citep{schmitt_wntryk_2006} and Neogenin \citep{rajagopalan_neogenin_2004} receptors and that $L$ could include the ephrin-A, ephrin-B, Wnt3 \citep{schmitt_wntryk_2006} and RGM \citep{monnier_rgm_2002} ligands, each of which has been shown to play a r\^ole in retinotectal map formation.
+
 \subsection*{Chemotaxis}
 
 The properties of gradient-following models of retinotectal development were explored by \citet{gierer_development_1981,gierer_model_1983,gierer_directional_1987}, where they were presented as a special case of a general class of \emph{potential models}.
@@ -575,6 +556,19 @@ B_y = \begin{cases}
 Thus $\mathbf{B}$ is equivalent to the action of a repulsive signalling molecule expressed around the border of the tectum, whose expression increases quadratically outside the tectum and affects any branch touching (or outside) the boundary.
 % end border effect description
 
+\subsection*{Simulation domain}
+We simulated the retina and tectum as unit square regions and defined retinal receptor expression and tectal ligand expression across these squares in the directions defined in Fig.\,\ref{f:ex}.
+The simulated retina possessed $n$=400 (20$\times$20) retinal ganglion cells; the tectum was similarly arranged as 20$\times$20 discrete, square elements, with defined levels of expression for each ligand.
+One spatial unit corresponds to 2~mm on the retina or tectum for mouse \citep{reber_relative_2004}.
+
+% Make sure this ain't a copy of results
+Each retinal ganglion cell (RGC) projected $M=4$ growth cones (referred to as \emph{branches}) which carry a set of $N$ receptors, $r_i$, indexed by $i$ and expressed at levels determined by the cell soma's location on the retinal grid.
+
+The expression of each receptor was varied only with respect to one spatial dimension.
+
+% Thi sis in the right place here
+We defined 4 receptor expression gradients arranged in orthogonal pairs with the gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose gradient is opposite to $r_0$, was orthogonal to $r_3$ (Fig.\,\ref{f:ex}B). Thus the model is of \emph{differential chemotaxis}.
+
 \subsection*{Initial conditions}
 Branches were initially randomly distributed in a stripe at the rostral side of the tectum at the start of each simulation.
 Each RGC axon $k$ was assigned a random initial position coordinate:
@@ -583,6 +577,30 @@ Each RGC axon $k$ was assigned a random initial position coordinate:
 \end{equation}
 where U(p,q) is a number selected from a random uniform distribution in the range $[p,q)$. Each of the 4 branches per RGC axon was given its parent axon's initial position, plus a randomly generated offset with coordinates derived from a normal distribution of mean 0 and standard deviation 0.1.
 % end initial conditions
+
+\subsection*{Receptor and Ligand expression forms}
+
+A section to add more detail on the functions used, if necessary.
+
+\subsection*{Parameter finding}
+
+We performed a simulated annealing optimization to find three free parameters; $m_{\!_X}$, $r_{\!_X}$ and $s$ which would balance a chosen evel of chemotaxis strength given by $m_{\!_G}=0.00120$.
+We minimized an objective function for the wildtype pattern (Fig.\,\ref{f:GJ}E) at simulation time 1000, reasoning that evolution would optimize the arrangement of this phenotype.
+
+We used a combination of pattern metrics to define the objective function. $\epsilon$ is the mean distance error of the axon centroids, given by $\epsilon = \sqrt{\left(\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2\right)/n}$,
+%
+%\begin{equation}\label{e:eps}
+%\epsilon = \sqrt{\frac{\sum_k^n (\mathbf{x}_{k} - \mathbf{x}'_{k})^2}{n}},
+%\end{equation}
+%
+where $\mathbf{x}_{k}$ is the location of the centroid of the branches of axon $k$ and $\mathbf{x}'_{k}$ the target tectal location for axon $k$.
+$n$ is the number of RGC axons in the system.
+%
+$\epsilon$ tends to 0 as the pattern approaches the target layout.
+However, two patterns may have the same non-zero value for $\epsilon$, despite one being qualitatively more disordered than the other.
+For this reason, we also used the number of crossings in the fishnet plot of the axon centroids (see Fig.\,\ref{f:GJ}D) as a second metric, called $\eta$, which tends towards an expected target number of crossings, $\eta_t$ as the pattern approaches the target layout. The annealing objective function, $\xi$, combined these metrics: $\xi = \epsilon^2 (1+\frac{\eta}{100})$.
+The parameters returned by the simulated annealing were
+$m_{\!_X} = 0.2078$, $r_{\!_X} = 0.0759$ and $s = 4.815$.
 
 \subsection*{Bootstrap analyses of R--C tectal position vs.~N--T retinal origin}
 
