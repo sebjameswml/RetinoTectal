@@ -127,18 +127,18 @@ public:
             }
         }
 
-        std::pair<float,float> mm1 = morph::MathAlgo::maxmin (this->dcolour);
-        //std::cout << "dcolour min/max: " << mm1.second << "/" << mm1.first << std::endl;
-        if (std::abs(mm1.second - mm1.first) < 0.00001) {
+        morph::range<float> mm1 = morph::MathAlgo::maxmin (this->dcolour);
+        //std::cout << "dcolour min/max: " << mm1.min << "/" << mm1.max << std::endl;
+        if (std::abs(mm1.max - mm1.min) < 0.00001) {
             //std::cout << "show range 0-1 (instead of auto-scale)\n";
             this->colourScale.compute_autoscale (0,1);
         }
         this->colourScale.transform (this->dcolour, this->dcolour);
         this->colourScale.reset();
 
-        std::pair<float,float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);
-        //std::cout << "dcolour2 min/max: " << mm2.second << "/" << mm2.first << std::endl;
-        if (std::abs(mm2.second - mm2.first) < 0.00001) {
+        morph::range<float> mm2 = morph::MathAlgo::maxmin (this->dcolour2);
+        //std::cout << "dcolour2 min/max: " << mm2.min << "/" << mm2.max << std::endl;
+        if (std::abs(mm2.max - mm2.min) < 0.00001) {
             //std::cout << "show range 0-1 (instead of auto-scale)\n";
             this->colourScale.compute_autoscale (0,1);
         }

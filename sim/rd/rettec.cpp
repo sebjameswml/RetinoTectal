@@ -808,8 +808,7 @@ int main (int argc, char **argv)
                     // Plot the difference vectors here.
                     std::vector<morph::vec<float, 3>> regcs;
                     for (auto rc : RD.reg_centroids) {
-                        regcs.push_back ({static_cast<float>(rc.second.first),
-                                          static_cast<float>(rc.second.second), 0.0f});
+                        regcs.push_back (rc.second.plus_one_dim().as_float());
                     }
                     quiv_grid->updateData (&regcs, &RD.tec_offsets);
                 }

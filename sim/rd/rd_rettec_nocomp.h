@@ -147,16 +147,9 @@ public:
         // match to the origin pattern, can simply sum the squares of the tec_offset
         // vector lengths.
         for (unsigned int i = 0; i < this->N; ++i) {
-            std::array<Flt, 2> tc = { this->tec_coords[i][0], this->tec_coords[i][1] };
-            std::pair<Flt, Flt> rc = this->reg_centroids[(Flt)i/(Flt)this->N];
-            //std::cout << "Comparing Tectal coordinate (" << tc[0] << "," << tc[1]
-            //     << ") with centroid coord (" << rc.first << "," << rc.second << std::endl;
-            std::array<Flt, 2> vec = tc;
-            vec[0] -= rc.first;
-            vec[1] -= rc.second;
-            // tec_offsets contains vectors pointing FROM reg_centroids TO tc_coords
-            this->tec_offsets[i][0] = vec[0];
-            this->tec_offsets[i][1] = vec[1];
+            morph::vec<Flt, 3> rc = this->reg_centroids[(Flt)i/(Flt)this->N].plus_one_dim();
+            // tec_offsets contains vectors pointing FROM reg_centroids TO tec_coords
+            this->tec_offsets[i] = this->tec_coords[i] - rc;
         }
 
         this->spatialAnalysisComputed = true;

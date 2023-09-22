@@ -75,8 +75,8 @@ struct branch_stochastic : public branch<T,N>
                 if (bound.size() < 2) {
                     lg[2*i+d] = T{0};
                 } else {
-                    std::pair<T,T> mc = morph::MathAlgo::linregr (bound, bound_w);
-                    lg[2*i+d] = mc.first;
+                    morph::vec<T,2> mc = morph::MathAlgo::linregr (bound, bound_w);
+                    lg[2*i+d] = mc[0];
                 }
                 if constexpr (debug_stochastic2) {
                     std::cout << "Gradient " << mu[2*i+d] << " estimated as: " << lg[2*i+d] << "; bound size: " << bound.size() << std::endl;

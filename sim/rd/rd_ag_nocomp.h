@@ -9,6 +9,7 @@
  * \date 2020
  */
 
+#define HEXGRID_COMPILE_LOAD_AND_SAVE 1
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
 #include <morph/Random.h>
@@ -272,7 +273,7 @@ public:
 
     //! The centroids of the regions. key is the "ID" of the region - a Flt between 0
     //! and 1, with values separated by 1/N.
-    std::map<Flt, std::pair<Flt, Flt> > reg_centroids;
+    std::map<Flt, morph::vec<Flt, 2> > reg_centroids;
     //! The area of each region, by Flt ID (area in number of hexes).
     std::map<Flt, int> region_areas;
     //! Set true when the spatial analysis has been computed
@@ -714,8 +715,8 @@ public:
         for (unsigned int i = 0; i<this->N; ++i) {
             Flt k = (Flt)i/this->N;
             keys.push_back (k);
-            x_.push_back (this->reg_centroids[k].first);
-            y_.push_back (this->reg_centroids[k].second);
+            x_.push_back (this->reg_centroids[k][0]);
+            y_.push_back (this->reg_centroids[k][1]);
 
         }
         data.add_contained_vals ("/reg_centroids_id", keys);
