@@ -1,5 +1,6 @@
 #pragma once
 
+#include <morph/range.h>
 #include <morph/vvec.h>
 #include <morph/vec.h>
 #include <morph/Random.h>
@@ -138,6 +139,7 @@ struct guidingtissue : public tissue<T>
     //! piece of guiding tissue requires 4 receptors and 4 ligands. Holds receptor
     //! expressions for each cell.
     morph::vvec<morph::vec<T,N>> rcpt;
+    morph::vec<morph::range<T>, N> rcpt_range;
 
     //! Companion expression of EphA4 for rcpt[0]. This is a customisation to
     //! investigate EphA3/EphA4 interactions. This would be used for retinal EphA4
@@ -153,13 +155,17 @@ struct guidingtissue : public tissue<T>
 
     //! Each receptor has a 2D gradient field, hence 2*N values here
     morph::vvec<morph::vec<T,2*N>> rcpt_grad;
+    morph::vec<morph::range<T>, 2*N> rcpt_grad_range;
     // Set fields true if the receptor expression has been manipulated
     morph::vvec<std::bitset<N>> rcpt_manipulated;
 
     //! The tissue also has an expression of ligands to interact with receptors of other
     //! cells/agents
     morph::vvec<morph::vec<T,N>> lgnd;
+    morph::vec<morph::range<T>, N> lgnd_range;
+    //! Order of gradient components; l0_x,l0_y,l1_x,l1_y,l2_x,...
     morph::vvec<morph::vec<T,2*N>> lgnd_grad;
+    morph::vec<morph::range<T>, 2*N> lgnd_grad_range;
     // Set fields true if the ligand expression has been manipulated
     morph::vvec<std::bitset<N>> lgnd_manipulated;
 
@@ -286,6 +292,7 @@ struct guidingtissue : public tissue<T>
         }
         std::cout << "Maximum receptor expression value: " << maxre << std::endl;
         std::cout << "Minimum receptor expression value: " << minre << std::endl;
+        for (size_t i = 0; i < N; ++i) { this->rcpt_range[i] = morph::range<T>(minre, maxre); }
 
         maxre = std::numeric_limits<T>::min();
         minre = std::numeric_limits<T>::max();
@@ -297,6 +304,7 @@ struct guidingtissue : public tissue<T>
         }
         std::cout << "Maximum ligand expression value: " << maxre << std::endl;
         std::cout << "Minimum ligand expression value: " << minre << std::endl;
+        for (size_t i = 0; i < N; ++i) { this->lgnd_range[i] = morph::range<T>(minre, maxre); }
 
         this->compute_gradients();
 
@@ -482,6 +490,9 @@ struct guidingtissue : public tissue<T>
             maxrg = maxe > maxrg ? maxe : maxrg;
         }
         std::cout << "Maximum receptor gradient value: " << maxrg << std::endl;
+        for (size_t i = 0; i < 2*N; ++i) {
+            this->rcpt_grad_range[i] = morph::range<T>(T{0}, maxrg);
+        }
 
         T maxlg = std::numeric_limits<T>::min(); // max ligand gradient
         for (auto gs : this->lgnd_grad) {
@@ -489,6 +500,9 @@ struct guidingtissue : public tissue<T>
             maxlg = maxe > maxlg ? maxe : maxlg;
         }
         std::cout << "Maximum ligand gradient value: " << maxlg << std::endl;
+        for (size_t i = 0; i < 2*N; ++i) {
+            this->lgnd_grad_range[i] = morph::range<T>(T{0}, maxlg);
+        }
     }
 
     T linear_expression (const T& x) const { return T{1.31} + T{2.3333} * x; }

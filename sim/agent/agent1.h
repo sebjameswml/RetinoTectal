@@ -20,6 +20,7 @@ static constexpr bool debug_compute_branch = false;
 #include <set>
 #include <chrono>
 
+#include <morph/range.h>
 #include <morph/Config.h>
 #include <morph/Random.h>
 #include <morph/HdfData.h>
@@ -910,6 +911,8 @@ struct Agent1
         float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
         T s = this->mconf->getFloat ("s", 1.1f);
         // A loop to set up each branch object in pending_branches.
+        this->rcpt_range.max = -1e9;
+        this->rcpt_range.min = 1e9;
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
@@ -944,8 +947,8 @@ struct Agent1
                 this->pending_branches[i].rcpt0_EphA4_cis = this->ret->EphA4_current_expression - this->ret->rcpt0_EphA4_free[ri];
             }
             // Call the first interaction parameter 'EphA'
-            rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
-            rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
+            rcpt_range.max =  this->pending_branches[i].rcpt[0] > rcpt_range.max ? pending_branches[i].rcpt[0] : rcpt_range.max;
+            rcpt_range.min =  this->pending_branches[i].rcpt[0] < rcpt_range.min ? pending_branches[i].rcpt[0] : rcpt_range.min;
 
             // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
             morph::vec<T, 3> initpos;
@@ -1387,7 +1390,7 @@ struct Agent1
          */
 
         // The min/max of rcpt[0] is used below to set a morph::Scale in branchvisual
-        std::cout << "Receptor expression range: " << rcpt_min << " to " << rcpt_max << std::endl;
+        std::cout << "Receptor expression range: " << rcpt_range << std::endl;
 
         // Which axons to see?
         nlohmann::json seelist = this->conf->get ("seeaxons");
@@ -1849,7 +1852,7 @@ struct Agent1
         // Branches: Visualise the branches with a custom VisualModel
         auto bvup = std::make_unique<BranchVisual<T, N, B>> (offset, &this->branches, &this->ax_history);
         v->bindmodel (bvup);
-        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         bvup->target_scale.compute_autoscale (0, 1);
         //bvup->view = branchvisual_view::detail;
         bvup->view = branchvisual_view::discs;
@@ -1885,7 +1888,7 @@ struct Agent1
         v->bindmodel (avup);
         avup->view = branchvisual_view::axonview;
         for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
-        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         avup->target_scale.compute_autoscale (0, 1);
         avup->finalize();
         avup->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
@@ -1980,7 +1983,7 @@ struct Agent1
 
         auto bvup = std::make_unique<BranchVisual<T, N, B>> (g_A, &this->branches, &this->ax_history);
         v->bindmodel (bvup);
-        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         bvup->target_scale.compute_autoscale (0, 1);
         bvup->view = branchvisual_view::discs;
         bvup->finalize();
@@ -2140,7 +2143,7 @@ struct Agent1
         // Branches: Visualise the branches with a custom VisualModel
         auto bvup = std::make_unique<BranchVisual<T, N, B>> (g_G, &this->branches, &this->ax_history);
         this->v->bindmodel (bvup);
-        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         bvup->target_scale.compute_autoscale (0, 1);
         bvup->view = branchvisual_view::discs;
         bvup->finalize();
@@ -2153,7 +2156,7 @@ struct Agent1
         this->v->bindmodel (avup);
         avup->view = branchvisual_view::axonview;
         for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
-        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         avup->target_scale.compute_autoscale (0, 1);
         avup->finalize();
         avup->addLabel ("Selected axons", {0.0f, 1.15f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
@@ -2184,7 +2187,7 @@ struct Agent1
         // Branches: Visualise the branches with a custom VisualModel
         auto bvup = std::make_unique<BranchVisual<T, N, B>> (g_A, &this->branches, &this->ax_history);
         this->v->bindmodel (bvup);
-        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         bvup->target_scale.compute_autoscale (0, 1);
         bvup->view = branchvisual_view::discs;
         bvup->finalize();
@@ -2332,7 +2335,7 @@ struct Agent1
         // Branches
         auto bvup = std::make_unique<BranchVisual<T, N, B>> (g_B, &this->branches, &this->ax_history);
         this->v->bindmodel (bvup);
-        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         bvup->target_scale.compute_autoscale (0, 1);
         bvup->view = branchvisual_view::discs;
         bvup->finalize();
@@ -2403,7 +2406,7 @@ struct Agent1
 
         auto bvup = std::make_unique<BranchVisual<T, N, B>> (g_B, &this->branches, &this->ax_history);
         this->v->bindmodel (bvup);
-        bvup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        bvup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         bvup->target_scale.compute_autoscale (0, 1);
         bvup->view = branchvisual_view::discs;
         bvup->finalize();
@@ -2488,7 +2491,7 @@ struct Agent1
         this->v->bindmodel (avup);
         avup->view = branchvisual_view::axonview;
         for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
-        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         avup->target_scale.compute_autoscale (0, 1);
         avup->finalize();
         avup->addLabel ("Selected axons", {0.0f, 1.1f, 0.0f}, morph::colour::black, morph::VisualFont::DVSans, fontsz_label, fontres_label);
@@ -2651,7 +2654,7 @@ struct Agent1
         this->v->bindmodel (avup);
         avup->view = branchvisual_view::axonview;
         for (auto sa : this->seeaxons) { avup->seeaxons.insert(sa); }
-        avup->rcpt_scale.compute_autoscale (rcpt_min, rcpt_max);
+        avup->rcpt_scale.compute_autoscale (rcpt_range.min, rcpt_range.max);
         avup->target_scale.compute_autoscale (0, 1);
         avup->finalize();
         this->av = this->v->addVisualModel (avup);
@@ -2707,8 +2710,7 @@ struct Agent1
     // Path history is a map indexed by axon id. 3D as it's used for vis.
     std::map<size_t, morph::vvec<morph::vec<T, 3>>> ax_history;
     // Receptor max and min - used across init() and visinit()
-    T rcpt_max = -1e9;
-    T rcpt_min = 1e9;
+    morph::range<T> rcpt_range;
     // a title for this simulation
     std::string title = "";
 #ifdef VISUALISE

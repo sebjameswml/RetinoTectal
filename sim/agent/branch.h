@@ -16,6 +16,7 @@
 template<typename T, size_t N>
 struct branch : public branch_base<T,N>
 {
+    static constexpr size_t n_flags = 3;
     // Distance parameter r is used as 2r
     T getr() { return this->r; }
     T getr_c() { return this->r_c; }
@@ -60,7 +61,7 @@ public:
     morph::vec<T, 2*N> rn;
     // Estimate the ligand gradient, given the true ligand gradient
     virtual morph::vec<T, 2*N> estimate_ligand_gradient (morph::vec<T,2*N>& true_lgnd_grad,
-                                                            morph::vec<T,N>& true_lgnd_exp)
+                                                         morph::vec<T,N>& true_lgnd_exp)
     {
         // This is the non-stochastic implementation...
         morph::vec<T, 2*N> lg = true_lgnd_grad;
@@ -78,12 +79,12 @@ public:
     // Used in compute_chemo(). Compute signal size given rect0 expression and cluster size.
     T signal (const T rcpt0, const T csize) const { return rcpt0 * csize; }
 
-    // A subroutine of compute_next
-    morph::vec<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
-                                       const guidingtissue<T, N>* tissue)
+    // A subroutine of compute_next. Return G as N individual component vectors
+    morph::vec<morph::vec<T, 2>, N> compute_chemo (const guidingtissue<T, N>* source_tissue,
+                                                   const guidingtissue<T, N>* tissue)
     {
         morph::vec<T, 2> b = this->current;
-        morph::vec<T, 2> G;
+        morph::vec<morph::vec<T, 2>, N> G;
 
         if constexpr (N==4) {
             // First, find the ligand gradients close to the current location b.  Adding
@@ -126,22 +127,22 @@ public:
                             || source_tissue->forward_interactions[0] == interaction::special_EphA
                             || source_tissue->forward_interactions[0] == interaction::special_EphA_simple;
 
-            G[0] = (r0 * (repulse0 ? -lg[0] : lg[0]))
-                       + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2])
-                       + r2 * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4])
-                       + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
+            G[0][0] = r0            * (repulse0                                                         ? -lg[0] : lg[0]);
+            G[1][0] = this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2]);
+            G[2][0] = r2            * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[4] : lg[4]);
+            G[3][0] = this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[6] : lg[6]);
 
-            G[1] = (r0 * (repulse0 ? -lg[1] : lg[1]))
-                       + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3])
-                       + r2 * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5])
-                       + this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
+            G[0][1] = r0            * (repulse0                                                         ? -lg[1] : lg[1]);
+            G[1][1] = this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3]);
+            G[2][1] = r2            * (source_tissue->forward_interactions[2] == interaction::repulsion ? -lg[5] : lg[5]);
+            G[3][1] = this->rcpt[3] * (source_tissue->forward_interactions[3] == interaction::repulsion ? -lg[7] : lg[7]);
 
         } else if constexpr (N==2) {
             morph::vec<T, 4> lg = tissue->lgnd_grad_at (b);
-            G[0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2]);
-            G[1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1])
-            + this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3]);
+            G[0][0] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[0] : lg[0]);
+            G[1][0] = this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[2] : lg[2]);
+            G[0][1] = this->rcpt[0] * (source_tissue->forward_interactions[0] == interaction::repulsion ? -lg[1] : lg[1]);
+            G[1][1] = this->rcpt[1] * (source_tissue->forward_interactions[1] == interaction::repulsion ? -lg[3] : lg[3]);
         }
 
         return G;
@@ -154,12 +155,20 @@ public:
     // interaction. Use the strength of this interaction to weight a vector between the
     // two cones. I is the receptor-receptor interaction of S&G, J is my receptor-ligand
     // axon-axon interaction. Argument kp is "pointer to branch k"
-    std::bitset<3>
+    //
+    // New 2023: 'Gradient jamming'. Receptor-receptor interactions interfere with the
+    // RGCreceptor-TectalLigand 'G'. This introduces an effect similar to that proposed
+    // in 'A stochastic model for retinocollicular map development', by Koulakov and
+    // Tsigankov (BMC Neuroscience 2004, http://www.biomedcentral.com/1471-2202/5/30)
+    //
+    // \return bitset<n_flags> With element 0: Add to C; 1: add to I; 2: add to J; 3: jam G.
+    std::bitset<n_flags>
     compute_for_branch (const guidingtissue<T, N>* source_tissue, branch_base<T, N>* kp,
-                        morph::vec<T, 2>& C, morph::vec<T, 2>& I, morph::vec<T, 2>& J)
+                        morph::vec<T, 2>& C, morph::vec<T, 2>& I, morph::vec<T, 2>& J, morph::vec<T, 2*N>& lg0,
+                        morph::vec<T, N>& p_jam)
     {
         // Holds flags to say if we should add to C, I or J.
-        std::bitset<3> rtn;
+        std::bitset<n_flags> rtn;
 
         // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
         // sums these. However, that gives a competition term with a sign error. So
@@ -167,6 +176,59 @@ public:
         morph::vec<T, 2> kb = this->current - kp->current;
         T d = kb.length();
         kb.renormalize(); // vector kb is a unit vector
+
+        //////
+        // G jamming
+        // Possibility of jamming if d < two_r_c
+        //morph::vec<T, N> _rn;
+        //brng::i()->get<N>(_rn); // brng is uniform rng
+        if (d <= this->two_r_c) {
+            // Compare:
+            // kp->rcpt
+            // this->rcpt; // Each [i] of these jams a different contribution to G?
+            for (size_t i = 0; i < N; ++i) {
+                // 1. probability of jamming on receptor i
+                // rcpt[0]: interacts with lg[0] and lg[1] (x/y) For the jamming, just use the magnitude of
+                // the grad. std::sqrt(lg[2i]*lg[2i]+lg[2i+1]*lg[2i+1])
+                morph::vec<T, 2> lgi = { lg0[2*i] , lg0[2*i+1] };
+                // Direction from one of the elements of lg.
+                // rcpt[0]: Increases in -x direction on retina
+                // rcpt[1]: Increases in -y direction on retina
+                // rcpt[2]: Increases in +x direction on retina
+                // rcpt[3]: Increases in +y direction on retina
+                // rcpt[i]  r dirn    comparative lg direction from [element]
+                //    0        -x         lgi[1] or (i/2>0?1:-1)*lgisig[(i+1)%2]
+                //    1        -y         lgi[0]
+                //    2        +x        -lgi[1]
+                //    3        +y        -lgi[0]
+
+                // Normalised receptor expressions
+                T krcpt = (kp->rcpt[i] - source_tissue->rcpt_range[i].min) / (source_tissue->rcpt_range[i].max - source_tissue->rcpt_range[i].min);
+                T thisrcpt = (this->rcpt[i] - source_tissue->rcpt_range[i].min) / (source_tissue->rcpt_range[i].max - source_tissue->rcpt_range[i].min);
+                // Probability of jamming
+                T _p_jam = T{0.5} - T{0.5} * (krcpt - thisrcpt) * (i/2>0?1:-1) * lgi[(i+1)%2];
+
+#if 0
+                std::cout << "\n**\n(krcpt-thisrcpt)=" << (krcpt - thisrcpt) << " * (i/2>0?1:-1)=" << (i/2>0?1:-1)
+                          << " * lgi[i%2="<<((i+1)%2)<<"]: " << lgi[(i+1)%2]
+                          << std::endl;
+                std::cout << "-----> _p_jam["<<i<<"] = " << ".5 - .5*"
+                          << ((krcpt - thisrcpt) * (i/2>0?1:-1) * lgi[(i+1)%2]) << " = " << _p_jam << std::endl;
+#endif
+                // Force range
+                _p_jam = _p_jam < T{0} ? T{0} : _p_jam;
+                _p_jam = _p_jam > T{1} ? T{1} : _p_jam;
+
+                if (_p_jam > T{1} || _p_jam < T{0}) {
+                    std::stringstream ee;
+                    ee << "p_jam=" << p_jam << " oor. (kp->rcpt[i]=" << kp->rcpt[i] << " - this->rcpt[i]=" << this->rcpt[i] << ") * ("
+                       << "(i/2>0?1:-1) = " << (i/2>0?1:-1) << " * lgi[(i+1)%2]=" << lgi[(i+1)%2] << ")";
+                    throw std::runtime_error (ee.str());
+                }
+                // Add/multiplicatively modify a probability of jamming (fixme - combinatorial probability!)
+                p_jam[i] = p_jam[i] == T{0} ? _p_jam : p_jam[i] * _p_jam;
+            }
+        }
 
         /////////////////////////////////////////////////////////////////////////////////////////////
         // Space-based competition, C
@@ -285,7 +347,7 @@ public:
         // Current location is named b
         morph::vec<T, 2> b = this->current;
         // Chemotaxis, graded by origin position (i.e termination zone) of each retinal axon
-        morph::vec<T, 2> G = this->compute_chemo (source_tissue, tissue);
+        morph::vec<morph::vec<T, 2>, N> G = this->compute_chemo (source_tissue, tissue);
 
         // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
         // over the other branches
@@ -297,12 +359,28 @@ public:
         T n_k = T{0};
         T n_ki = T{0};
         T n_kj = T{0};
+
+        // Use ligand gradient in compute_for_branch
+        morph::vec<T, 2*N> lg0 = tissue->lgnd_grad_at (b);
+        lg0 /= tissue->lgnd_grad_range[0].max; // Can assume max lgnd grad max for all is same. lg0 normalised
+
+        // Build up a probability of jamming occurring from all the b-k interactions
+        morph::vec<T, N> p_jam;
+        p_jam.zero();
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            std::bitset<3> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J);
+            std::bitset<n_flags> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J, lg0, p_jam);
             n_k += cij_added[0] ? T{1} : T{0};
             n_ki += cij_added[1] ? T{1} : T{0};
             n_kj += cij_added[2] ? T{1} : T{0};
+        }
+        // Apply the probability of jamming
+        morph::vec<T, N> r_jam;
+        brng::i()->get<N>(r_jam);
+        morph::vec<T, N> jam;
+        for (size_t i = 0; i < N; ++i) {
+            jam[i] = r_jam[i] < p_jam[i] ? T{0} : T{1};
+            G[i] *= jam[i];
         }
 
         // Do the 1/|B_b| multiplication to normalize C and I(!!)
@@ -321,7 +399,7 @@ public:
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-        morph::vec<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
+        morph::vec<T, 2> nonB = G.sum() * m[0] + J * m[1] + I * m[2]  + C * m[3];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::vec<T, 2> B = this->apply_border_effect (tissue, nonB);

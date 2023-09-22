@@ -103,7 +103,7 @@ struct branch_stochastic : public branch<T,N>
         // Current location is named b
         morph::vec<T, 2> b = this->current;
         // Chemoaffinity, graded by origin position (i.e termination zone) of each retinal axon
-        morph::vec<T, 2> G = this->compute_chemo (source_tissue, tissue);
+        morph::vec<morph::vec<T, 2>, N> G = this->compute_chemo (source_tissue, tissue);
 
         // Competition, C, and Axon-axon interactions, I&J, computed during the same loop
         // over the other branches
@@ -111,13 +111,18 @@ struct branch_stochastic : public branch<T,N>
         morph::vec<T, 2> I = {0, 0};
         morph::vec<T, 2> J = {0, 0};
 
+        // Use ligand gradient in compute_for_branch
+        morph::vec<T, 2*N> lg0 = tissue->lgnd_grad_at (b);
+
+        morph::vec<T, N> p_jam;
+        p_jam.zero();
         // Other branches are called k, making a set (3 sets) B_b, with a number of members that I call n_k etc
         T n_k = T{0};
         T n_ki = T{0};
         T n_kj = T{0};
         for (auto k : branches) {
             if (k.id == this->id) { continue; } // Don't interact with self
-            std::bitset<3> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J);
+            std::bitset<branch<T,N>::n_flags> cij_added = this->compute_for_branch (source_tissue, (&k), C, I, J, lg0, p_jam);
             n_k += cij_added[0] ? T{1} : T{0};
             n_ki += cij_added[1] ? T{1} : T{0};
             n_kj += cij_added[2] ? T{1} : T{0};
@@ -139,7 +144,7 @@ struct branch_stochastic : public branch<T,N>
             for (size_t i = 0; i<this->ihs; ++i) { I += this->Ihist[i]; }
         }
         // Collected non-border movement components
-        morph::vec<T, 2> nonB = G * m[0] + J * m[1] + I * m[2]  + C * m[3];
+        morph::vec<T, 2> nonB = G.sum() * m[0] + J * m[1] + I * m[2]  + C * m[3];
 
         // Border effect. A 'force' to move agents back inside the tissue boundary
         morph::vec<T, 2> B = this->apply_border_effect (tissue, nonB);
