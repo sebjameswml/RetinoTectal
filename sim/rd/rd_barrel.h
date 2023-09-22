@@ -7,7 +7,6 @@
  * branching.
  */
 
-#define HEXGRID_COMPILE_LOAD_AND_SAVE 1
 #include <morph/RD_Base.h>
 #include <morph/ShapeAnalysis.h>
 #include <morph/Random.h>
