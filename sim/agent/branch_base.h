@@ -48,4 +48,11 @@ struct branch_base
     // Parameters for special EphA4 model
     T Ax_thresh = T{2.5};
     T A4_thresh = T{1.5};
+
+    T getr() { return this->r; }
+    void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
+
+protected:
+    T r = T{0.04};   // A radius for a growth cone (may be used for visualisation)
+    T two_r = T{2}*r;
 };

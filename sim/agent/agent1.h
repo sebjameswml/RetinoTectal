@@ -29,6 +29,7 @@ static constexpr bool use_hsv_cmaps = true;
 
 #include "branch.h"
 #include "branch_stochastic.h"
+#include "branch_koulakov.h"
 #include "branch_geb.h"
 #include "net.h"
 #include "tissue.h"
@@ -895,20 +896,28 @@ struct Agent1
         std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
 
         float r_conf = this->mconf->getFloat ("r", 0.05f);
-        float r_c_conf = this->mconf->getFloat ("r_c", 0.0f);
-        float r_j_conf = this->mconf->getFloat ("r_j", 0.0f);
-        float r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
-        T s = this->mconf->getFloat ("s", 1.1f);
+        float r_c_conf __attribute__((unused)); // attribute 'unused' avoids warning if this float is unused
+        float r_j_conf __attribute__((unused));
+        float r_i_conf __attribute__((unused));
+        T s __attribute__((unused));
+        if constexpr (std::is_same<std::decay_t<B>, branch<float, 4>>::value == true) {
+            r_c_conf = this->mconf->getFloat ("r_c", 0.0f);
+            r_j_conf = this->mconf->getFloat ("r_j", 0.0f);
+            r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
+            s = this->mconf->getFloat ("s", 1.1f);
+        }
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->pending_branches[i].init();
-            this->pending_branches[i].s = s;
             this->pending_branches[i].setr (r_conf);
-            this->pending_branches[i].setr_c (r_c_conf);
-            this->pending_branches[i].setr_j (r_j_conf);
-            this->pending_branches[i].setr_i (r_i_conf);
+            if constexpr (std::is_same<std::decay_t<B>, branch<float, 4>>::value == true) {
+                this->pending_branches[i].s = s;
+                this->pending_branches[i].setr_c (r_c_conf);
+                this->pending_branches[i].setr_j (r_j_conf);
+                this->pending_branches[i].setr_i (r_i_conf);
+            }
             this->pending_branches[i].noise_gain = this->mconf->getFloat("noise_gain", 0.0f);
             // Parameters pertaining to EphA clustering (interaction::Special_EphA for rcpt[0])
             this->pending_branches[i].Ax_thresh = this->mconf->getFloat("Ax_thresh", 2.5f);

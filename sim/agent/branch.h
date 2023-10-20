@@ -16,24 +16,20 @@
 template<typename T, size_t N>
 struct branch : public branch_base<T,N>
 {
-    // Distance parameter r is used as 2r
-    T getr() { return this->r; }
+    // Distance parameters that are specific to this model
     T getr_c() { return this->r_c; }
     T getr_j() { return this->r_j; }
     T getr_i() { return this->r_i; }
-    void setr (T _r) { this->r = _r; this->two_r = _r*T{2}; }
     void setr_c (T _r) { this->r_c = _r; this->two_r_c = _r*T{2}; }
     void setr_j (T _r) { this->r_j = _r; this->two_r_j = _r*T{2}; }
     void setr_i (T _r) { this->r_i = _r; this->two_r_i = _r*T{2}; }
 protected:
-    T r = T{0.04};   // Actual radius of a growth cone (may be used for visualisation)
-    T two_r = T{2}*r;
-    T r_c = T{0.04};  // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
-    T two_r_c = T{2}*r;
+    T r_c = T{0.04}; // competition interaction distance (arrangement is quite strongly dependent on this interaction radius)
+    T two_r_c = T{2}*this->r;
     T r_j = T{0.04}; // receptor-ligand interaction distance for axon-axon interactions
-    T two_r_j = T{2}*r;
+    T two_r_j = T{2}*this->r;
     T r_i = T{0.04}; // receptor-receptor interaction distance for axon-axon interactions
-    T two_r_i = T{2}*r;
+    T two_r_i = T{2}*this->r;
 public:
     // Signalling ratio parameter for S&G-type (relative receptor levels) interaction (but on 4 receptors, not 1)
     T s = T{0.3};
@@ -60,7 +56,7 @@ public:
     morph::vec<T, 2*N> rn;
     // Estimate the ligand gradient, given the true ligand gradient
     virtual morph::vec<T, 2*N> estimate_ligand_gradient (morph::vec<T,2*N>& true_lgnd_grad,
-                                                            morph::vec<T,N>& true_lgnd_exp)
+                                                         morph::vec<T,N>& true_lgnd_exp)
     {
         // This is the non-stochastic implementation...
         morph::vec<T, 2*N> lg = true_lgnd_grad;
@@ -80,7 +76,7 @@ public:
 
     // A subroutine of compute_next
     morph::vec<T, 2> compute_chemo (const guidingtissue<T, N>* source_tissue,
-                                       const guidingtissue<T, N>* tissue)
+                                    const guidingtissue<T, N>* tissue)
     {
         morph::vec<T, 2> b = this->current;
         morph::vec<T, 2> G;
@@ -257,16 +253,16 @@ public:
         morph::vec<T, 2> B = {0,0};
 
         // Gradient based border effect. Don't change competition, interaction or chemoaffinity. B is effectively a gradient effect.
-        if (this->current[0] < (tissue->x_min()+r)) {
-            B[0] = (tissue->x_min()+r) - this->current[0];
-        } else if (this->current[0] > (tissue->x_max()-r)) {
-            B[0] = -(this->current[0] - (tissue->x_max()-r));
+        if (this->current[0] < (tissue->x_min()+this->r)) {
+            B[0] = (tissue->x_min()+this->r) - this->current[0];
+        } else if (this->current[0] > (tissue->x_max()-this->r)) {
+            B[0] = -(this->current[0] - (tissue->x_max()-this->r));
         }
 
-        if (this->current[1] < (tissue->y_min()+r)) {
-            B[1] = (tissue->y_min()+r) - this->current[1];
-        } else if (this->current[1] > (tissue->y_max()-r)) {
-            B[1] = -(this->current[1] - (tissue->y_max()-r));
+        if (this->current[1] < (tissue->y_min()+this->r)) {
+            B[1] = (tissue->y_min()+this->r) - this->current[1];
+        } else if (this->current[1] > (tissue->y_max()-this->r)) {
+            B[1] = -(this->current[1] - (tissue->y_max()-this->r));
         }
 
         return B;

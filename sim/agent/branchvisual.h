@@ -113,10 +113,12 @@ public:
         // Set radius from the first branch
         if (!this->branches->empty()) {
             this->radiusFixed = (*this->branches)[0].getr();
-
+#if 0
             morph::vec<Flt, 3> rads = { (*this->branches)[0].getr_c(), (*this->branches)[0].getr_j(), (*this->branches)[0].getr_i() };
             this->rad_interaction = rads.max() > this->radiusFixed ? rads.max() : Flt{0.0};
-            //std::cout << "radiusFixed: " << radiusFixed << " rad_interaction: " << rad_interaction << std::endl;
+#else
+            this->rad_interaction = Flt{0.0};
+#endif
         }
 
         // For each branch,simply draw a sphere for the current location, with a second

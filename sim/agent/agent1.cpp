@@ -115,6 +115,11 @@ int main (int argc, char **argv)
             model.title = std::string("stoc_") + m_id + std::string("_") + e_id;
             model.run();
             model.am.save (outfile);
+        } else if (branch_model == "koulakov") {
+            Agent1<float, 4, branch_koulakov<float, 4>> model (conf, mconf);
+            model.title = std::string("koul_") + m_id + std::string("_") + e_id;
+            model.run();
+            model.am.save (outfile);
         } else {
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
             model.title = std::string("j4_") + m_id + std::string("_") + e_id;
@@ -127,8 +132,6 @@ int main (int argc, char **argv)
         model.run();
         model.am.save (outfile);
     }
-
-    //std::cout << "conf:\n" << conf->str() << std::endl;
 
     delete conf;
     if (argc > 2) { /* mconf->write ("mconf.json"); */ delete mconf; }
