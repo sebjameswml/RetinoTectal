@@ -634,15 +634,6 @@ struct Agent1
     void step()
     {
         // Compute the next position for each branch:
-#ifdef __OSX__
-        // Mac compiler didn't like omp parallel for in front of a for(auto...
-#pragma omp parallel for
-        for (unsigned int i = 0; i < this->branches.size(); ++i) {
-            morph::vec<T, 2*N> rns;
-            this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
-            this->branches[i].compute_next (this->branches, this->ret, this->tectum, this->m, rns);
-        }
-#else
         if constexpr (debug_compute_branch == true) {
             for (auto& b : this->branches) {
                 morph::vec<T, 2*N> rns;
@@ -656,7 +647,6 @@ struct Agent1
                 this->gradient_rng->get (rns);
                 b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
             }
-#endif
         }
 
         // Update centroids
