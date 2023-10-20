@@ -186,7 +186,7 @@ public:
         float r_3 = 5.0f * r/10.0f; // ligand ring
         float r_4 = 5.4f * r/10.0f; // outer white ring
 
-        std::array<VBOint, 4> capMiddle;
+        std::array<int, 4> capMiddle;
         std::array<std::array<float, 3>, 4> rclrs = { r0, r1, r2, r3 };
         std::array<std::array<float, 3>, 4> lclrs = { l0, l1, l2, l3 };
         std::array<float, 3> white = {1,1,1};
