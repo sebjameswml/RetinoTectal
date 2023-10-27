@@ -42,7 +42,7 @@ public:
         morph::vec<T, 2> b = this->current;
 
         // The change in location computed from the model
-        morph::vec<T, 2> db = {0,0};//{std::numeric_limits<T>::epsilon(), 0.001f}; // placeholder
+        morph::vec<T, 2> db = {0,0.01};//{std::numeric_limits<T>::epsilon(), 0.001f}; // placeholder
 
         // In Koulakov we have to have initialized the positions of the axons on a grid.  I think.
 

@@ -268,6 +268,11 @@ struct Agent1
             return;
         }
 
+        // If Koulakov, set up the index RNG
+        if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
+            this->koulakov_idx_rng = new morph::RandUniform<unsigned int, std::mt19937>(0, this->branches.size()-1);
+        }
+
         this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
 
@@ -313,7 +318,9 @@ struct Agent1
         this->update_metrics (this->conf->getUInt ("steps", 1000), true);
 
         delete this->gradient_rng;
-
+        if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
+            delete this->koulakov_idx_rng;
+        }
         if constexpr (visualise == true) {
 
             // Update retinal NT position vs tectal RC position graph for the 'd' layout:
@@ -631,38 +638,59 @@ struct Agent1
     // RNG for adding noise to gradient sampling
     morph::RandNormal<T, std::mt19937>* gradient_rng = nullptr;
 
+    // RNG for choosing branch index in Koulakov model
+    morph::RandUniform<unsigned int, std::mt19937>* koulakov_idx_rng = nullptr;
+
     // Perform one step of the simulation
     void step()
     {
-        // Compute the next position for each branch:
-        if constexpr (debug_compute_branch == true) {
-            for (auto& b : this->branches) {
-                morph::vec<T, 2*N> rns;
-                this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
-                b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
-            }
+        if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
+
+            // Compute the next position for just one branch:
+            // Special case for Koulakov model. In one step in koulakov, one branch is
+            // randomly selected and swapped with a random one of its neighbours. I
+            // could do this rgcside*rgcside times for a 'step' to keep the number of
+            // steps to be equivalent to other models
+
+            morph::vec<T, 2*N> rns_dummy; // dummy for Koulakov
+            unsigned int ridx = this->koulakov_idx_rng->get();
+            this->branches[ridx].compute_next (this->branches, this->ret, this->tectum, this->m, rns_dummy);
+            // branches[ridx].update_based_on_next_for_next_in_loop();
+            this->ax_centroids.p[branches[ridx].aid][0] = this->branches[ridx].next[0] / static_cast<T>(this->bpa);
+            this->ax_centroids.p[branches[ridx].aid][1] = this->branches[ridx].next[1] / static_cast<T>(this->bpa);
+            this->branches[ridx].current = this->branches[ridx].next;
+
         } else {
+
+            if constexpr (debug_compute_branch == true) {
+                for (auto& b : this->branches) {
+                    morph::vec<T, 2*N> rns;
+                    this->gradient_rng->get (rns); // Hmmn. Is rng thread safe?
+                    b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
+                }
+            } else {
 #pragma omp parallel for
-            for (auto& b : this->branches) {
-                morph::vec<T, 2*N> rns;
-                this->gradient_rng->get (rns);
-                b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
+                for (auto& b : this->branches) {
+                    morph::vec<T, 2*N> rns;
+                    this->gradient_rng->get (rns);
+                    b.compute_next (this->branches, this->ret, this->tectum, this->m, rns);
+                }
             }
-        }
 
-        // Update centroids
-        for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
-        for (auto& b : this->branches) {
-            this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
-            this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
-        }
-        // Record centroid history for the axons to be seen
-        for (size_t ax = 0; ax < this->ax_centroids.p.size(); ++ax) {
-            if (this->seeaxons.count(ax)) { this->ax_history[ax].push_back (ax_centroids.p[ax]); }
-        }
+            // Update centroids
+            for (unsigned int i = 0; i < this->branches.size()/this->bpa; ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
+            for (auto& b : this->branches) {
+                this->ax_centroids.p[b.aid][0] += b.next[0] / static_cast<T>(this->bpa);
+                this->ax_centroids.p[b.aid][1] += b.next[1] / static_cast<T>(this->bpa);
+            }
+            // Record centroid history for the axons to be seen
+            for (size_t ax = 0; ax < this->ax_centroids.p.size(); ++ax) {
+                if (this->seeaxons.count(ax)) { this->ax_history[ax].push_back (ax_centroids.p[ax]); }
+            }
 
-        // Once 'next' has been updated for each branch, run through & copy it to 'current'
-        for (auto& b : this->branches) { b.current = b.next; }
+            // Once 'next' has been updated for each branch, run through & copy it to 'current'
+            for (auto& b : this->branches) { b.current = b.next; }
+        }
     }
 
 #ifdef VISUALISE
