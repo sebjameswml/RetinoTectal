@@ -851,29 +851,71 @@ struct Agent1
         return function_forms;
     }
 
-    bool randomly_seeded = true;
+    // Are the random numbers randomly *seeded* or pseudo-random but repeatable?
+    static constexpr bool randomly_seeded = true;
+
     void setup_pending_branches()
     {
         std::vector<T> rn_x;
         std::vector<T> rn_y;
         std::vector<T> rn_p;
         std::vector<T> rn_p0;
-        if (randomly_seeded) {
-            // Axon initial positions x and y can be uniformly randomly selected...
-            morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
-            morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
-            //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
-            // ...or set from the ideal position plus a random perturbation
-            morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
-            // A normally distributed perturbation is added for each branch. SD=0.1.
-            morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
-            // Generate random number sequences all at once
-            size_t axc_sz = this->ax_centroids.p.size();
-            rn_x = rng_x.get (axc_sz); // ax_centroids size?
-            rn_y = rng_y.get (axc_sz);
-            rn_p = rng_p.get (axc_sz * 2 * this->bpa);
-            rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
-        } else {
+
+        if constexpr (randomly_seeded == true) { // Randomly seed all RNGs
+
+            // This is how I test which model I'm using, by compile-time testing the type of B:
+            if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
+
+                // In the Koulakov model, branches are initially laid out on a grid, but
+                // with random positions. Positions are in range 0-1, so we determine
+                // the grid size from the number of branches.
+                static_assert (N==1, "N must be 1 for the Koulakov model");
+
+                T gr_denom = this->rgcside-1;
+                T gr = T{1}/gr_denom; // gr is grid element length
+
+                // Now go though each of rgcside^2 axons and choose a location on the
+                // grid for each. Or rather, go through each of rgcside^2 locations and
+                // select a random axon for that location, without repeat.
+
+                // set up rn_x and rn_y as randomly selected axon positions on a grid. Don't need rn_p here as N==1.
+                morph::vvec<morph::vec<T, 2>> gridpositions (this->rgcside * this->rgcside, {0,0});
+                for (unsigned int i = 0; i < this->rgcside; ++i) {
+                    for (unsigned int j = 0; j < this->rgcside; ++j) {
+                        gridpositions[i*rgcside + j] = { gr*j, gr*i };
+                        std::cout << "Added grid position " << gridpositions[i*rgcside + j] << std::endl;
+                    }
+                }
+                // Now jumble gridpositions by creating a random vector
+                gridpositions.shuffle();
+                // And finally, copy the jumbled positions into rn_x and rn_y
+                rn_x.resize(gridpositions.size());
+                rn_y.resize(gridpositions.size());
+                for (int i = 0; i < gridpositions.size(); ++i) {
+                    rn_x[i] = gridpositions[i].x();
+                    rn_y[i] = gridpositions[i].y();
+                }
+
+            } else {
+
+                // Axon initial positions x and y can be uniformly randomly selected...
+                morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
+                morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}); // S&G
+                //morph::RandUniform<T, std::mt19937> rng_y(T{0.0001}, T{0.2}); // All within field
+                // ...or set from the ideal position plus a random perturbation
+                morph::RandNormal<T, std::mt19937> rng_p0(T{0}, T{0.1});
+                // A normally distributed perturbation is added for each branch. SD=0.1.
+                morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
+                // Generate random number sequences all at once
+                size_t axc_sz = this->ax_centroids.p.size();
+                rn_x = rng_x.get (axc_sz); // ax_centroids size is rgcside*rgcside
+                rn_y = rng_y.get (axc_sz);
+                rn_p = rng_p.get (axc_sz * 2 * this->bpa); // Branch coordinates. Used for both x and y
+                rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa); // I think this is redundant - could use rn_p for either.
+            }
+
+        } else { // Fix seeds for RNGs
+
             // Axon initial positions x and y can be uniformly randomly selected...
             morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0}, 1000);
             morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0}, 2000); // S&G
@@ -890,7 +932,6 @@ struct Agent1
             rn_p0 = rng_p0.get (axc_sz * 2 * this->bpa);
         }
         bool totally_random = this->mconf->getBool ("totally_random_init", true);
-        std::string branch_model = this->mconf->getString ("branch_model", "james_agent");
 
         std::array<float, 3> red = { 1.0f, 0.0f, 0.0f };
         std::array<float, 3> blue = { 0.0f, 0.0f, 1.0f };
@@ -900,12 +941,14 @@ struct Agent1
         float r_j_conf __attribute__((unused));
         float r_i_conf __attribute__((unused));
         T s __attribute__((unused));
+
         if constexpr (std::is_same<std::decay_t<B>, branch<float, 4>>::value == true) {
             r_c_conf = this->mconf->getFloat ("r_c", 0.0f);
             r_j_conf = this->mconf->getFloat ("r_j", 0.0f);
             r_i_conf = this->mconf->getFloat ("r_i", 0.0f);
             s = this->mconf->getFloat ("s", 1.1f);
         }
+
         // A loop to set up each branch object in pending_branches.
         for (unsigned int i = 0; i < this->pending_branches.size(); ++i) {
             // Set the branch's termination zone
@@ -946,25 +989,29 @@ struct Agent1
             rcpt_max =  this->pending_branches[i].rcpt[0] > rcpt_max ? pending_branches[i].rcpt[0] : rcpt_max;
             rcpt_min =  this->pending_branches[i].rcpt[0] < rcpt_min ? pending_branches[i].rcpt[0] : rcpt_min;
 
+            morph::vec<T, 3> initpos = {T{0},T{0},T{0}};
             // Set as in the S&G paper - starting at bottom in region x=(0,tectum->w), y=(-0.2,0)
-            morph::vec<T, 3> initpos;
-            if (totally_random == true) {
-                if (branch_model == "gebhardt") {
-                    // In Gebhardt model, arrange randomly along x axis
-                    initpos = { rn_x[ri] + rn_p[2*i], 0, 0 };
-                    initpos[0] = initpos[0] > 1 ? 1 : initpos[0];
-                    initpos[0] = initpos[0] < 0 ? 0 : initpos[0];
-                } else {
-                    initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
-                }
+            if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
+                initpos[0] += rn_x[ri];
+                initpos[1] += rn_y[ri];
             } else {
-                morph::vec<T, 2> init_offset = { T{0}, T{-0.5} };
-                morph::vec<T, 2> init_mult = { T{1}, T{0.2} };
-                initpos.set_from ((this->pending_branches[i].target*init_mult) + init_offset);
-                initpos[0] += rn_p0[2*i];
-                initpos[1] += rn_p0[2*i+1];
+                if (totally_random == true) {
+                    if constexpr (std::is_same<std::decay_t<B>, branch_geb<T, N>>::value == true) {
+                        // In Gebhardt model, arrange randomly along x axis
+                        initpos = { rn_x[ri] + rn_p[2*i], 0, 0 };
+                        initpos[0] = initpos[0] > 1 ? 1 : initpos[0];
+                        initpos[0] = initpos[0] < 0 ? 0 : initpos[0];
+                    } else {
+                        initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+                    }
+                } else {
+                    morph::vec<T, 2> init_offset = { T{0}, T{-0.5} };
+                    morph::vec<T, 2> init_mult = { T{1}, T{0.2} };
+                    initpos.set_from ((this->pending_branches[i].target*init_mult) + init_offset);
+                    initpos[0] += rn_p0[2*i];
+                    initpos[1] += rn_p0[2*i+1];
+                }
             }
-
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
 
             if (this->genetic_manipulation == true) { // genetic manipulation of retinal receptor 0
@@ -1195,7 +1242,8 @@ struct Agent1
         expression_form epha4_expression_form = (expression_form)this->mconf->getInt ("epha4_expression_form", 6);
         T epha4_const_expression = this->mconf->getFloat ("epha4_const_expression", 3.5);
 
-        if constexpr (N==4 || N==2) {
+        if constexpr (N==4 || N==2
+                      || (N == 1 && (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true))) {
             // need a receptor noise arg for the guidingtissue constructor.
             std::cout << "Create RETINA with a new guidingtissue instance.\n";
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
@@ -1222,7 +1270,7 @@ struct Agent1
                                                    T{0}, tec_lgnd_noise_gain);
         } else {
             // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
-            []<bool flag = false>() { static_assert (flag, "N must be 2 or 4"); }();
+            []<bool flag = false>() { static_assert (flag, "N must be 2 or 4 (or 1 with branch_koulakov)"); }();
         }
 
         /*

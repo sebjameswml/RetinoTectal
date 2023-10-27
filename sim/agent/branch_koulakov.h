@@ -30,7 +30,7 @@ public:
 
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m. Will also need location on target tissue,
-    // to get its ephrin values.
+    // to get its ephrin values. For that we have this->current.
     // rns are a set of random numbers to multiply the ligand gradient with.
     void compute_next (const std::vector<branch_koulakov<T, N>>& branches,
                        const guidingtissue<T, N>* source_tissue,
@@ -42,7 +42,9 @@ public:
         morph::vec<T, 2> b = this->current;
 
         // The change in location computed from the model
-        morph::vec<T, 2> db = {std::numeric_limits<T>::epsilon(), 0.001f}; // placeholder
+        morph::vec<T, 2> db = {0,0};//{std::numeric_limits<T>::epsilon(), 0.001f}; // placeholder
+
+        // In Koulakov we have to have initialized the positions of the axons on a grid.  I think.
 
         // Finally add b and db to get next
         this->next = b + db;

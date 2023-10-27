@@ -250,6 +250,7 @@ struct guidingtissue : public tissue<T>
 
         // Ligands and receptors are set up as a function of their cell's position in the tissue.
         for (size_t ri = 0; ri < this->posn.size(); ++ri) {
+
             if constexpr (N == 4 || N == 2) {
                 // First orthogonal pair of receptors.
                 this->rcpt[ri][0] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[0], ri), 0) + rnorm.get() * this->rcpt_noise_gain;
@@ -257,6 +258,9 @@ struct guidingtissue : public tissue<T>
                 // First orthogonal pair of ligands
                 this->lgnd[ri][0] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[0], ri), 0) + rnorm.get() * this->lgnd_noise_gain;
                 this->lgnd[ri][1] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[1], ri), 1) + rnorm.get() * this->lgnd_noise_gain;
+            } else if constexpr (N == 1) {
+                this->rcpt[ri][0] = this->rcpt_expression_function (this->get_pos (this->rcpt_dirns[0], ri), 0) + rnorm.get() * this->rcpt_noise_gain;
+                this->lgnd[ri][0] = this->lgnd_expression_function (this->get_pos (this->lgnd_dirns[0], ri), 0) + rnorm.get() * this->lgnd_noise_gain;
             } else {
                 // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
                 []<bool flag = false>() { static_assert(flag, "no match"); }();

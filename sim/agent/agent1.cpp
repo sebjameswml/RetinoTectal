@@ -116,7 +116,8 @@ int main (int argc, char **argv)
             model.run();
             model.am.save (outfile);
         } else if (branch_model == "koulakov") {
-            Agent1<float, 4, branch_koulakov<float, 4>> model (conf, mconf);
+            // 1 branch per RGC in the Koulakov model (N=1 in Agent1 and branch_koulakov)
+            Agent1<float, 1, branch_koulakov<float, 1>> model (conf, mconf);
             model.title = std::string("koul_") + m_id + std::string("_") + e_id;
             model.run();
             model.am.save (outfile);
