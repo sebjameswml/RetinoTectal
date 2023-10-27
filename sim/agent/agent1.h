@@ -271,6 +271,7 @@ struct Agent1
         // If Koulakov, set up the index RNG
         if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
             this->koulakov_idx_rng = new morph::RandUniform<unsigned int, std::mt19937>(0, this->branches.size()-1);
+            this->koulakov_pex_rng = new morph::RandUniform<T, std::mt19937>(T{0}, T{1});
         }
 
         this->gradient_rng = new morph::RandNormal<T, std::mt19937>(1, this->conf->getDouble("gradient_rng_width", 0.0));
@@ -320,6 +321,7 @@ struct Agent1
         delete this->gradient_rng;
         if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
             delete this->koulakov_idx_rng;
+            delete this->koulakov_pex_rng;
         }
         if constexpr (visualise == true) {
 
@@ -640,25 +642,27 @@ struct Agent1
 
     // RNG for choosing branch index in Koulakov model
     morph::RandUniform<unsigned int, std::mt19937>* koulakov_idx_rng = nullptr;
+    // RNG for probability choice in koulakov
+    morph::RandUniform<T, std::mt19937>* koulakov_pex_rng = nullptr;
 
     // Perform one step of the simulation
     void step()
     {
         if constexpr (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true) {
 
-            // Compute the next position for just one branch:
-            // Special case for Koulakov model. In one step in koulakov, one branch is
-            // randomly selected and swapped with a random one of its neighbours. I
-            // could do this rgcside*rgcside times for a 'step' to keep the number of
-            // steps to be equivalent to other models
-
-            morph::vec<T, 2*N> rns_dummy; // dummy for Koulakov
+            // Select one index
             unsigned int ridx = this->koulakov_idx_rng->get();
-            this->branches[ridx].compute_next (this->branches, this->ret, this->tectum, this->m, rns_dummy);
-            // branches[ridx].update_based_on_next_for_next_in_loop();
-            this->ax_centroids.p[branches[ridx].aid][0] = this->branches[ridx].next[0] / static_cast<T>(this->bpa);
-            this->ax_centroids.p[branches[ridx].aid][1] = this->branches[ridx].next[1] / static_cast<T>(this->bpa);
-            this->branches[ridx].current = this->branches[ridx].next;
+            std::cout << "Calling koulakov_swap for branch index " << ridx << std::endl;
+            int k = this->branches[ridx].koulakov_swap (this->branches, this->ret, this->tectum, this->m, this->gr, koulakov_pex_rng);
+            if (k > -1) {
+                std::cout << "this->branches[k].getr() : " << this->branches[k].getr() << std::endl;
+                std::cout << "this->branches[ridx].getr() : " << this->branches[ridx].getr() << std::endl;
+                // branches[ridx].update_based_on_next_for_next_in_loop();
+                this->ax_centroids.p[branches[ridx].aid][0] = this->branches[ridx].current[0] / static_cast<T>(this->bpa);
+                this->ax_centroids.p[branches[ridx].aid][1] = this->branches[ridx].current[1] / static_cast<T>(this->bpa);
+                this->ax_centroids.p[branches[k].aid][0] = this->branches[k].current[0] / static_cast<T>(this->bpa);
+                this->ax_centroids.p[branches[k].aid][1] = this->branches[k].current[1] / static_cast<T>(this->bpa);
+            }
 
         } else {
 
@@ -901,9 +905,6 @@ struct Agent1
                 // with random positions. Positions are in range 0-1, so we determine
                 // the grid size from the number of branches.
 
-                T gr_denom = this->rgcside-1;
-                T gr = T{1}/gr_denom; // gr is grid element length
-
                 // Now go though each of rgcside^2 axons and choose a location on the
                 // grid for each. Or rather, go through each of rgcside^2 locations and
                 // select a random axon for that location, without repeat.
@@ -913,7 +914,7 @@ struct Agent1
                 morph::vvec<morph::vec<T, 2>> gridpositions (this->rgcside * this->rgcside, {0,0});
                 for (unsigned int i = 0; i < this->rgcside; ++i) {
                     for (unsigned int j = 0; j < this->rgcside; ++j) {
-                        gridpositions[i*rgcside + j] = { gr*j, gr*i };
+                        gridpositions[i*rgcside + j] = { this->gr*j, this->gr*i };
                         std::cout << "Added grid position " << gridpositions[i*rgcside + j] << std::endl;
                     }
                 }
@@ -1238,7 +1239,7 @@ struct Agent1
 
         this->rgcside = this->mconf->getUInt ("rgcside", this->rgcside);
         T gr_denom = rgcside-1;
-        T gr = T{1}/gr_denom; // gr is grid element length
+        this->gr = T{1}/gr_denom; // gr is grid element length
 
         // Get tissue parameters - expression directions, forms, interactions - from JSON
         morph::vec<expression_form, N> ret_receptor_forms = this->get_forms ("ret_receptor_forms");
@@ -1276,7 +1277,7 @@ struct Agent1
         if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
             std::cout << "Create RETINA with a new guidingtissue instance.\n";
-            this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
+            this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {this->gr, this->gr}, {0.0f, 0.0f},
                                                 ret_receptor_forms,
                                                 ret_ligand_forms,
                                                 ret_receptor_directions,
@@ -1289,7 +1290,7 @@ struct Agent1
                                                 this->mconf->getFloat ("w_EphAx", 0.25));
 
             std::cout << "Create TECTUM with a new guidingtissue instance.\n";
-            this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
+            this->tectum = new guidingtissue<T, N>(this->rgcside, this->rgcside, {this->gr, this->gr}, {0.0f, 0.0f},
                                                    tectum_receptor_forms,
                                                    tectum_ligand_forms,
                                                    tectum_receptor_directions,
@@ -2751,6 +2752,9 @@ struct Agent1
     unsigned int bpa = 8;
     // Number of RGCs on a side
     unsigned int rgcside = 20;
+    // Distance between axons on a grid
+    // gr is grid element length
+    T gr = T{0};
     // If true, then slow things down a bit in the visualization
     bool goslow = false;
     // Exit or keep showing graphics?

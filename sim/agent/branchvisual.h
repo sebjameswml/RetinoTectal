@@ -124,6 +124,9 @@ public:
         // For each branch,simply draw a sphere for the current location, with a second
         // colour for the rcpt expression.
         for (auto b : *this->branches) {
+
+            this->radiusFixed = (b.getr());
+
             // Colour should come from original target location, rather than receptor value, to emphasise swaps in location.
             std::array<float, 3> clr;
             clr = this->cmap.convert (this->target_scale.transform_one(b.target[0]), this->target_scale.transform_one(b.target[1]));
