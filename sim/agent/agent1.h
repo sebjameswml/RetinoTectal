@@ -780,6 +780,9 @@ struct Agent1
         for (auto& dd : dirns) { dd = expression_direction::x_increasing; }
         nlohmann::json arr = this->mconf->get (dirns_tag);
         if (arr.size() > 0) {
+            if (arr.size() != N) {
+                throw std::runtime_error ("The directions array in your JSON doesn't have N elements");
+            }
             for (unsigned int i = 0; i < arr.size(); ++i) {
                 std::string d = arr[i].get<std::string>();
                 if (d == "+x" || d == "x") {
@@ -869,7 +872,6 @@ struct Agent1
                 // In the Koulakov model, branches are initially laid out on a grid, but
                 // with random positions. Positions are in range 0-1, so we determine
                 // the grid size from the number of branches.
-                static_assert (N==1, "N must be 1 for the Koulakov model");
 
                 T gr_denom = this->rgcside-1;
                 T gr = T{1}/gr_denom; // gr is grid element length
@@ -878,7 +880,8 @@ struct Agent1
                 // grid for each. Or rather, go through each of rgcside^2 locations and
                 // select a random axon for that location, without repeat.
 
-                // set up rn_x and rn_y as randomly selected axon positions on a grid. Don't need rn_p here as N==1.
+                // set up rn_x and rn_y as randomly selected axon positions on a
+                // grid. Don't need rn_p here as branches per axon is 1 in Koulakov
                 morph::vvec<morph::vec<T, 2>> gridpositions (this->rgcside * this->rgcside, {0,0});
                 for (unsigned int i = 0; i < this->rgcside; ++i) {
                     for (unsigned int j = 0; j < this->rgcside; ++j) {
@@ -891,7 +894,7 @@ struct Agent1
                 // And finally, copy the jumbled positions into rn_x and rn_y
                 rn_x.resize(gridpositions.size());
                 rn_y.resize(gridpositions.size());
-                for (int i = 0; i < gridpositions.size(); ++i) {
+                for (unsigned int i = 0; i < gridpositions.size(); ++i) {
                     rn_x[i] = gridpositions[i].x();
                     rn_y[i] = gridpositions[i].y();
                 }
@@ -1242,8 +1245,7 @@ struct Agent1
         expression_form epha4_expression_form = (expression_form)this->mconf->getInt ("epha4_expression_form", 6);
         T epha4_const_expression = this->mconf->getFloat ("epha4_const_expression", 3.5);
 
-        if constexpr (N==4 || N==2
-                      || (N == 1 && (std::is_same<std::decay_t<B>, branch_koulakov<T, N>>::value == true))) {
+        if constexpr (N==4 || N==2) {
             // need a receptor noise arg for the guidingtissue constructor.
             std::cout << "Create RETINA with a new guidingtissue instance.\n";
             this->ret = new guidingtissue<T, N>(this->rgcside, this->rgcside, {gr, gr}, {0.0f, 0.0f},
@@ -1270,7 +1272,7 @@ struct Agent1
                                                    T{0}, tec_lgnd_noise_gain);
         } else {
             // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
-            []<bool flag = false>() { static_assert (flag, "N must be 2 or 4 (or 1 with branch_koulakov)"); }();
+            []<bool flag = false>() { static_assert (flag, "N must be 2 or 4"); }();
         }
 
         /*

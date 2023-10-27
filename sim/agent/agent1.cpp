@@ -103,6 +103,13 @@ int main (int argc, char **argv)
 
     std::string branch_model = mconf->getString ("branch_model", "james_agent");
 
+
+#if 1 // Faster compile time to compile just one model
+    Agent1<float, 2, branch_koulakov<float, 2>> model (conf, mconf);
+    model.title = std::string("koul_") + m_id + std::string("_") + e_id;
+    model.run();
+    model.am.save (outfile);
+#else
     size_t num_guiders = mconf->getInt("num_guiders", 4);
     if (num_guiders == 4) {
         if (branch_model == "gebhardt") {
@@ -115,12 +122,6 @@ int main (int argc, char **argv)
             model.title = std::string("stoc_") + m_id + std::string("_") + e_id;
             model.run();
             model.am.save (outfile);
-        } else if (branch_model == "koulakov") {
-            // 1 branch per RGC in the Koulakov model (N=1 in Agent1 and branch_koulakov)
-            Agent1<float, 1, branch_koulakov<float, 1>> model (conf, mconf);
-            model.title = std::string("koul_") + m_id + std::string("_") + e_id;
-            model.run();
-            model.am.save (outfile);
         } else {
             Agent1<float, 4, branch<float, 4>> model (conf, mconf);
             model.title = std::string("j4_") + m_id + std::string("_") + e_id;
@@ -128,11 +129,19 @@ int main (int argc, char **argv)
             model.am.save (outfile);
         }
     } else if (num_guiders == 2) {
-        Agent1<float, 2, branch<float, 2>> model (conf, mconf);
-        model.title = std::string("j2_") + m_id + std::string("_") + e_id;
-        model.run();
-        model.am.save (outfile);
+        if (branch_model == "koulakov") {
+            Agent1<float, 2, branch_koulakov<float, 2>> model (conf, mconf);
+            model.title = std::string("koul_") + m_id + std::string("_") + e_id;
+            model.run();
+            model.am.save (outfile);
+        } else {
+            Agent1<float, 2, branch<float, 2>> model (conf, mconf);
+            model.title = std::string("j2_") + m_id + std::string("_") + e_id;
+            model.run();
+            model.am.save (outfile);
+        }
     }
+#endif
 
     delete conf;
     if (argc > 2) { /* mconf->write ("mconf.json"); */ delete mconf; }
