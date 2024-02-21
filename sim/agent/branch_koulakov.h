@@ -81,6 +81,9 @@ public:
         unsigned int br_t_idx = static_cast<unsigned int>(std::round(branches[k].current[0]/gr) + std::round(branches[k].current[1]/gr) * tissue->w);
         // or br_t_idx = cur_t_idx + axis ? 1 : tissue->w;
 
+        if constexpr (debug_koulakov) {
+            std::cout << "cur_t_idx/br_t_idx: " << cur_t_idx << "/" << br_t_idx << std::endl;
+        }
         T la1 = tissue->lgnd[axis][cur_t_idx];
         T la2 = tissue->lgnd[axis][br_t_idx];
 

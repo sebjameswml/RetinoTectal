@@ -17,8 +17,8 @@
         "+y"
     ],
     "ret_ligand_forms": [
-        5,
-        6
+        12,
+        12
     ],
     "ret_rcptrcpt_interactions": [
         -1,
@@ -29,26 +29,26 @@
         "-y"
     ],
     "ret_receptor_forms": [
-        2,
-        2
+        12,
+        12
     ],
-    "rgcside": 20,
+    "rgcside": 4,
     "s": 4.815075397491455,
     "tectum_ligand_directions": [
         "+y",
         "+x"
     ],
     "tectum_ligand_forms": [
-        2,
-        2
+        12,
+        12
     ],
     "tectum_receptor_directions": [
         "x",
         "+y"
     ],
     "tectum_receptor_forms": [
-        2,
-        2
+        12,
+        12
     ],
     "totally_random_init": true
 }

@@ -135,26 +135,28 @@ public:
             // sphere to change size of clr2 disc at top
             morph::vec<float, 3> cur = { b.current[0], b.current[1], 0 };
             if (this->view == branchvisual_view::detailed) {
-                std::array<float, 3> clr_r0 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0, 0 }; // rcpt0 expression colour is red
-                std::array<float, 3> clr_r1 = { 0, this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
-                std::array<float, 3> clr_r2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[2]) };
-                std::array<float, 3> clr_r3 = { this->rcpt_scale.transform_one(b.rcpt[3]),
-                                                0,
-                                                this->rcpt_scale.transform_one(b.rcpt[3]) };
+                if constexpr (N > 3) {
+                    std::array<float, 3> clr_r0 = { this->rcpt_scale.transform_one(b.rcpt[0]), 0, 0 }; // rcpt0 expression colour is red
+                    std::array<float, 3> clr_r1 = { 0, this->rcpt_scale.transform_one(b.rcpt[1]), 0 };
+                    std::array<float, 3> clr_r2 = { 0, 0, this->rcpt_scale.transform_one(b.rcpt[2]) };
+                    std::array<float, 3> clr_r3 = { this->rcpt_scale.transform_one(b.rcpt[3]), 0, this->rcpt_scale.transform_one(b.rcpt[3]) };
 
-                std::array<float, 3> clr_l0 = { this->rcpt_scale.transform_one(b.lgnd[0]), 0, 0 };
-                std::array<float, 3> clr_l1 = { 0, this->rcpt_scale.transform_one(b.lgnd[1]), 0 };
-                std::array<float, 3> clr_l2 = { 0, 0, this->rcpt_scale.transform_one(b.lgnd[2]) };
-                std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
-                                                0,
-                                                this->rcpt_scale.transform_one(b.lgnd[3]) };
-                this->computeDiscA (cur, clr,
-                                    clr_r0, clr_r1, clr_r2, clr_r3,
-                                    clr_l0, clr_l1, clr_l2, clr_l3,
-                                    this->radiusFixed);
-                // Draw ring for the interaction, if it's larger than radiusFixed
-                if (rad_interaction > 0.0f) {
-                    this->computeRing (this->idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
+                    std::array<float, 3> clr_l0 = { this->rcpt_scale.transform_one(b.lgnd[0]), 0, 0 };
+                    std::array<float, 3> clr_l1 = { 0, this->rcpt_scale.transform_one(b.lgnd[1]), 0 };
+                    std::array<float, 3> clr_l2 = { 0, 0, this->rcpt_scale.transform_one(b.lgnd[2]) };
+                    std::array<float, 3> clr_l3 = { this->rcpt_scale.transform_one(b.lgnd[3]),
+                        0,
+                        this->rcpt_scale.transform_one(b.lgnd[3]) };
+                    this->computeDiscA (cur, clr,
+                                        clr_r0, clr_r1, clr_r2, clr_r3,
+                                        clr_l0, clr_l1, clr_l2, clr_l3,
+                                        this->radiusFixed);
+                    // Draw ring for the interaction, if it's larger than radiusFixed
+                    if (rad_interaction > 0.0f) {
+                        this->computeRing (this->idx, cur, clr, this->rad_interaction, 0.1f*this->rad_interaction, 18);
+                    }
+                } else {
+                    std::cout << "branchvisual_view::detailed is only currently working for N=4\n";
                 }
 
             } else if (this->view == branchvisual_view::discs) {

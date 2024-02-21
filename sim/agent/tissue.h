@@ -69,7 +69,8 @@ enum class expression_form
     exp4,        // 8. A double exponential, for investigating the genetic experiments.
     sigmoid,     // 9. S shaped - a sigmoid like function
     c_minus_exp, // 10. An expression (const - exp) for free EphA4 receptors on retina
-    epha4_one    // 11. Another special expression (const - exp) for free EphA4 receptors on retina.
+    epha4_one,   // 11. Another special expression (const - exp) for free EphA4 receptors on retina.
+    exp_koul     // 12. The Koulakov function. exp(-x). Hopefully x ranges from 0 to 1...
 };
 
 // Which sense is an expression pattern becoming stronger?
@@ -527,6 +528,9 @@ struct guidingtissue : public tissue<T>
         return T{-0.1} + T{0.1} * std::exp (T{2} * x) + T{0.05} * std::exp (T{10} * (x - T{0.7}));
     }
 
+    // The Koulakov model exponential. x from 0 to 1
+    T exponential_expression_koul (const T& x) const { return std::exp (-x); }
+
     T sigmoid_expression (const T& x) const
     {
         return /*T{1.3} +*/ T{2.5} / ( 1 + std::exp (-(x - T{0.7})*T{6}));
@@ -566,6 +570,9 @@ struct guidingtissue : public tissue<T>
             break;
         case expression_form::exp4:
             rtn = this->exponential_expression4 (x);
+            break;
+        case expression_form::exp_koul:
+            rtn = this->exponential_expression_koul (x);
             break;
         case expression_form::sigmoid:
             rtn = this->sigmoid_expression (x);
