@@ -20,7 +20,7 @@ bool two_dee = false;
 
 // This figure has 3 similar columns
 template<experiment E>
-g_ptrs plot_col (morph::Visual<>& v, morph::vec<float> offset,
+g_ptrs plot_col (morph::Visual& v, morph::vec<float> offset,
                  const k1d<E>& model, const k1d<E>& model_bigalpha,
                  morph::CartGrid* cg, morph::vvec<float>* prob_data)
 {
@@ -56,6 +56,7 @@ g_ptrs plot_col (morph::Visual<>& v, morph::vec<float> offset,
     v.addVisualModel (gv);
 
     offset[1] -= graph_step/2.0f;
+
     // A bar graph for rgc receptor expression
     auto gv2 = std::make_unique<morph::GraphVisual<float>> (offset);
     v.bindmodel (gv2);
@@ -85,11 +86,27 @@ g_ptrs plot_col (morph::Visual<>& v, morph::vec<float> offset,
     ptrs.g_prob_dist = v.addVisualModel (cgv);
 
     offset[1] -= graph_step;
+
     // Prob density maxima
     morph::DatasetStyle ds(morph::stylepolicy::markers);
     ds.markercolour = morph::colour::crimson;
+    morph::DatasetStyle ds2(morph::stylepolicy::markers);
+    ds2.markercolour = morph::colour::black;
 
-    offset[1] -= graph_step;
+    auto gv4 = std::make_unique<morph::GraphVisual<float>> (offset);
+    v.bindmodel (gv4);
+    gv4->twodimensional = two_dee;
+    gv4->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
+    ds.datalabel = "normal";
+    ds2.datalabel = "knock-in";
+    gv4->prepdata (ds);
+    gv4->prepdata (ds2);
+    gv4->xlabel = "Ret. posn (Nasal -> Temporal)";
+    gv4->ylabel = "SC term. (Rostral -> Caudal)";
+    gv4->finalize();
+    ptrs.g_prob_dist_maxima = v.addVisualModel (gv4);
+
+    offset[1] -= 1.1f * graph_step;
 
     // Big alpha
     // The high alpha model (alpha 100000)
@@ -206,6 +223,67 @@ int main()
     graphs_wt.g_prob_dist->updateData (&pd_wt); // etc
     graphs_het.g_prob_dist->updateData (&pd_het);
     graphs_hom.g_prob_dist->updateData (&pd_hom);
+
+    // Determine maxima
+    morph::vvec<float> wt_x;
+    wt_x.arange (0.0f, static_cast<float>(N-1), 2.0f);
+    morph::vvec<float> ki_x;
+    ki_x.arange (1.0f, static_cast<float>(N), 2.0f);
+
+    morph::vvec<float> wt_max_wt(N/2, 0.0f);
+    morph::vvec<float> wt_max_ki(N/2, 0.0f);
+    morph::vvec<float> het_max_wt(N/2, 0.0f);
+    morph::vvec<float> het_max_ki(N/2, 0.0f);
+    morph::vvec<float> hom_max_wt(N/2, 0.0f);
+    morph::vvec<float> hom_max_ki(N/2, 0.0f);
+    // even
+    int i = 0;
+    morph::vvec<float> tmp(N, 0.0f);
+    for (int x = 0; x < N; x+=2, ++i) {
+        tmp.zero();
+        for (int y = 0; y < N; ++y) { tmp[y] = pd_wt[y*N + x]; }
+        wt_max_wt[i] = tmp.argmax();
+        tmp.zero();
+        for (int y = 0; y < N; ++y) { tmp[y] = pd_het[y*N + x]; }
+        het_max_wt[i] = tmp.argmax();
+        tmp.zero();
+        for (int y = 0; y < N; ++y) { tmp[y] = pd_hom[y*N + x]; }
+        hom_max_wt[i] = tmp.argmax();
+    }
+    // Odd (knockin)
+    i = 0;
+    tmp.zero();
+    for (int x = 1; x < N; x+=2, ++i) { // retinal origin
+        tmp.zero();
+        for (int y = 0; y < N; ++y) { tmp[y] = pd_wt[y*N + x]; }
+        wt_max_ki[i] = tmp.argmax();
+        tmp.zero();
+        for (int y = 0; y < N; ++y) { tmp[y] = pd_het[y*N + x]; }
+        het_max_ki[i] = tmp.argmax();
+        tmp.zero();
+        for (int y = 0; y < N; ++y) { tmp[y] = pd_hom[y*N + x]; }
+        hom_max_ki[i] = tmp.argmax();
+    }
+
+    morph::DatasetStyle ds(morph::stylepolicy::markers);
+    ds.markercolour = morph::colour::crimson;
+    ds.datalabel = "normal";
+    morph::DatasetStyle ds2(morph::stylepolicy::markers);
+    ds2.markercolour = morph::colour::black;
+    ds2.datalabel = "knock-in";
+
+
+    graphs_wt.g_prob_dist_maxima->setdata (wt_x, wt_max_wt, ds);
+    graphs_wt.g_prob_dist_maxima->setdata (ki_x, wt_max_ki, ds2);
+    graphs_wt.g_prob_dist_maxima->reinit();
+
+    graphs_het.g_prob_dist_maxima->setdata (wt_x, het_max_wt, ds);
+    graphs_het.g_prob_dist_maxima->setdata (ki_x, het_max_ki, ds2);
+    graphs_het.g_prob_dist_maxima->reinit();
+
+    graphs_hom.g_prob_dist_maxima->setdata (wt_x, hom_max_wt, ds);
+    graphs_hom.g_prob_dist_maxima->setdata (ki_x, hom_max_ki, ds2);
+    graphs_hom.g_prob_dist_maxima->reinit();
 
     std::cout << "Done accumulating probability distributions\n";
 
