@@ -33,7 +33,7 @@ struct k1d
         }
 
         // Set up random number generators
-        this->rng_idx = std::make_unique<morph::RandUniform<int>>(0, 99);
+        this->rng_idx = std::make_unique<morph::RandUniform<int>>(0, N-1);
         this->rng_prob = std::make_unique<morph::RandUniform<float>>(0, 1.0f);
     }
 
@@ -126,7 +126,7 @@ int main (int argc, char** argv)
     gv->scalingpolicy_y = morph::scalingpolicy::manual_min;
     gv->datamin_y = 0;
     gv->setdataaxisdist (0.04f + dsb.markersize/2.0f);
-    gv->setlimits (0.0f, 100.0f, 0.0f, 1.5f);
+    gv->setlimits (0.0f, static_cast<float>(N), 0.0f, 1.5f);
     gv->setdata (x, model.la, dsb);
     gv->xlabel = "Index (Caudal -> Rostral)";
     gv->ylabel = "LA";
@@ -139,7 +139,7 @@ int main (int argc, char** argv)
     gv2->scalingpolicy_y = morph::scalingpolicy::manual_min;
     gv2->datamin_y = 0;
     gv2->setdataaxisdist (0.04f + dsb.markersize/2.0f);
-    gv2->setlimits (0.0f, 100.0f, 0.0f, 1.5f);
+    gv2->setlimits (0.0f, static_cast<float>(N), 0.0f, 1.5f);
     dsb.markercolour = morph::colour::lime;
     gv2->setdata (x, model.ra, dsb);
     gv2->xlabel = "Index (Nasal -> Temporal)";
@@ -153,7 +153,7 @@ int main (int argc, char** argv)
     // Initial ordering (random)
     auto gv3 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({-0.8,-1.6,0}));
     v.bindmodel (gv3);
-    gv3->setlimits (0.0f, 100.0f, 0.0f, 100.0f);
+    gv3->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
     gv3->setdata (x, model.rgc_for_sc_idx.as_float().reverse(), ds);
     gv3->xlabel = "Index (Nasal -> Temporal)";
     gv3->ylabel = "Index (Rostral -> Caudal)"; // R-C because model.rgc_for_sc_idx has .reverse()
@@ -163,7 +163,7 @@ int main (int argc, char** argv)
     // The main model (alpha 30)
     auto gv4 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0.8,-1.6,0}));
     v.bindmodel (gv4);
-    gv4->setlimits (0.0f, 100.0f, 0.0f, 100.0f);
+    gv4->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
     gv4->setdata (x, model.rgc_for_sc_idx.as_float().reverse(), ds);
     gv4->xlabel = "Index (Nasal -> Temporal)";
     gv4->ylabel = "Index (Rostral -> Caudal)";
@@ -173,7 +173,7 @@ int main (int argc, char** argv)
     // The high alpha model (alpha 100000)
     auto gv5 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({2.4,-1.6,0}));
     v.bindmodel (gv5);
-    gv5->setlimits (0.0f, 100.0f, 0.0f, 100.0f);
+    gv5->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
     gv5->setdata (x, model_bigalph.rgc_for_sc_idx.as_float().reverse(), ds);
     gv5->xlabel = "Index (Nasal -> Temporal)";
     gv5->ylabel = "Index (Rostral -> Caudal)";
