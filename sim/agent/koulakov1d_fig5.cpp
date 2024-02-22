@@ -88,19 +88,10 @@ g_ptrs plot_col (morph::Visual& v, morph::vec<float> offset,
     offset[1] -= graph_step;
 
     // Prob density maxima
-    morph::DatasetStyle ds(morph::stylepolicy::markers);
-    ds.markercolour = morph::colour::crimson;
-    morph::DatasetStyle ds2(morph::stylepolicy::markers);
-    ds2.markercolour = morph::colour::black;
-
     auto gv4 = std::make_unique<morph::GraphVisual<float>> (offset);
     v.bindmodel (gv4);
     gv4->twodimensional = two_dee;
     gv4->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
-    ds.datalabel = "normal";
-    ds2.datalabel = "knock-in";
-    gv4->prepdata (ds);
-    gv4->prepdata (ds2);
     gv4->xlabel = "Ret. posn (Nasal -> Temporal)";
     gv4->ylabel = "SC term. (Rostral -> Caudal)";
     gv4->finalize();
@@ -114,6 +105,8 @@ g_ptrs plot_col (morph::Visual& v, morph::vec<float> offset,
     v.bindmodel (gv5);
     gv5->twodimensional = two_dee;
     gv5->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
+    morph::DatasetStyle ds(morph::stylepolicy::markers);
+    ds.markercolour = morph::colour::crimson;
     ds.datalabel = morph::unicode::toUtf8 (morph::unicode::alpha) + std::string(" = ") + std::to_string (model_bigalpha.alpha);
     gv5->setdata (model_bigalpha.rgc_for_sc_idx.as_float(), sc_cr_axis, ds);
     gv5->xlabel = "Ret. posn (Nasal -> Temporal)";
