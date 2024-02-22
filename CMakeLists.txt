@@ -25,7 +25,7 @@ set(CMAKE_CXX_STANDARD 17)
 if (APPLE)
   set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -O3")
 else() # assume g++ (or a gcc/g++ mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O0")
 endif()
 
 # Tell clang to be quiet about brace initialisers:

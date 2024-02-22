@@ -57,6 +57,11 @@ struct k1d
         }
     }
 
+    // In the initial description of the model Eq1 describes probabilty of exchange. In
+    // methods, Eq 4 describes an alternative probability of exchange, bounded between 0
+    // and 1.
+    static constexpr bool use_eq1_pex_expression = false;
+
     void step()
     {
         // choose a random i from 0 to N-2
@@ -68,8 +73,12 @@ struct k1d
         int ra_j = this->rgc_for_sc_idx[j];
 
         // Determine probability of exchange
-        float pex = 0.5f + ( alpha * ((this->ra[ra_i]  -  this->ra[ra_j])
-                                      * (this->la[i] - this->la[j])) );
+        float pex = 0.5f;
+        if constexpr (use_eq1_pex_expression) {  // Use paper Eq 1
+            pex += alpha * (this->ra[ra_i] - this->ra[ra_j]) * (this->la[i] - this->la[j]);
+        } else { // Use Eq 4 from paper methods
+            pex += 0.5f * std::tanh (2.0f * alpha * (this->ra[ra_i] - this->ra[ra_j]) * (this->la[i] - this->la[j]) );
+        }
 
         float p = this->rng_prob->get();
 

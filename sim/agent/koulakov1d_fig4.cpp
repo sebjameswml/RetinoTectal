@@ -77,7 +77,6 @@ int main()
     // The main model (alpha 30)
     auto gv4 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({-0.8,-1.6,0}));
     v.bindmodel (gv4);
-    gv4->twodimensional = false;
     gv4->setlimits (0.0f, static_cast<float>(N), 0.0f, static_cast<float>(N));
     ds.datalabel = morph::unicode::toUtf8 (morph::unicode::alpha) + std::string(" = ") + std::to_string (model.alpha);
     gv4->setdata (model.rgc_for_sc_idx.as_float(), sc_rc_axis, ds);
@@ -107,7 +106,7 @@ int main()
             gv4p->update (model.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
             gv5p->update (model_bigalph.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
             v.render();
-            if (loop > 100000) { break; }
+            if (loop > 1000000) { break; } // 10^6 iterations to stationary soln
         }
     }
 
