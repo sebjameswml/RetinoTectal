@@ -80,7 +80,7 @@ g_ptrs plot_col (morph::Visual& v, morph::vec<float> offset,
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (prob_data);
     cgv->cm.setType (morph::ColourMapType::Magma); // MonovalRed closest to paper
-    cgv->zScale.setParams (0,0);
+    if constexpr (two_dee == true) { cgv->zScale.setParams (0,0); }
     cgv->finalize();
     ptrs.g_prob_dist = v.addVisualModel (cgv);
 
