@@ -11,22 +11,22 @@
 #include <morph/GraphVisual.h>
 #include <morph/CartGrid.h>
 
-// Fig 5 displays wildtype and knockin results
+// Fig 6 displays wildtype and knockin results with additional ligand manipulations
 int main()
 {
-    k1d<experiment::wildtype> model_wt;
-    k1d<experiment::knockin_hetero> model_het;
-    k1d<experiment::knockin_homo> model_hom;
+    k1d<experiment::knockin_steeper_ret> model_a;
+    k1d<experiment::knockin_reduced_lig> model_b;
+    k1d<experiment::knockin_steeper_lig> model_c;
 
     // Big alpha versions
-    k1d<experiment::wildtype> model_wt_biga;
-    k1d<experiment::knockin_hetero> model_het_biga;
-    k1d<experiment::knockin_homo> model_hom_biga;
-    model_wt_biga.alpha = 100000.0f;
-    model_het_biga.alpha = model_wt_biga.alpha;
-    model_hom_biga.alpha = model_wt_biga.alpha;
+    k1d<experiment::knockin_steeper_ret> model_a_biga;
+    k1d<experiment::knockin_reduced_lig> model_b_biga;
+    k1d<experiment::knockin_steeper_lig> model_c_biga;
+    model_a_biga.alpha = 100000.0f;
+    model_b_biga.alpha = model_a_biga.alpha;
+    model_c_biga.alpha = model_a_biga.alpha;
 
-    morph::Visual v(1024, 1024, "Koulakov and Tsigankov Fig. 5");
+    morph::Visual v(1024, 1024, "Koulakov and Tsigankov Fig. 6");
 
     // Make a CartGrid
     float pix = 0.01f;
@@ -40,9 +40,9 @@ int main()
     morph::vvec<float> pd_wt (N*N, 0.0f);
     morph::vvec<float> pd_het (N*N, 0.0f);
     morph::vvec<float> pd_hom (N*N, 0.0f);
-    g_ptrs graphs_wt = plot_col (v, morph::vec<float>({0,0,0}), model_wt, model_wt_biga, cg.get(), &pd_wt);
-    g_ptrs graphs_het = plot_col (v, morph::vec<float>({1.5,0,0}), model_het, model_het_biga, cg.get(), &pd_het);
-    g_ptrs graphs_hom = plot_col (v, morph::vec<float>({3.0,0,0}), model_hom, model_hom_biga, cg.get(), &pd_hom);
+    g_ptrs graphs_wt = plot_col (v, morph::vec<float>({0,0,0}), model_a, model_a_biga, cg.get(), &pd_wt);
+    g_ptrs graphs_het = plot_col (v, morph::vec<float>({1.5,0,0}), model_b, model_b_biga, cg.get(), &pd_het);
+    g_ptrs graphs_hom = plot_col (v, morph::vec<float>({3.0,0,0}), model_c, model_c_biga, cg.get(), &pd_hom);
 
     // The SC R-C axis for plot updates
     morph::vvec<float> sc_rc_axis;
@@ -52,18 +52,18 @@ int main()
     // Prepare biga graphs, which doesn't take long
     int loop = 0;
     while (!v.readyToFinish) {
-        model_wt.step();
-        model_wt_biga.step();
-        model_het.step();
-        model_het_biga.step();
-        model_hom.step();
-        model_hom_biga.step();
+        model_a.step();
+        model_a_biga.step();
+        model_b.step();
+        model_b_biga.step();
+        model_c.step();
+        model_c_biga.step();
         // Update graphs every 1000 model steps
         if (loop++ % 1000 == 0) {
             v.waitevents (0.018);
-            graphs_wt.g_big_alpha->update (model_wt_biga.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
-            graphs_het.g_big_alpha->update (model_het_biga.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
-            graphs_hom.g_big_alpha->update (model_hom_biga.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
+            graphs_wt.g_big_alpha->update (model_a_biga.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
+            graphs_het.g_big_alpha->update (model_b_biga.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
+            graphs_hom.g_big_alpha->update (model_c_biga.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
             v.render();
             if (loop > 50000) { break; }
         }
@@ -71,9 +71,9 @@ int main()
 
     std::cout << "Acquire stationary solution...\n";
     for (; loop < 1000000; ++loop) {
-        model_wt.step();
-        model_het.step();
-        model_hom.step();
+        model_a.step();
+        model_b.step();
+        model_c.step();
     }
 
     v.waitevents (0.018);
@@ -84,18 +84,18 @@ int main()
     for (int i = 0; i < 50000; ++i) {
         // Run 1000 steps 50000 times...
         for (int j = 0; j < 1000; ++j) {
-            model_wt.step();
-            model_het.step();
-            model_hom.step();
+            model_a.step();
+            model_b.step();
+            model_c.step();
         }
         // Accumulate positions from models
         for (int sci = 0; sci < N; ++sci) {
-            // retinal termination is model_wt.rgc_for_sc_idx[sci]
-            int dataidx = (N-1-sci) * N + model_wt.rgc_for_sc_idx[sci];
+            // retinal termination is model_a.rgc_for_sc_idx[sci]
+            int dataidx = (N-1-sci) * N + model_a.rgc_for_sc_idx[sci];
             pd_wt[dataidx] += 1.0f;
-            dataidx = (N-1-sci) * N + model_het.rgc_for_sc_idx[sci];
+            dataidx = (N-1-sci) * N + model_b.rgc_for_sc_idx[sci];
             pd_het[dataidx] += 1.0f;
-            dataidx = (N-1-sci) * N + model_hom.rgc_for_sc_idx[sci];
+            dataidx = (N-1-sci) * N + model_c.rgc_for_sc_idx[sci];
             pd_hom[dataidx] += 1.0f;
         }
     }

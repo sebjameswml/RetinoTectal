@@ -7,7 +7,14 @@
 #include <morph/Random.h>
 
 // Define possible experiments
-enum class experiment { wildtype, knockin_hetero, knockin_homo };
+enum class experiment {
+    wildtype,            // Fig 4, Fig 5A
+    knockin_hetero,      // Fig 5B
+    knockin_homo,        // Fig 5C
+    knockin_steeper_ret, // Fig 6A
+    knockin_reduced_lig, // Fig 6B
+    knockin_steeper_lig, // Fig 6C
+};
 
 // Number of elements in arrays is compile-time fixed and global
 static constexpr int N = 100;
@@ -39,14 +46,29 @@ struct k1d
     }
 
     // Ligand expression function
-    float la_k (int k) { return std::exp (-(static_cast<float>(k)/N)); }
+    float la_k (int k)
+    {
+        if constexpr (E == experiment::knockin_steeper_lig) { // Fig 6C
+            return std::exp (-(static_cast<float>(2*k)/N));
+        } else if constexpr (E == experiment::knockin_reduced_lig) { // Fig 6B
+            //return -0.25f + std::exp (-(static_cast<float>(k)/N));
+            return 0.75f * std::exp (-(static_cast<float>(k)/N)); // I think this one?
+        } else {
+            return std::exp (-(static_cast<float>(k)/N));
+        }
+    }
 
     // RGC receptor expression function
     float ra_i (int i)
     {
-        if constexpr (E == experiment::knockin_hetero) {
+        if constexpr (E == experiment::knockin_hetero
+                      || E == experiment::knockin_steeper_lig
+                      || E == experiment::knockin_reduced_lig) {
             // 'Value is increased by 25% of the maximum'. Max is 1, so +0.25
             return (i%2==0 ? 0.0f : 0.25f) + std::exp (-(static_cast<float>(N-i)/N));
+        } else if constexpr (E == experiment::knockin_steeper_ret) {
+            // Like knockin_hetero but with a steeper retinal expression
+            return (i%2==0 ? 0.0f : 0.25f) + std::exp (-(static_cast<float>(2*(N-i))/N));
         } else if constexpr (E == experiment::knockin_homo) {
             // 'Value is increased by 50% of the maximum'. Max is 1, so +0.5
             return (i%2==0 ? 0.0f : 0.5f) + std::exp (-(static_cast<float>(N-i)/N));
