@@ -5,11 +5,14 @@
 #include <memory>
 #include <morph/Random.h>
 
-// Compile-time parameters
+// Define possible experiments
+enum class experiment { wildtype, knockin };
+
+// Number of elements in arrays is compile-time fixed and global
 static constexpr int N = 100;
-static constexpr bool knockin = true;
 
 // Koulakov 1D model class
+template <experiment E = experiment::wildtype>
 struct k1d
 {
     k1d() // Constructor does init
@@ -40,10 +43,12 @@ struct k1d
     // RGC receptor expression function
     float ra_i (int i)
     {
-        if constexpr (knockin == true) {
+        if constexpr (E == experiment::knockin) {
             return (i%2==0 ? 0.0f : 0.3f) + std::exp (-(static_cast<float>(N-i)/N));
-        } else {
+        } else if constexpr (E == experiment::wildtype) {
             return std::exp (-(static_cast<float>(N-i)/N));
+        } else {
+            []<bool flag = false>() { static_assert(flag, "Unexpected experiment E"); }();
         }
     }
 
@@ -88,10 +93,11 @@ struct k1d
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 
+static constexpr experiment expt = experiment::wildtype;
 int main (int argc, char** argv)
 {
-    k1d model;
-    k1d model_bigalph;
+    k1d<expt> model;
+    k1d<expt> model_bigalph;
     model_bigalph.alpha = 100000.0f;
 
     if (argc > 1) {
@@ -103,7 +109,8 @@ int main (int argc, char** argv)
         std::cout << "From cmd line, set alpha in 'main' model to " << model.alpha << std::endl;
     }
 
-    morph::Visual v(1024, 768, "Koulakov 1D model");
+    morph::Visual v(1450, 770, "Koulakov 1D model");
+    v.setSceneTrans (morph::vec<float,3>({-1.23896f, 0.3949f, -5.6f}));
 
     // Dataset style for bargraphs
     morph::DatasetStyle dsb(morph::stylepolicy::bar); // Draw a bar graph by creating a bar policy DatasetStyle
