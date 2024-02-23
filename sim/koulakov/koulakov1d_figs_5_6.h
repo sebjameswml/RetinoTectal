@@ -14,7 +14,7 @@ struct g_ptrs {
 };
 
 // Nice for debug to be able to swing the graphs around, but otherwise prefer 2d
-static constexpr bool two_dee = true;
+static constexpr bool two_dee = false;
 
 // This figure has 3 similar columns
 template<experiment E>

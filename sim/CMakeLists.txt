@@ -8,3 +8,6 @@ add_subdirectory (agent)
 # Reaction-diffusion style modelling was more akin to the Whisker
 # barrels paper, but it is is no longer compiled
 add_subdirectory (rd)
+
+# Koulakov/Tsigankov model reimplementations for insight
+add_subdirectory (koulakov)

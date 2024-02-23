@@ -56,12 +56,3 @@ target_link_libraries(anneal1read ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 #add_executable(anneal1read4 anneal1read.cpp)
 #target_compile_definitions(anneal1read4 PUBLIC FLT=float D=4)
 #target_link_libraries(anneal1read4 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
-
-add_executable(koulakov1d_fig4 koulakov1d_fig4.cpp)
-target_link_libraries(koulakov1d_fig4 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
-
-add_executable(koulakov1d_fig5 koulakov1d_fig5.cpp)
-target_link_libraries(koulakov1d_fig5 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
-
-add_executable(koulakov1d_fig6 koulakov1d_fig6.cpp)
-target_link_libraries(koulakov1d_fig6 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
