@@ -122,7 +122,7 @@ public:
     size_t dimensions = 1;
 protected:
     //! Act on keys and toggle 'start index' for the relevant VisualModels
-    virtual void key_callback_extra (GLFWwindow* window, int key, int scancode, int action, int mods)
+    virtual void key_callback_extra (int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_D && action == GLFW_PRESS) {
             std::cout << "Changing start index from " << start_idx << " to " << (start_idx + 1) << std::endl;
@@ -380,7 +380,7 @@ int main (int argc, char **argv)
         Agent1<float, 4, branch<float, 4>> model1 (econf1, mconf);
         model1.title = std::string("j4_") + m_id + std::string("_1_s_") + s_id;
         model1.immediate_exit = true;
-        model1.randomly_seeded = false;
+        //model1.randomly_seeded = false; // Compile time selected in Agent1
 
         // ASA optimisation
 #ifdef OPTVIS
