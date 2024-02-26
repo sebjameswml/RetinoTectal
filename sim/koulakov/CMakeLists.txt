@@ -11,3 +11,8 @@ target_link_libraries(koulakov1d_fig5 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 add_executable(koulakov1d_fig6 koulakov1d_fig6.cpp)
 target_link_libraries(koulakov1d_fig6 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
+
+# Tsigankov and Koulakov
+add_executable(ktt1d_wt ktt1d_wt.cpp)
+target_link_libraries(ktt1d_wt ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
