@@ -106,6 +106,7 @@ int main()
         model_bigalph.step();
         // Update graphs every 1000 model steps
         if (loop++ % 1000 == 0) {
+            std::cout << "1000 loops\n";
             v.waitevents (0.018);
 #if 0
             gv4p->update (model.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
@@ -116,7 +117,7 @@ int main()
         }
     }
 
-    v.keepOpen();
+    //v.keepOpen();
 
     return 0;
 }
