@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <memory>
+#include <list>
+#include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/Random.h>
 
@@ -26,45 +28,60 @@ struct ktt1d
     ktt1d() // Constructor does init
     {
         // Resize arrays
-        this->la.resize (N);
-        this->ra.resize (N);
-        this->synapses.resize (N);
-
-        this->rgc_for_sc_idx.resize (N);
+        this->col_la.resize (N);
+        this->col_ra.resize (N);
+        this->ret_la.resize (N);
+        this->ret_ra.resize (N);
+        this->ret_synapses.resize (N);
 
         // Make a randomly shuffled initial index array
-        this->rgc_for_sc_idx.arange (0, N, 1);
-        this->rgc_for_sc_idx.shuffle();
+        //this->rgc_for_sc_idx.arange (0, N, 1);
+        //this->rgc_for_sc_idx.shuffle();
 
         // Set values for LA and RA and initial projections of rgcs
         for (int k = 0; k < N; ++k) {
-            this->la[k] = this->la_k (k);
-            this->ra[k] = this->ra_i (k);
-            this-synapses[k].reserve (synapse_upper_limit);
+            this->col_la[k] = this->collicular_ligand (k);
+            this->col_ra[k] = this->collicular_receptor (k);
+            this->ret_la[k] = this->retinal_ligand (k);
+            this->ret_ra[k] = this->retinal_receptor (k);
+            //this->ret_synapses[k].reserve (synapse_upper_limit); // no need if std::list
         }
         // Compute gradients
-        this->grad_la = la.diff() / this->d;
-        this->grad_ra = ra.diff() / this->d;
+        this->grad_col_la = col_la.diff() / this->d;
+        this->grad_ret_ra = ret_ra.diff() / this->d;
 
         // Set up random number generators
         this->rng_idx = std::make_unique<morph::RandUniform<int>>(0, N-2);
+        this->rng_synidx = std::make_unique<morph::RandUniform<int>>(0, synapse_upper_limit);
         this->rng_prob = std::make_unique<morph::RandUniform<float>>(0, 1.0f);
     }
 
     // Ligand expression function
-    float la_k (int k)
+    float collicular_ligand (int i)
     {
         if constexpr (E == experiment::knockin_steeper_lig) {
-            return std::exp (-(static_cast<float>(2*k)/N));
+            return std::exp (-(static_cast<float>(2*i)/N));
         } else if constexpr (E == experiment::knockin_reduced_lig) {
-            return 0.75f * std::exp (-(static_cast<float>(k)/N));
+            return 0.75f * std::exp (-(static_cast<float>(i)/N));
         } else {
-            return std::exp (-(static_cast<float>(k)/N));
+            return std::exp (-(static_cast<float>(i)/N));
         }
     }
 
+    // Collicular receptor expression
+    float collicular_receptor (int i)
+    {
+        return 0.0f;
+    }
+
+    // Retinal ligand expression
+    float retinal_ligand (int i)
+    {
+        return 0.0f;
+    }
+
     // RGC receptor expression function
-    float ra_i (int i)
+    float retinal_receptor (int i)
     {
         if constexpr (E == experiment::knockin_hetero
                       || E == experiment::knockin_steeper_lig
@@ -81,15 +98,19 @@ struct ktt1d
         }
     }
 
+    // On each step, make an attempt to create a synapse between two randomly chosen end
+    // points and make one attempt to destroy an existing synapse.
     void step()
     {
-        // choose a random i from 0 to N-2
-        int i = this->rng_idx->get();
-        int j = i+1;
+        this->attempt_creation();
+        this->attempt_destruction();
+    }
 
-        // i and j here are the index for two selected sc locations (neighbouring)
-        int ra_i = this->rgc_for_sc_idx[i];
-        int ra_j = this->rgc_for_sc_idx[j];
+    void attempt_creation()
+    {
+        // choose a random i from 0 to N-2. i indexes retina, j indexes SC.
+        int i = this->rng_idx->get();
+        int j = this->rng_idx->get();
 
         // Compute probability of exchange here
         //float deltaE = std::exp (-0.5f * alpha * grad_ra[ra_i] * grad_la[i] * this->dsq);
@@ -100,35 +121,72 @@ struct ktt1d
 
         float deltaA = deltaA_chem + deltaA_act + deltaA_comp;
 
-        // probability of accepting a change (addition or removal of synapse)
+        // probability of accepting a change (addition of synapse)
         float p_accept = 1.0f / (1.0f + std::exp (4.0f * deltaA));
 
         float p = this->rng_prob->get();
-
         if (p < p_accept) { // then accept change
-            this->rgc_for_sc_idx[j] = ra_i;
-            this->rgc_for_sc_idx[i] = ra_j;
+            // Add synapse
+            std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i << std::endl;
+            this->ret_synapses[i].push_back (j);
         }
     }
 
+    void attempt_destruction()
+    {
+        // choose a random i from 0 to N-2. i indexes retina, j indexes SC.
+        int i = this->rng_idx->get();
+        // j is different from attempt_creation. Here, we choose a random one of the
+        // elements of the vvec ret_synapses[i]. The modulus ensures we choose an index
+        // in range.
+        int synsz = static_cast<int>(this->ret_synapses[i].size());
+        // Can't destruct if no synapses
+        if (synsz == 0) { return; }
+        int j_idx = this->rng_synidx->get() % synsz;
+
+        auto j_iter = this->ret_synapses[i].begin();
+        for (int jj = 0; jj < j_idx & j_iter != this->ret_synapses[i].end(); ++jj) { ++j_iter; }
+        int j = *j_iter;
+        float deltaA_chem = 0.0f;
+        float deltaA_act = 0.0f;
+        float deltaA_comp = 0.0f;
+
+        float deltaA = deltaA_chem + deltaA_act + deltaA_comp;
+        // probability of accepting a change (removal of synapse)
+        float p_accept = 1.0f / (1.0f + std::exp (4.0f * deltaA));
+
+        float p = this->rng_prob->get();
+        if (p < p_accept) { // then accept change
+            // Remove synapse
+            std::cout << "Erase synapse for SC dendrite " << j << " from ret axon " << i << std::endl;
+            this->ret_synapses[i].erase (j_iter);
+        }
+    }
+
+    // SC
     // Collicular ligand expression, by index on SC. ephrin A only as 1D. May become
-    // available ligand expression after subtraction of la_ret.
-    morph::vvec<float> la;
-    morph::vvec<float> grad_la;
+    // available ligand expression after subtraction of ret_la.
+    morph::vvec<float> col_la;
+    // Gradient of ligand expression
+    morph::vvec<float> grad_col_la;
     // Collicular receptor expression
-    morph::vvec<float> ra_col;
+    morph::vvec<float> col_ra;
+
+    // RETINA
     // Retinal ganglion cell receptor expression by index on retina
-    morph::vvec<float> ra;
-    morph::vvec<float> grad_ra;
+    morph::vvec<float> ret_ra;
+    // Gradient of retinal receptor expression
+    morph::vvec<float> grad_ret_ra;
     // Retinal ligand expression
-    morph::vvec<float> la_ret;
+    morph::vvec<float> ret_la;
+    // synapse[i] contains a vector of the SC dendrite indices to which axon i makes
+    // synapses. The actual branches of the dendrites (and axons) are ignored. Has a
+    // ret_ prefix, because the list of synapses is indexed by the retinal origin.
+    //morph::vvec<morph::vvec<int>> ret_synapses;
+    morph::vvec<std::list<int>> ret_synapses;
 
-    // synapse[i] contains a vector of the SC dendrite indices to which axon i makes synapses.
-    morph::vvec<morph::vvec<int>> synapses_form1;
-    // In this form, synapse[i] contains the source axon and the destination
-    // dendrite. Better for randomly selecting synapses.
-    morph::vvec<morph::vec<int, 2>> synapses_form2;
-
+    // The current activation of the system, if it's required to keep it around
+    float A = 0.0f;
     // The alpha parameter default value
     float alpha = 120.0f;
     // The distance d between adjacent cells
@@ -137,6 +195,8 @@ struct ktt1d
     float dsq = 0.0001f;
     // Random number gen to select indices
     std::unique_ptr<morph::RandUniform<int>> rng_idx;
+    // To select indices from synapse lists
+    std::unique_ptr<morph::RandUniform<int>> rng_synidx;
     // Random number gen to test probabilities
     std::unique_ptr<morph::RandUniform<float>> rng_prob;
 };
