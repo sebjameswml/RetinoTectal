@@ -9,7 +9,7 @@
 // Fig 4 displays wildtype results
 static constexpr experiment expt = experiment::wildtype;
 
-static constexpr size_t tissue_n = 100;
+static constexpr int tissue_n = 100;
 
 int main()
 {
@@ -65,6 +65,7 @@ int main()
     morph::DatasetStyle ds(morph::stylepolicy::markers);
     ds.markercolour = morph::colour::crimson;
 
+    // Next job is to visualize the synapses
 #if 0
     // Initial ordering (random)
     auto gv3 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0.8,0,0}));
@@ -106,7 +107,7 @@ int main()
         model_bigalph.step();
         // Update graphs every 1000 model steps
         if (loop++ % 1000 == 0) {
-            std::cout << "1000 loops\n";
+            std::cout << "1000 loops. n_syn is now " << model.n_syn << "\n";
             v.waitevents (0.018);
 #if 0
             gv4p->update (model.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);

@@ -19,11 +19,11 @@ enum class experiment {
 };
 
 // Koulakov/Tsigankov competition model as found in Trippett et al 2011
-template <experiment E = experiment::wildtype, size_t N = 100, typename F = float>
+template <experiment E = experiment::wildtype, int N = 100, typename F = float>
 struct ktt1d
 {
     // Experience will suggest a limit here, it's for memory reservation
-    static constexpr int synapse_upper_limit = 100;
+    static constexpr int synapse_upper_limit = 1000;
 
     ktt1d()
     {
@@ -143,10 +143,12 @@ struct ktt1d
         F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA));
 
         F p = this->rng_prob->get();
-        if (p < p_accept && this->ret_synapses[i].size() < synapse_upper_limit) { // then accept change
-            // Add synapse
+        if (p < p_accept && this->ret_synapses[i].size() < synapse_upper_limit) {
+            // then add synapse
             //std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i << std::endl;
             this->ret_synapses[i].push_back (j);
+            ++this->n_syn;
+
         //} else {
             //std::cout << "No add.\n";
         }
@@ -165,8 +167,8 @@ struct ktt1d
         int j_idx = this->rng_synidx->get() % synsz;
 
         auto j_iter = this->ret_synapses[i].begin();
-        for (int jj = 0; jj < j_idx & j_iter != this->ret_synapses[i].end(); ++jj) { ++j_iter; }
-        int j = *j_iter;
+        for (int jj = 0; jj < j_idx && j_iter != this->ret_synapses[i].end(); ++jj) { ++j_iter; }
+        // int j = *j_iter; // if required
         F deltaA_chem = F{0};
         F deltaA_act = F{0};
         F deltaA_comp = F{0};
@@ -180,6 +182,7 @@ struct ktt1d
             // Remove synapse
             //std::cout << "Erase synapse for SC dendrite " << j << " from ret axon " << i << std::endl;
             this->ret_synapses[i].erase (j_iter);
+            --this->n_syn;
         //} else {
             //std::cout << "No erase.\n";
         }
@@ -207,6 +210,9 @@ struct ktt1d
     //morph::vvec<morph::vvec<int>> ret_synapses;
     morph::vvec<std::list<int>> ret_synapses;
 
+    // Track total number of synapses
+    unsigned long long int n_syn = 0;
+
     // The current activation of the system, if it's required to keep it around
     F A_total = F{0};
     F A_chem = F{0};
@@ -214,11 +220,10 @@ struct ktt1d
     F A_act = F{0};
     // The alpha parameter default value
     F alpha = F{120};
-    // The distance d between adjacent cells
-    F d = F{0.01};
-    F d_sc = F{0.01};
-    // d squared
-    F dsq = F{0.0001};
+    // The distance d between adjacent cells on the retina
+    F d = F{1};
+    // The SC distances are the same
+    F d_sc = F{1};
     // Random number gen to select indices
     std::unique_ptr<morph::RandUniform<int>> rng_idx;
     // To select indices from synapse lists
