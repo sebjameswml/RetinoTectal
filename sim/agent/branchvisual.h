@@ -33,7 +33,7 @@ enum class branchvisual_view
 };
 
 template <typename Flt, size_t N, typename B=branch<Flt, N>>
-class BranchVisual : public morph::VisualModel
+class BranchVisual : public morph::VisualModel<>
 {
 public:
     BranchVisual(const morph::vec<float, 3> _offset,

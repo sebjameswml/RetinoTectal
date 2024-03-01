@@ -78,7 +78,7 @@ namespace sighandling {
 
 //! Helper function to save PNG images
 void savePngs (const std::string& logpath, const std::string& name,
-               unsigned int frameN, morph::Visual& v)
+               unsigned int frameN, morph::Visual<>& v)
 {
     std::stringstream ff1;
     ff1 << logpath << "/" << name << "_";
@@ -219,7 +219,7 @@ int main (int argc, char **argv)
     const unsigned int win_height = conf.getUInt ("win_height", win_height_default);
 
     // Set up the morph::Visual object
-    morph::Visual v1 (win_width, win_height, "Retino-tectal simulation");
+    morph::Visual<> v1 (win_width, win_height, "Retino-tectal simulation");
     v1.zNear = 0.001;
     v1.zFar = 50;
     v1.fov = 45;

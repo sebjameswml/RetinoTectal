@@ -699,7 +699,7 @@ struct Agent1
 
 #ifdef VISUALISE
     // Add a suitable set of orientation labels to a square-map visual
-    void addOrientationLabels (morph::VisualModel* vm, const std::string& tag)
+    void addOrientationLabels (morph::VisualModel<>* vm, const std::string& tag)
     {
         // Tag tells us which of the orientation labels to draw
         if (tag == "Tectal") { // Caudal, Rostral, Medial, Lateral
@@ -719,7 +719,7 @@ struct Agent1
     static constexpr bool grads_in_altmap = false;
 
     // Create a tissue visual, to reduce boilerplate code in init().
-    std::unique_ptr<tissuevisual<float, N>> createTissueVisual (morph::Visual* _vis, morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
+    std::unique_ptr<tissuevisual<float, N>> createTissueVisual (morph::Visual<>* _vis, morph::vec<T,3>& offset, guidingtissue<T, N>* gtissue,
                                                                 const std::string& tag,
                                                                 expression_view exview, size_t pair_to_view, int alt_cmap=0)
     {
@@ -1764,9 +1764,9 @@ struct Agent1
     }
 
     // Updatable simulation time text
-    morph::VisualTextModel* sim_time_txt = nullptr;
-    morph::VisualTextModel* emetric_txt = nullptr;
-    morph::VisualTextModel* crossings_txt = nullptr;
+    morph::VisualTextModel<>* sim_time_txt = nullptr;
+    morph::VisualTextModel<>* emetric_txt = nullptr;
+    morph::VisualTextModel<>* crossings_txt = nullptr;
 
     // Set up the simulation visualisation scene. This depends on whether this->layout
     // is graph_layout::a, ::b or ::c, etc.
@@ -2000,7 +2000,7 @@ struct Agent1
 
         // A 'text' only visual model to list the parameters and incorporate figure letters
         offset[0] += 1.4f;
-        auto jtvm = std::make_unique<morph::VisualModel> (offset);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (offset);
         v->bindmodel (jtvm);
         float ty = 1.0f; // text y position
         float th = 0.1f; // text height
@@ -2102,7 +2102,7 @@ struct Agent1
 
         // Figure letters
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         v->bindmodel (jtvm);
         jtvm->addLabel ("A", g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("B", g_B, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
@@ -2239,7 +2239,7 @@ struct Agent1
 
         // A 'text' only visual model to incorporate figure letters
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm);
         jtvm->addLabel ("A", g_A+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel ("B", g_B+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
@@ -2295,7 +2295,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm);
         jtvm->addLabel (std::string({sl}), g_A+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         jtvm->addLabel (std::string({++sl}), g_B+morph::vec<float>({0.0f,0.05f,0.0f}), morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
@@ -2333,7 +2333,7 @@ struct Agent1
 
         // A 'text' only visual model to display the sim time
         g_A[0] += 1.05f;
-        auto jtvm = std::make_unique<morph::VisualModel> (g_A);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (g_A);
         this->v->bindmodel (jtvm);
         float ty = this->conf->getFloat("ty", 1.1f); // text y position
         float th = this->conf->getFloat("th", 0.1f); // text height
@@ -2385,7 +2385,7 @@ struct Agent1
         morph::vec<float> ozero = {this->conf->getFloat ("figlet_x", -1.2f), this->conf->getFloat ("figlet_y", 1.1f), 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm2 = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm2 = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm2);
         jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm2);
@@ -2444,7 +2444,7 @@ struct Agent1
         this->gv = this->v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        auto errvm = std::make_unique<morph::VisualModel> (g_D);
+        auto errvm = std::make_unique<morph::VisualModel<>> (g_D);
         this->v->bindmodel (errvm);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
@@ -2458,7 +2458,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
@@ -2510,7 +2510,7 @@ struct Agent1
         this->gv = v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        auto errvm = std::make_unique<morph::VisualModel> (g_D);
+        auto errvm = std::make_unique<morph::VisualModel<>> (g_D);
         this->v->bindmodel (errvm);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
@@ -2524,7 +2524,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
@@ -2652,7 +2652,7 @@ struct Agent1
         this->gv = this->v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        auto errvm = std::make_unique<morph::VisualModel> (g_B);
+        auto errvm = std::make_unique<morph::VisualModel<>> (g_B);
         this->v->bindmodel (errvm);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
@@ -2666,7 +2666,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
@@ -2699,7 +2699,7 @@ struct Agent1
         this->gv = v->addVisualModel (gvup);
 
         // A 'text' only visual model to display the RMS error
-        auto errvm = std::make_unique<morph::VisualModel> (g_B);
+        auto errvm = std::make_unique<morph::VisualModel<>> (g_B);
         this->v->bindmodel (errvm);
         float ty = 0.87f; // text y position
         float l_x = 0.55f; // text x pos
@@ -2713,7 +2713,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm);
         jtvm->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm);
@@ -2738,7 +2738,7 @@ struct Agent1
         morph::vec<float> ozero = {-0.2f, 1.1f, 0.0f};
         char sl = 'A';
         if (!startletter.empty()) { sl = startletter[0]; }
-        auto jtvm2 = std::make_unique<morph::VisualModel> (ozero);
+        auto jtvm2 = std::make_unique<morph::VisualModel<>> (ozero);
         this->v->bindmodel (jtvm2);
         jtvm2->addLabel (std::string({sl}), g_A, morph::colour::black, morph::VisualFont::VeraBold, fontsz_letters, fontres_letters);
         this->v->addVisualModel (jtvm2);
@@ -2794,9 +2794,9 @@ struct Agent1
     std::string title = "";
 #ifdef VISUALISE
     // A visual environment for the sim
-    morph::Visual* v = nullptr;
+    morph::Visual<>* v = nullptr;
     // A visual environment specifically for the tissue visualisation
-    morph::Visual* tvv = nullptr;
+    morph::Visual<>* tvv = nullptr;
     // Has visualisation been done already?
     bool visinit_done = false;
     // Specialised visualization of agents as spheres with a little extra colour patch on top

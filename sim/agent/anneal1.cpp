@@ -27,7 +27,7 @@ using nlohmann::json;
 # include <morph/ScatterVisual.h>
 # include <morph/TriaxesVisual.h>
 // Global access to the visual object
-morph::Visual* pv = nullptr;
+morph::Visual<>* pv = nullptr;
 #endif
 
 // A count of the number of sims used in objfn() for text output
@@ -113,10 +113,10 @@ void tav_setup (morph::TriaxesVisual<float>* tav, const size_t start_idx, const 
 }
 
 // Specialise AnnealVisual to have an extra keybind and a 'start index' attribute
-class AnnealVisual : public morph::Visual
+class AnnealVisual : public morph::Visual<>
 {
 public:
-    AnnealVisual (int width, int height, const std::string& title) : morph::Visual (width, height, title) {}
+    AnnealVisual (int width, int height, const std::string& title) : morph::Visual<> (width, height, title) {}
     //! Dimension view start index
     size_t start_idx = 0;
     size_t dimensions = 1;
@@ -335,7 +335,7 @@ int main (int argc, char **argv)
 
     // Text labels to show additional information that might update
     morph::vec<float> lpos = {-0.08f, 0.03f, 0.0f};
-    morph::VisualTextModel* fps_tm;
+    morph::VisualTextModel<>* fps_tm;
     v.addLabel ("Unset", lpos, fps_tm);
 
     // Fixed text labels

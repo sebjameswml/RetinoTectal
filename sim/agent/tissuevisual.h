@@ -41,7 +41,7 @@ enum class expression_view
  * tparam N: There are N receptors and N ligands in the guidingtissue.
  */
 template <class T, size_t N>
-class tissuevisual : public morph::VisualModel
+class tissuevisual : public morph::VisualModel<>
 {
 public:
     //! Single constructor for simplicity

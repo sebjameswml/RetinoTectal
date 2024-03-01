@@ -18,7 +18,7 @@ static constexpr bool two_dee = false;
 
 // This figure has 3 similar columns
 template<experiment E>
-g_ptrs plot_col (morph::Visual& v, morph::vec<float> offset,
+g_ptrs plot_col (morph::Visual<>& v, morph::vec<float> offset,
                  const k1d<E>& model, const k1d<E>& model_bigalpha,
                  morph::CartGrid* cg, morph::vvec<float>* prob_data)
 {
