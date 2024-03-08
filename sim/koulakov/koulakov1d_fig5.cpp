@@ -28,14 +28,8 @@ int main()
 
     morph::Visual v(1024, 1024, "Koulakov and Tsigankov Fig. 5");
 
-    // Make a CartGrid
-    float pix = 0.01f;
-    auto cg = std::make_unique<morph::CartGrid> (pix, pix, 0.0f, 0.0f,
-                                                 N*pix-pix,
-                                                 N*pix-pix, 0.0f,
-                                                 morph::GridDomainShape::Rectangle,
-                                                 morph::GridDomainWrap::Horizontal);
-    cg->setBoundaryOnOuterEdge();
+    // Make a Grid
+    auto cg = std::make_unique<morph::Grid<int, float>> (N, N, dx);
 
     morph::vvec<float> pd_wt (N*N, 0.0f);
     morph::vvec<float> pd_het (N*N, 0.0f);

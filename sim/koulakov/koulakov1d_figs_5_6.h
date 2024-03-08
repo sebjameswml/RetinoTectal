@@ -2,25 +2,28 @@
 #include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
-#include <morph/CartGrid.h>
-#include <morph/CartGridVisual.h>
+#include <morph/Grid.h>
+#include <morph/GridVisual.h>
 #include <morph/unicode.h>
+
+// global compile time variable for probability distribution Grid spacing
+static constexpr morph::vec<float, 2> dx = { 0.01f, 0.01f };
 
 // For pointers to manipulate graphs
 struct g_ptrs {
-    morph::CartGridVisual<float>* g_prob_dist = nullptr;
+    morph::GridVisual<float, int, float>* g_prob_dist = nullptr;
     morph::GraphVisual<float>* g_prob_dist_maxima = nullptr;
     morph::GraphVisual<float>* g_big_alpha = nullptr;
 };
 
 // Nice for debug to be able to swing the graphs around, but otherwise prefer 2d
-static constexpr bool two_dee = false;
+static constexpr bool two_dee = true;
 
 // This figure has 3 similar columns
 template<experiment E>
 g_ptrs plot_col (morph::Visual<>& v, morph::vec<float> offset,
                  const k1d<E>& model, const k1d<E>& model_bigalpha,
-                 morph::CartGrid* cg, morph::vvec<float>* prob_data)
+                 morph::Grid<int, float>* cg, morph::vvec<float>* prob_data)
 {
     g_ptrs ptrs;
     float graph_step = 1.2f;
@@ -74,10 +77,9 @@ g_ptrs plot_col (morph::Visual<>& v, morph::vec<float> offset,
     offset[1] -= graph_step;
 
     // Prob density here
-    auto cgv = std::make_unique<morph::CartGridVisual<float>> (cg, offset);
+    auto cgv = std::make_unique<morph::GridVisual<float, int, float>> (cg, offset);
     v.bindmodel (cgv);
     cgv->twodimensional = two_dee;
-    cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (prob_data);
     cgv->cm.setType (morph::ColourMapType::Magma); // MonovalRed closest to paper
     if constexpr (two_dee == true) { cgv->zScale.setParams (0,0); }

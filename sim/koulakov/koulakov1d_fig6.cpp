@@ -9,7 +9,7 @@
 #include <morph/vvec.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
-#include <morph/CartGrid.h>
+#include <morph/Grid.h>
 
 // Fig 6 displays wildtype and knockin results with additional ligand manipulations
 int main()
@@ -28,14 +28,8 @@ int main()
 
     morph::Visual v(1024, 1024, "Koulakov and Tsigankov Fig. 6");
 
-    // Make a CartGrid
-    float pix = 0.01f;
-    auto cg = std::make_unique<morph::CartGrid> (pix, pix, 0.0f, 0.0f,
-                                                 N*pix-pix,
-                                                 N*pix-pix, 0.0f,
-                                                 morph::GridDomainShape::Rectangle,
-                                                 morph::GridDomainWrap::Horizontal);
-    cg->setBoundaryOnOuterEdge();
+    // Make a Grid
+    auto cg = std::make_unique<morph::Grid<int, float>> (N, N, dx);
 
     morph::vvec<float> pd_wt (N*N, 0.0f);
     morph::vvec<float> pd_het (N*N, 0.0f);
@@ -47,7 +41,6 @@ int main()
     // The SC R-C axis for plot updates
     morph::vvec<float> sc_rc_axis;
     sc_rc_axis.arange (static_cast<float>(N-1), -1.0f, -1.0f);
-
 
     // Prepare biga graphs, which doesn't take long
     int loop = 0;
