@@ -33,8 +33,8 @@ int main()
     auto cg = std::make_unique<morph::CartGrid> (pix, pix, 0.0f, 0.0f,
                                                  N*pix-pix,
                                                  N*pix-pix, 0.0f,
-                                                 morph::CartDomainShape::Rectangle,
-                                                 morph::CartDomainWrap::Horizontal);
+                                                 morph::GridDomainShape::Rectangle,
+                                                 morph::GridDomainWrap::Horizontal);
     cg->setBoundaryOnOuterEdge();
 
     morph::vvec<float> pd_wt (N*N, 0.0f);

@@ -33,6 +33,7 @@ struct ktt1d
         this->ret_la.resize (N);
         this->ret_ra.resize (N);
         this->ret_synapses.resize (N);
+        this->ret_synapse_density.resize (N*N);
 
         // Set values for LA and RA and initial projections of rgcs
         for (int k = 0; k < N; ++k) {
@@ -188,6 +189,18 @@ struct ktt1d
         }
     }
 
+    void compute_ret_synapse_density()
+    {
+        this->ret_synapse_density.zero();
+        for (int i = 0; i < N; ++i) {
+            for (auto syn : ret_synapses[i]) {
+                int idx = i * N + syn;
+                this->ret_synapse_density[idx] += 1.0f;
+            }
+        }
+        this->ret_synapse_density /= this->ret_synapse_density.max();
+    }
+
     // SC
     // Collicular ligand expression, by index on SC. ephrin A only as 1D. May become
     // available ligand expression after subtraction of ret_la.
@@ -209,6 +222,7 @@ struct ktt1d
     // ret_ prefix, because the list of synapses is indexed by the retinal origin.
     //morph::vvec<morph::vvec<int>> ret_synapses;
     morph::vvec<std::list<int>> ret_synapses;
+    morph::vvec<float> ret_synapse_density;
 
     // Track total number of synapses
     unsigned long long int n_syn = 0;

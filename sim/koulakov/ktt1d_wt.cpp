@@ -4,6 +4,8 @@
 #include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
+#include <morph/Grid.h>
+#include <morph/GridVisual.h>
 #include <morph/unicode.h>
 
 // Fig 4 displays wildtype results
@@ -66,40 +68,17 @@ int main()
     ds.markercolour = morph::colour::crimson;
 
     // Next job is to visualize the synapses
-#if 0
-    // Initial ordering (random)
-    auto gv3 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0.8,0,0}));
-    v.bindmodel (gv3);
-    gv3->setlimits (0.0f, static_cast<float>(tissue_n), 0.0f, static_cast<float>(tissue_n));
-    ds.datalabel = "Initial state";
-    gv3->setdata (model.rgc_for_sc_idx.as_float(), sc_rc_axis, ds);
-    gv3->xlabel = "Ret. posn  (Nasal -> Temporal)";
-    gv3->ylabel = "SC term. (Rostral -> Caudal)";
-    gv3->finalize();
-    v.addVisualModel (gv3);
-
-    // The main model (alpha 30)
-    auto gv4 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({-0.8,-1.6,0}));
-    v.bindmodel (gv4);
-    gv4->setlimits (0.0f, static_cast<float>(tissue_n), 0.0f, static_cast<float>(tissue_n));
-    ds.datalabel = morph::unicode::toUtf8 (morph::unicode::alpha) + std::string(" = ") + std::to_string (model.alpha);
-    gv4->setdata (model.rgc_for_sc_idx.as_float(), sc_rc_axis, ds);
-    gv4->xlabel = "Ret. posn (Nasal -> Temporal)";
-    gv4->ylabel = "SC term. (Rostral -> Caudal)";
-    gv4->finalize();
-    auto gv4p = v.addVisualModel (gv4);
-
-    // The high alpha model (alpha 100000)
-    auto gv5 = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0.8,-1.6,0}));
-    v.bindmodel (gv5);
-    gv5->setlimits (0.0f, static_cast<float>(tissue_n), 0.0f, static_cast<float>(tissue_n));
-    ds.datalabel = morph::unicode::toUtf8 (morph::unicode::alpha) + std::string(" = ") + std::to_string (model_bigalph.alpha);
-    gv5->setdata (model_bigalph.rgc_for_sc_idx.as_float(), sc_cr_axis, ds);
-    gv5->xlabel = "Ret. posn (Nasal -> Temporal)";
-    gv5->ylabel = "SC term. (Rostral -> Caudal)";
-    gv5->finalize();
-    auto gv5p = v.addVisualModel (gv5);
-#endif
+    morph::vec<float, 2> dx = { 0.01f, 0.01f };
+    morph::Grid<int, float> grid1 (tissue_n, tissue_n, dx);
+    auto gridv1 = std::make_unique<morph::GridVisual<float, int, float>>(&grid1, morph::vec<float>({0.8,0,0}));
+    v.bindmodel (gridv1);
+    gridv1->setScalarData (&model.ret_synapse_density);
+    gridv1->twodimensional = true;
+    gridv1->cm.setType (morph::ColourMapType::Jet);
+    gridv1->colourScale.compute_autoscale (0.0f, 1.0f);
+    gridv1->zScale.compute_autoscale (0.0f, 0.0f);
+    gridv1->finalize();
+    auto gridv1p = v.addVisualModel (gridv1);
 
     int loop = 0;
     while (!v.readyToFinish) {
@@ -109,10 +88,8 @@ int main()
         if (loop++ % 1000 == 0) {
             std::cout << "1000 loops. n_syn is now " << model.n_syn << "\n";
             v.waitevents (0.018);
-#if 0
-            gv4p->update (model.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
-            gv5p->update (model_bigalph.rgc_for_sc_idx.as_float(), sc_rc_axis, 0);
-#endif
+            model.compute_ret_synapse_density();
+            gridv1p->reinit();
             v.render();
             if (loop > 1000000) { break; } // 10^6 iterations to stationary soln
         }
