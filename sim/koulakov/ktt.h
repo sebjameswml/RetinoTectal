@@ -23,7 +23,7 @@ template <experiment E = experiment::wildtype, int N = 100, typename F = float>
 struct ktt1d
 {
     // Experience will suggest a limit here, it's for memory reservation
-    static constexpr int synapse_upper_limit = 1000;
+    static constexpr int synapse_upper_limit = 100000;
 
     ktt1d()
     {
@@ -33,7 +33,8 @@ struct ktt1d
         this->ret_la.resize (N);
         this->ret_ra.resize (N);
         this->ret_synapses.resize (N);
-        this->ret_synapse_density.resize (N*N);
+        this->ret_synapse_density.resize (N*N, 0.0f);
+        this->den_synapse_counts.resize (N, 0);
 
         // Set values for LA and RA and initial projections of rgcs
         for (int k = 0; k < N; ++k) {
@@ -111,7 +112,10 @@ struct ktt1d
         // How many synapses for axon i at present?
         int synsz = static_cast<int>(this->ret_synapses[i].size());
 
-        int densyns_for_j = 0; // ?? how to get. Need to record and store.
+        // And how many synapses for dendrite j?
+        // Go through all ret_synapses[i] and count how many instances of j there are!
+        int densyns_for_j = den_synapse_counts[j]; // ?? how to get. Need to record and store.
+
         densyns_for_j += 1; // We'd be adding one
 
         // Compute change of activity if this synapse were created.
@@ -134,20 +138,22 @@ struct ktt1d
         }
         // minus gamma / 2 is -0.05/2 = -0.025
         F deltaA_act = F{-0.025} * sum;
-
-        F deltaA_comp = F{-500} * std::sqrt(static_cast<F>(1+synsz))
-                                + static_cast<F>(densyns_for_j * densyns_for_j);
-
+        // 22.36 = sqrt(500). A=500 seems arbitrary
+        F deltaA_comp = F{-22.36} * std::sqrt(static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
         F deltaA = deltaA_chem + deltaA_act + deltaA_comp;
 
         // probability of accepting a change (addition of synapse)
         F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA));
-
+#if 0
+        std::cout << "Connect ax " << i << "("<<synsz<<" syn) to "<< " den " << j << "("<< densyns_for_j << " syn). deltaA = chem+act+comp = " << deltaA_chem << " + " << deltaA_act << " + " << deltaA_comp
+                  << " and p_accept create = 1/(1+exp(4deltaA)) = " << p_accept << std::endl; // always 0.5
+#endif
         F p = this->rng_prob->get();
         if (p < p_accept && this->ret_synapses[i].size() < synapse_upper_limit) {
             // then add synapse
             //std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i << std::endl;
             this->ret_synapses[i].push_back (j);
+            this->den_synapse_counts[j]++;
             ++this->n_syn;
 
         //} else {
@@ -169,12 +175,38 @@ struct ktt1d
 
         auto j_iter = this->ret_synapses[i].begin();
         for (int jj = 0; jj < j_idx && j_iter != this->ret_synapses[i].end(); ++jj) { ++j_iter; }
-        // int j = *j_iter; // if required
-        F deltaA_chem = F{0};
-        F deltaA_act = F{0};
-        F deltaA_comp = F{0};
 
+        int j = *j_iter;
+
+        // How many synapses for dendrite j_iter?
+        int densyns_for_j = den_synapse_counts[j];
+
+        densyns_for_j -= 1; // We'd be removing one
+
+        // Compute change of activity if this synapse were created.
+        F deltaA_chem = this->alpha * this->grad_ret_ra[i] * this->grad_col_la[j];
+
+        // To compute activity change, we need to compute the new synapse (call it s2)
+        // against all the existing synapses (s1)
+        F sum = F{0};
+        for (int ri = 0; ri < N; ++ri) {
+            auto si = ret_synapses[ri].begin();
+            F ret_i_to_ret_ri_spacing = std::abs (i-ri) * this->d;
+            while (si != ret_synapses[ri].end()) {
+                // *si is an index on the SC
+                F syn_spacing = std::abs (*si - j) * this->d_sc;
+                F Ca1a2 = std::exp (F{-0.090909090909090} * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
+                F U = std::exp (F{-0.55555555555555} * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
+                sum += Ca1a2 * U;
+                ++si;
+            }
+        }
+        // minus gamma / 2 is -0.05/2 = -0.025
+        F deltaA_act = F{-0.025} * sum;
+        // 22.36 = sqrt(500). A=500 seems arbitrary
+        F deltaA_comp = F{-22.36} * std::sqrt(static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
         F deltaA = deltaA_chem + deltaA_act + deltaA_comp;
+
         // probability of accepting a change (removal of synapse)
         F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA));
 
@@ -183,6 +215,7 @@ struct ktt1d
             // Remove synapse
             //std::cout << "Erase synapse for SC dendrite " << j << " from ret axon " << i << std::endl;
             this->ret_synapses[i].erase (j_iter);
+            this->den_synapse_counts[j]--;
             --this->n_syn;
         //} else {
             //std::cout << "No erase.\n";
@@ -223,6 +256,9 @@ struct ktt1d
     //morph::vvec<morph::vvec<int>> ret_synapses;
     morph::vvec<std::list<int>> ret_synapses;
     morph::vvec<float> ret_synapse_density;
+
+    // Have to keep a record of how many synapses there are for each dendrite
+    morph::vvec<int> den_synapse_counts;
 
     // Track total number of synapses
     unsigned long long int n_syn = 0;

@@ -81,7 +81,7 @@ int main()
     auto gridv1p = v.addVisualModel (gridv1);
 
     int loop = 0;
-    while (!v.readyToFinish) {
+    while (!v.readyToFinish /*&& loop < 20*/) {
         model.step();
         model_bigalph.step();
         // Update graphs every 1000 model steps
@@ -95,7 +95,8 @@ int main()
         }
     }
 
-    //v.keepOpen();
+    std::cout << "Stationary? Finished with loop=" << loop << std::endl;
+    v.keepOpen();
 
     return 0;
 }
