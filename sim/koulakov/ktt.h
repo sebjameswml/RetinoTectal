@@ -22,12 +22,6 @@ enum class experiment {
 template <experiment E = experiment::wildtype, int N = 100, typename F = float>
 struct ktt1d
 {
-    // Experience will suggest a limit here, it's for memory reservation
-    static constexpr int synapse_upper_limit = 100000;
-
-    // Set true for debug output to stdout
-    static constexpr bool debug_synapse_changes = false;
-
     ktt1d()
     {
         // Resize arrays
@@ -106,11 +100,19 @@ struct ktt1d
         this->attempt_destruction();
     }
 
+    // Experience will suggest a limit here, it's for memory reservation
+    static constexpr int synapse_upper_limit = 1000;
+
+    // Set true for debug output to stdout
+    static constexpr bool debug_synapse_changes = false;
+
     // Competition component parameters
-    static constexpr F comp_param_A = F{5};      // The competition parameter 'A'. 500 in paper.
+    static constexpr F comp_param_A = F{500};      // The competition parameter 'A'. 500 in paper.
+    static constexpr F comp_param_B = F{1};
+    static constexpr F comp_param_D = F{1};
 
     // Chemotaxis component parameters
-    static constexpr F chem_param_alpha = F{1200000};  // 120 in paper
+    static constexpr F chem_param_alpha = F{120};  // 120 in paper
 
     // Activity component parameters
     static constexpr F act_param_a = F{3};         // 3 in paper
@@ -122,7 +124,63 @@ struct ktt1d
     static constexpr F act_param_minus1_over_b = F{-1} / act_param_b;
     static constexpr F act_param_minusgamma_over_2 = -act_param_gamma / F{2};
 
+    // Compute the three components of delta A for a connection from retinal index ret_i to SC index
+    // sc_j where there are currently axonsyns_for_i retinal synapses from i and densyns_for_j
+    // synapses connecting through to SC target location j (dendrites of j). synchange controls how
+    // many synapses we are adding/removing for connection i->j.
+    morph::vec<F, 3> compute_deltaA (const int ret_i, const int sc_j,
+                                     const int axonsyns_for_i, const int densyns_for_j,
+                                     const int synchange = 1)
+    {
+        /*
+         * 1. change in energy due to chemotactic changes
+         */
 
+        F deltaA_chem = synchange * this->alpha * this->grad_ret_ra[ret_i] * this->grad_col_la[sc_j];
+
+        /*
+         * 2. change in energy due to activity changes
+         */
+
+        // To compute activity change, we need to compute the new synapse (call it s2) against all
+        // the existing synapses (s1).
+        F sum = F{0};
+        for (int ri = 0; ri < N; ++ri) {
+            auto si = ret_synapses[ri].begin();
+            F ret_i_to_ret_ri_spacing = std::abs (ret_i-ri) * this->d;
+            while (si != ret_synapses[ri].end()) {
+                // *si is an index on the SC
+                F syn_spacing = std::abs (*si - sc_j) * this->d_sc;
+                F Ca1a2 = std::exp (act_param_minus1_over_b * ret_i_to_ret_ri_spacing);
+                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing);
+                sum += (Ca1a2 * U);
+                ++si;
+            }
+        }
+        F deltaA_act = synchange * act_param_minusgamma_over_2 * sum;
+
+        /*
+         * 3. change in energy due to competition changes
+         */
+
+        int new_densyns_for_j = densyns_for_j + synchange;
+        int new_axonsyns_for_i = axonsyns_for_i + synchange;
+
+        F A_comp_before = (-comp_param_A * std::sqrt(static_cast<F>(axonsyns_for_i))
+                           + comp_param_B * static_cast<F>(axonsyns_for_i * axonsyns_for_i)
+                           + comp_param_D * static_cast<F>(densyns_for_j * densyns_for_j));
+
+        F A_comp_after = (-comp_param_A * std::sqrt(static_cast<F>(new_axonsyns_for_i))
+                           + comp_param_B * static_cast<F>(new_axonsyns_for_i * new_axonsyns_for_i)
+                           + comp_param_D * static_cast<F>(new_densyns_for_j * new_densyns_for_j));
+
+        F deltaA_comp = A_comp_after - A_comp_before;
+
+        // Pack and return
+        return morph::vec<F, 3>({deltaA_chem, deltaA_act, deltaA_comp});
+    }
+
+    // Attempt to create a synapse
     void attempt_creation()
     {
         // choose a random i from 0 to N-2. i indexes retina, j indexes SC.
@@ -130,38 +188,16 @@ struct ktt1d
         int j = this->rng_idx->get();
 
         // How many synapses for axon i at present?
-        int synsz = static_cast<int>(this->ret_synapses[i].size());
+        int axonsyns_for_i = static_cast<int>(this->ret_synapses[i].size());
 
         // And how many synapses for dendrite j?
         // Go through all ret_synapses[i] and count how many instances of j there are!
         int densyns_for_j = den_synapse_counts[j]; // ?? how to get. Need to record and store.
 
-        densyns_for_j += 1; // We'd be adding one
-
-        // Compute change of activity if this synapse were created.
-        F deltaA_chem = this->alpha * this->grad_ret_ra[i] * this->grad_col_la[j];
-
-        // To compute activity change, we need to compute the new synapse (call it s2)
-        // against all the existing synapses (s1)
-        F sum = F{0};
-        for (int ri = 0; ri < N; ++ri) {
-            auto si = ret_synapses[ri].begin();
-            F ret_i_to_ret_ri_spacing = std::abs (i-ri) * this->d;
-            while (si != ret_synapses[ri].end()) {
-                // *si is an index on the SC
-                F syn_spacing = std::abs (*si - j) * this->d_sc;
-                F Ca1a2 = std::exp (act_param_minus1_over_b * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
-                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
-                sum += (Ca1a2 * U);
-                ++si;
-            }
-        }
-        F deltaA_act = act_param_minusgamma_over_2 * sum; // In't this A_act, not deltaA_act?
-        F deltaA_comp = -comp_param_A * std::sqrt (static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
-        F deltaA = deltaA_chem + deltaA_act + deltaA_comp;
+        morph::vec<F, 3> deltaA_cmpts = compute_deltaA (i, j, axonsyns_for_i, densyns_for_j, +1);
 
         // probability of accepting a change (addition of synapse)
-        F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA));
+        F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA_cmpts.sum()));
 
         F p = this->rng_prob->get();
         if (p < p_accept && this->ret_synapses[i].size() < synapse_upper_limit) {
@@ -169,9 +205,9 @@ struct ktt1d
             if constexpr (debug_synapse_changes == true) {
                 std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i
                           << " where chem + act + comp = "
-                          << deltaA_chem << " + "
-                          << deltaA_act << " + "
-                          << deltaA_comp << " = "  << deltaA << " => p_acc = " << p_accept <<   std::endl;
+                          << deltaA_cmpts[0] << " + "
+                          << deltaA_cmpts[1] << " + "
+                          << deltaA_cmpts[2] << " = "  << deltaA_cmpts.sum() << " => p_acc = " << p_accept <<   std::endl;
             }
             this->ret_synapses[i].push_back (j);
             this->den_synapse_counts[j]++;
@@ -181,13 +217,14 @@ struct ktt1d
             if constexpr (debug_synapse_changes == true) {
                 std::cout << "   NO ADD   for SC dendrite " << j << " to ret axon " << i
                           << " where chem + act + comp = "
-                          << deltaA_chem << " + "
-                          << deltaA_act << " + "
-                          << deltaA_comp << " = "  << deltaA << " => p_acc = " << p_accept <<   std::endl;
+                          << deltaA_cmpts[0] << " + "
+                          << deltaA_cmpts[1] << " + "
+                          << deltaA_cmpts[2] << " = "  << deltaA_cmpts.sum() << " => p_acc = " << p_accept <<   std::endl;
             }
         }
     }
 
+    // Attempt to remove a synapse
     void attempt_destruction()
     {
         // choose a random i from 0 to N-2. i indexes retina, j indexes SC.
@@ -195,10 +232,10 @@ struct ktt1d
         // j is different from attempt_creation. Here, we choose a random one of the
         // elements of the vvec ret_synapses[i]. The modulus ensures we choose an index
         // in range.
-        int synsz = static_cast<int>(this->ret_synapses[i].size());
+        int axonsyns_for_i = static_cast<int>(this->ret_synapses[i].size());
         // Can't destruct if no synapses
-        if (synsz == 0) { return; }
-        int j_idx = this->rng_synidx->get() % synsz;
+        if (axonsyns_for_i == 0) { return; }
+        int j_idx = this->rng_synidx->get() % axonsyns_for_i;
 
         auto j_iter = this->ret_synapses[i].begin();
         for (int jj = 0; jj < j_idx && j_iter != this->ret_synapses[i].end(); ++jj) { ++j_iter; }
@@ -208,32 +245,10 @@ struct ktt1d
         // How many synapses for dendrite j_iter?
         int densyns_for_j = den_synapse_counts[j];
 
-        densyns_for_j -= 1; // We'd be removing one
-
-        // Compute change of activity if this synapse were created.
-        F deltaA_chem = this->alpha * this->grad_ret_ra[i] * this->grad_col_la[j];
-
-        // To compute activity change, we need to compute the new synapse (call it s2)
-        // against all the existing synapses (s1)
-        F sum = F{0};
-        for (int ri = 0; ri < N; ++ri) {
-            auto si = ret_synapses[ri].begin();
-            F ret_i_to_ret_ri_spacing = std::abs (i-ri) * this->d;
-            while (si != ret_synapses[ri].end()) {
-                // *si is an index on the SC
-                F syn_spacing = std::abs (*si - j) * this->d_sc;
-                F Ca1a2 = std::exp (act_param_minus1_over_b * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
-                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
-                sum += Ca1a2 * U;
-                ++si;
-            }
-        }
-        F deltaA_act = act_param_minusgamma_over_2 * sum;
-        F deltaA_comp = -comp_param_A * std::sqrt(static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
-        F deltaA = deltaA_chem + deltaA_act + deltaA_comp;
+        morph::vec<F, 3> deltaA_cmpts = compute_deltaA (i, j, axonsyns_for_i, densyns_for_j, -1);
 
         // probability of accepting a change (removal of synapse)
-        F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA));
+        F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA_cmpts.sum()));
 
         F p = this->rng_prob->get();
         if (p < p_accept) { // then accept change
