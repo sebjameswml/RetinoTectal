@@ -15,11 +15,9 @@ static constexpr int tissue_n = 100;
 
 int main()
 {
-    ktt1d<expt, tissue_n> model; // Keep model default alpha of 30
-    ktt1d<expt, tissue_n> model_bigalph;
-    model_bigalph.alpha = 100000.0f;
+    ktt1d<expt, tissue_n> model; // Keep model default alpha
 
-    morph::Visual v(1024, 768, "Tsigankov and Koulakov, A unifying model 2006");
+    morph::Visual v(1024, 768, "Tsigankov, Koulakov, Trippett");
     v.setSceneTrans (morph::vec<float,3>({-0.492555f, 0.367545f, -5.6f}));
 
     // Dataset style for bargraphs
@@ -83,11 +81,10 @@ int main()
     int loop = 0;
     while (!v.readyToFinish /*&& loop < 20*/) {
         model.step();
-        model_bigalph.step();
         // Update graphs every 1000 model steps
         if (loop++ % 1000 == 0) {
             std::cout << "1000 loops. n_syn is now " << model.n_syn << "\n";
-            v.waitevents (0.018);
+            v.waitevents (0.001);
             model.compute_ret_synapse_density();
             gridv1p->reinit();
             v.render();

@@ -25,6 +25,9 @@ struct ktt1d
     // Experience will suggest a limit here, it's for memory reservation
     static constexpr int synapse_upper_limit = 100000;
 
+    // Set true for debug output to stdout
+    static constexpr bool debug_synapse_changes = false;
+
     ktt1d()
     {
         // Resize arrays
@@ -103,6 +106,23 @@ struct ktt1d
         this->attempt_destruction();
     }
 
+    // Competition component parameters
+    static constexpr F comp_param_A = F{5};      // The competition parameter 'A'. 500 in paper.
+
+    // Chemotaxis component parameters
+    static constexpr F chem_param_alpha = F{1200000};  // 120 in paper
+
+    // Activity component parameters
+    static constexpr F act_param_a = F{3};         // 3 in paper
+    static constexpr F act_param_b = F{11};        // 11 in paper
+    static constexpr F act_param_gamma = F{0.05};  // 0.05 in paper
+
+    // Derived constants:
+    static constexpr F act_param_minus1_over_2a_squared = F{-1} / (F{2} * act_param_a * act_param_a);
+    static constexpr F act_param_minus1_over_b = F{-1} / act_param_b;
+    static constexpr F act_param_minusgamma_over_2 = -act_param_gamma / F{2};
+
+
     void attempt_creation()
     {
         // choose a random i from 0 to N-2. i indexes retina, j indexes SC.
@@ -130,34 +150,41 @@ struct ktt1d
             while (si != ret_synapses[ri].end()) {
                 // *si is an index on the SC
                 F syn_spacing = std::abs (*si - j) * this->d_sc;
-                F Ca1a2 = std::exp (F{-0.090909090909090} * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
-                F U = std::exp (F{-0.55555555555555} * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
-                sum += Ca1a2 * U;
+                F Ca1a2 = std::exp (act_param_minus1_over_b * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
+                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
+                sum += (Ca1a2 * U);
                 ++si;
             }
         }
-        // minus gamma / 2 is -0.05/2 = -0.025
-        F deltaA_act = F{-0.025} * sum;
-        // 22.36 = sqrt(500). A=500 seems arbitrary
-        F deltaA_comp = F{-22.36} * std::sqrt(static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
+        F deltaA_act = act_param_minusgamma_over_2 * sum; // In't this A_act, not deltaA_act?
+        F deltaA_comp = -comp_param_A * std::sqrt (static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
         F deltaA = deltaA_chem + deltaA_act + deltaA_comp;
 
         // probability of accepting a change (addition of synapse)
         F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA));
-#if 0
-        std::cout << "Connect ax " << i << "("<<synsz<<" syn) to "<< " den " << j << "("<< densyns_for_j << " syn). deltaA = chem+act+comp = " << deltaA_chem << " + " << deltaA_act << " + " << deltaA_comp
-                  << " and p_accept create = 1/(1+exp(4deltaA)) = " << p_accept << std::endl; // always 0.5
-#endif
+
         F p = this->rng_prob->get();
         if (p < p_accept && this->ret_synapses[i].size() < synapse_upper_limit) {
             // then add synapse
-            //std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i << std::endl;
+            if constexpr (debug_synapse_changes == true) {
+                std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i
+                          << " where chem + act + comp = "
+                          << deltaA_chem << " + "
+                          << deltaA_act << " + "
+                          << deltaA_comp << " = "  << deltaA << " => p_acc = " << p_accept <<   std::endl;
+            }
             this->ret_synapses[i].push_back (j);
             this->den_synapse_counts[j]++;
             ++this->n_syn;
 
-        //} else {
-            //std::cout << "No add.\n";
+        } else {
+            if constexpr (debug_synapse_changes == true) {
+                std::cout << "   NO ADD   for SC dendrite " << j << " to ret axon " << i
+                          << " where chem + act + comp = "
+                          << deltaA_chem << " + "
+                          << deltaA_act << " + "
+                          << deltaA_comp << " = "  << deltaA << " => p_acc = " << p_accept <<   std::endl;
+            }
         }
     }
 
@@ -195,16 +222,14 @@ struct ktt1d
             while (si != ret_synapses[ri].end()) {
                 // *si is an index on the SC
                 F syn_spacing = std::abs (*si - j) * this->d_sc;
-                F Ca1a2 = std::exp (F{-0.090909090909090} * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
-                F U = std::exp (F{-0.55555555555555} * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
+                F Ca1a2 = std::exp (act_param_minus1_over_b * ret_i_to_ret_ri_spacing); // Activity parameter b = 11
+                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing); // param a=3. 2*a*a = 18, 1/18 = 0.0555..
                 sum += Ca1a2 * U;
                 ++si;
             }
         }
-        // minus gamma / 2 is -0.05/2 = -0.025
-        F deltaA_act = F{-0.025} * sum;
-        // 22.36 = sqrt(500). A=500 seems arbitrary
-        F deltaA_comp = F{-22.36} * std::sqrt(static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
+        F deltaA_act = act_param_minusgamma_over_2 * sum;
+        F deltaA_comp = -comp_param_A * std::sqrt(static_cast<F>(1+synsz)) + static_cast<F>(densyns_for_j * densyns_for_j);
         F deltaA = deltaA_chem + deltaA_act + deltaA_comp;
 
         // probability of accepting a change (removal of synapse)
@@ -255,7 +280,7 @@ struct ktt1d
     // ret_ prefix, because the list of synapses is indexed by the retinal origin.
     //morph::vvec<morph::vvec<int>> ret_synapses;
     morph::vvec<std::list<int>> ret_synapses;
-    morph::vvec<float> ret_synapse_density;
+    morph::vvec<float> ret_synapse_density; // float, not F because? Because of Grids?
 
     // Have to keep a record of how many synapses there are for each dendrite
     morph::vvec<int> den_synapse_counts;
@@ -269,7 +294,7 @@ struct ktt1d
     F A_comp = F{0};
     F A_act = F{0};
     // The alpha parameter default value
-    F alpha = F{120};
+    F alpha = chem_param_alpha;
     // The distance d between adjacent cells on the retina
     F d = F{1};
     // The SC distances are the same
