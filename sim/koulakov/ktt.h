@@ -80,7 +80,7 @@ struct ktt1d
         if constexpr (E == experiment::knockin_hetero
                       || E == experiment::knockin_steeper_lig
                       || E == experiment::knockin_reduced_lig) {
-            return (i%2==0 ? 0.0f : 0.25f) + std::exp (-(static_cast<F>(N-i)/N));
+            return (i%2==0 ? 0.0f : 0.38f) + std::exp (-(static_cast<F>(N-i)/N)); // changed
         } else if constexpr (E == experiment::knockin_steeper_ret) {
             return (i%2==0 ? 0.0f : 0.25f) + std::exp (-(static_cast<F>(2*(N-i))/N));
         } else if constexpr (E == experiment::knockin_homo) {
