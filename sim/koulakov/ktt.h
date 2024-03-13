@@ -136,7 +136,8 @@ struct ktt1d
          * 1. change in energy due to chemotactic changes
          */
 
-        F deltaA_chem = synchange * this->alpha * this->grad_ret_ra[ret_i] * this->grad_col_la[sc_j];
+        //F deltaA_chem = synchange * this->alpha * this->grad_ret_ra[ret_i] * this->grad_col_la[sc_j];
+        F deltaA_chem = -synchange * this->alpha * this->ret_ra[ret_i] * this->col_la[sc_j];
 
         /*
          * 2. change in energy due to activity changes
@@ -200,7 +201,12 @@ struct ktt1d
         F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA_cmpts.sum()));
 
         F p = this->rng_prob->get();
-        if (p < p_accept && this->ret_synapses[i].size() < synapse_upper_limit) {
+
+        if (this->ret_synapses[i].size() > synapse_upper_limit) {
+            throw std::runtime_error ("Hit synapse_upper_limit");
+        }
+
+        if (p < p_accept) {
             // then add synapse
             if constexpr (debug_synapse_changes == true) {
                 std::cout << "Add synapse for SC dendrite " << j << " to ret axon " << i
@@ -267,6 +273,9 @@ struct ktt1d
         this->ret_synapse_density.zero();
         for (int i = 0; i < N; ++i) {
             for (auto syn : ret_synapses[i]) {
+                // With this index, when viewed on a Grid with GridOrder::bottomleft_to_topright
+                // (row major), the retinal address will be given by the vertical (y) axis and the
+                // Synapse location by the horizontal (x) axis.
                 int idx = i * N + syn;
                 this->ret_synapse_density[idx] += 1.0f;
             }

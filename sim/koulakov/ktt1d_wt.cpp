@@ -9,7 +9,8 @@
 #include <morph/unicode.h>
 
 // Fig 4 displays wildtype results
-static constexpr experiment expt = experiment::wildtype;
+//static constexpr experiment expt = experiment::wildtype;
+static constexpr experiment expt = experiment::knockin_homo;
 
 static constexpr int tissue_n = 100;
 
@@ -71,19 +72,23 @@ int main()
     auto gridv1 = std::make_unique<morph::GridVisual<float, int, float>>(&grid1, morph::vec<float>({0.8,0,0}));
     v.bindmodel (gridv1);
     gridv1->setScalarData (&model.ret_synapse_density);
-    gridv1->twodimensional = true;
+    //gridv1->twodimensional = true;
+    gridv1->twodimensional = false;
     gridv1->cm.setType (morph::ColourMapType::Jet);
     gridv1->colourScale.compute_autoscale (0.0f, 1.0f);
-    gridv1->zScale.compute_autoscale (0.0f, 0.0f);
+    gridv1->zScale.compute_autoscale (0.0f, 1.0f);
+    gridv1->addLabel ("Ret", morph::vec<float>({-0.18f, 0.49f, 0.0f}), morph::TextFeatures(0.09f));
+    gridv1->addLabel ("SC index", morph::vec<float>({0.3f, -0.16f, 0.0f}), morph::TextFeatures(0.09f));
     gridv1->finalize();
     auto gridv1p = v.addVisualModel (gridv1);
 
+    constexpr int visevery = 1000;
     int loop = 0;
     while (!v.readyToFinish /*&& loop < 20*/) {
         model.step();
-        // Update graphs every 1000 model steps
-        if (loop++ % 1000 == 0) {
-            std::cout << "1000 loops. n_syn is now " << model.n_syn << "\n";
+        // Update graphs every 'visevery' model steps
+        if (loop++ % visevery == 0) {
+            std::cout << visevery << " loops. n_syn is now " << model.n_syn << "\n";
             v.waitevents (0.001);
             model.compute_ret_synapse_density();
             gridv1p->reinit();
@@ -92,7 +97,7 @@ int main()
         }
     }
 
-    std::cout << "Stationary? Finished with loop=" << loop << std::endl;
+    std::cout << "Stationary? Finished after " << (loop-1) << " iterations\n";
     v.keepOpen();
 
     return 0;
