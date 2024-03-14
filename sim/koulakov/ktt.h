@@ -107,22 +107,40 @@ struct ktt1d
     static constexpr bool debug_synapse_changes = false;
 
     // Competition component parameters
-    static constexpr F comp_param_A = F{500};      // The competition parameter 'A'. 500 in paper.
-    static constexpr F comp_param_B = F{1};
-    static constexpr F comp_param_D = F{1};
+    F comp_param_A = F{500};      // The competition parameter 'A'. 500 in paper.
+    F comp_param_B = F{1};
+    F comp_param_D = F{1};
 
     // Chemotaxis component parameters
-    static constexpr F chem_param_alpha = F{120};  // 120 in paper
+    F chem_param_alpha = F{120};  // 120 in paper
 
-    // Activity component parameters
-    static constexpr F act_param_a = F{3};         // 3 in paper
-    static constexpr F act_param_b = F{11};        // 11 in paper
-    static constexpr F act_param_gamma = F{0.05};  // 0.05 in paper
+    // Activity component parameters (must set via setters)
+private:
+    F act_param_a = F{3};         // 3 in paper
+    F act_param_b = F{11};        // 11 in paper
+    F act_param_gamma = F{0.05};  // 0.05 in paper
 
     // Derived constants:
-    static constexpr F act_param_minus1_over_2a_squared = F{-1} / (F{2} * act_param_a * act_param_a);
-    static constexpr F act_param_minus1_over_b = F{-1} / act_param_b;
-    static constexpr F act_param_minusgamma_over_2 = -act_param_gamma / F{2};
+    F act_param_minus1_over_2a_squared = F{-1} / (F{2} * act_param_a * act_param_a);
+    F act_param_minus1_over_b = F{-1} / act_param_b;
+    F act_param_minusgamma_over_2 = -act_param_gamma / F{2};
+
+public:
+    void set_act_param_a (F _a)
+    {
+        this->act_param_a = _a;
+        this->act_param_minus1_over_2a_squared = F{-1} / (F{2} * act_param_a * act_param_a);
+    }
+    void set_act_param_b (F _b)
+    {
+        this->act_param_b = _b;
+        this->act_param_minus1_over_b = F{-1} / act_param_b;
+    }
+    void set_act_param_gamma (F _gamma)
+    {
+        this->act_param_gamma = _gamma;
+        this->act_param_minusgamma_over_2 = -act_param_gamma / F{2};
+    }
 
     // Compute the three components of delta A for a connection from retinal index ret_i to SC index
     // sc_j where there are currently axonsyns_for_i retinal synapses from i and densyns_for_j

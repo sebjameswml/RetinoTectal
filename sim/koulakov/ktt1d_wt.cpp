@@ -7,6 +7,7 @@
 #include <morph/Grid.h>
 #include <morph/GridVisual.h>
 #include <morph/unicode.h>
+#include <morph/Config.h>
 
 // Fig 4 displays wildtype results
 //static constexpr experiment expt = experiment::wildtype;
