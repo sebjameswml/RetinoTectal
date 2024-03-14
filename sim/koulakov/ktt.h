@@ -80,7 +80,7 @@ struct ktt1d
         if constexpr (E == experiment::knockin_hetero
                       || E == experiment::knockin_steeper_lig
                       || E == experiment::knockin_reduced_lig) {
-            return (i%2==0 ? 0.0f : 0.38f) + std::exp (-(static_cast<F>(N-i)/N)); // changed
+            return (i%2==0 ? 0.0f : 0.25f) + std::exp (-(static_cast<F>(N-i)/N)); // changed
         } else if constexpr (E == experiment::knockin_steeper_ret) {
             return (i%2==0 ? 0.0f : 0.25f) + std::exp (-(static_cast<F>(2*(N-i))/N));
         } else if constexpr (E == experiment::knockin_homo) {
@@ -171,7 +171,7 @@ public:
                 // *si is an index on the SC
                 F syn_spacing = std::abs (*si - sc_j) * this->d_sc;
                 F Ca1a2 = std::exp (act_param_minus1_over_b * ret_i_to_ret_ri_spacing);
-                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing);
+                F U = std::exp (act_param_minus1_over_2a_squared * syn_spacing * syn_spacing);
                 sum += (Ca1a2 * U);
                 ++si;
             }

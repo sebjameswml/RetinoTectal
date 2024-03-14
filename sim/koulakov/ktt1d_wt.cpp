@@ -11,8 +11,8 @@
 
 // Fig 4 displays wildtype results
 //static constexpr experiment expt = experiment::wildtype;
-//static constexpr experiment expt = experiment::knockin_hetero;
-static constexpr experiment expt = experiment::knockin_homo;
+static constexpr experiment expt = experiment::knockin_hetero;
+//static constexpr experiment expt = experiment::knockin_homo;
 
 static constexpr int tissue_n = 100;
 
