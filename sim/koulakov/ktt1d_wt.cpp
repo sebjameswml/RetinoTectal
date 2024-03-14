@@ -10,7 +10,8 @@
 
 // Fig 4 displays wildtype results
 //static constexpr experiment expt = experiment::wildtype;
-static constexpr experiment expt = experiment::knockin_hetero;
+//static constexpr experiment expt = experiment::knockin_hetero;
+static constexpr experiment expt = experiment::knockin_homo;
 
 static constexpr int tissue_n = 100;
 
@@ -68,11 +69,15 @@ int main()
 
     // Next job is to visualize the synapses
     morph::vec<float, 2> dx = { 0.01f, 0.01f };
-    morph::Grid<int, float> grid1 (tissue_n, tissue_n, dx);
+    morph::Grid<int, float> grid1 (tissue_n, tissue_n, dx, {0,0},
+                                   morph::GridDomainWrap::None,
+                                   morph::GridOrder::bottomleft_to_topright_colmaj); // orients output
     auto gridv1 = std::make_unique<morph::GridVisual<float, int, float>>(&grid1, morph::vec<float>({0.8,0,0}));
     v.bindmodel (gridv1);
     gridv1->setScalarData (&model.ret_synapse_density);
     //gridv1->twodimensional = true;
+    gridv1->gridVisMode = morph::GridVisMode::Columns;
+    gridv1->interpolate_colour_sides = true;
     gridv1->twodimensional = false;
     gridv1->cm.setType (morph::ColourMapType::Jet);
     gridv1->colourScale.compute_autoscale (0.0f, 1.0f);
