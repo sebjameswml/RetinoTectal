@@ -141,6 +141,9 @@ public:
         this->act_param_gamma = _gamma;
         this->act_param_minusgamma_over_2 = -act_param_gamma / F{2};
     }
+    F get_act_param_a() const { return this->act_param_a; }
+    F get_act_param_b() const { return this->act_param_b; }
+    F get_act_param_gamma() const { return this->act_param_gamma; }
 
     // Compute the three components of delta A for a connection from retinal index ret_i to SC index
     // sc_j where there are currently axonsyns_for_i retinal synapses from i and densyns_for_j
@@ -154,7 +157,6 @@ public:
          * 1. change in energy due to chemotactic changes
          */
 
-        //F deltaA_chem = synchange * this->alpha * this->grad_ret_ra[ret_i] * this->grad_col_la[sc_j];
         F deltaA_chem = -synchange * this->alpha * this->ret_ra[ret_i] * this->col_la[sc_j];
 
         /*
@@ -275,17 +277,14 @@ public:
         F p_accept = F{1} / (F{1} + std::exp (F{4} * deltaA_cmpts.sum()));
 
         F p = this->rng_prob->get();
-        if (p < p_accept) { // then accept change
-            // Remove synapse
-            //std::cout << "Erase synapse for SC dendrite " << j << " from ret axon " << i << std::endl;
+        if (p < p_accept) { // then remove synapse
             this->ret_synapses[i].erase (j_iter);
             this->den_synapse_counts[j]--;
             --this->n_syn;
-        //} else {
-            //std::cout << "No erase.\n";
-        }
+        } // else no synapse removal
     }
 
+    // Compute a retinal synapse density map from ret_synapses for visualization
     void compute_ret_synapse_density()
     {
         this->ret_synapse_density.zero();
@@ -320,9 +319,8 @@ public:
     // synapse[i] contains a vector of the SC dendrite indices to which axon i makes
     // synapses. The actual branches of the dendrites (and axons) are ignored. Has a
     // ret_ prefix, because the list of synapses is indexed by the retinal origin.
-    //morph::vvec<morph::vvec<int>> ret_synapses;
     morph::vvec<std::list<int>> ret_synapses;
-    morph::vvec<float> ret_synapse_density; // float, not F because? Because of Grids?
+    morph::vvec<float> ret_synapse_density; // float, not F because? Because of Grids
 
     // Have to keep a record of how many synapses there are for each dendrite
     morph::vvec<int> den_synapse_counts;

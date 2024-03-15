@@ -1,0 +1,16 @@
+{
+    "Description" : "Koulakov Tsigankov Trippett model parameters",
+
+    "Section 1" : "Competition parameters",
+    "A" : 500,
+    "B" : 1,
+    "D" : 1,
+
+    "Section 2" : "Chemotaxis parameters",
+    "alpha" : 120,
+
+    "Section 3" : "Activity parameters",
+    "a" : 3,
+    "b" : 11,
+    "gamma" : 0.05
+}
