@@ -26,7 +26,8 @@ int main()
     model_b_biga.alpha = model_a_biga.alpha;
     model_c_biga.alpha = model_a_biga.alpha;
 
-    morph::Visual v(1024, 1024, "Koulakov and Tsigankov Fig. 6");
+    morph::Visual v(1920, 2050, "Koulakov and Tsigankov Fig. 6");
+    v.setSceneTrans (morph::vec<float,3>({-1.955f, 2.10377f, -9.6f}));
 
     // Make a Grid
     auto cg = std::make_unique<morph::Grid<int, float>> (N, N, dx);
