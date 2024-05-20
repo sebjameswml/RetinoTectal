@@ -94,6 +94,7 @@ int main (int argc, char** argv)
                                                          morph::vec<float>({0.3,1.0,0}),
                                                          morph::TextFeatures(0.05));
     v.bindmodel (cvis);
+    cvis->twodimensional = !threeD;
     cvis->finalize();
     v.addVisualModel (cvis);
 
