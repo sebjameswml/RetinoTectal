@@ -1296,9 +1296,9 @@ public:
         // although this is called dirichlet_regions, there's nothing specifically
         // Dirichlet-analysis about the function. It just finds the
         // i-that-give-the-max-of arg number 2 (this->c).
-        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
+        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg.get(), this->c);
         // Compute centroids of regions; used to determine aligned-ness of the barrels
-        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
+        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg.get(), this->regions);
 
         this->spatialAnalysisComputed = true;
     }

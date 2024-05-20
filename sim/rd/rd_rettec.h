@@ -137,8 +137,8 @@ public:
 
         // Clear out previous results from an earlier timestep
         this->regions.clear();
-        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg, this->c);
-        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg, this->regions);
+        this->regions = morph::ShapeAnalysis<Flt>::dirichlet_regions (this->hg.get(), this->c);
+        this->reg_centroids = morph::ShapeAnalysis<Flt>::region_centroids (this->hg.get(), this->regions);
 
         // Can now do diffs between reg_centroids and tec_coords, placing the
         // resulting vectors in tec_offsets. To get a scalar value for the pattern's

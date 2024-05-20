@@ -383,7 +383,7 @@ int main (int argc, char **argv)
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
             v1.bindmodel (hgv);
             hgv->setScalarData (&(RD.a[i]));
             hgv->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -463,7 +463,7 @@ int main (int argc, char **argv)
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
             v1.bindmodel (hgv);
             hgv->setScalarData (&RD.c[i]);
             hgv->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -491,7 +491,7 @@ int main (int argc, char **argv)
         for (unsigned int i = 0; i<RD.N; ++i) {
             spatOff[0] = xzero + RD.hg->width() * (i/side);
             spatOff[1] = RD.hg->width() * (i%side);
-            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
             v1.bindmodel (hgv);
             hgv->setScalarData (&RD.f[i]);
             hgv->zScale.setParams (1.0f/5.0f, 0.0f);
@@ -508,7 +508,7 @@ int main (int argc, char **argv)
     morph::HexGridVisual<FLT>* ngrid = nullptr;
     if (plot_n) {
         spatOff = { xzero, 0.0, 0.0 };
-        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
         v1.bindmodel (hgv);
         hgv->setScalarData (&(RD.n));
         hgv->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -534,7 +534,7 @@ int main (int argc, char **argv)
         spatOff = { xzero, 0.0, 0.0 };
         // special scaling for contours. flat in Z, but still colourful.
         // BUT, what I want is colours set by hue and i/N. That means a 'rainbow' colour map!
-        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
         v1.bindmodel (hgv);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
@@ -550,7 +550,7 @@ int main (int argc, char **argv)
 
     if (plot_a_contours) {
         spatOff = { xzero, 0.0, 0.0 };
-        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
         v1.bindmodel (hgv);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
@@ -565,7 +565,7 @@ int main (int argc, char **argv)
 
     if (plot_dr == true) {
         spatOff = { xzero, 0.0, 0.0 };
-        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+        auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
         v1.bindmodel (hgv);
         hgv->setScalarData (&zeromap);
         hgv->zScale.setParams (0.0f, 0.0f);
@@ -591,7 +591,7 @@ int main (int argc, char **argv)
         gd_cscale.do_autoscale = true;
         // Plot gradients of the guidance effect g.
         for (unsigned int j = 0; j<RD.M; ++j) {
-            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
             v1.bindmodel (hgv);
             hgv->setScalarData (&RD.rho[j]);
             hgv->zScale.setParams (0.0f, 0.0f);
@@ -665,7 +665,7 @@ int main (int argc, char **argv)
             gg_c = -(gg_m * ming);
             morph::Scale<FLT, float> gd_cscale; gd_cscale.setParams (gg_m, gg_c);
             // Create the grids
-            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+            auto hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
             v1.bindmodel (hgv);
             hgv->setScalarData (&gx[j]);
             hgv->zScale.setParams (0.0f, 0.0f);
@@ -675,7 +675,7 @@ int main (int argc, char **argv)
 
             spatOff[0] += RD.hg->width();
 
-            hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+            hgv = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg.get(), spatOff);
             v1.bindmodel (hgv);
             hgv->setScalarData (&gy[j]);
             hgv->zScale.setParams (0.0f, 0.0f);
@@ -771,12 +771,12 @@ int main (int argc, char **argv)
             if ((RD.stepCount % plotevery) == 0) {
                 DBG2("Plot at step " << RD.stepCount);
                 // Do a plot of the ctrs as found.
-                std::vector<FLT> ctrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.c, RD.contour_threshold);
+                std::vector<FLT> ctrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg.get(), RD.c, RD.contour_threshold);
 
                 if (plot_contours) { c_ctr_grid->updateData (&ctrmap); }
 
                 if (plot_a_contours) {
-                    std::vector<FLT> actrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg, RD.a, RD.contour_threshold);
+                    std::vector<FLT> actrmap = morph::ShapeAnalysis<FLT>::get_contour_map_nozero (RD.hg.get(), RD.a, RD.contour_threshold);
                     a_ctr_grid->updateData (&actrmap);
                 }
 
@@ -893,7 +893,7 @@ int main (int argc, char **argv)
 
 #if 0
     // Extract contours
-    std::vector<std::list<morph::Hex> > ctrs = morph::ShapeAnalysis<FLT>::get_contours (RD.hg, RD.c, RD.contour_threshold);
+    std::vector<std::list<morph::Hex> > ctrs = morph::ShapeAnalysis<FLT>::get_contours (RD.hg.get(), RD.c, RD.contour_threshold);
     {
         // Write each contour to a contours.h5 file
         std::stringstream ctrname;
