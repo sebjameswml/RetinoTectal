@@ -104,7 +104,7 @@ int main (int argc, char **argv)
     std::string branch_model = mconf->getString ("branch_model", "james_agent");
 
 
-#if 1 // Faster compile time to compile just one model
+#if 0 // Faster compile time to compile just one model
     Agent1<float, 2, branch_koulakov<float, 2>> model (conf, mconf);
     model.title = std::string("koul_") + m_id + std::string("_") + e_id;
     model.run();
