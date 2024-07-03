@@ -813,7 +813,9 @@ struct Agent1
         nlohmann::json arr = this->mconf->get (dirns_tag);
         if (arr.size() > 0) {
             if (arr.size() != N) {
-                throw std::runtime_error ("The directions array in your JSON doesn't have N elements");
+                std::string err = "The directions array in your JSON doesn't have N="
+                + std::to_string(N) + " elements ";
+                throw std::runtime_error (err);
             }
             for (unsigned int i = 0; i < arr.size(); ++i) {
                 std::string d = arr[i].get<std::string>();
