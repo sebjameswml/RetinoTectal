@@ -17,3 +17,7 @@ target_link_libraries(koulakov1d_fig6 ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 add_executable(ktt1d_wt ktt1d_wt.cpp)
 set_property(TARGET ktt1d_wt PROPERTY CXX_STANDARD 20)
 target_link_libraries(ktt1d_wt ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
+add_executable(ktt1d_range ktt1d_range.cpp)
+set_property(TARGET ktt1d_range PROPERTY CXX_STANDARD 20)
+target_link_libraries(ktt1d_range ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
