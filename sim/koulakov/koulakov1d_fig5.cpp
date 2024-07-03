@@ -7,9 +7,9 @@
 #include <iostream>
 #include <morph/vec.h>
 #include <morph/vvec.h>
+#include <morph/Grid.h>
 #include <morph/Visual.h>
-#include <morph/GraphVisual.h>
-#include <morph/CartGrid.h>
+#include <morph/DatasetStyle.h>
 
 // Fig 5 displays wildtype and knockin results
 int main()
