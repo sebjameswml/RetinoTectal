@@ -1513,8 +1513,8 @@ struct Agent1
         if constexpr (use_ortho_tvv) {
             float orthoside = 2.5;
             this->tvv->ptype = morph::perspective_type::orthographic;
-            this->tvv->ortho_bl = {-orthoside,-orthoside};
-            this->tvv->ortho_tr = {orthoside,orthoside};
+            this->tvv->ortho_lb = {-orthoside,-orthoside};
+            this->tvv->ortho_rt = {orthoside,orthoside};
         }
 
         this->tvv->setContext();
@@ -1870,8 +1870,8 @@ struct Agent1
 
         if constexpr (use_ortho) {
             this->v->ptype = morph::perspective_type::orthographic;
-            this->v->ortho_bl = {-2,-2*widthtoheight};
-            this->v->ortho_tr = {2,2*widthtoheight};
+            this->v->ortho_lb = {-2,-2*widthtoheight};
+            this->v->ortho_rt = {2,2*widthtoheight};
         }
 
         if (this->conf->getBool ("lighting", false)) { this->v->lightingEffects(); }
