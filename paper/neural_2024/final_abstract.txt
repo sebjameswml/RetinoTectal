@@ -1,0 +1,26 @@
+10. A unified model of retinotectal map development
+
+James SS, Wilson SP
+
+The axons of retinal ganglion cells form an ordered map of the retina
+in the optic tectum. Surgical and genetic experiments have revealed
+several key mechanisms that contribute to retinotectal map
+development, and computational modelling studies have demonstrated how
+maps can be shaped by their interactions. Models derived from Sperry's
+classic chemoaffinity theory can reproduce retinotopy, and Gierer
+later showed how an extension to include competition between growing
+axons could also account for a subset of the disordered maps that have
+resulted from surgical manipulation. Further extensions have each
+accounted for additional datapoints, but none has been able to explain
+the full range of maps observed experimentally. Here we present a
+unified model of retinotectal development, assuming only local
+interactions between growing axons, which can account for the full
+range of maps resulting from surgical manipulation. This model extends
+the 'potential functions' of Gierer's original to describe
+self-organisation across a 2D cortical sheet, and it represents a
+coordination of axonal growth by orthogonal pairs of opposing ligand
+gradients in the tectum and corresponding receptor gradients in the
+retina. In addition, we present progress towards accounting for the
+full range of maps that have resulted from genetic manipulation, by
+incorporating a mechanistic description of receptor ligand
+interactions.

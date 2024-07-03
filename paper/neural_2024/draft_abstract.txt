@@ -1,0 +1,24 @@
+The retinotectal projection, in which the axons of retinal ganglion
+cells form an ordered map in the optic tectum, is an important
+developmental system that has been studied for many decades. There is
+a large body of evidence, consisting of surgical and genetic
+manipulations, that give insight into how it behaves. Experimental
+work has uncovered a number of mechanisms that are involved in aspects
+of the mapping. However, a single, consistent theoretical framework
+has yet to describe all the patterns that are formed. Sperry's
+chemoaffinity theory provides an account of the wildtype
+pattern. Gierer formalised and extended this theory to incorporate
+competition to account for a subset of surgical manipulation
+experiments, but it was never tested against the full range of
+surgical manipulations. Other theoretical and computational studies
+have been partially successful in accounting for surgical
+manipulations, but to date, no single theory, operating only by local
+interactions, has accounted for every manipulation.  We present a
+review and reimplementation of some of these existing models. We then
+show that a two-dimensional model of the retinotectal projection in
+which orthogonal pairs of opposing tectal ligand gradients combined
+with retinal gradients of receptors form Gierer's potential functions
+accounts for the full range of surgical manipulations. Lastly, we
+speculate on possible extensions to the way in which the
+receptor-ligand interactions are treated that would account for more
+recent genetic manipulation experiments.
