@@ -43,7 +43,7 @@ def examineRetEph():
 
     # Knockin and knockdown, which should be copied from e_eph_ki-wt.json and e_eph_ki-kd.json (
     ki = .8
-    kd = 2.1
+    kd = 1.9
     kiki = 3.2
 
     ## Binding affinity for EphAx. prop. to 1/K_D. see Monschau et al
