@@ -2,24 +2,24 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="209.33803mm"
    height="203.82394mm"
    viewBox="0 0 209.33803 203.82394"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    sodipodi:docname="EphA_manipulations.svg"
-   inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/EphA_manipulations.png"
+   inkscape:export-filename="EphA_manipulations.png"
    inkscape:export-xdpi="400.0217"
-   inkscape:export-ydpi="400.0217">
+   inkscape:export-ydpi="400.0217"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs2"
      style="stroke-linecap:butt;stroke-linejoin:round">
@@ -3240,9 +3240,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="291.53815"
-     inkscape:cy="367.7926"
+     inkscape:zoom="0.95968538"
+     inkscape:cx="294.88831"
+     inkscape:cy="348.55173"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -3250,12 +3250,15 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="2488"
-     inkscape:window-height="1376"
-     inkscape:window-x="72"
-     inkscape:window-y="27"
+     inkscape:window-width="2494"
+     inkscape:window-height="1519"
+     inkscape:window-x="66"
+     inkscape:window-y="44"
      inkscape:window-maximized="1"
-     inkscape:snap-global="false" />
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -5512,7 +5515,6 @@
       </g>
     </g>
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_eph_ki-wt_exit_true_steps_1500.png"
        transform="matrix(0.42141338,0,0,0.42141338,-80.463726,137.01117)"
        clip-path="url(#clipPath7171)"
@@ -7753,7 +7755,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.79046893px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.17440431;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.79047px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174404;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="9.576704"
        y="165.73228"
        id="text2847"><tspan
@@ -7761,15 +7763,14 @@
          id="tspan2845"
          x="9.576704"
          y="165.73228"
-         style="stroke-width:0.17440431;stroke-linecap:butt;stroke-linejoin:round"><tspan
+         style="stroke-width:0.174404;stroke-linecap:butt;stroke-linejoin:round"><tspan
    style="font-weight:bold"
    id="tspan12941">EphA3 ki/+</tspan>, EphA4 +/+</tspan></text>
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500.png"
        transform="matrix(0.42141338,0,0,0.42141338,-80.463726,145.17532)"
        clip-path="url(#clipPath7181)"
-       width="508"
+       width="507.56831"
        height="151.87083"
        preserveAspectRatio="none"
        id="image2675"
@@ -7778,7 +7779,7 @@
        style="stroke-linecap:butt;stroke-linejoin:round" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.79046893px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.17440431;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.79047px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174404;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="6.8871393"
        y="301.66794"
        id="text2847-8"><tspan
@@ -7786,13 +7787,12 @@
          id="tspan2845-50"
          x="6.8871393"
          y="301.66794"
-         style="stroke-width:0.17440431;stroke-linecap:butt;stroke-linejoin:round"><tspan
+         style="stroke-width:0.174404;stroke-linecap:butt;stroke-linejoin:round"><tspan
    style="font-weight:bold"
    id="tspan12945">EphA3 ki/+</tspan>, <tspan
    style="font-weight:bold"
    id="tspan12947">EphA4 +/-</tspan></tspan></text>
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_eph_kiki-wt_exit_true_steps_1500.png"
        clip-path="url(#clipPath7176)"
        width="508"
@@ -10033,7 +10033,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.79046893px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.17440431;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.79047px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174404;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="9.0590296"
        y="232.1657"
        id="text2847-1"><tspan
@@ -10041,7 +10041,7 @@
          id="tspan2845-5"
          x="9.0590296"
          y="232.1657"
-         style="stroke-width:0.17440431;stroke-linecap:butt;stroke-linejoin:round"><tspan
+         style="stroke-width:0.174404;stroke-linecap:butt;stroke-linejoin:round"><tspan
    style="font-weight:bold"
    id="tspan12943">EphA3 ki/ki</tspan>, EphA4 +/+</tspan></text>
     <rect
@@ -10109,41 +10109,41 @@
        y="244.8268" />
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.03093517;stroke-linecap:butt;stroke-linejoin:round"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.03094;stroke-linecap:butt;stroke-linejoin:round"
        x="-127.09325"
        y="118.52567"
        id="text2678"><tspan
          sodipodi:role="line"
          id="tspan2676"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93888903px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:1.03093517;stroke-linecap:butt;stroke-linejoin:round"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93889px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:1.03094;stroke-linecap:butt;stroke-linejoin:round"
          x="-127.09325"
          y="118.52567">A</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.03093517;stroke-linecap:butt;stroke-linejoin:round"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.03094;stroke-linecap:butt;stroke-linejoin:round"
        x="-127.09325"
        y="185.49527"
        id="text2678-9"><tspan
          sodipodi:role="line"
          id="tspan2676-7"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93888903px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:1.03093517;stroke-linecap:butt;stroke-linejoin:round"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93889px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:1.03094;stroke-linecap:butt;stroke-linejoin:round"
          x="-127.09325"
          y="185.49527">B</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.03093517;stroke-linecap:butt;stroke-linejoin:round"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.03094;stroke-linecap:butt;stroke-linejoin:round"
        x="-127.09325"
        y="252.40457"
        id="text2678-96"><tspan
          sodipodi:role="line"
          id="tspan2676-4"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93888903px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:1.03093517;stroke-linecap:butt;stroke-linejoin:round"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93889px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:1.03094;stroke-linecap:butt;stroke-linejoin:round"
          x="-127.09325"
          y="252.40457">C</tspan></text>
     <flowRoot
        xml:space="preserve"
        id="flowRoot2631"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.84000015px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-linecap:butt;stroke-linejoin:round"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.84px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-linecap:butt;stroke-linejoin:round"
        transform="matrix(0.31993063,0,0,0.31993063,-153.68518,99.289758)"><flowRegion
          id="flowRegion2633"
          style="stroke-linecap:butt;stroke-linejoin:round"><rect
@@ -10154,7 +10154,8 @@
            y="0.24018292"
            style="stroke-linecap:butt;stroke-linejoin:round" /></flowRegion><flowPara
          id="flowPara2637"
-         style="stroke-linecap:butt;stroke-linejoin:round" /></flowRoot>    <rect
+         style="stroke-linecap:butt;stroke-linejoin:round" /></flowRoot>
+    <rect
        style="opacity:0.99299999;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.13146366;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
        id="rect21888-93-8"
        width="31.686625"

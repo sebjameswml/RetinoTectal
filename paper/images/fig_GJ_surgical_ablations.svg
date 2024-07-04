@@ -2,24 +2,24 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="656.16669mm"
    height="333.37503mm"
    viewBox="0 0 656.16669 333.37503"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    sodipodi:docname="fig_GJ_surgical_ablations.svg"
-   inkscape:export-filename="/home/seb/models/RetinoTectal/paper/images/fig_GJ_surgical_ablations.png"
+   inkscape:export-filename="fig_GJ_surgical_ablations.png"
    inkscape:export-xdpi="160"
-   inkscape:export-ydpi="160">
+   inkscape:export-ydpi="160"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -30,8 +30,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="1170.869"
-     inkscape:cy="585.32189"
+     inkscape:cx="1171.4286"
+     inkscape:cy="586.42857"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,11 +39,14 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="2560"
-     inkscape:window-height="1323"
-     inkscape:window-x="0"
-     inkscape:window-y="41"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="2494"
+     inkscape:window-height="1519"
+     inkscape:window-x="66"
+     inkscape:window-y="44"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -52,7 +55,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,7 +65,6 @@
      id="layer1"
      transform="translate(317.32443,66.428032)">
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_retablat_fig4A_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_retablat_fig4A_steps_1500.png"
        width="328.08334"
        height="166.6875"
@@ -71,7 +73,6 @@
        x="-317.32443"
        y="-66.428032" />
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_tecablat_fig4B_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_tecablat_fig4B_steps_1500.png"
        width="328.08334"
        height="166.6875"
@@ -80,7 +81,6 @@
        x="10.758911"
        y="-66.428032" />
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_mismatch_fig4C_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_mismatch_fig4C_steps_1500.png"
        width="328.08334"
        height="166.6875"
@@ -89,7 +89,6 @@
        x="-317.32443"
        y="100.25947" />
     <image
-       sodipodi:absref="/home/seb/models/RetinoTectal/paper/images/j4_ee_GJ_best_1_compound_fig4D_steps_1500.png"
        xlink:href="j4_ee_GJ_best_1_compound_fig4D_steps_1500.png"
        y="100.25947"
        x="9.2015076"
