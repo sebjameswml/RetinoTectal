@@ -13,7 +13,8 @@
     "logbase" : "./log/",
     "hextohex_d" : 0.02,
     "boundaryFalloffDist" : 0.06,
-    "graph_hex" : 2731, /* 2243 is what goes nan. 2393 does too. */
+    "notes_graph_hex" : "2243 is what goes nan. 2393 does too.",
+    "graph_hex" : 2731,
     "ellipse_a" : 0.7,
     "ellipse_b" : 0.5,
     "ret_startangle" : 0,
@@ -37,7 +38,8 @@
     "N" : 56,
     "alpha" : 3.6,
     "beta" : 17,
-    "epsilon" : 4, //-0.001, // 4 for unstable
+    "notes_epsilon" : "-0.001, 4 for unstable",
+    "epsilon" : 4,
     "desc_a_max" : "Used in computation of \bar{a}.",
     "a_max" : 0.5,
 
