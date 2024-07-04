@@ -1,0 +1,113 @@
+\documentclass[9pt]{elife} % no lineno or draft
+% Nice citations
+%\usepackage{natbib}
+% Set margins
+%\usepackage[margin=2.5cm]{geometry}
+% Multilingual support
+%\usepackage[english]{babel}
+% Nice mathematics and Left-right harpoons for kinetic equations
+\usepackage{amsmath,mathtools}
+% Control over maketitle
+%\usepackage{titling,titlesec}
+% Ability to use colour in text
+\usepackage{color}
+% For the \degree symbol
+\usepackage{textcomp,gensymb}
+% Allow includegraphics and wrapped figures
+\usepackage{graphicx,wrapfig,subfigure}
+\usepackage[outercaption]{sidecap}
+\usepackage{csquotes}
+% For full page figures:
+%\usepackage[CaptionAfterwards]{fitpage}
+
+%% Trick to define a language alias and permit language = {en} in the .bib file.
+% From: http://tex.stackexchange.com/questions/199254/babel-define-language-synonym
+\usepackage{letltxmacro}
+\LetLtxMacro{\ORIGselectlanguage}{\selectlanguage}
+\makeatletter
+\DeclareRobustCommand{\selectlanguage}[1]{%
+  \@ifundefined{alias@\string#1}
+    {\ORIGselectlanguage{#1}}
+    {\begingroup\edef\x{\endgroup
+       \noexpand\ORIGselectlanguage{\@nameuse{alias@#1}}}\x}%
+}
+\newcommand{\definelanguagealias}[2]{%
+  \@namedef{alias@#1}{#2}%
+}
+\makeatother
+\definelanguagealias{en}{english}
+\definelanguagealias{eng}{english}
+%% End language alias trick
+
+%% Any aliases here
+\newcommand{\mb}[1]{\mathbf{#1}} % this won't work?
+% Emphasis and bold.
+\newcommand{\e}{\emph}
+\newcommand{\code}[1]{\textsf{#1}}
+\newcommand{\dvrg}{\nabla\vcdot\nabla}
+
+\definecolor{colcmnt}        {rgb} {0.7098, 0.0745, 0.0431}
+\newcommand{\redcmnt}[1]{\textcolor{colcmnt}{#1}}
+
+%% END aliases
+
+% Custom font defs
+% fontsize is \fontsize{fontsize}{linespacesize}
+\def\authorListFont{\fontsize{11}{11} }
+\def\corrAuthorFont{\fontsize{10}{10} }
+\def\affiliationListFont{\fontsize{11}{11}\itshape }
+\def\titleFont{\fontsize{14}{11} \bfseries }
+\def\textFont{\fontsize{11}{11} }
+\def\sectionHdrFont{\fontsize{11}{11}\bfseries}
+\def\bibFont{\fontsize{10}{10} }
+\def\captionFont{\fontsize{10}{10} }
+
+% Caption font size to be small.
+%\usepackage[font=small,labelfont=bf]{caption}
+
+\title {none}
+
+\author[1]{Sebastian~S.~James}
+\author[1*]{Stuart~P.~Wilson}
+\affil[1]{Department of Psychology, The University of Sheffield, Sheffield, United Kingdom.}
+\corr{s.wilson@sheffield.ac.uk}{SW}
+%% END OF PREAMBLE
+
+\begin{document}
+
+\subsection*{A gradient based model of chemotaxis}
+
+\citet{simpson_simple_2011} chose a placeholder mechanism for the chemotaxis effect, using a global supervisor to set $\mathbf{G}$ to a vector which would always point to the predetermined target location for each branch.
+In order to make this a local model we replaced the global supervisor with an interaction between RGC receptors and ligands expressed on the tectum. We used forms for the ligand expression, $L(\mathbf{x})$, which matched those used for the RGC receptor expression.
+
+We assumed a purely linear receptor binding model, and set the chemotactic movement vector of the branch $b$ at location $\mathbf{x}$ on the tectum to be
+
+\begin{equation}\label{e:G}
+\mathbf{G} = m_{\!_G}\,\sum_i^N F_i\,r_{i,b} \nabla L_i(\mathbf{x})
+\end{equation}
+%
+where $r_{i,b}$ is the receptor expression on branch $b$ for ligand-receptor pair $i$, $L_i$ is the expression of ligand $i$ on the tectum and $F_i$ denotes the direction of the interaction induced when a molecule of ligand $i$ binds to a receptor $i$ molecule.
+$F_i$ takes the value $-1$ for a repulsive interaction or $1$ for an attractive interaction.
+%
+We assumed that all receptor-ligand signalled interactions are repulsive ($F_i=-1, \forall i$), as for EphA-ephrinA coupling \citep{drescher_vitro_1995,nakamoto_topographically_1996}.
+%
+$m_{\!_G}$ is a scalar parameter which controls how much movement is generated for a given level of receptor-ligand gradient signalling.
+
+Each of the $M$ RGC growth cones carry a set of $N$ receptors, $r_i$, indexed by $i$ and expressed at levels determined by the cell soma's location on the retinal grid.
+%
+We defined 4 receptor expression gradients (each varying only wrt one spatial dimension) arranged in orthogonal pairs with the gradient of $r_0$ being orthogonal to that of $r_1$. $r_2$, whose gradient is opposite to $r_0$, was orthogonal to $r_3$ (Fig.\,1B). Thus the model is of \emph{differential chemotaxis}.
+
+Cells on the tectum express ligands, $L_i$, for the retinal receptors, also in orthogonal pairs of gradients.
+Although several studies model tectal ligand expression with exponential
+functions \citep{koulakov_stochastic_2004}, the experimental evidence for the
+form of tectal ligand expression is more ambiguous than that for retinal
+receptor expression (For example data, see Fig.\,9 which shows expression patterns for EphB/ephrinB).
+We kept in mind the possibility that tectal ligand expression may be modelled
+by another function, but initially, we set it to the same exponential used for
+retinal expression and used the substitutions $y$, $x$, $(1-y)$ or $(1-x)$ in
+place of $u$ to obtain the ligand expression functions for $L_0$, $L_1$, $L_2$
+and $L_3$ (Fig.\,1).
+
+\bibliography{RetinoTectal}
+
+\end{document}

@@ -1,0 +1,146 @@
+\documentclass[9pt]{elife} % no lineno or draft
+% Nice citations
+%\usepackage{natbib}
+% Set margins
+%\usepackage[margin=2.5cm]{geometry}
+% Multilingual support
+%\usepackage[english]{babel}
+% Nice mathematics and Left-right harpoons for kinetic equations
+\usepackage{amsmath,mathtools}
+% Control over maketitle
+%\usepackage{titling,titlesec}
+% Ability to use colour in text
+\usepackage{color}
+% For the \degree symbol
+\usepackage{textcomp,gensymb}
+% Allow includegraphics and wrapped figures
+\usepackage{graphicx,wrapfig,subfigure}
+\usepackage[outercaption]{sidecap}
+\usepackage{csquotes}
+% For full page figures:
+%\usepackage[CaptionAfterwards]{fitpage}
+
+%% Trick to define a language alias and permit language = {en} in the .bib file.
+% From: http://tex.stackexchange.com/questions/199254/babel-define-language-synonym
+\usepackage{letltxmacro}
+\LetLtxMacro{\ORIGselectlanguage}{\selectlanguage}
+\makeatletter
+\DeclareRobustCommand{\selectlanguage}[1]{%
+  \@ifundefined{alias@\string#1}
+    {\ORIGselectlanguage{#1}}
+    {\begingroup\edef\x{\endgroup
+       \noexpand\ORIGselectlanguage{\@nameuse{alias@#1}}}\x}%
+}
+\newcommand{\definelanguagealias}[2]{%
+  \@namedef{alias@#1}{#2}%
+}
+\makeatother
+\definelanguagealias{en}{english}
+\definelanguagealias{eng}{english}
+%% End language alias trick
+
+%% Any aliases here
+\newcommand{\mb}[1]{\mathbf{#1}} % this won't work?
+% Emphasis and bold.
+\newcommand{\e}{\emph}
+\newcommand{\code}[1]{\textsf{#1}}
+\newcommand{\dvrg}{\nabla\vcdot\nabla}
+
+\definecolor{colcmnt}        {rgb} {0.7098, 0.0745, 0.0431}
+\newcommand{\redcmnt}[1]{\textcolor{colcmnt}{#1}}
+
+%% END aliases
+
+% Custom font defs
+% fontsize is \fontsize{fontsize}{linespacesize}
+\def\authorListFont{\fontsize{11}{11} }
+\def\corrAuthorFont{\fontsize{10}{10} }
+\def\affiliationListFont{\fontsize{11}{11}\itshape }
+\def\titleFont{\fontsize{14}{11} \bfseries }
+\def\textFont{\fontsize{11}{11} }
+\def\sectionHdrFont{\fontsize{11}{11}\bfseries}
+\def\bibFont{\fontsize{10}{10} }
+\def\captionFont{\fontsize{10}{10} }
+
+% Caption font size to be small.
+%\usepackage[font=small,labelfont=bf]{caption}
+
+\title {none}
+
+\author[1]{Sebastian~S.~James}
+\author[1*]{Stuart~P.~Wilson}
+\affil[1]{Department of Psychology, The University of Sheffield, Sheffield, United Kingdom.}
+\corr{s.wilson@sheffield.ac.uk}{SW}
+%% END OF PREAMBLE
+
+% Seb to fix: Expected not experiment (in figs), Fig 8 - monochromes. Fig 1 - monochromes
+% Stuart to do: Intro/Start of results modifications
+
+\begin{document}
+%\setlength{\droptitle}{-1.8cm} % move the title up a suitable amount
+
+\section{A receptor-ligand model of chemotaxis}
+
+%% * receptors are expressed by RGCs as f(x,y)=... (Eq. 1)
+
+Each of $n$ retinal ganglion cells (RGC) projects $M$ growth cones (referred to as \emph{branches}) which carry a set of $N$ different receptor types, expressed at levels determined by the cell soma's location on the retinal grid. RGC growth cones and cells on the tectum are also assumed to express $N$ different ligand types which interact with RGC receptors.
+%
+We adopt the same form for the expression of receptors by retinal ganglion cells as
+\citet{simpson_simple_2011}:
+\begin{equation} \label{e:f}
+  f(x,y) = 1.05 + 0.26 \exp(2.3 u),
+\end{equation}
+where $u$ gives the direction with which the expression increases and may be substituted by $(1-x)$, $(1-y)$, $x$ or $y$. We defined $x$ as an axis from temporal to the nasal retina and $y$ from ventral to dorsal retina.
+
+
+%% * Simpson and Goodhill modelled according to deltax = B + C + G (Eq 2)
+In Simpson \& GoodHill's model of chemotaxis and competition, the position, $\mathbf{x}_t$, of each branch $b$ on a simulated tectum can be updated according to $\mathbf{x}_{t+1} = \mathbf{x}_{t} + \Delta \mathbf{x}$ with the movement vector given by
+% Maybe re-order the terms?
+\begin{equation} \label{e:dX}
+ \Delta \mathbf{x} = \mathbf{B} + \mathbf{C} + \mathbf{G}.
+\end{equation}
+$\mathbf{B}$ is a movement applied close to the tissue boundary that ensures all branches remain within the tissue (\citet{holt_target_1998}---see method details).
+%
+%% * They had C composed of two terms, distance based and a component based on EphA expression
+%
+$\mathbf{C}$ is the movement due to competitive interactions with other branches
+and $\mathbf{G}$ is the movement vector given rise to by the chemotaxis effect.
+
+
+%  Maybe lose the sub sub sections
+\subsection*{A signalling model for competition}
+
+Simpson \& Goodhill's model had a $\mathbf{C}$ comprised of two components; a simple distance-based competition between \emph{all} branches, along with an axon-axon interaction based on the relative levels of the receptor EphA expressed by each interacting axon.
+To provide an explicit mechanism of operation for the competition, we modelled it as a sum of interactions that are `switched on' via receptor-ligand signalling, meaning that some axons would have no competitive interaction, while others would repel strongly.
+This single-component competitive movement vector for a branch $b$ is
+
+\begin{equation} \label{e:X}
+\mathbf{C} = \frac{m_{\!_X}}{|B_{b}|} \sum_k^{nM} \hat{\mathbf{x}}_{kb}\,W\,Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}).
+\end{equation}
+%
+$m_{\!_X}$ is a scalar parameter and $B_{b}$ is the set of branches that are within interaction distance ($2 r_{\!_X}$) of $b$. $r_{\!_X}$ is the receptor-ligand interaction radius. $nM$ is the total number of branches in the system and $\hat{\mathbf{x}}_{kb}$ is the unit vector from branch $k$ to $b$.
+%
+$W$ is the distance based weighting ($W = 1-\frac{d_{kb}}{2r_{\!_X}}~\mathrm{if}~  d_{kb}\leq 2r_{\!_X}$, otherwise $0$).
+%
+The distance-based weighting can be interpreted as being related to the probability with which a ligand may bind to a receptor and mediate the interaction.
+%
+$Q$ is a signalling threshold function which depends on the distance $d_{kb}$ between branches $b$ and $k$, the receptor expression on $b$ ($\mathbf{r}_b$) and the ligand expression on $k$ ($\mathbf{l}_k$).
+$Q$ is set to 1 only if at least one repulsive signal exceeds a positive signal threshold, $s$, and the distance from branch $b$ to branch $k$ is smaller than $2 r_{\!_X}$:
+%
+\begin{equation}
+Q(d_{kb}, \mathbf{r}_{b}, \mathbf{l}_{k}) = \begin{cases}
+                 0 & \mathrm{if}~-F_i\,r_{i,b}\,l_{i,k} <
+                 s,\,\forall{i}~\mathrm{or}~d_{kb} > 2r_{\!_X} \\
+                 1 & \mathrm{otherwise.}
+     \end{cases}
+\end{equation}
+%
+$l_{i,k}$ (the expression of ligand $i$ on branch $k$) is the $i^{\mathrm{th}}$ element of $\mathbf{l}_k$ and $r_{i,b}$ is the $i^{\mathrm{th}}$ element of $\mathbf{r}_b$.
+$F_i$, defined in Eq.\,\ref{e:G}, is -1 if the $r_{i}\,l_{i}$ interaction signals repulsion and +1 if it signals attraction.
+With the constraint $s>0$ comes the assumption that attractive interactions will have no effect on the competitive movement vector---a receptor-ligand pair that signals attraction cannot cause $Q$ to take the value 1.
+
+
+
+\bibliography{RetinoTectal}
+
+\end{document}

@@ -1,0 +1,103 @@
+\documentclass[9pt]{elife} % no lineno or draft
+% Nice citations
+%\usepackage{natbib}
+% Set margins
+%\usepackage[margin=2.5cm]{geometry}
+% Multilingual support
+%\usepackage[english]{babel}
+% Nice mathematics and Left-right harpoons for kinetic equations
+\usepackage{amsmath,mathtools}
+% Control over maketitle
+%\usepackage{titling,titlesec}
+% Ability to use colour in text
+\usepackage{color}
+% For the \degree symbol
+\usepackage{textcomp,gensymb}
+% Allow includegraphics and wrapped figures
+\usepackage{graphicx,wrapfig,subfigure}
+\usepackage[outercaption]{sidecap}
+\usepackage{csquotes}
+% For full page figures:
+%\usepackage[CaptionAfterwards]{fitpage}
+
+%% Trick to define a language alias and permit language = {en} in the .bib file.
+% From: http://tex.stackexchange.com/questions/199254/babel-define-language-synonym
+\usepackage{letltxmacro}
+\LetLtxMacro{\ORIGselectlanguage}{\selectlanguage}
+\makeatletter
+\DeclareRobustCommand{\selectlanguage}[1]{%
+  \@ifundefined{alias@\string#1}
+    {\ORIGselectlanguage{#1}}
+    {\begingroup\edef\x{\endgroup
+       \noexpand\ORIGselectlanguage{\@nameuse{alias@#1}}}\x}%
+}
+\newcommand{\definelanguagealias}[2]{%
+  \@namedef{alias@#1}{#2}%
+}
+\makeatother
+\definelanguagealias{en}{english}
+\definelanguagealias{eng}{english}
+%% End language alias trick
+
+%% Any aliases here
+\newcommand{\mb}[1]{\mathbf{#1}} % this won't work?
+% Emphasis and bold.
+\newcommand{\e}{\emph}
+\newcommand{\code}[1]{\textsf{#1}}
+\newcommand{\dvrg}{\nabla\vcdot\nabla}
+
+\definecolor{colcmnt}        {rgb} {0.7098, 0.0745, 0.0431}
+\newcommand{\redcmnt}[1]{\textcolor{colcmnt}{#1}}
+
+%% END aliases
+
+% Custom font defs
+% fontsize is \fontsize{fontsize}{linespacesize}
+\def\authorListFont{\fontsize{11}{11} }
+\def\corrAuthorFont{\fontsize{10}{10} }
+\def\affiliationListFont{\fontsize{11}{11}\itshape }
+\def\titleFont{\fontsize{14}{11} \bfseries }
+\def\textFont{\fontsize{11}{11} }
+\def\sectionHdrFont{\fontsize{11}{11}\bfseries}
+\def\bibFont{\fontsize{10}{10} }
+\def\captionFont{\fontsize{10}{10} }
+
+% Caption font size to be small.
+%\usepackage[font=small,labelfont=bf]{caption}
+
+\title {none}
+
+\author[1]{Sebastian~S.~James}
+\author[1*]{Stuart~P.~Wilson}
+\affil[1]{Department of Psychology, The University of Sheffield, Sheffield, United Kingdom.}
+\corr{s.wilson@sheffield.ac.uk}{SW}
+%% END OF PREAMBLE
+
+\begin{document}
+
+The axons of retinal ganglion cells form an ordered map of the retina
+in the optic tectum. Surgical and genetic experiments have revealed
+several key mechanisms that contribute to retinotectal map
+development, and computational modelling studies have demonstrated how
+maps can be shaped by their interactions. Models derived from Sperry's
+classic chemoaffinity theory can reproduce retinotopy, and Gierer
+later showed how an extension to include competition between growing
+axons could also account for a subset of the disordered maps that have
+resulted from surgical manipulation. Further extensions have each
+accounted for additional datapoints, but none has been able to explain
+the full range of maps observed experimentally. Here we present a
+unified model of retinotectal development, assuming only local
+interactions between growing axons, which can account for the full
+range of maps resulting from surgical manipulation. This model extends
+the `potential functions' of Gierer's original to describe
+self-organisation across a 2D cortical sheet, and it represents a
+coordination of axonal growth by orthogonal pairs of opposing ligand
+gradients in the tectum and corresponding receptor gradients in the
+retina. In addition, we present progress towards accounting for the
+full range of maps that have resulted from genetic manipulation, by
+incorporating a mechanistic description of receptor ligand
+interactions.
+
+%\bibliography{RetinoTectal}
+
+\end{document}
