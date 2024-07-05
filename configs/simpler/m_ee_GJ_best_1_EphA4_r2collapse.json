@@ -2,9 +2,9 @@
     "desc_epha4_expression_form" : "The form of epha4 expression (or of effective expression after cis interactions). 0:lin 1:q 2:ex 3:log 4:ex2 5:invex 6:null (etc), 10: the special EphA4 one (based on phosphorylization of EphA4 and remaining free EphA4)",
     "epha4_expression_form" : 10,
     "desc_Ax_thresh" : "parameter: EphAx above this value can trigger collapse of r2.",
-    "Ax_thresh" : 2.0,
+    "Ax_thresh" : 1.9,
     "desc_A4_thresh" : "parameter: EphA4 below this value can trigger collapse of r2.",
-    "A4_thresh" : 1.1626,
+    "A4_thresh" : 1.25,
 
     "desc_w_EphAx" : "Binding weight for ephrinA and EphAx (r0) in the EphA-modified model. 0.24 is minimum to work.",
     "w_EphAx" : 0.25,

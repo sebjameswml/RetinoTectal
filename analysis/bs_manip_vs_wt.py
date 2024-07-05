@@ -135,8 +135,12 @@ filebases_2 = ["../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-wt_exit_true_ste
                "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_kiki-wt_exit_true_steps_1500",
                "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kd_exit_true_steps_1500",
                "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_wt-kd_exit_true_steps_1500"]
+
+filebases_tmp = ["../rcnt/j4_ee_GJ_best_1_eph_ki-kd_exit_true_steps_1500",
+                 "../rcnt/j4_ee_GJ_best_1_EphA4_r2collapse_eph_ki-kd_exit_true_steps_1500"]
+
 if doitall:
-    filebases = filebases_0 + filebases_2 # not filebases_1
+    filebases = filebases_tmp #filebases_0 + filebases_2 # not filebases_1
 
 else:
     if model_type == 0:

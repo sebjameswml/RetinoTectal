@@ -60,8 +60,8 @@ def examineRetEph():
     w_EphA4 = w_EphAx * 0.611
 
     ## Thresholds for EphA4 mechanisms
-    h_A4 = 1.1626
-    h_0 = 2
+    h_A4 = 1.25
+    h_0 = 1.9
 
     B=0.26
     C=2.3
@@ -113,7 +113,7 @@ def examineRetEph():
     dotted_line2 = plt.Line2D([], [], linestyle="--", color=clr_knockin, dashes=(5, 5))
 
     figsz = (15,4)
-    fig, (ax1, ax2, ax21) = plt.subplots(1, 3, figsize=figsz)
+    fig, (ax1, ax2, ax21, ax22) = plt.subplots(1, 4, figsize=figsz)
 
     # WT
     ax1.plot (x, EphAx, linestyle='-', color=clr_wt, label='$\Sigma$EphA ($r_0$)')
@@ -195,6 +195,25 @@ def examineRetEph():
     x0,x1 = ax21.get_xlim()
     y0,y1 = ax21.get_ylim()
     ax21.set_aspect(abs(x1-x0)/abs(y1-y0))
+
+    # ax22 for the logic
+    EphAx_above = ((EphAx) > h_0).astype(int)
+    EphAx_ki_above = ((EphAx + ki) > h_0).astype(int)
+    EphA4_below = (EphA4_free < h_A4).astype(int)
+    EphA4_kd_below = ((EphA4_free_kd) < h_A4).astype(int)
+
+
+    collapse2_wt = (EphAx_above & EphA4_below).astype(int)
+    collapse2_ki = (EphAx_ki_above & EphA4_below).astype(int)
+    collapse2_kikd = (EphAx_ki_above & EphA4_kd_below).astype(int)
+
+    ax22.plot (x, collapse2_wt,    linestyle='-.', color=clr_wt)
+    ax22.plot (x, collapse2_ki,    linestyle='-.', color=clr_knockin)
+    ax22.plot (x, collapse2_kikd,    linestyle='-.', color=clr_knockdown)
+
+    ax22.legend([filled_line_wt, filled_line_ki, (dotted_line1, dotted_line2)],
+                ['Coll. WT','$Coll. EphA ki', 'Coll. EphA ki/kd'])
+
 
     #plt.tight_layout()
     fn = 'examineRetEph.svg'
