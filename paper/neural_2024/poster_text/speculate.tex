@@ -1,0 +1,115 @@
+\documentclass[9pt]{elife} % no lineno or draft
+% Nice citations
+%\usepackage{natbib}
+% Set margins
+%\usepackage[margin=2.5cm]{geometry}
+% Multilingual support
+%\usepackage[english]{babel}
+% Nice mathematics and Left-right harpoons for kinetic equations
+\usepackage{amsmath,mathtools}
+% Control over maketitle
+%\usepackage{titling,titlesec}
+% Ability to use colour in text
+\usepackage{color}
+% For the \degree symbol
+\usepackage{textcomp,gensymb}
+% Allow includegraphics and wrapped figures
+\usepackage{graphicx,wrapfig,subfigure}
+\usepackage[outercaption]{sidecap}
+\usepackage{csquotes}
+% For full page figures:
+%\usepackage[CaptionAfterwards]{fitpage}
+
+%% Trick to define a language alias and permit language = {en} in the .bib file.
+% From: http://tex.stackexchange.com/questions/199254/babel-define-language-synonym
+\usepackage{letltxmacro}
+\LetLtxMacro{\ORIGselectlanguage}{\selectlanguage}
+\makeatletter
+\DeclareRobustCommand{\selectlanguage}[1]{%
+  \@ifundefined{alias@\string#1}
+    {\ORIGselectlanguage{#1}}
+    {\begingroup\edef\x{\endgroup
+       \noexpand\ORIGselectlanguage{\@nameuse{alias@#1}}}\x}%
+}
+\newcommand{\definelanguagealias}[2]{%
+  \@namedef{alias@#1}{#2}%
+}
+\makeatother
+\definelanguagealias{en}{english}
+\definelanguagealias{eng}{english}
+%% End language alias trick
+
+%% Any aliases here
+\newcommand{\mb}[1]{\mathbf{#1}} % this won't work?
+% Emphasis and bold.
+\newcommand{\e}{\emph}
+\newcommand{\code}[1]{\textsf{#1}}
+\newcommand{\dvrg}{\nabla\vcdot\nabla}
+
+\definecolor{colcmnt}        {rgb} {0.7098, 0.0745, 0.0431}
+\newcommand{\redcmnt}[1]{\textcolor{colcmnt}{#1}}
+
+%% END aliases
+
+% Custom font defs
+% fontsize is \fontsize{fontsize}{linespacesize}
+\def\authorListFont{\fontsize{11}{11} }
+\def\corrAuthorFont{\fontsize{10}{10} }
+\def\affiliationListFont{\fontsize{11}{11}\itshape }
+\def\titleFont{\fontsize{14}{11} \bfseries }
+\def\textFont{\fontsize{11}{11} }
+\def\sectionHdrFont{\fontsize{11}{11}\bfseries}
+\def\bibFont{\fontsize{10}{10} }
+\def\captionFont{\fontsize{10}{10} }
+
+% Caption font size to be small.
+%\usepackage[font=small,labelfont=bf]{caption}
+
+\title {none}
+
+\author[1]{Sebastian~S.~James}
+\author[1*]{Stuart~P.~Wilson}
+\affil[1]{Department of Psychology, The University of Sheffield, Sheffield, United Kingdom.}
+\corr{s.wilson@sheffield.ac.uk}{SW}
+%% END OF PREAMBLE
+
+\begin{document}
+
+\subsection*{Two mechanisms to address the genetic results: Cluster size and $r_2$ collapse}
+
+In the previous model, we assumed that all EphA receptor sub-types (EphA3, EphA4, EphA5, etc) transmit the same signal to induce indistinguishable function.
+This assumption is difficult to support, given that the effect caused by knock-\emph{in} of EphA3 (a shift of nasal RGC axons towards the rostral tectum) is enhanced by the knock-\emph{down} of EphA4.
+We therefore changed our assumption to the following: Most EphA receptors
+share the same function (EphA3, EphA5 etc) but EphA4 is different.
+
+We redefined $r_{\!\scriptscriptstyle 0}$ as the expression of EphA receptors (excluding EphA4) on branch $b$ (Fig.\,6A), and introduced $r_{\!\scriptscriptstyle A4}$ as the expression of EphA4 receptors (Fig.\,6B). EphA4 receptors are expressed in a spatially inhomogeneous pattern~\citep{reber_relative_2004} for which we choose the value $r_{\!\scriptscriptstyle A4} = 3.5$.  We assume that cis-interactions between retinal ephrinA ligands and retinal EphA4 receptors lead to bound and un-bound EphA4 receptors \citep{hornberger_modulation_1999}. The number of cis-bound EphA4 receptors is assumed to be $r_{\!\scriptscriptstyle A4}^{\mathrm{cis}} = w_{\!\scriptscriptstyle A4} \times r_{\!\scriptscriptstyle A4} \times l_0$ where $w_{\!\scriptscriptstyle A4} = 0.153$ is a binding weight modelling the probability that an EphA4 receptor will bind to a nearby retinal ephrinA ligand. Remaining, free EphA4 receptors are $r_{\!\scriptscriptstyle A4}^{\mathrm{free}} = r_{\!\scriptscriptstyle A4} - r_{\!\scriptscriptstyle A4}^{\mathrm{cis}}$ (Fig.\,6C).
+
+It is known that EphA receptors form clusters, that these are necessary for ligand attachments to induce signal transmission and that cluster size affects signal size \citep{nikolov_ephephrin_2013}. It is also known that that some receptor sub-types may compete for ligand attachment \citep{fiore_regulation_2019}.
+Additionally, EphA4 receptors make `side attachments' to clusters of EphA receptors, possibly regulating the cluster size \citep{nikolov_ephephrin_2013}.
+%
+We focused on the idea that signal strength is related to receptor cluster size and defined $c_i$, the effective cluster size for receptor $i$.
+We set $c_i=1$ for $i=1$, $2$ or $3$ and investigated a simple relationship between EphA cluster size, $c_0$, and $r_{\!\scriptscriptstyle A4}$, the density of EphA4 receptors:
+\begin{equation}
+    c_0 = 1/r_{\!\scriptscriptstyle A4}
+\end{equation}
+%
+Eq.\,5 was modified to include the cluster size:
+%
+\begin{equation}\label{e:Gcs}
+\mathbf{G} = m_{\!_G}\,\sum_i^N F_i\,c_i\,r_{i} \nabla L_i(\mathbf{x})
+\end{equation}
+
+$c_i\,r_{i}$ is the effective signal strength, $s_i$, for receptor $i$ and differs from $r_{i}$ only for $i=0$ for which $s_0 = r_0/r_{\!\scriptscriptstyle A4}$.
+Under this relationship, the signal strength changes as $r_0$ increases (simulating the knock-in of EphA3) and also as $r_{\!\scriptscriptstyle A4}$ decreases (simulating EphA4 knock-down).
+Fig.\,6C shows $s_0$ under knock-in, knock-down and combined knock-in/knock-down conditions.
+The average magnitude of the signal $s_0$, as defined above, is smaller than $r_0$, which is the effective signal in the original model (in Eq.\,5, $r_{i} \equiv s_i$). To counterbalance this reduction in the magnitude of the receptor-ligand interaction between $r_0$ and $l_0$, we reduced the value of $r_2$: $r_2 \rightarrow r_2/2$ which ensures that the cluster size model reproduces the wildtype result as in Fig.\,2D.
+
+Fig\,6Di shows the logic that is assumed to be enacted by the EphA/EphA4 and $r_2$ receptors to implement the $r_2$ collapse mechanism. We assume that there is a coupling between $r_0$, $r_{A4}$ expression and $r_2$ expression. In a region where $r_0$ exceeds some threshold, $h_0$, and $r_{A4}$ is \emph{below} another threshold, $h_{A4}$, the effectiveness of $r_2$ is further reduced by a factor of five: $r_2 \rightarrow r_2/5$.
+Fig\,6Dii shows the regions in which the collapse occurs.
+In the wildtype case, even though $\sum$EphA expression exceeds $h_0$ in the region above 0.56 on the N--T axis (Fig\,6A, solid green), free EphA4 expression is always above the threshold $h_{A4}$, so $r_2$ collapse does not occur.
+If EphA4 is knocked down, then in the temporal region above 0.56, $\sum$EphA exceeds $h_0$ and EphA4 is below $h_{A4}$ and so $r_2$ collapse occurs here.
+If, in addition to EphA4 knock-down, EphA3 is knocked in, $\sum$EphA expression rises above $h_0$ across the entire N--T axis (Fig\,6A, purple), and so $r_2$ collapse occurs for any N--T origin.
+
+\bibliography{RetinoTectal}
+
+\end{document}

@@ -211,6 +211,11 @@ def examineRetEph():
     ax22.plot (x, collapse2_ki,    linestyle='-.', color=clr_knockin)
     ax22.plot (x, collapse2_kikd,    linestyle='-.', color=clr_knockdown)
 
+    ax22.plot (x, EphAx,           linestyle='-', color=clr_wt)
+    ax22.plot (x, EphA4_free,           linestyle='-', color=clr_wt)
+    ax22.plot (x, (EphAx+ki),      linestyle='-', color=clr_knockin)
+    ax22.plot (x, (EphA4_free_kd),      linestyle='-', color=clr_knockdown)
+
     ax22.legend([filled_line_wt, filled_line_ki, (dotted_line1, dotted_line2)],
                 ['Coll. WT','$Coll. EphA ki', 'Coll. EphA ki/kd'])
 
